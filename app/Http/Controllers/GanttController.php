@@ -53,7 +53,8 @@ class GanttController extends Controller
             // Filter leaf tasks active this specific day from the already filtered set
             // and EXCLUDE completed/cancelled tasks from resilience calculation
             $dayTasks = $leafTasks->filter(function($t) use ($currentDay) {
-                if (in_array($t->status, ['completed', 'cancelled'])) return false;
+                if (in_array($t->status_value, ['completed', 'cancelled'])) return false;
+                if ($t->parent && in_array($t->parent->status_value, ['completed', 'cancelled'])) return false;
 
                 $start = $t->scheduled_date ?? $t->created_at;
                 $end = $t->due_date ?? $start;
@@ -139,7 +140,7 @@ class GanttController extends Controller
                             return $task->children
                                 ->filter(function($c) use ($showCompleted, $user, $task) {
                                     // Must match the exclusion logic in getTaskSet (Step 2)
-                                    if (!$showCompleted && in_array($c->status, ['completed', 'cancelled'])) return false;
+                                    if (!$showCompleted && in_array($c->status_value, ['completed', 'cancelled'])) return false;
                                     
                                     // Redundancy rule: if we are viewing the master and this child is ours, 
                                     // it's already represented by the master row, so we skip it in the sub-breakdown
@@ -215,7 +216,7 @@ class GanttController extends Controller
                 'children' => function($q) use ($user, $isManager) {
                     $q->visibleTo($user, $isManager);
                 }
-            ] : ['assignedUser'])
+            ] : ['assignedUser', 'parent'])
             ->visibleTo($user, $isManager)
             ->notEphemeral()
             ->operationalFor($user, $team, true)
@@ -226,7 +227,12 @@ class GanttController extends Controller
         $showCompleted = !session('hide_completed_tasks', true) || $request->status;
 
         foreach ($baseTasks as $task) {
-            $isTaskCompleted = in_array($task->status, ['completed', 'cancelled']);
+            $isTaskCompleted = in_array($task->status_value, ['completed', 'cancelled']);
+
+            // Si el padre está completado, consideramos esta tarea completada
+            if ($task->parent && in_array($task->parent->status_value, ['completed', 'cancelled'])) {
+                $isTaskCompleted = true;
+            }
 
             // DEDUPLICACIÓN: No añadir el contenedor si el usuario ya tiene su propia instancia
             $isMyAssignedInstance = ($task->assigned_user_id === $user->id);
@@ -243,8 +249,9 @@ class GanttController extends Controller
 
             if ($task->is_template && $team->isCoordinator($user)) {
                 // For coordinators, we push children EXCEPT their own (to avoid redundancy with the master bar)
-                $task->children->each(function ($child) use ($ganttTaskIds, $showCompleted, $user) {
-                    if ($showCompleted || !in_array($child->status, ['completed', 'cancelled'])) {
+                $task->children->each(function ($child) use ($ganttTaskIds, $showCompleted, $user, $isTaskCompleted) {
+                    $childCompleted = in_array($child->status_value, ['completed', 'cancelled']) || $isTaskCompleted;
+                    if ($showCompleted || !$childCompleted) {
                         // Skip my own instance if I'm already seeing the master
                         if ($child->assigned_user_id !== $user->id) {
                             $ganttTaskIds->push($child->id);
@@ -253,8 +260,9 @@ class GanttController extends Controller
                 });
             } elseif ($task->children->count() > 0 && !$task->is_template) {
                 // If it's a plain container (like an Occurrence), show its children if they match filters
-                $task->children->each(function ($child) use ($ganttTaskIds, $showCompleted, $user, $isManager) {
-                    if ($showCompleted || !in_array($child->status, ['completed', 'cancelled'])) {
+                $task->children->each(function ($child) use ($ganttTaskIds, $showCompleted, $user, $isManager, $isTaskCompleted) {
+                    $childCompleted = in_array($child->status_value, ['completed', 'cancelled']) || $isTaskCompleted;
+                    if ($showCompleted || !$childCompleted) {
                         // For non-managers, only show their own work
                         if ($isManager || $child->assigned_user_id === $user->id) {
                             $ganttTaskIds->push($child->id);
@@ -279,7 +287,11 @@ class GanttController extends Controller
         }
 
         if ($team->isModerator($user)) {
-             $templateIds = $team->activities()->forGantt()->where('is_template', true)->pluck('id');
+             $templateQuery = $team->activities()->forGantt()->where('is_template', true);
+             if (!$showCompleted) {
+                 $templateQuery->whereNotIn('status->value', ['completed', 'cancelled']);
+             }
+             $templateIds = $templateQuery->pluck('id');
              $ganttTaskIds = $ganttTaskIds->merge($templateIds);
         }
 
@@ -300,7 +312,7 @@ class GanttController extends Controller
                         ->orWhere('description', 'like', "%{$search}%");
                 });
             })
-            ->when($filters['status'] ?? null, fn($q, $status) => $q->where('status', $status))
+            ->when($filters['status'] ?? null, fn($q, $status) => $q->where('status->value', $status))
             ->when($filters['skill_id'] ?? null, function ($q, $skillId) {
                 $q->where(function ($sq) use ($skillId) {
                     $sq->where('skill_id', $skillId)

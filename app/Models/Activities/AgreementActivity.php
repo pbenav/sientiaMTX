@@ -22,13 +22,13 @@ use App\Contracts\ExportableActivityInterface;
  *   "decided_by_ids": [1, 2]   // IDs de usuarios decisores
  * }
  */
-class DecisionActivity extends Activity implements ExportableActivityInterface
+class AgreementActivity extends Activity implements ExportableActivityInterface
 {
     public const STATUSES = ['proposed', 'approved', 'rejected', 'deferred', 'superseded'];
 
     protected static function booted(): void
     {
-        static::creating(fn(self $m) => $m->type = 'decision');
+        static::creating(fn(self $m) => $m->type = 'agreement');
     }
 
     public function getRationale(): ?string

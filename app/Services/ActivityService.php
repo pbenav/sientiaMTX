@@ -246,6 +246,25 @@ class ActivityService
     {
         DB::transaction(function () use ($activity) {
             $this->recordHistory($activity, auth()->user(), 'deleted');
+
+            // Delete remote Google items to prevent orphans
+            try {
+                if ($activity->google_task_id || $activity->google_calendar_event_id) {
+                    $googleService = app(\App\Services\GoogleService::class);
+                    $user = auth()->user();
+                    if ($user && $googleService->setTokenForUser($user, $activity->team_id)) {
+                        if ($activity->google_task_id && $activity->google_task_list_id) {
+                            $googleService->deleteTask($activity->google_task_list_id, $activity->google_task_id);
+                        }
+                        if ($activity->google_calendar_event_id) {
+                            $googleService->deleteEvent($activity->google_calendar_event_id, $activity->google_calendar_id ?? 'primary');
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Error deleting remote Google events during Activity delete: ' . $e->getMessage());
+            }
+
             $activity->delete();
         });
     }
@@ -672,7 +691,7 @@ class ActivityService
             'document' => 'draft',
             'note'     => 'draft',
             'link'     => 'active',
-            'decision' => 'proposed',
+            'agreement' => 'proposed',
             'meeting'  => 'scheduled',
             'reminder' => 'pending',
             default    => 'pending',
@@ -721,7 +740,7 @@ class ActivityService
         return array_merge($base, $specifics);
     }
 
-    protected function cascadeCompletion(Activity $parent): void
+    public function cascadeCompletion(Activity $parent): void
     {
         $parent->children()->whereJsonDoesntContain('status->value', 'completed')
             ->whereJsonDoesntContain('status->value', 'cancelled')
@@ -786,7 +805,7 @@ class ActivityService
             foreach ($guests as &$guest) {
                 if (!empty($guest['notify']) && filter_var($guest['email'] ?? '', FILTER_VALIDATE_EMAIL)) {
                     try {
-                        if ($activity->type === 'decision') {
+                        if ($activity->type === 'agreement') {
                             // Pre-generamos la URL con el host correcto ANTES de encolar el mail.
                             // El worker de cola no tiene contexto HTTP y usaría APP_URL (localhost en dev).
                             $signatureUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
@@ -819,7 +838,7 @@ class ActivityService
         }
 
         // ── Firmantes INTERNOS (miembros asignados) — solo en decision ───────
-        if ($activity->type === 'decision') {
+        if ($activity->type === 'agreement') {
             // Forzamos la recarga para ignorar caché y traemos también los grupos
             $activity->load(['assignedTo', 'assignedGroups.users']);
             

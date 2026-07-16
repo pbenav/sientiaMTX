@@ -581,7 +581,6 @@
             @endif
 
             <!-- 9. Autoprogramación Card -->
-            @if ($activity->type === 'task')
             @if ($activity->is_autoprogrammable)
                 <div class="bg-white dark:bg-gray-900 border border-violet-100 dark:border-violet-900/30 rounded-2xl p-4 space-y-3 shadow-sm border-l-4 border-l-violet-500">
                     <div class="flex items-center justify-between">
@@ -602,7 +601,6 @@
                     </div>
                 </div>
             @endif
-            @endif
 
             <!-- 10. Quota de disco Card -->
             @if (false)
@@ -619,6 +617,7 @@
                     <div class="h-full {{ $barColor }} transition-all duration-1000 shadow-sm" style="width: {{ $perc }}%"></div>
                 </div>
             </div>
+            @endif
 
             <!-- 11. Etiquetas (Capacidades) -->
             @php $taskSkills = $activity->skills; @endphp
@@ -634,7 +633,6 @@
                         </div>
                     @endforeach
                 </div>
-            @endif
             @endif
 
             <!-- Historial de cambios como Timeline -->

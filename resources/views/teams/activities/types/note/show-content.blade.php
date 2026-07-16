@@ -3,18 +3,6 @@
     $displayObservations = $activity->observations ?: ($activity->parent?->observations ?? null);
 @endphp
 
-{{-- Title Card --}}
-<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm">
-    <div class="flex items-center gap-3 mb-3">
-        <div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-        </div>
-        <div class="min-w-0 flex-1">
-            <h3 class="text-sm font-bold text-gray-900 dark:text-white truncate">{{ $activity->title }}</h3>
-            <p class="text-[10px] text-gray-400">{{ $activity->created_at->diffForHumans() }}</p>
-        </div>
-    </div>
-</div>
 
 {{-- Description --}}
 @if ($displayDescription)

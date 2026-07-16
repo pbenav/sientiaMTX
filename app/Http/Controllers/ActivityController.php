@@ -89,7 +89,7 @@ class ActivityController extends Controller
             'document' => 'Doc',
             'note'     => 'Nota',
             'link'     => 'Enlace',
-            'decision' => 'Acuerdo',
+            'agreement' => 'Acuerdo',
             'meeting'  => 'Reunión',
             'reminder' => 'Aviso',
         ];
@@ -292,7 +292,7 @@ class ActivityController extends Controller
 
         // Protección de integridad: si el acuerdo ya tiene firmas,
         // ignorar cualquier intento de modificar los términos del documento.
-        if ($activity->type === 'decision') {
+        if ($activity->type === 'agreement') {
             $meta = $activity->metadata ?? [];
             $hasMemberSig = collect($meta['member_signatures'] ?? [])->contains(fn($s) => !empty($s['signed_at']));
             $hasGuestSig  = collect($meta['guests'] ?? [])->contains(fn($g) => !empty($g['signed_at']));

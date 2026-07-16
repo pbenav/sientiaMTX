@@ -270,7 +270,7 @@
                                     <option value="document">📄 Documento</option>
                                     <option value="note">📝 Nota</option>
                                     <option value="link">🔗 Enlace</option>
-                                    <option value="decision">⚖️ Decisión</option>
+                                    <option value="agreement">⚖️ Decisión</option>
                                     <option value="meeting">👥 Reunión</option>
                                     <option value="reminder">🔔 Recordatorio</option>
                                 </select>
@@ -417,7 +417,7 @@
                             'task'     => ['label' => 'Tareas', 'icon' => '📋'],
                             'document' => ['label' => 'Documentos', 'icon' => '📄'],
                             'note'     => ['label' => 'Notas', 'icon' => '📝'],
-                            'decision' => ['label' => 'Acuerdos', 'icon' => '⚖️'],
+                            'agreement' => ['label' => 'Acuerdos', 'icon' => '⚖️'],
                             'meeting'  => ['label' => 'Reuniones', 'icon' => '👥'],
                             'link'     => ['label' => 'Enlaces', 'icon' => '🔗'],
                             'reminder' => ['label' => 'Recordatorios', 'icon' => '🔔'],
@@ -481,7 +481,7 @@
                                                                                 @case('document') 📄 @break
                                                                                 @case('note') 📝 @break
                                                                                 @case('link') 🔗 @break
-                                                                                @case('decision') ⚖️ @break
+                                                                                @case('agreement') ⚖️ @break
                                                                                 @case('meeting') 👥 @break
                                                                                 @case('reminder') 🔔 @break
                                                                                 @default ✨

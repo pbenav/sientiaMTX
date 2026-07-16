@@ -268,7 +268,7 @@ class AiContentTransferController extends Controller
                 'task' => 'pending',
                 'document' => 'draft',
                 'note' => 'draft',
-                'decision' => 'proposed',
+                'agreement' => 'proposed',
                 'meeting' => 'scheduled',
                 'reminder' => 'pending',
             ];

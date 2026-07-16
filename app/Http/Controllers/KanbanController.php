@@ -156,7 +156,7 @@ class KanbanController extends Controller
             $task->progress_percentage = 0;
             $task->status = ['value' => match($task->type) {
                 'document' => 'draft',
-                'decision' => 'proposed',
+                'agreement' => 'proposed',
                 'meeting'  => 'scheduled',
                 default    => 'pending',
             }];
@@ -164,7 +164,7 @@ class KanbanController extends Controller
             $task->progress_percentage = 100;
             $task->status = ['value' => match($task->type) {
                 'document' => 'approved',
-                'decision' => 'accepted',
+                'agreement' => 'accepted',
                 'meeting'  => 'finished',
                 default    => 'completed',
             }];
@@ -183,7 +183,7 @@ class KanbanController extends Controller
             if ($task->isCompleted() || $task->isPending()) {
                 $task->status = ['value' => match($task->type) {
                     'document' => 'under_review',
-                    'decision' => 'in_debate',
+                    'agreement' => 'in_debate',
                     'meeting'  => 'in_progress',
                     default    => 'in_progress',
                 }];
@@ -292,7 +292,7 @@ class KanbanController extends Controller
                     $task->progress_percentage = 0;
                     $task->status = ['value' => match($task->type) {
                         'document' => 'draft',
-                        'decision' => 'proposed',
+                        'agreement' => 'proposed',
                         'meeting'  => 'scheduled',
                         default    => 'pending',
                     }];
@@ -300,7 +300,7 @@ class KanbanController extends Controller
                     $task->progress_percentage = 100;
                     $task->status = ['value' => match($task->type) {
                         'document' => 'approved',
-                        'decision' => 'accepted',
+                        'agreement' => 'accepted',
                         'meeting'  => 'finished',
                         default    => 'completed',
                     }];
@@ -313,7 +313,7 @@ class KanbanController extends Controller
                     if ($task->isCompleted() || $task->isPending()) {
                         $task->status = ['value' => match($task->type) {
                             'document' => 'under_review',
-                            'decision' => 'in_debate',
+                            'agreement' => 'in_debate',
                             'meeting'  => 'in_progress',
                             default    => 'in_progress',
                         }];

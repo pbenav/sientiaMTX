@@ -16,6 +16,8 @@
     }
 @endphp
 
+
+
 {{-- Reminder Configuration Card --}}
 <div class="bg-pink-50 dark:bg-pink-900/10 border border-pink-100 dark:border-pink-800/30 rounded-2xl p-5 shadow-sm">
     <h3 class="text-xs font-black text-pink-600 dark:text-pink-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">

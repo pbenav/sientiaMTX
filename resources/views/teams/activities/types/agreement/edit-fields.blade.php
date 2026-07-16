@@ -28,20 +28,20 @@
                 </select>
             </div>
             <div>
-                <label for="decision_type" class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2 font-sans">
+                <label for="agreement_type" class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2 font-sans">
                     {{ __('Tipo de Decisión') }}
                 </label>
-                <select name="decision_type" id="decision_type" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-emerald-400 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer focus:ring focus:ring-emerald-100 dark:focus:ring-emerald-900/30">
-                    <option value="technical" {{ old('decision_type', $activity->metadata['decision_type'] ?? 'technical') === 'technical' ? 'selected' : '' }}>
+                <select name="agreement_type" id="agreement_type" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-emerald-400 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer focus:ring focus:ring-emerald-100 dark:focus:ring-emerald-900/30">
+                    <option value="technical" {{ old('agreement_type', $activity->metadata['agreement_type'] ?? 'technical') === 'technical' ? 'selected' : '' }}>
                         {{ __('Técnica') }}
                     </option>
-                    <option value="organizational" {{ old('decision_type', $activity->metadata['decision_type'] ?? 'technical') === 'organizational' ? 'selected' : '' }}>
+                    <option value="organizational" {{ old('agreement_type', $activity->metadata['agreement_type'] ?? 'technical') === 'organizational' ? 'selected' : '' }}>
                         {{ __('Organizativa') }}
                     </option>
-                    <option value="architectural" {{ old('decision_type', $activity->metadata['decision_type'] ?? 'technical') === 'architectural' ? 'selected' : '' }}>
+                    <option value="architectural" {{ old('agreement_type', $activity->metadata['agreement_type'] ?? 'technical') === 'architectural' ? 'selected' : '' }}>
                         {{ __('Arquitectónica') }}
                     </option>
-                    <option value="operational" {{ old('decision_type', $activity->metadata['decision_type'] ?? 'technical') === 'operational' ? 'selected' : '' }}>
+                    <option value="operational" {{ old('agreement_type', $activity->metadata['agreement_type'] ?? 'technical') === 'operational' ? 'selected' : '' }}>
                         {{ __('Operativa') }}
                     </option>
                 </select>

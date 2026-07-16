@@ -6,9 +6,16 @@
             $q->where('team_id', $team->id);
         })
         ->where('appointment_date', $appointment->appointment_date)
-        ->where('appointment_time', '>', $appointment->appointment_time)
+        ->where(function ($query) use ($appointment) {
+            $query->where('appointment_time', '>', $appointment->appointment_time)
+                  ->orWhere(function ($q) use ($appointment) {
+                      $q->where('appointment_time', '=', $appointment->appointment_time)
+                        ->where('id', '>', $appointment->id);
+                  });
+        })
         ->where('status', 'confirmed')
         ->orderBy('appointment_time', 'asc')
+        ->orderBy('id', 'asc')
         ->first();
 @endphp
 

@@ -59,10 +59,10 @@ class TaskActionController extends Controller
             $task->progress_percentage = $validated['progress_percentage'];
             
             if (!$request->has('status')) {
-                if ($task->progress_percentage == 100 && $oldStatus !== 'completed' && $oldStatus !== 'cancelled') {
+                if ($task->progress_percentage == 100 && !in_array($oldStatus, ['completed', 'cancelled', 'done', 'approved', 'accepted', 'finished', 'triggered'])) {
                     $newSt = match($task->type ?? 'task') {
                         'document' => 'approved',
-                        'decision' => 'accepted',
+                        'agreement' => 'accepted',
                         'meeting'  => 'finished',
                         default    => 'completed',
                     };
@@ -75,10 +75,10 @@ class TaskActionController extends Controller
                     if (method_exists($task, 'notifyCoordinatorsIfCompleted')) {
                         $task->notifyCoordinatorsIfCompleted();
                     }
-                } elseif ($task->progress_percentage == 0 && $oldStatus !== 'pending') {
+                } elseif ($task->progress_percentage == 0 && !in_array($oldStatus, ['pending', 'draft', 'proposed', 'scheduled', 'todo'])) {
                     $newSt = match($task->type ?? 'task') {
                         'document' => 'draft',
-                        'decision' => 'proposed',
+                        'agreement' => 'proposed',
                         'meeting'  => 'scheduled',
                         default    => 'pending',
                     };
@@ -87,10 +87,10 @@ class TaskActionController extends Controller
                     } else {
                         $task->status = $newSt;
                     }
-                } elseif ($task->progress_percentage > 0 && $task->progress_percentage < 100 && in_array($oldStatus, ['completed', 'pending', 'draft', 'proposed', 'scheduled', 'approved', 'accepted', 'finished'])) {
+                } elseif ($task->progress_percentage > 0 && $task->progress_percentage < 100 && !in_array($oldStatus, ['in_progress', 'in_debate', 'under_review', 'editing', 'active'])) {
                     $newSt = match($task->type ?? 'task') {
                         'document' => 'under_review',
-                        'decision' => 'in_debate',
+                        'agreement' => 'in_debate',
                         'meeting'  => 'in_progress',
                         default    => 'in_progress',
                     };
@@ -183,6 +183,13 @@ class TaskActionController extends Controller
 
         // Final save for the main task
         $task->save();
+
+        $finalStVal = $task->status_value ?? ($task->status['value'] ?? $task->status);
+        if ($finalStVal === 'completed' && $oldStatus !== 'completed') {
+            if ($task instanceof Activity) {
+                app(\App\Services\ActivityService::class)->cascadeCompletion($task);
+            }
+        }
 
         // Handle bulk reordering if full_order is provided
         if ($request->has('full_order') && is_array($request->full_order)) {

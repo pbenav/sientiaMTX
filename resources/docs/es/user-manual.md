@@ -83,14 +83,27 @@ El Foro de Equipo permite una comunicación estructurada y profunda:
 
 ## 📊 5. Vistas y Visualización
 
+SientiaMTX soporta diferentes tipos de actividades (Tareas, Documentos, Acuerdos, Recordatorios, Reuniones), y cada vista está especializada en mostrar solo la información que es relevante para su propósito. A continuación se detalla cómo funciona cada vista:
+
+### Lista de Actividades
+Es la vista tradicional en formato de tabla.
+- **Qué muestra**: Depende del filtro que tengas activo (por defecto, suele mostrar solo "Tareas"). Puedes cambiar el selector desplegable en la parte superior derecha para ver Documentos o Acuerdos.
+- **Uso ideal**: Búsquedas rápidas, revisión del listado completo y filtrado específico.
+
 ### Tablero Eisenhower (Matriz)
-Vista principal para la revisión diaria de prioridades.
+Vista principal para la revisión diaria de prioridades. Se basa exclusivamente en la urgencia y la importancia, por lo que no requiere que las actividades tengan fechas.
+- **Qué muestra**: Tareas y Acuerdos.
+- **Qué NO muestra**: Documentos, Recordatorios ni Reuniones (estos elementos no se ajustan a la priorización de la matriz).
 
 ### Tablero Kanban
-Gestión visual mediante columnas con soporte total para **Arrastrar y Soltar** (Drag & Drop).
+Gestión visual mediante columnas (Pendiente > En Progreso > Completado) con soporte para **Arrastrar y Soltar** (Drag & Drop). Representa el ciclo de vida del trabajo.
+- **Qué muestra**: Tareas, Documentos y Acuerdos.
+- **Qué NO muestra**: Recordatorios ni Reuniones (ya que no tienen un flujo de estados prolongado en el tiempo).
 
 ### Diagrama de Gantt (Roadmap)
-Visualización temporal optimizada. Las etiquetas de las tareas son visibles incluso en barras cortas, permitiendo una lectura fluida del cronograma sin necesidad de interactuar con cada elemento.
+Visualización temporal optimizada. Las etiquetas de las tareas son visibles incluso en barras cortas, permitiendo una lectura fluida del cronograma.
+- **⚠️ REQUISITO OBLIGATORIO**: Para que cualquier actividad aparezca en el Gantt, **debe tener asignada una fecha de vencimiento (`due_date`)**. Si creas una tarea sin fecha, el sistema no podrá ubicarla en la línea de tiempo y **no se mostrará** en esta vista.
+- **Qué muestra**: Todos los tipos de actividades (Tareas, Acuerdos, Documentos, Recordatorios, Reuniones), siempre que tengan fecha y no estén completadas.
 
 ### Red Activa (Active Network)
 Un widget en tiempo real que muestra qué miembros del equipo están conectados, en qué ubicación están trabajando y si tienen alguna tarea activa en ese momento (indicador verde/rojo).

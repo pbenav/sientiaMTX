@@ -386,12 +386,34 @@ class GoogleController extends Controller
             return redirect()->back()->with('warning', __('tasks.unauthorized_update'));
         }
 
+        // Intento de borrar en la API de Google antes de soltar la referencia local
+        if ($this->googleService->setTokenForUser($user, $team->id)) {
+            if ($task->google_task_id && $task->google_task_list_id) {
+                try {
+                    $this->googleService->deleteTask($task->google_task_list_id, $task->google_task_id);
+                } catch (\Exception $e) {
+                    Log::error('Error deleting Google Task during disconnect: ' . $e->getMessage());
+                }
+            }
+
+            if ($task->google_calendar_event_id) {
+                try {
+                    $this->googleService->deleteEvent($task->google_calendar_event_id, $task->google_calendar_id ?? 'primary');
+                } catch (\Exception $e) {
+                    Log::error('Error deleting Google Calendar event during disconnect: ' . $e->getMessage());
+                }
+            }
+        }
+
         $task->update([
             'google_task_id' => null,
-            'google_calendar_event_id' => null
+            'google_task_list_id' => null,
+            'google_calendar_event_id' => null,
+            'google_calendar_id' => null,
+            'google_synced_at' => null
         ]);
 
-        return redirect()->back()->with('success', 'Tarea desconectada de Google correctamente.');
+        return redirect()->back()->with('success', 'Actividad desconectada y eliminada de Google correctamente.');
     }
 
     /**
@@ -634,8 +656,31 @@ class GoogleController extends Controller
             ],
         ];
 
+        // Recopilar asistentes para enviar invitaciones de Google Calendar
+        $attendees = [];
+        
+        // Asignados internos
+        foreach ($task->assignedTo as $member) {
+            if ($member->email !== $user->email) { // El user actual es el organizador por defecto
+                $attendees[] = ['email' => $member->email];
+            }
+        }
+        
+        // Invitados externos
+        $guests = data_get($task->metadata, 'guests', []);
+        foreach ($guests as $guest) {
+            if (!empty($guest['email'])) {
+                $attendees[] = ['email' => $guest['email']];
+            }
+        }
+
+        if (!empty($attendees)) {
+            $data['attendees'] = $attendees;
+        }
+
         try {
-            $eventId = $this->googleService->createEvent($data);
+            // sendUpdates = 'all' hace que Google envíe un email nativo a los attendees
+            $eventId = $this->googleService->createEvent($data, 'primary', ['sendUpdates' => 'all']);
             if ($eventId) {
                 $task->update([
                     'google_calendar_event_id' => $eventId,

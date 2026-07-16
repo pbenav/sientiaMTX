@@ -120,6 +120,69 @@
         <p style="font-size: 11px; color: #64748b; margin-bottom: 15px;">
             A continuación se muestran las rúbricas y constancias criptográficas de los intervinientes de este acuerdo. El documento original digital contiene las firmas PAdES válidas a todos los efectos legales.
         </p>
+
+        <div class="signatures-section">
+            @php
+                $allSigners = [];
+                // Miembros internos
+                if (!empty($memberSignatures)) {
+                    foreach ($memberSignatures as $ms) {
+                        $allSigners[] = [
+                            'name'      => $ms['name'] ?? 'Miembro del equipo',
+                            'email'     => $ms['email'] ?? '',
+                            'role'      => 'Miembro Interno',
+                            'signed_at' => $ms['signed_at'] ?? null,
+                        ];
+                    }
+                }
+                // Invitados externos
+                if (!empty($guests)) {
+                    foreach ($guests as $g) {
+                        $allSigners[] = [
+                            'name'      => $g['name'] ?? 'Invitado Externo',
+                            'email'     => $g['email'] ?? '',
+                            'role'      => 'Asistente Externo',
+                            'signed_at' => $g['signed_at'] ?? null,
+                        ];
+                    }
+                }
+                $chunks = array_chunk($allSigners, 2);
+            @endphp
+
+            @if(count($allSigners) > 0)
+                <table class="signatures-grid">
+                    @foreach($chunks as $row)
+                        <tr>
+                            @foreach($row as $signer)
+                                <td class="signature-cell">
+                                    <div class="sig-box {{ !empty($signer['signed_at']) ? 'signed' : 'pending' }}">
+                                        @if(!empty($signer['signed_at']))
+                                            <div class="sig-header signed">
+                                                Firmado Electrónicamente
+                                                <span class="sig-check">✓</span>
+                                            </div>
+                                            <div class="sig-name">{{ $signer['name'] }}</div>
+                                            <div class="sig-email">{{ $signer['email'] }}</div>
+                                            <div class="sig-role">{{ $signer['role'] }}</div>
+                                            <div class="sig-date">Firmado el: {{ \Carbon\Carbon::parse($signer['signed_at'])->format('d/m/Y H:i:s') }}</div>
+                                        @else
+                                            <div class="sig-header pending">Firma Digital</div>
+                                            <!-- Espacio restante para que el sello de Autofirma encaje perfecto -->
+                                            <div style="height: 50px;"></div>
+                                        @endif
+                                    </div>
+                                </td>
+                            @endforeach
+                            @if(count($row) == 1)
+                                <td class="signature-cell"></td>
+                            @endif
+                        </tr>
+                    @endforeach
+                </table>
+            @else
+                <p style="font-size: 12px; color: #94a3b8; font-style: italic;">No hay firmantes asignados a este acuerdo.</p>
+            @endif
+        </div>
     </div>
 
     <div class="footer">

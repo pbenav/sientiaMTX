@@ -237,12 +237,12 @@ class GoogleService
     /**
      * Create a calendar event in Google Calendar.
      */
-    public function createEvent(array $data, string $calendarId = 'primary'): ?string
+    public function createEvent(array $data, string $calendarId = 'primary', array $optParams = []): ?string
     {
         $service = new Calendar($this->client);
         try {
             $event = new \Google\Service\Calendar\Event($data);
-            $result = $service->events->insert($calendarId, $event);
+            $result = $service->events->insert($calendarId, $event, $optParams);
             return $result->getId();
         } catch (\Exception $e) {
             Log::error('Error creating Google Calendar event: ' . $e->getMessage());

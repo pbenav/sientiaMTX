@@ -2,7 +2,7 @@
     @section('title', __('teams.eisenhower_matrix') . ' — ' . $team->name)
 
     <x-slot name="header">
-        <div class="flex items-center justify-between gap-3 flex-wrap mb-4">
+        <div class="flex items-center justify-between gap-3 flex-wrap mb-2">
             <div class="flex items-center gap-2 min-w-0">
                 <a href="{{ route('teams.index') }}"
                     class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0"
@@ -26,7 +26,9 @@
             </div>
         </div>
 
-        <div class="mt-2 mb-6">
+        @include('teams.partials.team-view-nav', ['showCreateActions' => true])
+
+        <div class="mt-4 mb-2">
             <x-demo-hint>
                 La matriz de Eisenhower (Priorización MTX) es una herramienta visual que clasifica automáticamente las tareas en cuatro cuadrantes según su urgencia e importancia. Permite a los coordinadores arrastrar y soltar tareas para reordenarlas estratégicamente y optimizar el tiempo del equipo.
             </x-demo-hint>

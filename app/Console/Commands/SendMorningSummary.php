@@ -101,9 +101,13 @@ class SendMorningSummary extends Command
                   ->orWhereNull('scheduled_date');
             })
             ->with('team')
-            ->limit(20)
+            ->limit(30)
             ->get()
-            ->unique('id');
+            ->unique('id')
+            ->unique(function ($task) {
+                // Elimina repeticiones exactas por nombre en el mismo equipo
+                return $task->title . '_' . $task->team_id;
+            });
 
         if ($tasks->isEmpty()) {
             $this->line("User {$user->name}: No pending tasks for today. Sending a focus-on-rest phrase.");

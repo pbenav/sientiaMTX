@@ -12,27 +12,6 @@
     ][$status] ?? ['bg' => 'blue-50', 'dark_bg' => 'blue-900/10', 'border' => 'blue-100', 'dark_border' => 'blue-800/30', 'text' => 'blue-600', 'dark_text' => 'blue-400', 'label' => ucfirst($status)];
 @endphp
 
-{{-- Activity Title --}}
-<div class="mb-4">
-    <p class="text-xl font-bold text-gray-900 dark:text-white heading leading-tight flex items-center gap-2">
-        @php
-            $typeColors = [
-                'task'     => 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
-                'document' => 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
-                'note'     => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
-                'link'     => 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
-                'decision' => 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
-                'meeting'  => 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
-                'reminder' => 'bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300',
-            ];
-            $typeCls = $typeColors[$activity->type] ?? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300';
-        @endphp
-        <span class="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider {{ $typeCls }} shadow-sm shrink-0">
-            {!! $activity->type_icon !!} {{ $activity->type_label }}
-        </span>
-        {{ $activity->title }}
-    </p>
-</div>
 
 {{-- Links Card --}}
 <div class="bg-purple-50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-800/30 rounded-2xl p-5 shadow-sm">

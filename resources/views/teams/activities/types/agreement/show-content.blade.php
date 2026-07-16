@@ -1,7 +1,7 @@
 @php
     $meta = $activity->metadata ?? [];
-    $decisionType = $meta['decision_type'] ?? '';
-    $decisionTypeLabels = [
+    $agreementType = $meta['agreement_type'] ?? '';
+    $agreementTypeLabels = [
         'aprobar'     => 'Aprobada',
         'rechazar'    => 'Rechazada',
         'implementar' => 'Implementada',
@@ -38,7 +38,7 @@
 @endif
 
 {{-- ② Datos del Acuerdo --}}
-@if(!empty($meta['agreement_date']) || !empty($decisionType) || !empty($meta['justification']))
+@if(!empty($meta['agreement_date']) || !empty($agreementType) || !empty($meta['justification']))
 <div class="bg-violet-50 dark:bg-violet-900/10 border border-violet-100 dark:border-violet-800/30 rounded-2xl p-5 shadow-sm">
     <h3 class="text-xs font-black text-violet-600 dark:text-violet-400 uppercase tracking-widest mb-4 flex items-center gap-1.5">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -56,11 +56,11 @@
         </div>
         @endif
 
-        @if(!empty($decisionType))
+        @if(!empty($agreementType))
         <div>
             <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Tipo de Decisión</p>
             <span class="px-3 py-1 rounded-lg text-xs font-black bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300 border border-violet-200 dark:border-violet-800/30">
-                {{ $decisionTypeLabels[$decisionType] ?? ucfirst($decisionType) }}
+                {{ $agreementTypeLabels[$agreementType] ?? ucfirst($agreementType) }}
             </span>
         </div>
         @endif

@@ -771,6 +771,7 @@
             }
 
             function updateTaskProgress(taskId, progress) {
+                console.log(`[Kanban] Sending progress update for Task ${taskId} -> ${progress}%`);
                 fetch(`{{ route('teams.activities.move', [$team, ':taskId']) }}`.replace(':taskId', taskId), {
                     method: 'POST',
                     headers: {
@@ -783,12 +784,17 @@
                 })
                 .then(response => response.json())
                 .then(data => {
+                    console.log(`[Kanban] Received response for Task ${taskId}:`, data);
                     if (data.success && data.kanban_column_id) {
                         const card = document.querySelector(`[data-task-id="${taskId}"]`);
                         if (card) {
                             const currentList = card.closest('.task-list');
-                            if (currentList && currentList.dataset.columnId != data.kanban_column_id) {
-                                const targetList = document.querySelector(`.task-list[data-column-id="${data.kanban_column_id}"]`);
+                            const targetColId = String(data.kanban_column_id);
+                            
+                            if (currentList && currentList.dataset.columnId !== targetColId) {
+                                console.log(`[Kanban] Task ${taskId} needs to move from col ${currentList.dataset.columnId} to ${targetColId}`);
+                                const targetList = document.querySelector(`.task-list[data-column-id="${targetColId}"]`);
+                                
                                 if (targetList) {
                                     card.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
                                     card.style.opacity = '0';
@@ -796,18 +802,45 @@
                                     
                                     setTimeout(() => {
                                         targetList.appendChild(card);
+                                        
+                                        // Update counts
+                                        const currentCountEl = currentList.parentElement.querySelector('.column-title').nextElementSibling;
+                                        if (currentCountEl) currentCountEl.textContent = Math.max(0, parseInt(currentCountEl.textContent || '0') - 1);
+                                        const targetCountEl = targetList.parentElement.querySelector('.column-title').nextElementSibling;
+                                        if (targetCountEl) targetCountEl.textContent = parseInt(targetCountEl.textContent || '0') + 1;
+
                                         // Force reflow
                                         void card.offsetWidth;
-                                        
                                         card.style.opacity = '1';
                                         card.style.transform = 'scale(1)';
+                                        console.log(`[Kanban] Task ${taskId} moved successfully.`);
                                     }, 300);
+                                } else {
+                                    console.warn(`[Kanban] Target list ${targetColId} not found, reloading page...`);
+                                    window.location.reload();
                                 }
+                            } else {
+                                console.log(`[Kanban] Task ${taskId} stays in the same column.`);
                             }
+                        } else {
+                            console.warn(`[Kanban] Card for task ${taskId} not found in DOM.`);
                         }
+                    } else if (!data.success) {
+                        console.error('[Kanban] Server returned failure:', data.error || data.message);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error al actualizar',
+                            text: data.error || data.message || 'Error desconocido al actualizar el progreso.',
+                            toast: true,
+                            position: 'bottom-end',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                        // Revert slider visually
+                        setTimeout(() => window.location.reload(), 2000);
                     }
                 })
-                .catch(error => console.error('Error:', error));
+                .catch(error => console.error('[Kanban] Fetch Error:', error));
             }
 
             function updateColumnsOrder() {

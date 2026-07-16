@@ -55,7 +55,7 @@
                         <option value="document" {{ ($filters['type'] ?? '') === 'document' ? 'selected' : '' }}>📄 Documento</option>
                         <option value="note" {{ ($filters['type'] ?? '') === 'note' ? 'selected' : '' }}>📝 Nota Rápida</option>
                         <option value="link" {{ ($filters['type'] ?? '') === 'link' ? 'selected' : '' }}>🔗 Enlace</option>
-                        <option value="decision" {{ ($filters['type'] ?? '') === 'decision' ? 'selected' : '' }}>⚖️ Acuerdo</option>
+                        <option value="agreement" {{ ($filters['type'] ?? '') === 'agreement' ? 'selected' : '' }}>⚖️ Acuerdo</option>
                         <option value="meeting" {{ ($filters['type'] ?? '') === 'meeting' ? 'selected' : '' }}>🎥 Reunión</option>
                         <option value="reminder" {{ ($filters['type'] ?? '') === 'reminder' ? 'selected' : '' }}>🔔 Recordatorio</option>
                     </select>

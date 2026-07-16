@@ -20,7 +20,7 @@ class AgreementSignatureController extends Controller
      */
     public function showInternal(Request $request, Team $team, Activity $activity)
     {
-        if ($activity->type !== 'decision') {
+        if ($activity->type !== 'agreement') {
             abort(404, 'Documento no encontrado o no válido para firma.');
         }
 
@@ -40,9 +40,10 @@ class AgreementSignatureController extends Controller
                 ->with('info', 'Ya has firmado este acuerdo.');
         }
 
-        // Obtener o generar el PDF
+        // Obtener o generar el PDF (solo los generados o firmados, que contienen 'Acuerdo_')
         $attachment = $activity->attachments()
                                ->where('mime_type', 'application/pdf')
+                               ->where('file_name', 'like', '%Acuerdo_%')
                                ->latest()
                                ->first();
 
@@ -89,8 +90,8 @@ class AgreementSignatureController extends Controller
             abort(403, 'Enlace no válido o caducado.');
         }
 
-        // 2. Verificar que la actividad es de tipo 'decision'
-        if ($activity->type !== 'decision') {
+        // 2. Verificar que la actividad es de tipo 'agreement'
+        if ($activity->type !== 'agreement') {
             abort(404, 'Documento no encontrado o no válido para firma.');
         }
 
@@ -103,6 +104,7 @@ class AgreementSignatureController extends Controller
         // 4. Buscar el PDF base o el último PDF firmado. Si no existe, generarlo.
         $attachment = $activity->attachments()
                                ->where('mime_type', 'application/pdf')
+                               ->where('file_name', 'like', '%Acuerdo_%')
                                ->latest()
                                ->first();
         
@@ -203,7 +205,7 @@ class AgreementSignatureController extends Controller
      */
     public function download(Request $request, Team $team, Activity $activity)
     {
-        if ($activity->type !== 'decision') {
+        if ($activity->type !== 'agreement') {
             abort(404, 'Documento no encontrado.');
         }
 
@@ -225,6 +227,7 @@ class AgreementSignatureController extends Controller
 
         $attachment = $activity->attachments()
                                ->where('mime_type', 'application/pdf')
+                               ->where('file_name', 'like', '%Acuerdo_%')
                                ->latest()
                                ->first();
 
@@ -252,7 +255,7 @@ class AgreementSignatureController extends Controller
             'email' => 'required|email',
         ]);
 
-        if ($activity->type !== 'decision') {
+        if ($activity->type !== 'agreement') {
             return response()->json(['error' => 'Actividad no válida.'], 422);
         }
 
@@ -306,13 +309,13 @@ class AgreementSignatureController extends Controller
      */
     public function signAsInternalMember(Request $request, Team $team, Activity $activity)
     {
-        if ($activity->type !== 'decision') {
+        if ($activity->type !== 'agreement') {
             return response()->json(['error' => 'Actividad no válida.'], 422);
         }
 
         $user = auth()->user();
 
-        return \Illuminate\Support\Facades\DB::transaction(function () use ($activity, $user) {
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($activity, $team, $user) {
             $lockedActivity = Activity::lockForUpdate()->find($activity->id);
             $meta = $lockedActivity->metadata ?? [];
             $memberSignatures = $meta['member_signatures'] ?? [];
@@ -331,6 +334,22 @@ class AgreementSignatureController extends Controller
             $memberSignatures[$index]['signed_at'] = now()->format('Y-m-d H:i:s');
             $meta['member_signatures'] = $memberSignatures;
             $lockedActivity->updateQuietly(['metadata' => $meta]);
+
+            // Eliminar los PDFs base anteriores generados automáticamente (no los adjuntos subidos por usuarios ni los firmados externamente)
+            $oldBaseAttachments = $lockedActivity->attachments()
+                ->where('mime_type', 'application/pdf')
+                ->where('file_name', 'like', 'Acuerdo_%')
+                ->where('file_path', 'not like', '%/signed/%')
+                ->get();
+                
+            foreach ($oldBaseAttachments as $old) {
+                \Illuminate\Support\Facades\Storage::disk($old->disk)->delete($old->file_path);
+                $old->delete();
+            }
+
+            // Regenerar el PDF con la nueva firma
+            $pdfService = app(\App\Services\AgreementPdfService::class);
+            $pdfService->generateAndAttach($lockedActivity, $team);
 
             return response()->json([
                 'success'   => true,

@@ -1951,7 +1951,7 @@
                             </button>
 
                             <!-- Decisión -->
-                            <button type="button" onclick="window._aiSelectType('decision')" class="flex flex-col items-center gap-2 p-4 rounded-[1.5rem] border-2 border-rose-100 dark:border-rose-900/30 bg-white dark:bg-slate-900 hover:border-rose-600 transition-all text-center group">
+                            <button type="button" onclick="window._aiSelectType('agreement')" class="flex flex-col items-center gap-2 p-4 rounded-[1.5rem] border-2 border-rose-100 dark:border-rose-900/30 bg-white dark:bg-slate-900 hover:border-rose-600 transition-all text-center group">
                                 <div class="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-900/50 flex items-center justify-center text-rose-600 group-hover:scale-110 transition-transform">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" /></svg>
                                 </div>

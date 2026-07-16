@@ -130,11 +130,11 @@
                                 <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                             @enderror
                         </div>
-                    @elseif ($activity->type === 'decision')
+                    @elseif ($activity->type === 'agreement')
                         @php
-                            $decisionMeta = $activity->metadata ?? [];
-                            $hasMemberSig = collect($decisionMeta['member_signatures'] ?? [])->contains(fn($s) => !empty($s['signed_at']));
-                            $hasGuestSig  = collect($decisionMeta['guests'] ?? [])->contains(fn($g) => !empty($g['signed_at']));
+                            $agreementMeta = $activity->metadata ?? [];
+                            $hasMemberSig = collect($agreementMeta['member_signatures'] ?? [])->contains(fn($s) => !empty($s['signed_at']));
+                            $hasGuestSig  = collect($agreementMeta['guests'] ?? [])->contains(fn($g) => !empty($g['signed_at']));
                             $isTermsLocked = $hasMemberSig || $hasGuestSig;
                         @endphp
                         <!-- DECISIÓN ESPECÍFICO -->
@@ -260,8 +260,8 @@
                                 <input type="text" name="location" x-model="link" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none" placeholder="Ej. Sala de juntas principal o Enlace de Google Meet/Teams">
                             </div>
                             <div class="md:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Invitados Externos</label>
-                                <p class="text-[10px] text-gray-500 mb-3 leading-tight">Personas ajenas al equipo que asistirán a la reunión. (No recibirán notificaciones automáticamente por ahora).</p>
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Invitados Externos a la Reunión</label>
+                                <p class="text-[10px] text-gray-500 mb-3 leading-tight">Añade a las personas externas al equipo que asistirán a la reunión. Se les enviará una invitación por correo con los detalles.</p>
                                 <x-guest-crud :initialGuests="old('metadata.guests', data_get($activity->metadata, 'guests', []))" :initialMessage="old('metadata.invitation_message', data_get($activity->metadata, 'invitation_message', ''))" />
                             </div>
                         </div>
@@ -597,16 +597,46 @@
         </div>
         <div class="space-y-6 relative z-10">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50/30 dark:bg-gray-800/10 p-6 rounded-3xl border border-gray-150 dark:border-gray-800">
-                    <div>
+                    <div x-data="{
+                        currentDate: '{{ old('scheduled_date', $activity->scheduled_date ? $activity->scheduled_date->format('Y-m-d\TH:i') : '') }}',
+                        addDays(days) {
+                            let d = new Date();
+                            if (days > 0) d.setDate(d.getDate() + days);
+                            d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+                            this.currentDate = d.toISOString().slice(0, 16);
+                        }
+                    }">
                         <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">{{ __('activities.scheduled_date') ?? 'Fecha Programada' }}</label>
-                        <input type="datetime-local" name="scheduled_date" value="{{ old('scheduled_date', $activity->scheduled_date ? $activity->scheduled_date->format('Y-m-d\TH:i') : '') }}"
+                        <input type="datetime-local" name="scheduled_date" x-model="currentDate"
                             class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 outline-none">
+                        <div class="flex flex-wrap gap-1.5 mt-2.5 font-sans">
+                            <button type="button" @click="addDays(0)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-800/50 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors shadow-sm">Ahora</button>
+                            <button type="button" @click="addDays(1)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Día</button>
+                            <button type="button" @click="addDays(7)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Sem</button>
+                            <button type="button" @click="addDays(15)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+15 Días</button>
+                            <button type="button" @click="addDays(30)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Mes</button>
+                        </div>
                     </div>
 
-                    <div>
+                    <div x-data="{
+                        currentDate: '{{ old('due_date', $activity->due_date ? $activity->due_date->format('Y-m-d\TH:i') : '') }}',
+                        addDays(days) {
+                            let d = new Date();
+                            if (days > 0) d.setDate(d.getDate() + days);
+                            d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+                            this.currentDate = d.toISOString().slice(0, 16);
+                        }
+                    }">
                         <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">{{ __('activities.due_date') ?? 'Fecha de Vencimiento' }}</label>
-                        <input type="datetime-local" name="due_date" value="{{ old('due_date', $activity->due_date ? $activity->due_date->format('Y-m-d\TH:i') : '') }}"
+                        <input type="datetime-local" name="due_date" x-model="currentDate"
                             class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 outline-none">
+                        <div class="flex flex-wrap gap-1.5 mt-2.5 font-sans">
+                            <button type="button" @click="addDays(0)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-800/50 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors shadow-sm">Ahora</button>
+                            <button type="button" @click="addDays(1)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Día</button>
+                            <button type="button" @click="addDays(7)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Sem</button>
+                            <button type="button" @click="addDays(15)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+15 Días</button>
+                            <button type="button" @click="addDays(30)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Mes</button>
+                        </div>
                     </div>
 
                     <!-- Timeline Lock -->
@@ -797,23 +827,21 @@
                                         Terminar
                                     </label>
                                     <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
-                                        <label class="relative flex items-center gap-3 cursor-pointer group">
-                                            <input type="radio" name="autoprogram_settings[limit_type]" value="count" {{ ($autoSettings['limit_type'] ?? 'count') === 'count' ? 'checked' : '' }} class="peer sr-only">
-                                            <div class="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-violet-500 flex items-center justify-center transition-all">
-                                                <div class="w-2 h-2 rounded-full bg-violet-500 hidden peer-checked:block"></div>
-                                            </div>
-                                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Después de</span>
-                                            <input type="number" name="autoprogram_settings[limit_value_count]" value="{{ old('autoprogram_settings.limit_value_count', $autoSettings['limit_value_count'] ?? 5) }}" min="1" class="w-16 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-lg px-2 py-1 text-xs text-gray-900 dark:text-white outline-none">
+                                        <div class="relative flex items-center gap-3 group">
+                                            <label class="flex items-center gap-3 cursor-pointer">
+                                                <input type="radio" id="limit_type_count_1" name="autoprogram_settings[limit_type]" value="count" {{ ($autoSettings['limit_type'] ?? 'count') === 'count' ? 'checked' : '' }} class="w-4 h-4 text-violet-600 border-gray-300 focus:ring-violet-500 dark:border-gray-600 dark:bg-gray-800 dark:focus:ring-violet-600 dark:focus:ring-offset-gray-900 transition-all cursor-pointer">
+                                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Después de</span>
+                                            </label>
+                                            <input type="number" onclick="document.getElementById('limit_type_count_1').checked = true" name="autoprogram_settings[limit_value_count]" value="{{ old('autoprogram_settings.limit_value_count', $autoSettings['limit_value_count'] ?? 5) }}" min="1" class="w-16 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-lg px-2 py-1 text-xs text-gray-900 dark:text-white outline-none transition-all">
                                             <span class="text-xs text-gray-500">veces</span>
-                                        </label>
-                                        <label class="relative flex items-center gap-3 cursor-pointer group">
-                                            <input type="radio" name="autoprogram_settings[limit_type]" value="date" {{ ($autoSettings['limit_type'] ?? '') === 'date' ? 'checked' : '' }} class="peer sr-only">
-                                            <div class="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-violet-500 flex items-center justify-center transition-all">
-                                                <div class="w-2 h-2 rounded-full bg-violet-500 hidden peer-checked:block"></div>
-                                            </div>
-                                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">El día</span>
-                                            <input type="date" name="autoprogram_settings[limit_value_date]" value="{{ old('autoprogram_settings.limit_value_date', $autoSettings['limit_value_date'] ?? '') }}" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-lg px-2 py-1 text-xs text-gray-900 dark:text-white outline-none">
-                                        </label>
+                                        </div>
+                                        <div class="relative flex items-center gap-3 group">
+                                            <label class="flex items-center gap-3 cursor-pointer">
+                                                <input type="radio" id="limit_type_date_1" name="autoprogram_settings[limit_type]" value="date" {{ ($autoSettings['limit_type'] ?? '') === 'date' ? 'checked' : '' }} class="w-4 h-4 text-violet-600 border-gray-300 focus:ring-violet-500 dark:border-gray-600 dark:bg-gray-800 dark:focus:ring-violet-600 dark:focus:ring-offset-gray-900 transition-all cursor-pointer">
+                                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">El día</span>
+                                            </label>
+                                            <input type="date" onclick="document.getElementById('limit_type_date_1').checked = true" name="autoprogram_settings[limit_value_date]" value="{{ old('autoprogram_settings.limit_value_date', $autoSettings['limit_value_date'] ?? '') }}" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-lg px-2 py-1 text-xs text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
+                                        </div>
                                     </div>
                                 </div>
 

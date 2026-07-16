@@ -21,7 +21,7 @@
                             @case('document') 📄 Documento @break
                             @case('note') 📝 Nota @break
                             @case('link') 🔗 Enlace @break
-                            @case('decision') ⚖️ Acuerdo @break
+                            @case('agreement') ⚖️ Acuerdo @break
                             @case('meeting') 🎥 Reunión @break
                             @case('reminder') 🔔 Recordatorio @break
                             @default {{ ucfirst($type) }}
@@ -116,7 +116,7 @@
                         <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Colección de Enlaces</label>
                         <x-link-crud :initialLinks="old('metadata.links', [])" />
                     </div>
-                @elseif ($type === 'decision')
+                @elseif ($type === 'agreement')
                     <!-- DECISIÓN ESPECÍFICO -->
                     <div class="bg-gray-50/50 dark:bg-gray-800/20 border border-gray-150 dark:border-gray-800 rounded-3xl p-6 mb-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -225,8 +225,8 @@
                                 <input type="text" name="metadata[location]" x-model="link" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none" placeholder="Ej. Sala de juntas principal o Enlace de Google Meet/Teams">
                             </div>
                             <div class="md:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Invitados Externos</label>
-                                <p class="text-[10px] text-gray-500 mb-3 leading-tight">Personas ajenas al equipo que asistirán a la reunión. (No recibirán notificaciones automáticamente por ahora).</p>
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Invitados Externos a la Reunión</label>
+                                <p class="text-[10px] text-gray-500 mb-3 leading-tight">Añade a las personas externas al equipo que asistirán a la reunión. Se les enviará una invitación por correo con los detalles.</p>
                                 <x-guest-crud :initialGuests="old('metadata.guests', [])" :initialMessage="old('metadata.invitation_message', '')" />
                             </div>
                         </div>
@@ -291,6 +291,7 @@
                 </div>
                 @endif
 
+                <!-- Assigned To -->
                 <!-- Assigned To -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8" x-data="{
                     selectAll(status) {
@@ -379,7 +380,6 @@
                         </div>
                     @endif
                 </div>
-
                 
                 <!-- Contexto y Vinculaciones Card -->
                 <div class="bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 mb-8 space-y-6 transition-all shadow-sm">
@@ -516,18 +516,48 @@
 
 
                 <!-- Dates -->
-                <div class="grid grid-cols-2 gap-4 font-mono">
-                    <div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 font-mono">
+                    <div x-data="{
+                        currentDate: '{{ old('scheduled_date', now()->format('Y-m-d\TH:i')) }}',
+                        addDays(days) {
+                            let d = new Date();
+                            if (days > 0) d.setDate(d.getDate() + days);
+                            d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+                            this.currentDate = d.toISOString().slice(0, 16);
+                        }
+                    }">
                         <label
                             class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2 font-sans">{{ __('tasks.scheduled_date') }}</label>
-                        <input type="datetime-local" name="scheduled_date" value="{{ old('scheduled_date', now()->format('Y-m-d\TH:i')) }}"
+                        <input type="datetime-local" name="scheduled_date" x-model="currentDate"
                             class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 outline-none transition-all">
+                        <div class="flex flex-wrap gap-1.5 mt-2.5 font-sans">
+                            <button type="button" @click="addDays(0)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-800/50 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors shadow-sm">Ahora</button>
+                            <button type="button" @click="addDays(1)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Día</button>
+                            <button type="button" @click="addDays(7)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Sem</button>
+                            <button type="button" @click="addDays(15)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+15 Días</button>
+                            <button type="button" @click="addDays(30)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Mes</button>
+                        </div>
                     </div>
-                    <div>
+                    <div x-data="{
+                        currentDate: '{{ old('due_date') }}',
+                        addDays(days) {
+                            let d = new Date();
+                            if (days > 0) d.setDate(d.getDate() + days);
+                            d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+                            this.currentDate = d.toISOString().slice(0, 16);
+                        }
+                    }">
                         <label
                             class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2 font-sans">{{ __('tasks.due_date') }}</label>
-                        <input type="datetime-local" name="due_date" value="{{ old('due_date') }}"
+                        <input type="datetime-local" name="due_date" x-model="currentDate"
                             class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 outline-none transition-all">
+                        <div class="flex flex-wrap gap-1.5 mt-2.5 font-sans">
+                            <button type="button" @click="addDays(0)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-800/50 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors shadow-sm">Ahora</button>
+                            <button type="button" @click="addDays(1)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Día</button>
+                            <button type="button" @click="addDays(7)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Sem</button>
+                            <button type="button" @click="addDays(15)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+15 Días</button>
+                            <button type="button" @click="addDays(30)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Mes</button>
+                        </div>
                     </div>
                 </div>
 

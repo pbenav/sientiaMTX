@@ -88,7 +88,7 @@
             </a>
 
             <!-- Decisión / Decision -->
-            <a href="{{ route('teams.activities.create', [$team, 'type' => 'decision', 'expediente_id' => request('expediente_id')]) }}"
+            <a href="{{ route('teams.activities.create', [$team, 'type' => 'agreement', 'expediente_id' => request('expediente_id')]) }}"
                 class="group relative overflow-hidden bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                 <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 rounded-full bg-purple-500/10 dark:bg-purple-500/5 group-hover:scale-150 transition-all duration-500"></div>
                 <div class="w-12 h-12 rounded-2xl bg-purple-500/10 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-6">
