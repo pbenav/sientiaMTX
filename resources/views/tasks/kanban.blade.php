@@ -232,7 +232,7 @@
                                     @endif
 
                                     <!-- Archive All Completed Button -->
-                                    @if($column->type === 'done' && count($column->activities->filter(fn($t) => !$t->is_archived)) > 0)
+                                    @if(count($column->activities->filter(fn($t) => !$t->is_archived && $t->isCompleted())) > 0)
                                         <button onclick="archiveAllCompleted({{ $column->id }})" 
                                                 class="p-1 sm:p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all shadow-sm border border-emerald-200/50 dark:border-emerald-500/20 shrink-0 group/btn"
                                                 title="{{ __('Archivar/ocultar todas las tareas completadas de la columna') }}">
@@ -287,6 +287,7 @@
                                      :class="isWorking ? 'ring-2 ring-violet-500 shadow-xl shadow-violet-500/20 bg-violet-50/30 dark:bg-violet-900/10' : ({{ $task->isCompleted() ? 'true' : 'false' }} ? 'bg-gray-50/50 dark:bg-gray-900/50 grayscale-[0.3]' : 'bg-white dark:bg-gray-900')"
                                      class="backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-md border-l-[5px] sm:border-l-[6px] p-2.5 sm:p-3.5 md:p-4 cursor-grab active:cursor-grabbing hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 group relative animate-card-appear border-t border-r border-b border-gray-100/50 dark:border-gray-800/50"
                                      data-task-id="{{ $task->id }}"
+                                     {{ $task->isCompleted() ? 'data-completed=1' : '' }}
                                      style="border-left-color: {{ $qCfg['color'] ?? '#d1d5db' }}; animation-delay: {{ $loop->index * 50 }}ms; will-change: transform, opacity;">
                                     
                                     <!-- Card Content -->
@@ -357,7 +358,7 @@
                                         <div class="shrink-0 flex flex-col items-end gap-1.5">
                                             <div class="flex items-center gap-1.5">
                                                 @include('tasks.partials.task-timer-button')
-                                                @if(!$task->is_archived && $column->type === 'done')
+                                                @if(!$task->is_archived && $task->isCompleted())
                                                     <button onclick="archiveTask({{ $task->id }})" 
                                                             class="p-1 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-gray-400 hover:text-emerald-600 transition-colors"
                                                             title="{{ __('tasks.mark_as_completed_and_archive') }}">
@@ -694,7 +695,7 @@
                         const columnEl = document.querySelector(`.task-list[data-column-id="${columnId}"]`);
                         if (!columnEl) return;
 
-                        const taskCards = columnEl.querySelectorAll('[data-task-id]');
+                        const taskCards = columnEl.querySelectorAll('[data-task-id][data-completed="1"]');
                         const totalTasks = taskCards.length;
                         if (totalTasks === 0) return;
 
