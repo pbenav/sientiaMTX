@@ -482,6 +482,13 @@
             cleanJson(content) {
                 if (!content) return '';
                 let sanitized = content.trim();
+
+                // Fix 0: LLM sometimes uses triple single quotes (''') or backticks to wrap HTML/CSS.
+                sanitized = sanitized.replace(/'''([\s\S]*?)'''/g, function(match, innerText) {
+                    let escaped = innerText.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t');
+                    return '"' + escaped + '"';
+                });
+
                 // Fix 1: Bad backslashes
                 sanitized = sanitized.replace(/\\(?!(["\\\/bfnrt]|u[0-9a-fA-F]{4}))/g, "\\\\");
                 // Fix 2: Bad control characters (newlines/tabs) INSIDE string literals

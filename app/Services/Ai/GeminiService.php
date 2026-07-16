@@ -434,6 +434,10 @@ class GeminiService implements AiAssistantInterface
 
 4. 'generate_microsite': EXCLUSIVO para diseño de micrositios web premium de nivel agencia.
    Estructura JSON: {"intent": "generate_microsite", "html": "<fragmento HTML>", "css": "<CSS completo>"}
+   ⚠️ REGLA CRÍTICA DE JSON: Debes devolver un JSON ESTRICTAMENTE VÁLIDO. 
+   - NUNCA uses comillas triples (''') ni backticks (```) para delimitar los valores de 'html' o 'css'.
+   - Usa EXCLUSIVAMENTE comillas dobles (") para las claves y valores.
+   - Escapa obligatoriamente los saltos de línea (\n) y las comillas dobles internas (\") en el código.
 
 ═══ ENTORNO DE RENDERIZADO (CRÍTICO) ═══
 - HTML insertado en <main> de Laravel. PROHIBIDO <html>, <head>, <body>.
