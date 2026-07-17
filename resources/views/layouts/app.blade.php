@@ -3275,6 +3275,26 @@
             }, true);
         })();
     </script>
+
+    <!-- Global FAB for New Activity -->
+    @auth
+        @php
+            $globalCreateTeam = $currentTeamContext ?? auth()->user()->favoriteTeam ?? auth()->user()->teams()->first();
+        @endphp
+        @if($globalCreateTeam)
+            <a href="{{ route('teams.activities.create', $globalCreateTeam) }}"
+               class="fixed z-[90] flex items-center justify-center bg-violet-600 hover:bg-violet-500 text-white rounded-full shadow-[0_10px_25px_-5px_rgba(124,58,237,0.5)] transition-all hover:scale-110 active:scale-95 group bottom-24 right-4 sm:bottom-8 sm:right-8 w-14 h-14"
+               title="Nueva Actividad">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                <span class="absolute right-full mr-3 whitespace-nowrap bg-gray-900 dark:bg-gray-800 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg opacity-0 lg:group-hover:opacity-100 transition-opacity pointer-events-none shadow-lg">
+                    Nueva Actividad
+                </span>
+            </a>
+        @endif
+    @endauth
+
 </body>
 
 </html>
