@@ -63,22 +63,4 @@
             </span>
         </div>
     @endif
-    
-    {{-- Global Create Activity Button (Mobile-friendly, unobtrusive) --}}
-    @php
-        $globalCreateTeam = $team ?? auth()->user()->favoriteTeam ?? auth()->user()->teams()->first();
-    @endphp
-    @if($globalCreateTeam)
-        <div class="flex items-center ml-2 border-l border-gray-200 dark:border-gray-700/80 pl-2">
-            <a href="{{ route('teams.activities.create', $globalCreateTeam) }}"
-                class="flex items-center justify-center gap-1 px-1.5 py-0.5 bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white dark:bg-violet-900/30 dark:text-violet-400 dark:hover:bg-violet-600 dark:hover:text-white transition-all rounded shadow-sm group"
-                title="Crear Nueva Actividad Rápida">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 group-hover:rotate-90 transition-transform" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                </svg>
-                <span class="text-[9px] font-black uppercase tracking-widest leading-none mt-0.5">Nueva</span>
-            </a>
-        </div>
-    @endif
 </nav>

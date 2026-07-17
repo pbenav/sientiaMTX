@@ -1157,6 +1157,20 @@
                     <!-- 1. DESKTOP: Inline Icons (Labels only on lg+) -->
                     <div class="hidden lg:flex items-center gap-1 sm:gap-3 overflow-x-auto min-w-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                     @auth
+                        @php
+                            $globalCreateTeam = $currentTeamContext ?? auth()->user()->favoriteTeam ?? auth()->user()->teams()->first();
+                        @endphp
+                        @if($globalCreateTeam)
+                            <a href="{{ route('teams.activities.create', $globalCreateTeam) }}"
+                                class="flex flex-col items-center justify-center gap-0.5 px-2.5 min-h-[3rem] text-violet-500 dark:text-violet-400 hover:text-violet-600 dark:hover:text-violet-300 transition-all rounded-lg hover:bg-violet-50 dark:hover:bg-violet-900/20 relative group mr-1"
+                                title="Crear Actividad">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 fill-violet-400/20" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                                </svg>
+                                <span class="hidden lg:block text-[10px] font-bold leading-none mt-0.5 text-center">Nueva Actividad</span>
+                            </a>
+                        @endif
+
                         @if(auth()->user()->favoriteTeam)
                             <!-- Favorite Team Desktop -->
                             <a href="{{ route('teams.dashboard', auth()->user()->favoriteTeam) }}"
