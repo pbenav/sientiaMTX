@@ -12,8 +12,11 @@ class TeamLibraryController extends Controller
     {
         $this->authorize('view', $team);
 
+        $isManager = $team->isManager(auth()->user());
+
         $query = Activity::where('team_id', $team->id)
-            ->where('type', 'document');
+            ->where('type', 'document')
+            ->visibleTo(auth()->user(), $isManager);
 
         if ($request->filled('q')) {
             $searchTerm = '%' . $request->input('q') . '%';
