@@ -75,9 +75,9 @@ class AppointmentsDashboardController extends Controller
             $returnRate['return_rate'] = round(($returnRate['returning_visitors'] / $returnRate['total_visitors']) * 100, 1);
             
             $serviceDistribution = [
-                ['service' => 'Consulta General', 'count' => rand(30, 80), 'revenue' => rand(1500, 4000)],
-                ['service' => 'Revisión', 'count' => rand(20, 50), 'revenue' => rand(800, 2000)],
-                ['service' => 'Urgencia', 'count' => rand(10, 25), 'revenue' => rand(1000, 2500)],
+                ['service' => 'Consulta General', 'count' => rand(30, 80), 'completed' => rand(15, 30), 'revenue' => rand(1500, 4000)],
+                ['service' => 'Revisión', 'count' => rand(20, 50), 'completed' => rand(10, 20), 'revenue' => rand(800, 2000)],
+                ['service' => 'Urgencia', 'count' => rand(10, 25), 'completed' => rand(5, 10), 'revenue' => rand(1000, 2500)],
             ];
             
             $cancellationTrend = [];

@@ -72,13 +72,17 @@ class AppointmentMetricsService
         $rows = DB::table('appointments')
             ->join('appointment_services', 'appointments.service_id', '=', 'appointment_services.id')
             ->whereBetween('appointments.appointment_date', [$startDate, Carbon::now()])
-            ->selectRaw('appointment_services.name as service_name, COUNT(*) as count')
+            ->selectRaw('appointment_services.name as service_name, COUNT(*) as count, SUM(CASE WHEN appointments.status = "completed" THEN 1 ELSE 0 END) as completed')
             ->groupBy('appointment_services.id', 'appointment_services.name')
             ->orderByDesc('count')
             ->get();
 
         return $rows->map(function ($r) {
-            return ['service' => $r->service_name, 'count' => (int) $r->count];
+            return [
+                'service' => $r->service_name, 
+                'count' => (int) $r->count,
+                'completed' => (int) $r->completed
+            ];
         })->toArray();
     }
 

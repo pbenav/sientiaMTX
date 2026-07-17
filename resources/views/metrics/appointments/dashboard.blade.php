@@ -286,7 +286,7 @@
                     <tr class="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">
                         <th class="px-6 py-3 text-left font-semibold">{{ __('Servicio') }}</th>
                         <th class="px-6 py-3 text-right font-semibold">{{ __('Citas') }}</th>
-                        <th class="px-6 py-3 text-right font-semibold">{{ __('Confirmado') }}</th>
+                        <th class="px-6 py-3 text-right font-semibold">{{ __('Completado') }}</th>
                         <th class="px-6 py-3 text-right font-semibold">{{ __('Tasa de Finalización') }}</th>
                         <th class="px-6 py-3 text-right font-semibold">{{ __('Ingresos') }}</th>
                     </tr>
@@ -297,8 +297,8 @@
                             return (object)[
                                 'name' => $s['service'] ?? $s['service_name'] ?? $s['name'] ?? __('Servicio ' . ($i + 1)),
                                 'count' => $s['count'] ?? 0,
-                                'confirmed' => 0,
-                                'revenue' => 0,
+                                'completed' => $s['completed'] ?? 0,
+                                'revenue' => $s['revenue'] ?? 0,
                             ];
                         })->sortByDesc('count')->values();
                     @endphp
@@ -311,10 +311,10 @@
                             </div>
                         </td>
                         <td class="px-6 py-3 text-right text-gray-600 dark:text-gray-300">{{ number_format($service->count ?? 0) }}</td>
-                        <td class="px-6 py-3 text-right text-gray-600 dark:text-gray-300">{{ number_format($service->confirmed ?? 0) }}</td>
+                        <td class="px-6 py-3 text-right text-gray-600 dark:text-gray-300">{{ number_format($service->completed ?? 0) }}</td>
                         <td class="px-6 py-3 text-right">
                             @php
-                                $completionRate = ($service->count ?? 0) > 0 ? round(($service->confirmed ?? 0) / ($service->count ?? 1) * 100, 1) : 0;
+                                $completionRate = ($service->count ?? 0) > 0 ? round(($service->completed ?? 0) / ($service->count ?? 1) * 100, 1) : 0;
                             @endphp
                             <span class="text-xs font-semibold px-2 py-0.5 rounded-full {{ $completionRate >= 80 ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300' : ($completionRate >= 50 ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300' : 'bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300') }}">
                                 {{ number_format($completionRate, 1) }}%
