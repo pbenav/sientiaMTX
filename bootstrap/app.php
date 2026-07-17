@@ -36,6 +36,7 @@ return Application::configure(basePath: dirname(__DIR__))
             '/whatsapp/webhook',
             '/passkeys/login', // Cryptographically secure, resilient to session swaps
             '/onlyoffice/callback/*',
+            '/onlyoffice/activity-callback/*',
             '/api/s2s/sync-workday',
             '/api/s2s/sync-history',
         ]);
