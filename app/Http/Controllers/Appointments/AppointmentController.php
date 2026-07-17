@@ -708,11 +708,11 @@ class AppointmentController extends Controller
             try {
                 $googleService = new \App\Services\GoogleService();
                 if ($googleService->setTokenForUser($appointment->member)) {
-                    $googleService->deleteTask('@default', $appointment->google_task_id);
+                    $googleService->updateTask('@default', $appointment->google_task_id, ['status' => 'cancelled']);
                     $appointment->update(['google_task_id' => null]);
                 }
             } catch (\Throwable $e) {
-                \Log::error("Error eliminando tarea en Google Tasks: " . $e->getMessage());
+                \Log::error("Error cancelando tarea en Google Tasks: " . $e->getMessage());
             }
         }
     }
