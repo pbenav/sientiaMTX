@@ -77,4 +77,21 @@ class ActivityAttachment extends Model
     {
         return $this->mime_type === 'application/pdf';
     }
+
+    public function getIsOfficeCompatibleAttribute(): bool
+    {
+        if ($this->disk === 'google_drive') {
+            return false; // Archivos en GDrive no se abren en OnlyOffice directamente
+        }
+
+        $extension = strtolower(pathinfo($this->file_name, PATHINFO_EXTENSION));
+        return in_array($extension, [
+            // Word
+            'doc', 'docx', 'rtf', 'odt', 'txt',
+            // Excel
+            'xls', 'xlsx', 'ods', 'csv',
+            // Powerpoint
+            'ppt', 'pptx', 'odp'
+        ]);
+    }
 }
