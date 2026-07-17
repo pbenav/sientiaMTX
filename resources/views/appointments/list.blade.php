@@ -90,6 +90,22 @@
             </div>
 
             <div class="hidden xl:block w-px h-6 bg-gray-200 dark:bg-gray-800 mx-2"></div>
+            
+            @php
+                $totalList = ($periodStats['pending'] ?? 0) + ($periodStats['confirmed'] ?? 0) + ($periodStats['completed'] ?? 0) + ($periodStats['cancelled'] ?? 0);
+                $effectivenessList = $totalList > 0 ? round((($periodStats['completed'] ?? 0) / $totalList) * 100) : 0;
+            @endphp
+            @if($totalList > 0)
+            <div class="flex items-center gap-2">
+                <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">Éxito:</span>
+                <div class="w-16 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-violet-500 rounded-full" style="width: {{ $effectivenessList }}%"></div>
+                </div>
+                <span class="text-[10px] font-bold text-violet-600 dark:text-violet-400">{{ $effectivenessList }}%</span>
+            </div>
+            @endif
+
+            <div class="hidden xl:block w-px h-6 bg-gray-200 dark:bg-gray-800 mx-2"></div>
 
             <div class="flex items-center gap-5 xl:ml-auto">
                 <span class="text-[10px] font-black uppercase tracking-widest text-gray-400" title="Calculado sobre citas completadas con tiempo registrado en el periodo filtrado">⏱️ Tiempos (Periodo):</span>

@@ -77,9 +77,22 @@
             <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm relative overflow-hidden group flex flex-col justify-between">
                 <div>
                     <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Este Mes</p>
-                    <div class="flex items-baseline gap-2">
-                        <h3 class="text-4xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums">{{ $totalThisMonth }}</h3>
-                        <span class="text-xs font-bold text-gray-400 uppercase">total</span>
+                    <div class="flex flex-col gap-1">
+                        <div class="flex items-baseline gap-2">
+                            <h3 class="text-4xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums">{{ $totalThisMonth }}</h3>
+                            <span class="text-xs font-bold text-gray-400 uppercase">total</span>
+                        </div>
+                        @if($totalThisMonth > 0 && isset($monthAppointments['completed']))
+                            @php
+                                $effectiveness = round(($monthAppointments['completed'] / $totalThisMonth) * 100);
+                            @endphp
+                            <div class="flex items-center gap-2 mt-1">
+                                <div class="flex-1 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                                    <div class="h-full bg-emerald-500 rounded-full" style="width: {{ $effectiveness }}%"></div>
+                                </div>
+                                <span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">{{ $effectiveness }}% completadas</span>
+                            </div>
+                        @endif
                     </div>
                 </div>
                 <div class="mt-4 flex flex-wrap items-center gap-2">
@@ -120,9 +133,23 @@
                             Citas del {{ \Carbon\Carbon::parse($selectedDate)->format('d/m/Y') }}
                         @endif
                     </p>
-                    <div class="flex items-baseline gap-2">
-                        <h3 class="text-4xl font-black text-cyan-600 dark:text-cyan-400 tabular-nums">{{ $todayCitas->count() }}</h3>
-                        <span class="text-xs font-bold text-gray-400 uppercase">total</span>
+                    <div class="flex flex-col gap-1">
+                        <div class="flex items-baseline gap-2">
+                            <h3 class="text-4xl font-black text-cyan-600 dark:text-cyan-400 tabular-nums">{{ $todayCitas->count() }}</h3>
+                            <span class="text-xs font-bold text-gray-400 uppercase">total</span>
+                        </div>
+                        @if($todayCitas->count() > 0)
+                            @php
+                                $todayCompleted = $todayCitas->where('status', 'completed')->count();
+                                $todayEffectiveness = round(($todayCompleted / $todayCitas->count()) * 100);
+                            @endphp
+                            <div class="flex items-center gap-2 mt-1">
+                                <div class="flex-1 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                                    <div class="h-full bg-cyan-500 rounded-full" style="width: {{ $todayEffectiveness }}%"></div>
+                                </div>
+                                <span class="text-[10px] font-bold text-cyan-600 dark:text-cyan-400">{{ $todayEffectiveness }}% éxito</span>
+                            </div>
+                        @endif
                     </div>
                 </div>
                 <div class="mt-4 flex flex-wrap items-center gap-2">
