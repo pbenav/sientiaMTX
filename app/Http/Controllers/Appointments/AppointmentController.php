@@ -131,7 +131,7 @@ class AppointmentController extends Controller
             session(["appointments_filters_{$team->id}" => $request->only($filterKeys)]);
         }
 
-        $query = Appointment::where('user_id', $user->id)
+        $query = Appointment::where('appointments.user_id', $user->id)
             ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
             ->with(['service', 'visitor', 'activity', 'task']);
 
@@ -152,13 +152,11 @@ class AppointmentController extends Controller
                   ->select('appointments.*');
         } elseif ($sortBy === 'time') {
             $taskSum = \Illuminate\Support\Facades\DB::table('time_logs')
-                ->whereColumn('trackable_id', 'appointments.task_id')
-                ->where('trackable_type', \App\Models\Task::class)
+                ->whereColumn('time_logs.task_id', 'appointments.task_id')
                 ->selectRaw('COALESCE(SUM(TIMESTAMPDIFF(SECOND, start_at, end_at)), 0)');
 
             $activitySum = \Illuminate\Support\Facades\DB::table('time_logs')
-                ->whereColumn('trackable_id', 'appointments.activity_id')
-                ->where('trackable_type', \App\Models\Activity::class)
+                ->whereColumn('time_logs.task_id', 'appointments.activity_id')
                 ->selectRaw('COALESCE(SUM(TIMESTAMPDIFF(SECOND, start_at, end_at)), 0)');
 
             $query->select('appointments.*')
