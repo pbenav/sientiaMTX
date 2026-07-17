@@ -139,87 +139,7 @@
         </div>
 
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-xl rounded-2xl overflow-hidden transition-all">
-            <div id="bulkActionBar"
-                class="hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 p-4 sticky top-0 z-[40] flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 transition-all duration-300 shadow-sm">
-                
-                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full xl:w-auto">
-                    <!-- Icon & Badge & X Button -->
-                    <div class="flex items-center gap-3 bg-violet-50 dark:bg-violet-900/20 px-4 py-2 rounded-xl border border-violet-100 dark:border-violet-800/50 shrink-0">
-                        <div class="relative">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-violet-600 dark:text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span class="absolute -top-1.5 -right-1.5 flex h-4 w-4">
-                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-4 w-4 bg-violet-600 text-[9px] font-black text-white items-center justify-center" id="selectedCount">0</span>
-                            </span>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-[10px] font-black uppercase tracking-widest text-violet-700 dark:text-violet-300">Selección</span>
-                            <span class="text-xs font-semibold text-violet-500 dark:text-violet-400 leading-tight">Acción Masiva</span>
-                        </div>
-                        
-                        <div class="w-px h-6 bg-violet-200 dark:bg-violet-800/60 mx-1"></div>
-                        
-                        <button type="button" onclick="deselectAll()"
-                            class="p-1.5 hover:bg-violet-200 dark:hover:bg-violet-800 text-violet-500 rounded-lg transition-colors active:scale-95" title="Deseleccionar todo">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
 
-                    <!-- Actions/Selects -->
-                    <div class="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full sm:w-auto">
-                        <!-- Bulk Status -->
-                        <select onchange="applyBulkUpdate('status', this.value)" 
-                            class="w-full sm:w-auto flex-1 bg-gray-50 dark:bg-gray-800 border-none hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 py-2.5 pl-4 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all min-w-[140px]">
-                            <option value="">🎯 Estado</option>
-                            @foreach (['pending' => 'Pendiente', 'in_progress' => 'En Progreso', 'completed' => 'Completada', 'blocked' => 'Bloqueada'] as $val => $label)
-                                <option value="{{ $val }}" class="text-gray-900 dark:text-white">{{ $label }}</option>
-                            @endforeach
-                        </select>
-
-                        <!-- Bulk Priority -->
-                        <select onchange="applyBulkUpdate('priority', this.value)" 
-                            class="w-full sm:w-auto flex-1 bg-gray-50 dark:bg-gray-800 border-none hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 py-2.5 pl-4 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all min-w-[140px]">
-                            <option value="">⚡ Prioridad</option>
-                            @foreach (['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'] as $val => $label)
-                                <option value="{{ $val }}" class="text-gray-900 dark:text-white">{{ $label }}</option>
-                            @endforeach
-                        </select>
-
-                        <!-- Bulk Assignee -->
-                        <select onchange="applyBulkUpdate('assigned_user_id', this.value)" 
-                            class="w-full sm:w-auto flex-1 bg-gray-50 dark:bg-gray-800 border-none hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 py-2.5 pl-4 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all min-w-[140px]">
-                            <option value="">👤 Responsable</option>
-                            @foreach ($members as $member)
-                                <option value="{{ $member->id }}" class="text-gray-900 dark:text-white">{{ $member->name }}</option>
-                            @endforeach
-                        </select>
-
-                        <div class="hidden sm:block w-px h-6 bg-gray-200 dark:bg-gray-800 mx-1"></div>
-
-                        <!-- Bulk Merge Button -->
-                        <button type="button" onclick="openBulkMergeModal()"
-                            class="flex-1 sm:flex-none px-4 py-2.5 bg-amber-500 text-white font-black uppercase text-xs rounded-xl hover:bg-amber-600 active:scale-95 transition-all shadow-sm flex items-center justify-center gap-1.5" title="Fusionar actividades seleccionadas">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
-                            </svg>
-                            <span>Fusionar</span>
-                        </button>
-
-                        <!-- Bulk Delete Button -->
-                        <button type="button" onclick="confirmBulkDelete()"
-                            class="flex-1 sm:flex-none px-4 py-2.5 bg-red-500 text-white font-black uppercase text-xs rounded-xl hover:bg-red-600 active:scale-95 transition-all shadow-sm flex items-center justify-center gap-1.5" title="Eliminar actividades seleccionadas">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                            <span>Eliminar</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
             
             <div class="overflow-x-auto min-h-[200px] no-scrollbar">
                 <table class="w-full text-left border-collapse min-w-[700px]">
@@ -1185,6 +1105,60 @@
                         Fusionar ahora
                     </button>
                 </div>
+            </div>
+        {{-- BARRA FLOTANTE DE ACCIÓN MASIVA --}}
+        <div id="bulkActionBar"
+             class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[800] w-[95%] max-w-4xl flex flex-wrap md:flex-nowrap items-center justify-between md:justify-center gap-3 px-3 py-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-200 dark:border-gray-800 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.25)] transition-all duration-300">
+            
+            <!-- Contador y Cerrar -->
+            <div class="flex items-center gap-2 shrink-0">
+                <button type="button" onclick="deselectAll()" class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-xl transition-colors shrink-0" title="Deseleccionar">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+                <div class="flex items-center gap-2 bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 px-3 py-2 rounded-xl border border-violet-200 dark:border-violet-700/50">
+                    <span class="text-sm font-black" id="selectedCount">0</span>
+                    <span class="text-[10px] font-bold uppercase tracking-widest hidden sm:inline">Selección</span>
+                </div>
+            </div>
+
+            <div class="hidden md:block w-px h-8 bg-gray-200 dark:bg-gray-800 shrink-0"></div>
+
+            <!-- Selects -->
+            <div class="flex flex-wrap md:flex-nowrap items-center gap-2 w-full md:w-auto flex-1 md:flex-none">
+                <select onchange="applyBulkUpdate('status', this.value)" class="flex-1 md:w-auto bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 py-2.5 pl-3 pr-6 focus:ring-2 focus:ring-violet-500/50 outline-none">
+                    <option value="">🎯 Estado</option>
+                    <option value="pending">Pendiente</option>
+                    <option value="in_progress">En Progreso</option>
+                    <option value="completed">Completada</option>
+                    <option value="blocked">Bloqueada</option>
+                </select>
+                <select onchange="applyBulkUpdate('priority', this.value)" class="flex-1 md:w-auto bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 py-2.5 pl-3 pr-6 focus:ring-2 focus:ring-violet-500/50 outline-none">
+                    <option value="">⚡ Prioridad</option>
+                    <option value="low">Baja</option>
+                    <option value="medium">Media</option>
+                    <option value="high">Alta</option>
+                    <option value="critical">Crítica</option>
+                </select>
+                <select onchange="applyBulkUpdate('assigned_user_id', this.value)" class="flex-1 md:w-auto bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 py-2.5 pl-3 pr-6 focus:ring-2 focus:ring-violet-500/50 outline-none">
+                    <option value="">👤 Asignar</option>
+                    @foreach ($members as $member)
+                        <option value="{{ $member->id }}">{{ explode(' ', $member->name)[0] }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="hidden md:block w-px h-8 bg-gray-200 dark:bg-gray-800 shrink-0"></div>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-2 shrink-0 w-full md:w-auto justify-end">
+                <button type="button" onclick="openBulkMergeModal()" class="flex-1 md:flex-none p-2.5 md:px-4 text-amber-600 bg-amber-50 hover:bg-amber-100 dark:bg-amber-900/30 dark:hover:bg-amber-900/50 dark:text-amber-400 rounded-xl font-bold text-[10px] sm:text-xs uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5" title="Fusionar">
+                    <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                    <span>Fusionar</span>
+                </button>
+                <button type="button" onclick="confirmBulkDelete()" class="flex-1 md:flex-none p-2.5 md:px-4 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 dark:text-red-400 rounded-xl font-bold text-[10px] sm:text-xs uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5" title="Eliminar">
+                    <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    <span>Eliminar</span>
+                </button>
             </div>
         </div>
 </x-app-layout>
