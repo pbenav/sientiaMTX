@@ -588,9 +588,22 @@
                             cleanedJson = cleanedJson.substring(cleanedJson.indexOf('['), cleanedJson.lastIndexOf(']') + 1);
                         }
                         const imported = JSON.parse(cleanedJson);
+                        
+                        let questionsArray = null;
+                        let importedTitle = null;
+                        let importedDescription = null;
+
                         if (Array.isArray(imported)) {
+                            questionsArray = imported;
+                        } else if (typeof imported === 'object' && imported !== null) {
+                            questionsArray = imported.form || imported.questions || imported.data || null;
+                            importedTitle = imported.title || null;
+                            importedDescription = imported.description || null;
+                        }
+
+                        if (Array.isArray(questionsArray)) {
                             // Add IDs and ensure structure
-                            const validated = imported.map(q => ({
+                            const validated = questionsArray.map(q => ({
                                 id: Date.now() + Math.random(),
                                 title: q.title || '',
                                 description: q.description || '',
@@ -654,6 +667,9 @@
                             }).then((result) => {
                                 if (result.isConfirmed) {
                                     this.questions = validated;
+                                    if (importedTitle) document.getElementById('title').value = importedTitle;
+                                    if (importedDescription) document.getElementById('description').value = importedDescription;
+                                    
                                     Swal.fire({
                                         title: '{{ __("¡Hecho!") }}',
                                         text: '{{ __("Se han importado :count preguntas.", ["count" => ""]) }}'.replace('""', validated.length) + validated.length,
@@ -666,7 +682,7 @@
                                 }
                             });
                         } else {
-                            throw new Error('El formato no es un array');
+                            throw new Error('El JSON inyectado no contiene un formato de preguntas válido');
                         }
                     } catch (err) {
                         Swal.fire('Error', '{{ __("Error al procesar el JSON. Asegúrate de que el formato es correcto.") }}', 'error');

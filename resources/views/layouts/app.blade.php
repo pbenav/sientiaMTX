@@ -1003,6 +1003,14 @@
                 flex: 1 1 100% !important;
             }
         }
+        
+        /* FIX: Prevent SweetAlert2 Toasts from blocking app interaction */
+        body.swal2-toast-shown .swal2-container {
+            pointer-events: none !important;
+        }
+        body.swal2-toast-shown .swal2-container .swal2-popup {
+            pointer-events: auto !important;
+        }
     </style>
 </head>
 
