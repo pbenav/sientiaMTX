@@ -325,46 +325,66 @@
                         <p class="text-xs font-black uppercase tracking-widest text-gray-400">⚡ Acciones</p>
                     </div>
                     <div class="p-5 space-y-3">
-                        {{-- Marcar Completada --}}
-                        @if($appointment->status !== 'completed')
-                            <form method="POST" action="{{ route('appointments.update', [$team, $appointment]) }}">
-                                @csrf @method('PATCH')
-                                <input type="hidden" name="status" value="completed">
-                                <button type="submit" class="w-full py-2.5 text-xs font-black uppercase tracking-widest bg-emerald-50 hover:bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900 rounded-xl transition-all shadow-sm active:scale-95">
-                                    ✓ Marcar Completada
-                                </button>
-                            </form>
-                        @endif
+                        <div class="space-y-1.5">
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400">Estado de la Cita</label>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                {{-- Confirmada --}}
+                                <form method="POST" action="{{ route('appointments.update', [$team, $appointment]) }}">
+                                    @csrf @method('PATCH')
+                                    <input type="hidden" name="status" value="confirmed">
+                                    <button type="submit" title="Confirmada" class="w-full py-2 px-1 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-sm active:scale-95 border
+                                        {{ $appointment->status === 'confirmed' 
+                                            ? 'bg-cyan-500 text-white border-cyan-600 dark:bg-cyan-600 dark:border-cyan-500' 
+                                            : 'bg-cyan-50 hover:bg-cyan-100 text-cyan-600 border-cyan-200 dark:bg-cyan-900/20 dark:hover:bg-cyan-900/30 dark:text-cyan-400 dark:border-cyan-800' }}">
+                                        👍 Conf.
+                                    </button>
+                                </form>
 
-                        {{-- Cambiar estado --}}
-                        <form method="POST" action="{{ route('appointments.update', [$team, $appointment]) }}">
-                            @csrf @method('PATCH')
-                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Estado</label>
-                            <div class="flex gap-2">
-                                <select name="status" class="flex-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 dark:text-white outline-none transition-all">
-                                    @foreach(\App\Models\Appointment::STATUSES as $val => $label)
-                                        <option value="{{ $val }}" {{ $appointment->status === $val ? 'selected' : '' }}>{{ $label }}</option>
-                                    @endforeach
-                                </select>
-                                <button type="submit" class="px-3 py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black rounded-xl transition-all">OK</button>
+                                {{-- Completada --}}
+                                <form method="POST" action="{{ route('appointments.update', [$team, $appointment]) }}">
+                                    @csrf @method('PATCH')
+                                    <input type="hidden" name="status" value="completed">
+                                    <button type="submit" title="Completada" class="w-full py-2 px-1 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-sm active:scale-95 border
+                                        {{ $appointment->status === 'completed' 
+                                            ? 'bg-emerald-500 text-white border-emerald-600 dark:bg-emerald-600 dark:border-emerald-500' 
+                                            : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800' }}">
+                                        ✓ Fin.
+                                    </button>
+                                </form>
+
+                                {{-- No Presentado --}}
+                                <form method="POST" action="{{ route('appointments.update', [$team, $appointment]) }}">
+                                    @csrf @method('PATCH')
+                                    <input type="hidden" name="status" value="no_show">
+                                    <button type="submit" title="No Presentado" class="w-full py-2 px-1 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-sm active:scale-95 border
+                                        {{ $appointment->status === 'no_show' 
+                                            ? 'bg-rose-500 text-white border-rose-600 dark:bg-rose-600 dark:border-rose-500' 
+                                            : 'bg-rose-50 hover:bg-rose-100 text-rose-600 border-rose-200 dark:bg-rose-900/20 dark:hover:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800' }}">
+                                        🤷 Ausente
+                                    </button>
+                                </form>
+
+                                {{-- Cancelada --}}
+                                <form method="POST" id="cancel-appointment-form" action="{{ route('appointments.destroy', [$team, $appointment]) }}">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" title="Cancelada" class="w-full py-2 px-1 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-sm active:scale-95 border
+                                        {{ $appointment->status === 'cancelled' 
+                                            ? 'bg-amber-500 text-white border-amber-600 dark:bg-amber-600 dark:border-amber-500' 
+                                            : 'bg-amber-50 hover:bg-amber-100 text-amber-600 border-amber-200 dark:bg-amber-900/20 dark:hover:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800' }}">
+                                        ❌ Canc.
+                                    </button>
+                                </form>
                             </div>
-                        </form>
-                        {{-- Cancelar --}}
-                        @if(!in_array($appointment->status, ['cancelled', 'blocked']))
-                            <form method="POST" id="cancel-appointment-form" action="{{ route('appointments.destroy', [$team, $appointment]) }}">
+                        </div>
+
+                        <div class="pt-2 border-t border-gray-100 dark:border-gray-800">
+                            <form method="POST" id="delete-appointment-form" action="{{ route('appointments.forceDestroy', [$team, $appointment]) }}">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="w-full py-2.5 text-xs font-black uppercase tracking-widest bg-amber-50 hover:bg-amber-100 text-amber-600 dark:bg-amber-900/20 dark:hover:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-900 rounded-xl transition-all">
-                                    ❌ Cancelar Cita
+                                <button type="submit" class="w-full py-2 text-[10px] sm:text-xs font-black uppercase tracking-widest bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/20 dark:hover:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-900 rounded-xl transition-all">
+                                    🗑️ Borrar Permanente
                                 </button>
                             </form>
-                        @endif
-
-                        <form method="POST" id="delete-appointment-form" action="{{ route('appointments.forceDestroy', [$team, $appointment]) }}">
-                            @csrf @method('DELETE')
-                            <button type="submit" class="w-full py-2.5 text-xs font-black uppercase tracking-widest bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/20 dark:hover:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-900 rounded-xl transition-all">
-                                🗑️ Borrar Permanente
-                            </button>
-                        </form>
+                        </div>
 
                         {{-- Google Calendar --}}
                         @php
