@@ -614,7 +614,7 @@ class Activity extends Model
             // 1. GESTIÓN (Managers): Ven todo lo público Y todas las plantillas/esqueleto del equipo
             // Pero NO ven las actividades privadas de otros usuarios a menos que estén asignados a ellas
             if ($isManager) {
-                $q->where('visibility', 'public')
+                $q->where('visibility', '!=', 'private')
                   ->orWhere(function ($template) {
                       $template->where('is_template', true)
                                ->where('visibility', '!=', 'private');
