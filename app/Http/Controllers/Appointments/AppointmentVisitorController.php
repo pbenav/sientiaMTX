@@ -58,22 +58,19 @@ class AppointmentVisitorController extends Controller
                 $q->whereHas('service', function ($sq) use ($team) {
                     $sq->where('team_id', $team->id);
                 });
-            })
-            ->withCount(['appointments' => function ($query) use ($team) {
-                $query->whereHas('service', function ($q) use ($team) {
-                    $q->where('team_id', $team->id);
-                });
-            }])
-            ->having('appointments_count', '>=', (int)$filterMinAppointments);
+            });
         })
         ->withCount(['appointments' => function ($query) use ($team) {
             $query->whereHas('service', function ($q) use ($team) {
                 $q->where('team_id', $team->id);
             });
         }])
+        ->when($filterMinAppointments, function ($query, $filterMinAppointments) {
+            $query->having('appointments_count', '>=', (int)$filterMinAppointments);
+        })
         ->when($sortBy === 'appointments_count', function ($query) use ($sortDir) {
             $query->orderBy('appointments_count', $sortDir);
-        }, function () use ($sortBy, $sortDir) {
+        }, function ($query) use ($sortBy, $sortDir) {
             $query->orderBy($sortBy, $sortDir);
         })
         ->paginate(15)

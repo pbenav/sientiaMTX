@@ -40,14 +40,40 @@
                         </svg>
                         Índice de Documentos
                     </h3>
-                    <form action="{{ route('teams.library', $team) }}" method="GET" class="relative">
-                        <input type="text" name="q" value="{{ request('q') }}" placeholder="Buscar en la wiki..." 
-                               class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 pl-8 pr-3 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all placeholder-gray-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-2.5 top-2.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
+                    <form action="{{ route('teams.library', $team) }}" method="GET" class="space-y-3">
+                        <div class="relative">
+                            <input type="text" name="q" value="{{ request('q') }}" placeholder="Buscar en la wiki..." 
+                                   class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 pl-8 pr-3 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all placeholder-gray-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-2.5 top-2.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                        <div class="flex gap-2">
+                            <select name="status" class="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 px-2.5 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all">
+                                <option value="">Todos los estados</option>
+                                <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Borrador</option>
+                                <option value="review" {{ request('status') == 'review' ? 'selected' : '' }}>En revisión</option>
+                                <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Aprobado</option>
+                                <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rechazado</option>
+                                <option value="archived" {{ request('status') == 'archived' ? 'selected' : '' }}>Archivado</option>
+                            </select>
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="date" name="date_from" value="{{ request('date_from', '1970-01-01') }}" placeholder="Desde"
+                                   class="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 px-2.5 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all text-gray-600 dark:text-gray-400">
+                            <input type="date" name="date_to" value="{{ request('date_to', now()->format('Y-m-d')) }}" placeholder="Hasta"
+                                   class="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 px-2.5 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all text-gray-600 dark:text-gray-400">
+                        </div>
                         @if(request('doc'))
                             <input type="hidden" name="doc" value="{{ request('doc') }}">
+                        @endif
+                        <button type="submit" class="w-full bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold py-2 rounded-xl transition-colors">
+                            Filtrar
+                        </button>
+                        @if(request('status') || request('date_from') || request('date_to'))
+                            <a href="{{ route('teams.library', $team) }}{{ request('q') ? '?q=' . request('q') : '' }}" class="block w-full text-center text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 py-1 transition-colors">
+                                Limpiar filtros
+                            </a>
                         @endif
                     </form>
                 </div>

@@ -273,19 +273,19 @@
                                 @php $channels = data_get($activity->metadata, 'channels', ['email']); @endphp
                                 <div class="flex flex-wrap gap-4 mt-2">
                                     <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" name="channels[]" value="email" {{ in_array('email', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
+                                        <input type="checkbox" name="metadata[channels][]" value="email" {{ in_array('email', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
                                         <span class="text-sm text-gray-700 dark:text-gray-300"> Correo Electrónico</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" name="channels[]" value="push" {{ in_array('push', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
+                                        <input type="checkbox" name="metadata[channels][]" value="push" {{ in_array('push', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
                                         <span class="text-sm text-gray-700 dark:text-gray-300"> Notificación en la App (Push/Nudge)</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" name="channels[]" value="whatsapp" {{ in_array('whatsapp', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
+                                        <input type="checkbox" name="metadata[channels][]" value="whatsapp" {{ in_array('whatsapp', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
                                         <span class="text-sm text-gray-700 dark:text-gray-300"> WhatsApp</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" name="channels[]" value="telegram" {{ in_array('telegram', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
+                                        <input type="checkbox" name="metadata[channels][]" value="telegram" {{ in_array('telegram', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
                                         <span class="text-sm text-gray-700 dark:text-gray-300"> Telegram</span>
                                     </label>
                                 </div>

@@ -12,7 +12,7 @@
             <div class="flex flex-wrap gap-4">
                 <label class="flex items-center gap-3 cursor-pointer group">
                     <div class="relative flex items-center justify-center">
-                        <input type="checkbox" name="channels[]" value="email"
+                        <input type="checkbox" name="metadata[channels][]" value="email"
                             {{ in_array('email', old('channels', $activity->metadata['channels'] ?? ['email','push'])) ? 'checked' : '' }}
                             class="peer sr-only">
                         <div class="w-5 h-5 rounded border-2 border-gray-300 dark:border-gray-600 peer-checked:bg-pink-500 peer-checked:border-pink-500 transition-all flex items-center justify-center text-white">
@@ -33,7 +33,7 @@
                 </label>
                 <label class="flex items-center gap-3 cursor-pointer group">
                     <div class="relative flex items-center justify-center">
-                        <input type="checkbox" name="channels[]" value="push"
+                        <input type="checkbox" name="metadata[channels][]" value="push"
                             {{ in_array('push', old('channels', $activity->metadata['channels'] ?? ['email','push'])) ? 'checked' : '' }}
                             class="peer sr-only">
                         <div class="w-5 h-5 rounded border-2 border-gray-300 dark:border-gray-600 peer-checked:bg-pink-500 peer-checked:border-pink-500 transition-all flex items-center justify-center text-white">
@@ -54,7 +54,7 @@
                 </label>
                 <label class="flex items-center gap-3 cursor-pointer group">
                     <div class="relative flex items-center justify-center">
-                        <input type="checkbox" name="channels[]" value="whatsapp"
+                        <input type="checkbox" name="metadata[channels][]" value="whatsapp"
                             {{ in_array('whatsapp', old('channels', $activity->metadata['channels'] ?? ['email','push'])) ? 'checked' : '' }}
                             class="peer sr-only">
                         <div class="w-5 h-5 rounded border-2 border-gray-300 dark:border-gray-600 peer-checked:bg-pink-500 peer-checked:border-pink-500 transition-all flex items-center justify-center text-white">
@@ -75,7 +75,7 @@
                 </label>
                 <label class="flex items-center gap-3 cursor-pointer group">
                     <div class="relative flex items-center justify-center">
-                        <input type="checkbox" name="channels[]" value="telegram"
+                        <input type="checkbox" name="metadata[channels][]" value="telegram"
                             {{ in_array('telegram', old('channels', $activity->metadata['channels'] ?? ['email','push'])) ? 'checked' : '' }}
                             class="peer sr-only">
                         <div class="w-5 h-5 rounded border-2 border-gray-300 dark:border-gray-600 peer-checked:bg-pink-500 peer-checked:border-pink-500 transition-all flex items-center justify-center text-white">

@@ -444,6 +444,7 @@
                                     'markdown_h3_size' => \App\Models\Setting::get('markdown_h3_size', '1.25rem'),
                                     'markdown_h3_weight' => \App\Models\Setting::get('markdown_h3_weight', '600'),
                                     'markdown_text_size' => \App\Models\Setting::get('markdown_text_size', '1rem'),
+                                    'markdown_text_min_size' => \App\Models\Setting::get('markdown_text_min_size', '0.6875rem'),
                                     'markdown_accent_color' => \App\Models\Setting::get('markdown_accent_color', '#4f46e5'),
                                     'markdown_bullet_color' => \App\Models\Setting::get('markdown_bullet_color', '#4f46e5'),
                                     'markdown_bq_color' => \App\Models\Setting::get('markdown_bq_color', '#4f46e5'),
@@ -463,7 +464,8 @@
                                     bullet: '{{ $s['markdown_bullet_color'] ?? $defaultGlobal['markdown_bullet_color'] }}',
                                     bq: '{{ $s['markdown_bq_color'] ?? $defaultGlobal['markdown_bq_color'] }}',
                                     bq_width: '{{ $s['markdown_bq_width'] ?? $defaultGlobal['markdown_bq_width'] }}',
-                                    text: '{{ $s['markdown_text_size'] ?? $defaultGlobal['markdown_text_size'] }}'
+                                     text: '{{ $s['markdown_text_size'] ?? $defaultGlobal['markdown_text_size'] }}',
+                                     textMin: '{{ $s['markdown_text_min_size'] ?? $defaultGlobal['markdown_text_min_size'] ?? '0.6875rem' }}'
                                 }
                             }">
                                 <!-- Grid de Headings -->
@@ -510,9 +512,16 @@
 
                                     <div class="p-5 bg-gray-50 dark:bg-gray-800/20 rounded-2xl border border-gray-100 dark:border-gray-800">
                                         <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Cuerpo de Texto</label>
-                                        <div>
-                                            <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Tamaño Base</label>
-                                            <input type="text" name="settings[markdown_text_size]" x-model="settings.text" class="w-full bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 rounded-xl text-sm focus:ring-violet-500/20 focus:border-violet-500">
+                                        <div class="space-y-4">
+                                            <div>
+                                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Tamaño Base</label>
+                                                <input type="text" name="settings[markdown_text_size]" x-model="settings.text" class="w-full bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 rounded-xl text-sm focus:ring-violet-500/20 focus:border-violet-500">
+                                            </div>
+                                            <div>
+                                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Tamaño Mínimo</label>
+                                                <input type="text" name="settings[markdown_text_min_size]" x-model="settings.textMin" class="w-full bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 rounded-xl text-sm focus:ring-violet-500/20 focus:border-violet-500">
+                                                <p class="mt-1 text-[9px] text-gray-400">Tamaño mínimo cuando las líneas son muy largas</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -522,7 +531,7 @@
                                      <h1 :style="'font-size: ' + settings.h1_size + '; font-weight: ' + settings.h1_weight + '; color: ' + settings.accent + '; margin-top:0;'" class="mb-4">Título del Equipo</h1>
                                      <h2 :style="'font-size: ' + settings.h2_size + '; font-weight: ' + settings.h2_weight + ';'" class="mb-3">Subtítulo Secundario</h2>
                                      <h3 :style="'font-size: ' + settings.h3_size + '; font-weight: ' + settings.h3_weight + ';'" class="mb-2">Sección Detallada</h3>
-                                     <p :style="'font-size: ' + settings.text + ';'" class="text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+                                      <p :style="'font-size: ' + settings.text + '; min-font-size: ' + settings.textMin + ';'" class="text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
                                          Este es un ejemplo de cómo se verá la información en el foro y las tareas de <strong>{{ $team->name }}</strong>. Incluye <a href="#" :style="'color: ' + settings.accent + '; text-decoration: underline;'">vínculos personalizados</a>.
                                      </p>
                                      <ul class="mb-4 space-y-1">

@@ -17,6 +17,7 @@
     $h3_weight = $getStyle('h3_weight', '600');
     
     $text_size = $getStyle('text_size', '1rem');
+    $text_min_size = $getStyle('text_min_size', '0.6875rem');
     $accent = $getStyle('accent_color', '#4f46e5');
     
     $bq_color = $getStyle('bq_color', $accent);
@@ -35,6 +36,7 @@
         --md-h3-size: {{ $h3_size }};
         --md-h3-weight: {{ $h3_weight }};
         --md-text-size: {{ $text_size }};
+        --md-text-min-size: {{ $text_min_size }};
         --md-accent: {{ $accent }};
         --md-bq-color: {{ $bq_color }};
         --md-bq-width: {{ $bq_width }};
@@ -44,7 +46,7 @@
     .markdown-content, .prose,
     .markdown-content p, .prose p,
     .markdown-content li, .prose li {
-        font-size: var(--md-text-size) !important;
+        font-size: max(var(--md-text-size), var(--md-text-min-size)) !important;
         line-height: 1.6;
     }
 

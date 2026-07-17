@@ -117,10 +117,15 @@
                                         <div class="p-5 bg-gray-50 dark:bg-gray-800/20 rounded-2xl border border-gray-100 dark:border-gray-800">
                                             <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Cuerpo de Texto</label>
                                             <div class="space-y-4">
-                                                <div>
-                                                    <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Tamaño Base</label>
-                                                    <input type="text" name="markdown_text_size" value="{{ $markdown['text_size'] }}" class="w-full bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 rounded-xl text-sm focus:ring-violet-500/20 focus:border-violet-500">
-                                                </div>
+                                            <div>
+                                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Tamaño Base</label>
+                                                <input type="text" name="markdown_text_size" value="{{ $markdown['text_size'] }}" class="w-full bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 rounded-xl text-sm focus:ring-violet-500/20 focus:border-violet-500">
+                                            </div>
+                                            <div>
+                                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Tamaño Mínimo</label>
+                                                <input type="text" name="markdown_text_min_size" value="{{ $markdown['text_min_size'] ?? '0.6875rem' }}" class="w-full bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 rounded-xl text-sm focus:ring-violet-500/20 focus:border-violet-500">
+                                                <p class="mt-1 text-[9px] text-gray-400">Tamaño mínimo cuando las líneas son muy largas</p>
+                                            </div>
                                             </div>
                                         </div>
                                     </div>
@@ -145,7 +150,7 @@
                             <h1 style="font-size: {{ $markdown['h1_size'] }}; font-weight: {{ $markdown['h1_weight'] }}; color: {{ $markdown['accent_color'] }}; margin-top:0;" class="mb-4">Título H1</h1>
                             <h2 style="font-size: {{ $markdown['h2_size'] }}; font-weight: {{ $markdown['h2_weight'] }};" class="mb-3">Subtítulo H2</h2>
                             <h3 style="font-size: {{ $markdown['h3_size'] }}; font-weight: {{ $markdown['h3_weight'] }};" class="mb-2">Sección H3</h3>
-                            <p style="font-size: {{ $markdown['text_size'] }};" class="text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+                            <p style="font-size: {{ $markdown['text_size'] }}; min-font-size: {{ $markdown['text_min_size'] ?? '0.6875rem' }};" class="text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
                                 Este es el cuerpo de texto. Incluye <a href="#" style="color: {{ $markdown['accent_color'] }}; text-decoration: underline;">enlaces</a> y otros elementos.
                             </p>
                             <ul class="mb-4 space-y-1">
