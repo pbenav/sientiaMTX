@@ -37,10 +37,15 @@ class TimeLogController extends Controller
                 // CASO 1: En MTX tenía jornada abierta, pero en CTH ya la cerró (ej. aspa verde aplicada).
                 // Al pulsar el botón rojo en MTX, su intención es detener, jamás abrir un nuevo evento en CTH.
                 $endTime = !empty($cthStatus['end_time']) ? \Carbon\Carbon::parse($cthStatus['end_time'])->setTimezone(date_default_timezone_get()) : now();
-                $activeLog->update(['end_at' => $endTime]);
+                $workdayEndTime = $endTime->copy();
+                if ($workdayEndTime->lt($activeLog->start_at)) $workdayEndTime = $activeLog->start_at;
+                
+                $activeLog->update(['end_at' => $workdayEndTime]);
                 $activeTaskLog = $user->activeTaskLog();
                 if ($activeTaskLog) {
-                    $activeTaskLog->update(['end_at' => $endTime]);
+                    $taskEndTime = $endTime->copy();
+                    if ($taskEndTime->lt($activeTaskLog->start_at)) $taskEndTime = $activeTaskLog->start_at;
+                    $activeTaskLog->update(['end_at' => $taskEndTime]);
                 }
                 return response()->json([
                     'status' => 'stopped',
@@ -236,12 +241,17 @@ class TimeLogController extends Controller
                 } elseif (!$cthStatus['is_working'] && $activeWorkday) {
                     // Si en CTH NO está trabajando pero en MTX sí, cerramos el contador local con la hora EXACTA de CTH
                     $endTime = !empty($cthStatus['end_time']) ? \Carbon\Carbon::parse($cthStatus['end_time'])->setTimezone(date_default_timezone_get()) : now();
-                    $activeWorkday->update(['end_at' => $endTime]);
+                    
+                    $workdayEndTime = $endTime->copy();
+                    if ($workdayEndTime->lt($activeWorkday->start_at)) $workdayEndTime = $activeWorkday->start_at;
+                    $activeWorkday->update(['end_at' => $workdayEndTime]);
                     
                     // Asegurar que cualquier tarea activa también se cierre
                     $activeTask = $user->activeTaskLog();
                     if ($activeTask) {
-                        $activeTask->update(['end_at' => $endTime]);
+                        $taskEndTime = $endTime->copy();
+                        if ($taskEndTime->lt($activeTask->start_at)) $taskEndTime = $activeTask->start_at;
+                        $activeTask->update(['end_at' => $taskEndTime]);
                     }
                 } elseif ($cthStatus['is_working'] && $activeWorkday && !empty($cthStatus['start_time'])) {
                     // Y si en CTH le han cambiado la hora de inicio (start_at), ¡también sincronizamos la hora de inicio en MTX!
@@ -261,8 +271,8 @@ class TimeLogController extends Controller
             'active_task_id' => $activeTaskLog?->task_id,
             'active_task_title' => $taskObj?->title,
             'active_task_team_id' => $taskObj?->team_id,
-            'workday_elapsed' => $user->activeWorkdayLog() ? $user->activeWorkdayLog()->start_at->diffInSeconds(now()) : 0,
-            'task_elapsed' => $activeTaskLog ? $activeTaskLog->start_at->diffInSeconds(now()) : 0,
+            'workday_elapsed' => $user->activeWorkdayLog() ? max(0, $user->activeWorkdayLog()->start_at->diffInSeconds(now(), false)) : 0,
+            'task_elapsed' => $activeTaskLog ? max(0, $activeTaskLog->start_at->diffInSeconds(now(), false)) : 0,
             'cth' => $user->sync_with_cth ? [
                 'enabled' => true,
                 'server' => parse_url($user->cth_api_url ?: config('services.cth.url'), PHP_URL_HOST),

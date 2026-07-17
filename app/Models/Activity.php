@@ -334,14 +334,14 @@ class Activity extends Model
     {
         // Own logs
         $ownSeconds = (int) $this->timeLogs()->whereNotNull('end_at')->get()
-            ->sum(fn($log) => $log->start_at->diffInSeconds($log->end_at));
+            ->sum(fn($log) => max(0, $log->start_at->diffInSeconds($log->end_at, false)));
 
         // Children logs
         $childrenSeconds = 0;
         if ($this->children()->exists()) {
              $childrenIds = $this->children()->pluck('id');
              $childrenLogs = \App\Models\TimeLog::whereIn('task_id', $childrenIds)->whereNotNull('end_at')->get();
-             $childrenSeconds = (int) $childrenLogs->sum(fn($log) => $log->start_at->diffInSeconds($log->end_at));
+             $childrenSeconds = (int) $childrenLogs->sum(fn($log) => max(0, $log->start_at->diffInSeconds($log->end_at, false)));
         }
 
         return $ownSeconds + $childrenSeconds;
@@ -369,7 +369,7 @@ class Activity extends Model
         $own = (int) $this->timeLogs()
             ->where('created_at', '>=', now()->startOfDay())
             ->get()
-            ->sum(fn($log) => $log->end_at ? $log->start_at->diffInSeconds($log->end_at) : $log->start_at->diffInSeconds(now()));
+            ->sum(fn($log) => $log->end_at ? max(0, $log->start_at->diffInSeconds($log->end_at, false)) : max(0, $log->start_at->diffInSeconds(now(), false)));
 
         $childrenSeconds = 0;
         if ($this->children()->exists()) {
@@ -377,7 +377,7 @@ class Activity extends Model
             $childrenLogs = \App\Models\TimeLog::whereIn('task_id', $childrenIds)
                 ->where('created_at', '>=', now()->startOfDay())
                 ->get();
-            $childrenSeconds = (int) $childrenLogs->sum(fn($log) => $log->end_at ? $log->start_at->diffInSeconds($log->end_at) : $log->start_at->diffInSeconds(now()));
+            $childrenSeconds = (int) $childrenLogs->sum(fn($log) => $log->end_at ? max(0, $log->start_at->diffInSeconds($log->end_at, false)) : max(0, $log->start_at->diffInSeconds(now(), false)));
         }
 
         return $own + $childrenSeconds;

@@ -761,7 +761,7 @@
         document.addEventListener('alpine:init', () => {
             Alpine.store('timer', {
                 activeTaskId: {{ auth()->check() ? (auth()->user()->activeTaskLog()?->task_id ?? 'null') : 'null' }},
-                elapsed: {{ auth()->check() && auth()->user()->activeTaskLog() ? auth()->user()->activeTaskLog()->start_at->diffInSeconds(now()) : 0 }},
+                elapsed: {{ auth()->check() && auth()->user()->activeTaskLog() ? max(0, auth()->user()->activeTaskLog()->start_at->diffInSeconds(now(), false)) : 0 }},
                 timer: null,
 
                 async fetch() {
