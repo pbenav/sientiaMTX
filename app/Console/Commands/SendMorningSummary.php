@@ -101,6 +101,8 @@ class SendMorningSummary extends Command
                   ->orWhereDate('due_date', '<=', now())
                   ->orWhereNull('scheduled_date');
             })
+            ->orderByRaw("FIELD(priority, 'critical', 'high', 'medium', 'low')")
+            ->orderByRaw("ISNULL(due_date), due_date ASC")
             ->with('team')
             ->limit(30)
             ->get()
