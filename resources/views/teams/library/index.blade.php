@@ -101,9 +101,71 @@
                     </div>
                     
                     <div class="p-6 flex-1 flex flex-col">
-                        <div class="prose dark:prose-invert max-w-none text-sm w-full">
-                            {!! strip_tags($activeDocument->notes) ? $activeDocument->notes : '<p class="text-gray-400 italic">No hay notas directas en la wiki para este documento. Revisa los archivos adjuntos.</p>' !!}
+                        <div class="prose dark:prose-invert max-w-none text-sm w-full mb-6">
+                            {!! strip_tags($activeDocument->notes) ? $activeDocument->notes : '' !!}
                         </div>
+
+                        @php
+                            $chapters = $activeDocument->metadata['chapters'] ?? [];
+                        @endphp
+                        
+                        @if(count($chapters) > 0)
+                            <div id="chapters-section" class="bg-gray-50/50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-colors space-y-6">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-2xl bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0 border border-violet-200 dark:border-violet-800/50 shadow-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-sm font-bold text-gray-800 dark:text-white">Libro: Estructura del Documento</h3>
+                                            <p class="text-[10px] text-gray-400 font-medium uppercase tracking-wide">{{ count($chapters) }} Capítulos</p>
+                                        </div>
+                                    </div>
+                                    <button type="button" onclick="window.print()" class="flex items-center gap-1.5 text-xs bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 px-3.5 py-2 rounded-xl border border-gray-200 dark:border-gray-700 font-bold transition-all shadow-sm active:scale-95">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                        </svg>
+                                        Imprimir
+                                    </button>
+                                </div>
+                                
+                                <div class="space-y-4">
+                                    @foreach($chapters as $idx => $chapter)
+                                    <div x-data="{ open: false }" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-4 shadow-sm">
+                                        <div class="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800/50 cursor-pointer group" @click="open = !open">
+                                            <div class="flex items-center gap-3 min-w-0">
+                                                <span class="w-7 h-7 rounded-xl bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 font-black text-xs flex items-center justify-center border border-violet-100 dark:border-violet-800/50 shrink-0 group-hover:scale-110 transition-transform">
+                                                    {{ $idx + 1 }}
+                                                </span>
+                                                <div class="min-w-0">
+                                                    <h4 class="text-xs font-bold text-gray-900 dark:text-white truncate group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">{{ $chapter['title'] ?? 'Capítulo sin título' }}</h4>
+                                                    <p class="text-[10px] text-gray-400">Por {{ $chapter['author_name'] ?? 'Autor' }} • {{ isset($chapter['updated_at']) ? \Carbon\Carbon::parse($chapter['updated_at'])->diffForHumans() : '' }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center gap-2 shrink-0">
+                                                <div class="text-gray-400 transition-transform duration-200" :class="open ? 'rotate-180' : ''">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div x-show="open" x-collapse style="display: none;">
+                                            <div id="chapter-content-{{ $idx }}" class="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 resize-y min-h-[120px] pr-4 p-4 bg-gray-50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/80 rounded-2xl mt-2">
+                                                {!! str($chapter['content'] ?? '')->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @else
+                            @if(!strip_tags($activeDocument->notes))
+                                <p class="text-gray-400 italic">No hay notas directas ni capítulos en la wiki para este documento. Revisa los archivos adjuntos.</p>
+                            @endif
+                        @endif
                         
                         @if($activeDocument->attachments->isNotEmpty())
                             <div class="mt-8 pt-8 border-t border-gray-100 dark:border-gray-800">
