@@ -107,7 +107,7 @@
                         @endphp
                         @if($hasNotes)
                             <div class="prose dark:prose-invert max-w-none text-sm w-full mb-6">
-                                {!! $activeDocument->notes !!}
+                                {!! str($activeDocument->notes)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
                             </div>
                         @endif
 
