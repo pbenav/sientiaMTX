@@ -34,12 +34,22 @@
         <div class="w-full md:w-1/4 xl:w-1/5 flex flex-col gap-4">
             <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden flex flex-col h-[calc(100vh-14rem)] sticky top-24">
                 <div class="p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20">
-                    <h3 class="text-xs font-black uppercase tracking-widest text-gray-900 dark:text-white flex items-center gap-2">
+                    <h3 class="text-xs font-black uppercase tracking-widest text-gray-900 dark:text-white flex items-center gap-2 mb-3">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                         </svg>
                         Índice de Documentos
                     </h3>
+                    <form action="{{ route('teams.library', $team) }}" method="GET" class="relative">
+                        <input type="text" name="q" value="{{ request('q') }}" placeholder="Buscar en la wiki..." 
+                               class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 pl-8 pr-3 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all placeholder-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-2.5 top-2.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        @if(request('doc'))
+                            <input type="hidden" name="doc" value="{{ request('doc') }}">
+                        @endif
+                    </form>
                 </div>
                 
                 <div class="flex-1 overflow-y-auto no-scrollbar p-2">

@@ -12,11 +12,15 @@ class TeamLibraryController extends Controller
     {
         $this->authorize('view', $team);
 
-        // Fetch all activities of type document that are completed or archived, or just all documents.
-        // Let's bring all documents for the wiki, prioritizing completed ones.
-        $documents = Activity::where('team_id', $team->id)
-            ->where('type', 'document')
-            ->orderBy('is_archived', 'asc') // Active first
+        $query = Activity::where('team_id', $team->id)
+            ->where('type', 'document');
+
+        if ($request->filled('q')) {
+            $searchTerm = '%' . $request->input('q') . '%';
+            $query->where('title', 'LIKE', $searchTerm);
+        }
+
+        $documents = $query->orderBy('is_archived', 'asc') // Active first
             ->orderBy('created_at', 'desc')
             ->get();
 
