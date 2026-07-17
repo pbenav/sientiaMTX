@@ -289,6 +289,7 @@
                                             @if($cita->status === 'confirmed') bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400
                                             @elseif($cita->status === 'cancelled') bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400
                                             @elseif($cita->status === 'completed') bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400
+                                            @elseif($cita->status === 'no_show') bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400
                                             @elseif($cita->status === 'blocked') bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400
                                             @else bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 @endif">
                                             {{ $cita->status_label }}

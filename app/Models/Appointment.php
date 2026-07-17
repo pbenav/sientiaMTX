@@ -40,6 +40,7 @@ class Appointment extends Model
         'confirmed' => 'Confirmada',
         'cancelled' => 'Cancelada',
         'completed' => 'Completada',
+        'no_show'   => 'No Presentado',
         'blocked'   => 'Bloqueada',
     ];
 
@@ -48,6 +49,7 @@ class Appointment extends Model
         'confirmed' => 'emerald',
         'cancelled' => 'red',
         'completed' => 'violet',
+        'no_show'   => 'rose',
         'blocked'   => 'gray',
     ];
 

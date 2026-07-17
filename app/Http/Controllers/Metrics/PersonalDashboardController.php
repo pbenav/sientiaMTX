@@ -63,6 +63,29 @@ class PersonalDashboardController extends Controller
             ->groupBy('type')
             ->pluck('count', 'type');
 
+        // Desglosar reuniones vinculadas a citas previas del total de "meeting"
+        $appointmentLinkedMeetings = \App\Models\Activity::where('type', 'meeting')
+            ->whereExists(function($q) {
+                $q->select(\DB::raw(1))
+                  ->from('appointments')
+                  ->whereColumn('appointments.activity_id', 'activities.id');
+            })
+            ->where(function($q) {
+                $q->whereDate('updated_at', today())
+                  ->orWhereDate('created_at', today())
+                  ->orWhereJsonContains('status', 'in_progress');
+            })
+            ->count();
+
+        // Si hay reuniones vinculadas a citas, las separamos como tipo propio
+        if ($appointmentLinkedMeetings > 0) {
+            $realMeetings = ($activitiesByType->get('meeting', 0)) - $appointmentLinkedMeetings;
+            $activitiesByType = $activitiesByType->put('meeting', max(0, $realMeetings));
+            if ($appointmentLinkedMeetings > 0) {
+                $activitiesByType = $activitiesByType->put('appointment_meeting', $appointmentLinkedMeetings);
+            }
+        }
+
         $kudosToday = \App\Models\Kudo::with('sender')
             ->where('to_user_id', $user->id)
             ->whereDate('created_at', today())

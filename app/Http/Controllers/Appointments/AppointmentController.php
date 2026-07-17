@@ -451,7 +451,7 @@ class AppointmentController extends Controller
         $data = $request->validate([
             'appointment_date'  => 'sometimes|date',
             'appointment_time'  => 'sometimes|string',
-            'status'            => 'sometimes|in:pending,confirmed,cancelled,completed,blocked',
+            'status'            => 'sometimes|in:pending,confirmed,cancelled,completed,blocked,no_show',
             'member_notes'      => 'nullable|string|max:2000',
             'expediente_id'     => 'nullable|exists:expedientes,id',
             'cancellation_reason' => 'nullable|string|max:500',
