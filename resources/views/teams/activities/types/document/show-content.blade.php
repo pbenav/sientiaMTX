@@ -37,7 +37,7 @@
             <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Estado del Documento</p>
             <form action="{{ route('teams.activities.update', [$team, $activity]) }}" method="POST" class="w-full">
                 @csrf
-                @method('PUT')
+                @method('PATCH')
                 <div class="flex items-center p-1 bg-gray-100 dark:bg-gray-800 rounded-xl w-full sm:w-auto sm:inline-flex overflow-x-auto no-scrollbar shadow-inner">
                     @php
                         $docStatuses = ['draft', 'under_review', 'approved', 'completed', 'archived'];
