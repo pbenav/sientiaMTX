@@ -96,6 +96,11 @@
         if (typeof marked === 'undefined') {
             document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"><\/script>');
         }
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof marked !== 'undefined') {
+                marked.use({ breaks: true, gfm: true });
+            }
+        });
     </script>
 
     <!-- Scripts & Styles -->
