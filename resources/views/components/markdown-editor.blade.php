@@ -379,7 +379,7 @@
                     </div>
                 </div>
                 <div class="h-6 w-px bg-gray-200 dark:bg-gray-800"></div>
-                <button type="button" @click="if(typeof printSection === 'function') printSection('Vista Previa', id + '-preview'); else { const w = window.open('', '_blank'); w.document.write('<html><head><title>Imprimir</title></head><body style=\'font-family:sans-serif;padding:2rem;\'>' + preview + '</body></html>'); w.document.close(); w.print(); }"
+                <button type="button" @click="if(typeof SientiaPrint !== 'undefined') SientiaPrint.print('Impresión de Texto', preview); else { const w = window.open('', '_blank'); w.document.write('<html><head><title>Imprimir</title><style>body{font-family:sans-serif;padding:2rem;line-height:1.6} img{max-width:100%} pre{background:#f1f5f9;padding:1rem;border-radius:0.5rem;overflow-x:auto}</style></head><body>' + preview + '</body></html>'); w.document.close(); setTimeout(() => w.print(), 500); }"
                     class="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-orange-500 transition-colors" title="Imprimir contenido">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
