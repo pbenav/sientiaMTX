@@ -3,7 +3,7 @@
     use App\Models\Appointment;
 @endphp
 
-<x-app-layout maxWidth="[1600px]">
+<x-app-layout maxWidth="max-w-none">
 @section('title', 'Mis Citas Previas')
 
 <x-slot name="header">

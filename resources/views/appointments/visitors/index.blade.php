@@ -1,4 +1,4 @@
-<x-app-layout maxWidth="[1600px]">
+<x-app-layout maxWidth="max-w-none">
 @section('title', 'Directorio de Personas')
 
 <x-slot name="header">
@@ -46,7 +46,51 @@
             </div>
         @endif
 
-        <div class="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <!-- Filtros -->
+        <div class="mb-4 bg-gray-50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-700/30 rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-3">
+                <button type="button" id="filterToggle" class="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.01a1 1 0 01-.293.707l-4.206 4.206A1 1 0 0115 12v4a1 1 0 01-.293.707l-4.206 4.206A1 1 0 0110 17v4a1 1 0 01-1 1H4a1 1 0 01-1-1v-2.01a1 1 0 01.293-.707l4.206-4.206A1 1 0 018 12V8a1 1 0 01.293-.707l4.206-4.206A1 1 0 0112 5V4a1 1 0 01-1-1z"/></svg>
+                    Filtros
+                    <span id="filterBadge" class="hidden bg-cyan-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">0</span>
+                </button>
+                <a href="{{ route('appointments.visitors.index', $team) }}" class="text-xs font-bold text-gray-400 hover:text-red-500 transition-colors">Limpiar todo</a>
+            </div>
+            <div id="filterPanel" class="hidden space-y-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Nombre</label>
+                        <input type="text" name="filter_name" value="{{ $filterName ?? '' }}" placeholder="Nombre..." 
+                               class="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-xl text-xs font-medium focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">DNI</label>
+                        <input type="text" name="filter_dni" value="{{ $filterDni ?? '' }}" placeholder="DNI..." 
+                               class="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-xl text-xs font-medium focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Ubicación</label>
+                        <input type="text" name="filter_city" value="{{ $filterCity ?? '' }}" placeholder="Ciudad..." 
+                               class="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-xl text-xs font-medium focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Mín. citas</label>
+                        <input type="number" name="filter_min_appointments" value="{{ $filterMinAppointments ?? '' }}" placeholder="0..." min="0"
+                               class="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-xl text-xs font-medium focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <a href="{{ route('appointments.visitors.index', $team) }}" class="px-4 py-2 text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">Cancelar</a>
+                    <form method="GET" action="{{ route('appointments.visitors.index', $team) }}" class="flex gap-2">
+                        <input type="hidden" name="search" value="{{ request('search') }}">
+                        <button type="submit" class="px-4 py-2 text-xs font-black uppercase tracking-wider bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl transition-all shadow-sm">Aplicar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Búsqueda -->
+        <div class="mb-4 flex flex-col sm:flex-row gap-4 items-center justify-between">
             <form method="GET" action="{{ route('appointments.visitors.index', $team) }}" class="w-full md:w-1/2 xl:w-1/3 relative">
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Buscar por nombre, DNI, correo o teléfono..." 
                        class="w-full pl-11 pr-4 py-3 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-2xl text-sm font-medium focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-sm">
@@ -77,10 +121,50 @@
                     <table class="w-full whitespace-nowrap text-left text-sm">
                         <thead class="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider text-[10px]">
                             <tr>
-                                <th class="px-6 py-4">{{ __('Nombre / DNI') }}</th>
-                                <th class="px-6 py-4">{{ __('Contacto') }}</th>
-                                <th class="px-6 py-4">{{ __('Ubicación') }}</th>
-                                <th class="px-6 py-4 text-center">{{ __('Citas') }}</th>
+                                <th class="px-6 py-4">
+                                    <a href="{{ route('appointments.visitors.index', $team) }}?{{ http_build_query(array_merge(request()->all(), ['sort_by' => 'first_name', 'sort_dir' => $sortDir === 'asc' ? 'desc' : 'asc']) + ['search' => null]) }}"
+                                       class="flex items-center gap-1.5 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
+                                        Nombre / DNI
+                                        @if($sortBy === 'first_name' || $sortBy === 'last_name')
+                                            <svg class="w-3 h-3 {{ $sortDir === 'asc' ? 'rotate-0' : 'rotate-180' }}" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4l-8 8h5v8h6v-8h5z"/></svg>
+                                        @else
+                                            <svg class="w-3 h-3 opacity-30" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4l-8 8h5v8h6v-8h5z"/></svg>
+                                        @endif
+                                    </a>
+                                </th>
+                                <th class="px-6 py-4">
+                                    <a href="{{ route('appointments.visitors.index', $team) }}?{{ http_build_query(array_merge(request()->all(), ['sort_by' => 'email', 'sort_dir' => $sortDir === 'asc' ? 'desc' : 'asc']) + ['search' => null]) }}"
+                                       class="flex items-center gap-1.5 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
+                                        Contacto
+                                        @if($sortBy === 'email')
+                                            <svg class="w-3 h-3 {{ $sortDir === 'asc' ? 'rotate-0' : 'rotate-180' }}" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4l-8 8h5v8h6v-8h5z"/></svg>
+                                        @else
+                                            <svg class="w-3 h-3 opacity-30" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4l-8 8h5v8h6v-8h5z"/></svg>
+                                        @endif
+                                    </a>
+                                </th>
+                                <th class="px-6 py-4">
+                                    <a href="{{ route('appointments.visitors.index', $team) }}?{{ http_build_query(array_merge(request()->all(), ['sort_by' => 'city', 'sort_dir' => $sortDir === 'asc' ? 'desc' : 'asc']) + ['search' => null]) }}"
+                                       class="flex items-center gap-1.5 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
+                                        Ubicación
+                                        @if($sortBy === 'city')
+                                            <svg class="w-3 h-3 {{ $sortDir === 'asc' ? 'rotate-0' : 'rotate-180' }}" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4l-8 8h5v8h6v-8h5z"/></svg>
+                                        @else
+                                            <svg class="w-3 h-3 opacity-30" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4l-8 8h5v8h6v-8h5z"/></svg>
+                                        @endif
+                                    </a>
+                                </th>
+                                <th class="px-6 py-4 text-center">
+                                    <a href="{{ route('appointments.visitors.index', $team) }}?{{ http_build_query(array_merge(request()->all(), ['sort_by' => 'appointments_count', 'sort_dir' => $sortDir === 'asc' ? 'desc' : 'asc']) + ['search' => null]) }}"
+                                       class="flex items-center justify-center gap-1.5 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
+                                        Citas
+                                        @if($sortBy === 'appointments_count')
+                                            <svg class="w-3 h-3 {{ $sortDir === 'asc' ? 'rotate-0' : 'rotate-180' }}" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4l-8 8h5v8h6v-8h5z"/></svg>
+                                        @else
+                                            <svg class="w-3 h-3 opacity-30" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4l-8 8h5v8h6v-8h5z"/></svg>
+                                        @endif
+                                    </a>
+                                </th>
                                 <th class="px-6 py-4 text-right">{{ __('Acciones') }}</th>
                             </tr>
                         </thead>
@@ -156,4 +240,38 @@
         @endif
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle filter panel
+    const filterToggle = document.getElementById('filterToggle');
+    const filterPanel = document.getElementById('filterPanel');
+    const filterBadge = document.getElementById('filterBadge');
+    
+    if (filterToggle && filterPanel) {
+        filterToggle.addEventListener('click', function() {
+            filterPanel.classList.toggle('hidden');
+        });
+    }
+    
+    // Update badge count
+    function updateBadge() {
+        const params = new URLSearchParams(window.location.search);
+        let count = 0;
+        if (params.get('filter_name')) count++;
+        if (params.get('filter_dni')) count++;
+        if (params.get('filter_city')) count++;
+        if (params.get('filter_min_appointments')) count++;
+        
+        if (count > 0) {
+            filterBadge.textContent = count;
+            filterBadge.classList.remove('hidden');
+        } else {
+            filterBadge.classList.add('hidden');
+        }
+    }
+    
+    updateBadge();
+});
+</script>
 </x-app-layout>

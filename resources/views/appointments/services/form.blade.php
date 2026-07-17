@@ -1,6 +1,6 @@
 @php $isEdit = isset($service); $action = $isEdit ? route('appointments.services.update', [$team, $service]) : route('appointments.services.store', $team); @endphp
 
-<x-app-layout maxWidth="[1600px]">
+<x-app-layout maxWidth="max-w-none">
 @section('title', $isEdit ? 'Editar Servicio — '.$service->name : 'Nuevo Servicio de Cita')
 
 <x-slot name="header">

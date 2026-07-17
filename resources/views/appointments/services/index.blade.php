@@ -1,4 +1,4 @@
-<x-app-layout maxWidth="[1600px]">
+<x-app-layout maxWidth="max-w-none">
 @section('title', 'Mis Servicios de Cita Previa')
 
 <x-slot name="header">

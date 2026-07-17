@@ -1,4 +1,4 @@
-<x-app-layout maxWidth="[1600px]">
+<x-app-layout maxWidth="max-w-none">
 @section('title', 'Bloqueos de Tramos — Citas Previas')
 
 <x-slot name="header">

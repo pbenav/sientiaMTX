@@ -12,6 +12,19 @@ class AppointmentVisitorController extends Controller
     public function index(Request $request, Team $team)
     {
         $search = $request->input('search');
+        $sortBy = $request->input('sort_by', 'first_name');
+        $sortDir = $request->input('sort_dir', 'asc');
+        $filterName = $request->input('filter_name');
+        $filterDni = $request->input('filter_dni');
+        $filterCity = $request->input('filter_city');
+        $filterMinAppointments = $request->input('filter_min_appointments');
+
+        // Validar y limitar campos de ordenación
+        $allowedSortFields = ['first_name', 'last_name', 'dni', 'email', 'phone', 'city', 'appointments_count'];
+        if (!in_array($sortBy, $allowedSortFields)) {
+            $sortBy = 'first_name';
+        }
+        $sortDir = in_array(strtolower($sortDir), ['asc', 'desc']) ? strtolower($sortDir) : 'asc';
 
         // Obtener los visitantes que tienen citas con servicios de este equipo
         $visitors = AppointmentVisitor::whereHas('appointments', function ($query) use ($team) {
@@ -28,17 +41,45 @@ class AppointmentVisitorController extends Controller
                   ->orWhere('phone', 'like', "%{$search}%");
             });
         })
+        ->when($filterName, function ($query, $filterName) {
+            $query->where(function ($q) use ($filterName) {
+                $q->where('first_name', 'like', "%{$filterName}%")
+                  ->orWhere('last_name', 'like', "%{$filterName}%");
+            });
+        })
+        ->when($filterDni, function ($query, $filterDni) {
+            $query->where('dni', 'like', "%{$filterDni}%");
+        })
+        ->when($filterCity, function ($query, $filterCity) {
+            $query->where('city', 'like', "%{$filterCity}%");
+        })
+        ->when($filterMinAppointments, function ($query, $filterMinAppointments) {
+            $query->whereHas('appointments', function ($q) use ($team, $filterMinAppointments) {
+                $q->whereHas('service', function ($sq) use ($team) {
+                    $sq->where('team_id', $team->id);
+                });
+            })
+            ->withCount(['appointments' => function ($query) use ($team) {
+                $query->whereHas('service', function ($q) use ($team) {
+                    $q->where('team_id', $team->id);
+                });
+            }])
+            ->having('appointments_count', '>=', (int)$filterMinAppointments);
+        })
         ->withCount(['appointments' => function ($query) use ($team) {
             $query->whereHas('service', function ($q) use ($team) {
                 $q->where('team_id', $team->id);
             });
         }])
-        ->orderBy('first_name')
-        ->orderBy('last_name')
+        ->when($sortBy === 'appointments_count', function ($query) use ($sortDir) {
+            $query->orderBy('appointments_count', $sortDir);
+        }, function () use ($sortBy, $sortDir) {
+            $query->orderBy($sortBy, $sortDir);
+        })
         ->paginate(15)
         ->withQueryString();
 
-        return view('appointments.visitors.index', compact('team', 'visitors'));
+        return view('appointments.visitors.index', compact('team', 'visitors', 'sortBy', 'sortDir', 'filterName', 'filterDni', 'filterCity', 'filterMinAppointments'));
     }
 
     public function edit(Team $team, AppointmentVisitor $visitor)
