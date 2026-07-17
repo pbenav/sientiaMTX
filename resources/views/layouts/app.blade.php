@@ -2747,12 +2747,22 @@
                             <title>${title}</title>
                             <meta charset="utf-8">
                             <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+                            <script src="https://cdn.tailwindcss.com"></script>
+                            <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+                            <script>
+                                tailwind.config = {
+                                    theme: {
+                                        extend: {
+                                            fontFamily: { sans: ['Inter', 'sans-serif'] },
+                                        }
+                                    }
+                                }
+                            </script>
                             <style>
                                 body {
                                     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
                                     padding: 40px 60px;
                                     color: #1e293b;
-                                    line-height: 1.6;
                                     background-color: #fff;
                                     -webkit-print-color-adjust: exact;
                                     print-color-adjust: exact;
@@ -2786,24 +2796,6 @@
                                     text-transform: uppercase;
                                     margin-top: 10px;
                                 }
-                                .content {
-                                    font-size: 14px;
-                                    color: #334155;
-                                    word-wrap: break-word;
-                                }
-                                .content h1 { font-size: 18px; font-weight: 800; margin-top: 24px; color: #0f172a; margin-bottom: 12px; }
-                                .content h2 { font-size: 16px; font-weight: 700; margin-top: 20px; color: #1e293b; margin-bottom: 10px; }
-                                .content h3 { font-size: 14px; font-weight: 700; margin-top: 16px; color: #334155; }
-                                .content p { margin-bottom: 12px; }
-                                .content ul, .content ol { padding-left: 20px; margin-bottom: 15px; }
-                                .content li { margin-bottom: 4px; }
-                                .content img { max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0; }
-                                .content blockquote { border-left: 4px solid #e2e8f0; padding-left: 16px; color: #64748b; font-style: italic; margin: 15px 0; }
-                                .content code { font-family: Consolas, Monaco, monospace; background-color: #f1f5f9; padding: 2px 4px; border-radius: 4px; font-size: 12px; }
-                                .content pre { background-color: #f8fafc; padding: 12px; border-radius: 8px; overflow-x: auto; border: 1px solid #e2e8f0; margin: 15px 0; font-size: 12px; }
-                                .content table { border-collapse: collapse; width: 100%; margin: 15px 0; }
-                                .content th, .content td { border: 1px solid #e2e8f0; padding: 8px 10px; text-align: left; font-size: 12px; }
-                                .content th { background-color: #f8fafc; font-weight: 700; color: #1e293b; }
                                 .logo-watermark {
                                     position: fixed;
                                     bottom: 30px;
@@ -2819,13 +2811,13 @@
                                     body { padding: 0; color: #000; }
                                     .print-header { border-color: #000; }
                                     .brand { color: #000; }
-                                    .content a { text-decoration: none; color: #000; }
+                                    .prose a { text-decoration: none; color: #000; }
                                 }
                             </style>
                         </head>
                         <body>
                             ${headerHtml}
-                            <div class="content">${htmlContent}</div>
+                            <div class="content prose prose-sm max-w-none break-words leading-relaxed">${htmlContent}</div>
                             ${watermarkHtml}
                             <script>
                                 window.onload = function() {
