@@ -67,7 +67,7 @@
                     if (data.cth_result.success) {
                         window.Swal.fire({
                             toast: true,
-                            position: 'bottom-end',
+                            position: window.innerWidth < 640 ? 'top' : 'bottom-end',
                             showConfirmButton: false,
                             timer: 4000,
                             timerProgressBar: true,
@@ -140,7 +140,7 @@
                         } else {
                             window.Swal.fire({
                                 toast: true,
-                                position: 'bottom-end',
+                                position: window.innerWidth < 640 ? 'top' : 'bottom-end',
                                 showConfirmButton: false,
                                 timer: 7000,
                                 timerProgressBar: true,
@@ -183,7 +183,7 @@
         }).then(() => {
             this.showMoodModal = false;
             if (typeof window.Swal !== 'undefined') {
-                window.Swal.fire({ toast: true, position: 'bottom-end', icon: 'success', title: '¡Energía registrada!', showConfirmButton: false, timer: 3000, customClass: { popup: 'bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-xl rounded-2xl' } });
+                window.Swal.fire({ toast: true, position: window.innerWidth < 640 ? 'top' : 'bottom-end', icon: 'success', title: '¡Energía registrada!', showConfirmButton: false, timer: 3000, customClass: { popup: 'bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-xl rounded-2xl' } });
             }
         });
     },
