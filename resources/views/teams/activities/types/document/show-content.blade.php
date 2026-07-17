@@ -32,19 +32,31 @@
 
 {{-- Document Status & Collaborators --}}
 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm">
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Estado</p>
-            <span class="px-3 py-1 rounded-lg text-xs font-black bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800/30">
-                {{ $activity->status_value ?? 'borrador' }}
-            </span>
+    <div class="flex flex-col xl:flex-row gap-6 justify-between">
+        <div class="flex-1">
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Estado del Documento</p>
+            <form action="{{ route('teams.activities.update', [$team, $activity]) }}" method="POST" class="w-full">
+                @csrf
+                @method('PUT')
+                <div class="flex items-center p-1 bg-gray-100 dark:bg-gray-800 rounded-xl w-full sm:w-auto sm:inline-flex overflow-x-auto no-scrollbar shadow-inner">
+                    @php
+                        $docStatuses = ['draft', 'under_review', 'approved', 'completed', 'archived'];
+                    @endphp
+                    @foreach($docStatuses as $val)
+                        <label class="relative cursor-pointer shrink-0 px-3 sm:px-5 py-2 text-[10px] sm:text-xs font-bold uppercase tracking-wider rounded-lg transition-all text-center flex-1 sm:flex-none {{ $activity->status_value == $val ? 'bg-white dark:bg-gray-700 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-200/50 dark:border-gray-600/50' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-700/50' }}">
+                            <input type="radio" name="status" value="{{ $val }}" class="hidden" onchange="this.form.submit()" {{ $activity->status_value == $val ? 'checked' : '' }}>
+                            {{ __("activities.statuses.{$val}") }}
+                        </label>
+                    @endforeach
+                </div>
+            </form>
         </div>
         @if(!empty($meta['collaborators']))
-        <div>
+        <div class="xl:w-1/3 shrink-0">
             <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Colaboradores</p>
             <div class="flex gap-2 flex-wrap">
                 @foreach((array)$meta['collaborators'] as $collab)
-                <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 border border-orange-200 dark:border-orange-800/30">{{ $collab }}</span>
+                <span class="px-2.5 py-1 rounded-lg text-[10px] sm:text-xs font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 border border-orange-200 dark:border-orange-800/30 shadow-sm">{{ $collab }}</span>
                 @endforeach
             </div>
         </div>
