@@ -438,6 +438,24 @@ class SurveyController extends Controller
         });
     }
 
-    // Remaining core methods
+    /**
+     * Remove the specified survey from storage.
+     */
+    public function destroy($team, $survey = null)
+    {
+        $this->resolveParams($team, $survey);
+        
+        // Authorization: Solo admin o el creador de la encuesta puede borrarla (o según tu policy)
+        if (!Auth::user()->is_admin && $survey->created_by_id !== Auth::id()) {
+            abort(403);
+        }
 
+        $survey->delete();
+
+        $redirectRoute = $team ? 'teams.surveys.index' : 'global-surveys.index';
+        $params = $team ? [$team] : [];
+
+        return redirect()->route($redirectRoute, $params)
+            ->with('success', __('Encuesta eliminada correctamente.'));
+    }
 }
