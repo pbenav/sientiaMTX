@@ -295,15 +295,15 @@ class AppointmentController extends Controller
                 if ($appointment->task) {
                     $appointment->task->update(['status' => 'completed', 'progress_percentage' => 100]);
                 }
-            } elseif ($request->bulk_action === 'cancel' || $request->bulk_action === 'no_show') {
-                $reason = $request->bulk_action === 'no_show' 
-                    ? 'El ciudadano no se ha presentado a la cita en la fecha y hora acordadas.' 
-                    : $request->input('cancellation_reason');
-
+            } elseif ($request->bulk_action === 'no_show') {
+                $appointment->update([
+                    'status' => 'no_show',
+                ]);
+            } elseif ($request->bulk_action === 'cancel') {
                 $appointment->update([
                     'status'              => 'cancelled',
                     'cancelled_at'        => now(),
-                    'cancellation_reason' => $reason,
+                    'cancellation_reason' => $request->input('cancellation_reason'),
                 ]);
                 $this->deleteGoogleEvent($appointment);
                 $this->deleteGoogleTask($appointment);
