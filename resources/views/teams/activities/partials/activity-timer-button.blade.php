@@ -19,6 +19,12 @@
                 if (data.workday_started) {
                     window.dispatchEvent(new CustomEvent('workday-toggled', { detail: { working: true } }));
                 }
+            } else if (data.status === 'error') {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({ icon: 'error', title: 'Ups...', text: data.message });
+                } else {
+                    alert(data.message);
+                }
             } else {
                 if (Alpine.store('timer')) Alpine.store('timer').stop();
                 window.dispatchEvent(new CustomEvent('task-stopped', { detail: { taskId: this.taskId } }));

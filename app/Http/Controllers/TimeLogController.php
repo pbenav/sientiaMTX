@@ -177,8 +177,28 @@ class TimeLogController extends Controller
 
         $workdayStarted = false;
         if (!$user->activeWorkdayLog()) {
-            $user->timeLogs()->create(['type' => 'workday', 'start_at' => now()]);
-            $workdayStarted = true;
+            if ($user->sync_with_cth) {
+                $cthStatus = \App\Jobs\SyncWorkdayWithCth::checkStatus($user);
+                if ($cthStatus['success'] && $cthStatus['is_working']) {
+                    $startTime = !empty($cthStatus['start_time']) ? \Carbon\Carbon::parse($cthStatus['start_time'])->setTimezone(date_default_timezone_get()) : now();
+                    $user->timeLogs()->create(['type' => 'workday', 'start_at' => $startTime]);
+                    $workdayStarted = true;
+                } else {
+                    $cthResult = \App\Jobs\SyncWorkdayWithCth::syncNow($user, 'start');
+                    if (!$cthResult['success']) {
+                        return response()->json([
+                            'success' => false,
+                            'status' => 'error',
+                            'message' => __('No se pudo iniciar la tarea porque falló el inicio de jornada en CTH: ') . $cthResult['message']
+                        ], 400);
+                    }
+                    $user->timeLogs()->create(['type' => 'workday', 'start_at' => now()]);
+                    $workdayStarted = true;
+                }
+            } else {
+                $user->timeLogs()->create(['type' => 'workday', 'start_at' => now()]);
+                $workdayStarted = true;
+            }
         }
 
         // Update task status to in_progress if it's actionable and not already in progress
