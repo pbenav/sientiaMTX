@@ -1106,6 +1106,8 @@
                     </button>
                 </div>
             </div>
+        </div>
+
         {{-- BARRA FLOTANTE DE ACCIÓN MASIVA --}}
         <div id="bulkActionBar"
              class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[800] w-[95%] max-w-4xl flex flex-wrap md:flex-nowrap items-center justify-between md:justify-center gap-3 px-3 py-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-200 dark:border-gray-800 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.25)] transition-all duration-300">
