@@ -26,11 +26,7 @@
 
     get preview() {
         if (typeof marked === 'undefined') return '{{ __("Cargando...") }}';
-        marked.setOptions({
-            breaks: true,
-            gfm: true
-        });
-        return marked.parse(this.content || '');
+        return marked.parse(this.content || '', { breaks: true, gfm: true });
     },
 
     async fetchMentions() {
