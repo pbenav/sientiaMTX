@@ -170,5 +170,9 @@ return [
         'reviewing'   => 'En revisión',
         'deprecated'  => 'Deprecada',
         'legacy'      => 'Legacy',
+        'under_review'=> 'En revisión',
+        'in_debate'   => 'En debate',
+        'accepted'    => 'Aceptada',
+        'finished'    => 'Finalizada',
     ],
 ];

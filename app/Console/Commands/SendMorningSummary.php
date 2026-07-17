@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
-use App\Models\Task;
+use App\Models\Activity;
 use App\Notifications\MorningSummaryNotification;
 use App\Services\Ai\GeminiService;
 use Illuminate\Console\Command;
@@ -87,14 +87,15 @@ class SendMorningSummary extends Command
         $this->line("Processing summary for {$user->name}...");
 
         // Fetch tasks for today (scheduled for today or overdue)
-        $tasks = Task::where(function($q) use ($user) {
-                $q->where('assigned_user_id', $user->id)
-                  ->orWhereHas('assignedTo', function($sub) use ($user) {
-                      $sub->where('user_id', $user->id);
-                  });
+        $tasks = Activity::where(function($q) use ($user) {
+                $q->whereHas('assignedTo', function($sub) use ($user) {
+                      $sub->where('users.id', $user->id);
+                });
             })
-            ->whereIn('status', ['pending', 'in_progress'])
+            ->whereIn('type', Activity::KANBAN_TYPES)
+            ->where('progress_percentage', '<', 100)
             ->where('is_template', false)
+            ->where('is_archived', false)
             ->where(function($q) {
                 $q->whereDate('scheduled_date', '<=', now())
                   ->orWhereDate('due_date', '<=', now())
