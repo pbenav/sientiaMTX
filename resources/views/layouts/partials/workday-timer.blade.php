@@ -112,14 +112,22 @@
                                                 title: '¡Turnos cerrados con éxito!',
                                                 text: res.message,
                                                 showConfirmButton: true,
+                                                showCancelButton: true,
                                                 confirmButtonColor: '#10b981',
+                                                cancelButtonColor: '#6b7280',
                                                 confirmButtonText: 'Iniciar jornada ahora',
+                                                cancelButtonText: 'Solo cerrar y salir',
                                                 customClass: {
                                                     popup: 'bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-2xl rounded-2xl',
-                                                    title: 'text-lg font-bold text-gray-800 dark:text-white'
+                                                    title: 'text-lg font-bold text-gray-800 dark:text-white',
+                                                    cancelButton: 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
                                                 }
-                                            }).then(() => {
-                                                this.toggle();
+                                            }).then((result) => {
+                                                if (result.isConfirmed) {
+                                                    this.toggle();
+                                                } else {
+                                                    triggerMood();
+                                                }
                                             });
                                         } else {
                                             window.Swal.fire('Error', res.message, 'error').then(() => triggerMood());
