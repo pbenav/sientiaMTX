@@ -89,7 +89,17 @@
                             </div>
                             <h2 class="text-2xl font-black text-gray-900 dark:text-white">{{ $activeDocument->title }}</h2>
                             @if($activeDocument->description)
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">{{ $activeDocument->description }}</p>
+                                <div x-data="{ content: `{{ base64_encode($activeDocument->description) }}` }"
+                                     x-init="$nextTick(() => { 
+                                        const decoded = decodeURIComponent(escape(window.atob(content)));
+                                        $refs.descContainer.innerHTML = typeof marked !== 'undefined' ? marked.parse(decoded, {breaks: true, gfm: true}) : decoded; 
+                                     })">
+                                    <div x-ref="descContainer" class="prose prose-sm dark:prose-invert max-w-none text-gray-500 dark:text-gray-400 mt-2 markdown-body">
+                                        <div class="flex items-center p-2">
+                                            <svg class="animate-spin h-4 w-4 text-violet-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                        </div>
+                                    </div>
+                                </div>
                             @endif
                         </div>
                         <a href="{{ route('teams.activities.show', [$team, $activeDocument]) }}" class="shrink-0 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-bold uppercase rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center gap-1.5">
@@ -158,9 +168,16 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div x-show="open" x-collapse style="display: none;">
-                                            <div id="chapter-content-{{ $idx }}" class="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 resize-y min-h-[120px] pr-4 p-4 bg-gray-50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/80 rounded-2xl mt-2">
-                                                {!! str($chapter['content'] ?? '')->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
+                                        <div x-show="open" x-collapse style="display: none;" 
+                                             x-data="{ content: `{{ base64_encode($chapter['content'] ?? '') }}` }"
+                                             x-init="$nextTick(() => { 
+                                                const decoded = decodeURIComponent(escape(window.atob(content)));
+                                                $refs.mdContainer.innerHTML = typeof marked !== 'undefined' ? marked.parse(decoded, {breaks: true, gfm: true}) : decoded; 
+                                             })">
+                                            <div x-ref="mdContainer" id="chapter-content-{{ $idx }}" class="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 resize-y min-h-[120px] pr-4 p-4 bg-gray-50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/80 rounded-2xl mt-2 markdown-body">
+                                                <div class="flex items-center justify-center p-4">
+                                                    <svg class="animate-spin h-5 w-5 text-violet-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -229,6 +246,9 @@ function printDocumentBook() {
     let tocHtml = '';
     
     chapters.forEach((chap, idx) => {
+        let rawContent = chap.content || '';
+        let parsedHtml = typeof marked !== 'undefined' ? marked.parse(rawContent, {breaks: true, gfm: true}) : rawContent;
+        
         tocHtml += `
             <div class="toc-item">
                 <span class="toc-title">${idx + 1}. ${chap.title}</span>
@@ -244,7 +264,7 @@ function printDocumentBook() {
                     <h2 class="chapter-title">${chap.title}</h2>
                     <div class="chapter-meta">Por ${chap.author_name || 'Autor'} • ${chap.updated_at || ''}</div>
                 </div>
-                <div class="chapter-body">${typeof marked !== 'undefined' && marked.parse ? marked.parse(chap.content || '') : (chap.content || '')}</div>
+                <div class="chapter-body markdown-body">${parsedHtml}</div>
             </div>
         `;
     });
