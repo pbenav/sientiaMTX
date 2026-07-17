@@ -101,9 +101,15 @@
                     </div>
                     
                     <div class="p-6 flex-1 flex flex-col">
-                        <div class="prose dark:prose-invert max-w-none text-sm w-full mb-6">
-                            {!! strip_tags($activeDocument->notes) ? $activeDocument->notes : '' !!}
-                        </div>
+                        @php
+                            $notesStr = is_string($activeDocument->notes) ? trim($activeDocument->notes) : '';
+                            $hasNotes = $notesStr !== '' && $notesStr !== '[]' && strip_tags($notesStr) !== '';
+                        @endphp
+                        @if($hasNotes)
+                            <div class="prose dark:prose-invert max-w-none text-sm w-full mb-6">
+                                {!! $activeDocument->notes !!}
+                            </div>
+                        @endif
 
                         @php
                             $chapters = $activeDocument->metadata['chapters'] ?? [];
@@ -162,7 +168,7 @@
                                 </div>
                             </div>
                         @else
-                            @if(!strip_tags($activeDocument->notes))
+                            @if(!$hasNotes)
                                 <p class="text-gray-400 italic">No hay notas directas ni capítulos en la wiki para este documento. Revisa los archivos adjuntos.</p>
                             @endif
                         @endif
