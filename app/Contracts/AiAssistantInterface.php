@@ -17,7 +17,7 @@ interface AiAssistantInterface
     /**
      * Set an attachment context for the next generation.
      */
-    public function withAttachmentContext(\App\Models\TaskAttachment $attachment): self;
+    public function withAttachmentContext(\App\Models\ActivityAttachment|\App\Models\TaskAttachment $attachment): self;
 
     /**
      * Set a direct file context (from request) for the next generation.

@@ -58,7 +58,7 @@ class AiChatController extends Controller
             'prompt' => 'nullable|string|max:100000',
             'team_id' => 'nullable|integer|exists:teams,id',
             'task_id' => 'nullable|integer',
-            'attachment_id' => 'nullable|integer|exists:task_attachments,id',
+            'attachment_id' => 'nullable|integer',
             'forum_thread_id' => 'nullable|integer|exists:forum_threads,id',
             'forum_message_id' => 'nullable|integer|exists:forum_messages,id',
             'file' => 'nullable|file|max:20480', // 20MB limit
@@ -212,7 +212,7 @@ class AiChatController extends Controller
         }
 
         if ($request->attachment_id) {
-            $attachment = \App\Models\TaskAttachment::find($request->attachment_id);
+            $attachment = \App\Models\ActivityAttachment::find($request->attachment_id) ?? \App\Models\TaskAttachment::find($request->attachment_id);
             if ($attachment) {
                 $team = \App\Models\Team::find($request->team_id);
                 if (!$team || !$attachment->canBeAccessedBy($user, $team)) {
@@ -221,14 +221,24 @@ class AiChatController extends Controller
 
                 $aiAssistant->withAttachmentContext($attachment);
                 
-                // Referenciar el adjunto de tarea SIN reutilizar su file_path (evita borrado accidental al limpiar el chat)
+                // Referenciar el adjunto
                 if (!$filePath && !$taskAttachmentId) {
-                    $userMessage->update([
-                        'task_attachment_id' => $attachment->id,
+                    $updateData = [
                         'file_name' => $attachment->file_name,
                         'file_type' => $attachment->mime_type,
                         'file_path' => null,
-                    ]);
+                    ];
+                    
+                    // Si es el antiguo TaskAttachment mantenemos la referencia FK
+                    if ($attachment instanceof \App\Models\TaskAttachment) {
+                        $updateData['task_attachment_id'] = $attachment->id;
+                    } else {
+                        // Si es el nuevo ActivityAttachment, lo copiamos como ruta reciclada 
+                        // para que siga accesible sin requerir esquema nuevo en ai_chat_messages
+                        $updateData['file_path'] = $attachment->file_path;
+                    }
+                    
+                    $userMessage->update($updateData);
                 }
             }
         }

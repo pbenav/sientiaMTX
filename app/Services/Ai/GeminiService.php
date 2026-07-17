@@ -11,7 +11,7 @@ class GeminiService implements AiAssistantInterface
 {
     protected ?User $user = null;
     protected \App\Models\Activity|\App\Models\Task|null $taskContext = null;
-    protected ?\App\Models\TaskAttachment $attachmentContext = null;
+    protected \App\Models\ActivityAttachment|\App\Models\TaskAttachment|null $attachmentContext = null;
     protected ?\App\Models\ForumThread $threadContext = null;
     protected ?\App\Models\ForumMessage $messageContext = null;
     protected ?\Illuminate\Http\UploadedFile $directFile = null;
@@ -152,7 +152,7 @@ class GeminiService implements AiAssistantInterface
         return $this;
     }
 
-    public function withAttachmentContext(\App\Models\TaskAttachment $attachment): self
+    public function withAttachmentContext(\App\Models\ActivityAttachment|\App\Models\TaskAttachment $attachment): self
     {
         $this->attachmentContext = $attachment;
         return $this;

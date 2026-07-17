@@ -33,6 +33,21 @@ class ActivityAttachment extends Model
         return $this->belongsTo(User::class, 'uploaded_by_id');
     }
 
+    public function canBeAccessedBy(User $user, Team $team): bool
+    {
+        if (!$this->activity) {
+            return false;
+        }
+
+        // Must belong to the team
+        if ($this->activity->team_id !== $team->id) {
+            return false;
+        }
+
+        // User must be able to view the activity
+        return $user->can('view', $this->activity);
+    }
+
     public function getFileSizeHumanAttribute(): string
     {
         $bytes = $this->file_size ?? 0;

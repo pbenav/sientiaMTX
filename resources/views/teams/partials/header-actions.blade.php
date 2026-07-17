@@ -25,11 +25,11 @@
         <x-dropdown align="left" width="80">
             <x-slot name="trigger">
                 <button type="button" 
-                    class="flex items-center gap-2 text-xs bg-violet-600 hover:bg-violet-500 text-white px-5 py-2.5 rounded-xl transition-all font-black shadow-lg shadow-violet-500/20 active:scale-95 group">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                    class="flex items-center gap-1.5 text-xs bg-white dark:bg-white/5 border border-violet-200 dark:border-violet-800/50 text-violet-700 dark:text-violet-400 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-violet-50 dark:hover:bg-violet-900/20 active:scale-95 shadow-sm group">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                     </svg>
-                    <span>Nueva actividad</span>
+                    <span class="hidden sm:inline">Nueva actividad</span>
                     <svg class="h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
             </x-slot>
