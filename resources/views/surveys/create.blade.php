@@ -373,6 +373,10 @@
                         setTimeout(() => this.processImportedJSON(pendingJson), 500);
                     }
 
+                    window.addEventListener('ai-inject-survey', (e) => {
+                        this.processImportedJSON(e.detail.json);
+                    });
+
                     window.addEventListener('drive-file-selected', async (e) => {
                         if (e.detail.targetType === 'survey_import') {
                             const fileId = e.detail.file.id;
@@ -594,7 +598,7 @@
                                 type: q.type || 'single_choice',
                                 is_required: q.is_required !== undefined ? q.is_required : true,
                                 options: Array.isArray(q.options) 
-                                    ? q.options.map(opt => ({ label: opt }))
+                                    ? q.options.map(opt => ({ label: (typeof opt === 'object' && opt !== null) ? (opt.label || opt.text || opt.name || '') : opt }))
                                     : [{ label: '' }, { label: '' }]
                             }));
 

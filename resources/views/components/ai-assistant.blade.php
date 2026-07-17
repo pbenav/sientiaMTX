@@ -668,11 +668,8 @@
                 const jsonStr = detail.json;
                 // Si ya estamos en la página de creación de encuestas, enviamos el evento para que la página lo procese
                 if (window.location.pathname.includes('/surveys/create')) {
-                    const surveyComp = document.querySelector('[x-data="surveyManager()"]');
-                    if (surveyComp && surveyComp.__x && surveyComp.__x.$data) {
-                        surveyComp.__x.$data.processImportedJSON(jsonStr);
-                        this.open = false; // Cerramos el asistente para que vea la página
-                    }
+                    window.dispatchEvent(new CustomEvent('ai-inject-survey', { detail: { json: jsonStr } }));
+                    this.open = false; // Cerramos el asistente para que vea la página
                 } else {
                     // Si no estamos en la página, guardamos en localstorage y redirigimos
                     localStorage.setItem('ai_pending_survey_json', jsonStr);
