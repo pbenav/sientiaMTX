@@ -228,7 +228,11 @@
                                         Estado @if($sort_by === 'status') {!! $sort_dir === 'asc' ? '↑' : '↓' !!} @endif
                                     </a>
                                 </th>
-                                <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">Tiempo</th>
+                                <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">
+                                    <a href="{{ request()->fullUrlWithQuery(['sort_by' => 'time', 'sort_dir' => $sort_by === 'time' ? $next_dir : 'desc']) }}" class="hover:text-cyan-500 flex items-center justify-center gap-1">
+                                        Tiempo @if($sort_by === 'time') {!! $sort_dir === 'asc' ? '↑' : '↓' !!} @endif
+                                    </a>
+                                </th>
                                 <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">Completada</th>
                                 <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400"></th>
                             </tr>

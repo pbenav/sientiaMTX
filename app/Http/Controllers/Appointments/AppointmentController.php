@@ -139,9 +139,9 @@ class AppointmentController extends Controller
         $sortDir = $request->get('sort_dir', 'asc') === 'desc' ? 'desc' : 'asc';
 
         if ($sortBy === 'appointment_date') {
-            $query->orderBy('appointment_date', $sortDir)->orderBy('appointment_time', $sortDir);
+            $query->orderBy('appointments.appointment_date', $sortDir)->orderBy('appointments.appointment_time', $sortDir);
         } elseif ($sortBy === 'created_at' || $sortBy === 'localizador' || $sortBy === 'status') {
-            $query->orderBy($sortBy, $sortDir);
+            $query->orderBy('appointments.' . $sortBy, $sortDir);
         } elseif ($sortBy === 'visitor') {
             $query->join('appointment_visitors', 'appointments.visitor_id', '=', 'appointment_visitors.id')
                   ->orderBy('appointment_visitors.first_name', $sortDir)
@@ -150,26 +150,41 @@ class AppointmentController extends Controller
             $query->join('appointment_services', 'appointments.service_id', '=', 'appointment_services.id')
                   ->orderBy('appointment_services.name', $sortDir)
                   ->select('appointments.*');
+        } elseif ($sortBy === 'time') {
+            $taskSum = \Illuminate\Support\Facades\DB::table('time_logs')
+                ->whereColumn('trackable_id', 'appointments.task_id')
+                ->where('trackable_type', \App\Models\Task::class)
+                ->selectRaw('COALESCE(SUM(TIMESTAMPDIFF(SECOND, start_at, end_at)), 0)');
+
+            $activitySum = \Illuminate\Support\Facades\DB::table('time_logs')
+                ->whereColumn('trackable_id', 'appointments.activity_id')
+                ->where('trackable_type', \App\Models\Activity::class)
+                ->selectRaw('COALESCE(SUM(TIMESTAMPDIFF(SECOND, start_at, end_at)), 0)');
+
+            $query->select('appointments.*')
+                  ->selectSub($taskSum, 'task_time')
+                  ->selectSub($activitySum, 'activity_time')
+                  ->orderByRaw("(COALESCE(task_time, 0) + COALESCE(activity_time, 0)) $sortDir");
         } else {
-            $query->orderBy('appointment_date', 'asc')->orderBy('appointment_time', 'asc');
+            $query->orderBy('appointments.appointment_date', 'asc')->orderBy('appointments.appointment_time', 'asc');
         }
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $query->where('appointments.status', $request->status);
         }
         if ($request->filled('service_id')) {
-            $query->where('service_id', $request->service_id);
+            $query->where('appointments.service_id', $request->service_id);
         }
         if ($request->filled('date_from')) {
-            $query->where('appointment_date', '>=', $request->date_from);
+            $query->where('appointments.appointment_date', '>=', $request->date_from);
         }
         if ($request->filled('date_to')) {
-            $query->where('appointment_date', '<=', $request->date_to);
+            $query->where('appointments.appointment_date', '<=', $request->date_to);
         }
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('localizador', 'like', "%{$search}%")
+                $q->where('appointments.localizador', 'like', "%{$search}%")
                   ->orWhereHas('visitor', function($vq) use ($search) {
                       $vq->where('first_name', 'like', "%{$search}%")
                          ->orWhere('last_name', 'like', "%{$search}%")
