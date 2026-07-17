@@ -87,7 +87,9 @@ class TaskBlockedNotification extends Notification implements ShouldQueue
             'team_id' => $this->task->team_id,
             'reported_by' => $this->reportedBy->name,
             'type' => 'blocked',
-            'message' => __('tasks.notifications.blocked_alert', ['title' => $this->task->title])
+            'message' => __('tasks.notifications.blocked_alert', ['title' => $this->task->title]),
+            'privacy' => $this->task->visibility ?? 'public',
+            'creator_name' => $this->task->creator?->name,
         ];
     }
 }

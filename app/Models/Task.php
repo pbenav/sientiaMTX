@@ -1009,12 +1009,25 @@ class Task extends Model
             $recipients->push($this->creator);
         }
 
-        // 2. Add Coordinators
+        // 2. Add Coordinators (filtered by visibility/involvement)
         $coordinators = $this->team->coordinators()
             ->where('users.id', '!=', auth()->id())
             ->get();
+            
+        $filteredCoordinators = $coordinators->filter(function ($coordinator) {
+            if ($this->visibility === 'public') {
+                return true;
+            }
+            // For non-public activities, check if coordinator is involved
+            if ($this->created_by_id === $coordinator->id) return true;
+            if ($this->assigned_user_id === $coordinator->id) return true;
+            if ($this->assignedTo->contains('id', $coordinator->id)) return true;
+            if ($this->assignedGroups->filter(fn($g) => $g->users->contains('id', $coordinator->id))->isNotEmpty()) return true;
+            
+            return false;
+        });
         
-        $recipients = $recipients->merge($coordinators)->unique('id');
+        $recipients = $recipients->merge($filteredCoordinators)->unique('id');
 
         foreach ($recipients as $recipient) {
             $recipient->notify($notification);

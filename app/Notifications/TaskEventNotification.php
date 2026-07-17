@@ -71,6 +71,8 @@ class TaskEventNotification extends Notification
             'title' => $this->getSubject(),
             'message' => $this->getMessage(),
             'causer_name' => $this->causer?->name,
+            'privacy' => $this->task->visibility ?? 'public',
+            'creator_name' => $this->task->creator?->name,
         ];
     }
 

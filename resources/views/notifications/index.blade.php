@@ -226,6 +226,22 @@
                                     <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
                                         {{ $notification->data['message'] ?? '' }}
                                     </p>
+                                    @if(isset($notification->data['privacy']) || isset($notification->data['creator_name']))
+                                    <div class="mt-2 flex flex-wrap items-center gap-2">
+                                        @if(isset($notification->data['privacy']))
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 uppercase tracking-wider">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                                {{ $notification->data['privacy'] === 'public' ? 'Pública' : ($notification->data['privacy'] === 'private' ? 'Privada' : 'Semiprivada') }}
+                                            </span>
+                                        @endif
+                                        @if(isset($notification->data['creator_name']))
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                                {{ $notification->data['creator_name'] }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                    @endif
                                 @endif
 
                                 <div class="mt-2 flex items-center gap-3">

@@ -85,7 +85,9 @@ class TaskCompletedNotification extends Notification implements ShouldQueue
             'team_id' => $this->task->team_id,
             'completed_by' => $this->completedBy->name,
             'type' => 'completed',
-            'message' => __('tasks.notifications.completed_body', ['user' => $this->completedBy->name, 'title' => $this->task->title])
+            'message' => __('tasks.notifications.completed_body', ['user' => $this->completedBy->name, 'title' => $this->task->title]),
+            'privacy' => $this->task->visibility ?? 'public',
+            'creator_name' => $this->task->creator?->name,
         ];
     }
 }
