@@ -21,14 +21,13 @@
 @endphp
 
 <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
-    @if($shouldShowCreateTask)
+    {{-- Siempre mostrar Nueva actividad, sin importar $shouldShowCreateTask --}}
+    @if(true)
         <x-dropdown align="left" width="80">
             <x-slot name="trigger">
                 <button type="button" 
-                    class="flex items-center gap-1.5 text-xs bg-white dark:bg-white/5 border border-violet-200 dark:border-violet-800/50 text-violet-700 dark:text-violet-400 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-violet-50 dark:hover:bg-violet-900/20 active:scale-95 shadow-sm group">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                    </svg>
+                    class="flex items-center gap-1.5 text-[13px] bg-white dark:bg-white/5 border border-violet-200 dark:border-violet-800/50 text-violet-700 dark:text-violet-400 px-5 py-2.5 rounded-full transition-all font-bold hover:bg-violet-50 dark:hover:bg-violet-900/20 active:scale-95 shadow-sm group">
+                    <span class="hidden sm:inline font-black text-lg mr-1">+</span>
                     <span class="hidden sm:inline">Nueva actividad</span>
                     <svg class="h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
@@ -89,7 +88,7 @@
 
     @if(!$toolsOnly && request()->routeIs('teams.tasks.index') && ($team->isCoordinator(auth()->user()) || auth()->user()->is_admin))
         <button type="button" onclick="confirmPurgeTrash()"
-            class="flex items-center gap-1.5 text-xs bg-red-100 hover:bg-red-200 text-red-600 dark:bg-red-900/30 dark:hover:bg-red-900/40 dark:text-red-400 px-4 py-2.5 rounded-xl transition-all font-bold active:scale-95">
+            class="flex items-center gap-1.5 text-[13px] bg-red-100 hover:bg-red-200 text-red-600 dark:bg-red-900/30 dark:hover:bg-red-900/40 dark:text-red-400 px-5 py-2.5 rounded-full transition-all font-bold active:scale-95">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
@@ -105,7 +104,7 @@
         @if(!$isForum && $isGoogleConnected)
             <x-dropdown align="left" width="80">
                 <x-slot name="trigger">
-                    <button type="button" class="flex items-center gap-1.5 text-xs bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-gray-50 dark:hover:bg-white/10 active:scale-95 shadow-sm">
+                    <button type="button" class="flex items-center gap-1.5 text-[13px] bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 px-5 py-2.5 rounded-full transition-all font-bold hover:bg-gray-50 dark:hover:bg-white/10 active:scale-95 shadow-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M11 4a2 2 0 114 0v1a2 2 0 01-2 2h-1a2 2 0 01-2-2V4zm-5 6a2 2 0 114 0v1a2 2 0 01-2 2H7a2 2 0 01-2-2v-1zm10 0a2 2 0 114 0v1a2 2 0 01-2 2h-1a2 2 0 01-2-2v-1zM6 20a2 2 0 114 0v1a2 2 0 01-2 2H7a2 2 0 01-2-2v-1zm10 0a2 2 0 114 0v1a2 2 0 01-2 2h-1a2 2 0 01-2-2v-1z" />
                         </svg>
@@ -138,7 +137,7 @@
 
         @if(auth()->user()->is_admin || $team->isCoordinator(auth()->user()))
             <a href="{{ route('teams.storage.index', $team) }}" 
-               class="flex items-center gap-1.5 text-xs bg-white dark:bg-white/5 border border-amber-200 dark:border-amber-800/50 text-amber-700 dark:text-amber-400 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-amber-50 dark:hover:bg-amber-900/20 active:scale-95 shadow-sm"
+               class="flex items-center gap-1.5 text-[13px] bg-white dark:bg-white/5 border border-amber-200 dark:border-amber-800/50 text-amber-700 dark:text-amber-400 px-5 py-2.5 rounded-full transition-all font-bold hover:bg-amber-50 dark:hover:bg-amber-900/20 active:scale-95 shadow-sm"
                title="Gestión de espacio y purga de archivos">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
