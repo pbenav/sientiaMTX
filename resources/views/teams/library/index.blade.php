@@ -1,0 +1,139 @@
+<x-app-layout>
+    @section('title', 'Biblioteca de Documentos — ' . $team->name)
+
+    <x-slot name="header">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+            <div class="flex items-center gap-2 min-w-0">
+                <a href="{{ route('teams.dashboard', $team) }}"
+                    class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0"
+                    title="Volver al escritorio">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </a>
+                @include('teams.partials.breadcrumb')
+                <span class="text-gray-300 dark:text-gray-700 mx-1">/</span>
+                <h1 class="text-base font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                    <span class="truncate">Biblioteca</span>
+                </h1>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                @include('teams.partials.header-toolbar')
+            </div>
+        </div>
+
+        @include('teams.partials.team-view-nav', ['showCreateActions' => false])
+    </x-slot>
+
+    <div class="flex flex-col md:flex-row gap-6">
+        <!-- Sidebar de Wiki -->
+        <div class="w-full md:w-1/4 xl:w-1/5 flex flex-col gap-4">
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden flex flex-col h-[calc(100vh-14rem)] sticky top-24">
+                <div class="p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20">
+                    <h3 class="text-xs font-black uppercase tracking-widest text-gray-900 dark:text-white flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                        </svg>
+                        Índice de Documentos
+                    </h3>
+                </div>
+                
+                <div class="flex-1 overflow-y-auto no-scrollbar p-2">
+                    @forelse($documents as $doc)
+                        <a href="{{ route('teams.library', [$team, 'doc' => $doc->id]) }}" 
+                           class="flex items-start gap-2.5 p-2.5 rounded-xl transition-all mb-1 {{ $activeDocument && $activeDocument->id == $doc->id ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400' }}">
+                           <div class="mt-0.5 shrink-0">
+                               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 {{ $doc->status_value == 'completed' ? 'text-emerald-500' : 'text-gray-400' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                               </svg>
+                           </div>
+                           <div class="flex flex-col min-w-0">
+                               <span class="text-sm font-semibold truncate">{{ $doc->title }}</span>
+                               <span class="text-[10px] uppercase font-bold {{ $doc->status_value == 'completed' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400' }}">{{ __("activities.statuses.{$doc->status_value}") }}</span>
+                           </div>
+                        </a>
+                    @empty
+                        <div class="text-center p-6">
+                            <span class="text-xs text-gray-400">No hay documentos en la biblioteca.</span>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenido principal -->
+        <div class="flex-1">
+            @if($activeDocument)
+                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden min-h-[calc(100vh-14rem)] flex flex-col">
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-start gap-4">
+                        <div>
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="px-2 py-1 text-[10px] font-bold rounded bg-violet-50 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300 uppercase tracking-wider border border-violet-200 dark:border-violet-800">DOCUMENTO WIKI</span>
+                                <span class="px-2 py-1 text-[10px] font-bold rounded {{ $activeDocument->status_value == 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-800' : 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400' }} uppercase tracking-wider border">
+                                    {{ __("activities.statuses.{$activeDocument->status_value}") }}
+                                </span>
+                            </div>
+                            <h2 class="text-2xl font-black text-gray-900 dark:text-white">{{ $activeDocument->title }}</h2>
+                            @if($activeDocument->description)
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">{{ $activeDocument->description }}</p>
+                            @endif
+                        </div>
+                        <a href="{{ route('teams.activities.show', [$team, $activeDocument]) }}" class="shrink-0 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-bold uppercase rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center gap-1.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                            Ver Actividad
+                        </a>
+                    </div>
+                    
+                    <div class="p-6 flex-1 flex flex-col">
+                        <div class="prose dark:prose-invert max-w-none text-sm w-full">
+                            {!! strip_tags($activeDocument->notes) ? $activeDocument->notes : '<p class="text-gray-400 italic">No hay notas directas en la wiki para este documento. Revisa los archivos adjuntos.</p>' !!}
+                        </div>
+                        
+                        @if($activeDocument->attachments->isNotEmpty())
+                            <div class="mt-8 pt-8 border-t border-gray-100 dark:border-gray-800">
+                                <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4">Archivos Adjuntos (OnlyOffice)</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    @foreach($activeDocument->attachments as $attachment)
+                                        <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-4 flex items-center gap-3 bg-gray-50 dark:bg-gray-800/50">
+                                            <div class="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                            </div>
+                                            <div class="min-w-0 flex-1">
+                                                <p class="text-xs font-bold text-gray-900 dark:text-white truncate" title="{{ $attachment->file_name }}">{{ $attachment->file_name }}</p>
+                                                <p class="text-[10px] text-gray-500">{{ number_format($attachment->file_size / 1024, 2) }} KB</p>
+                                            </div>
+                                            <a href="{{ route('onlyoffice.activity.edit', $attachment) }}" target="_blank" class="p-2 text-violet-600 dark:text-violet-400 hover:bg-violet-100 dark:hover:bg-violet-900/40 rounded-lg transition-colors">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </svg>
+                                            </a>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @else
+                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm h-[calc(100vh-14rem)] flex flex-col items-center justify-center p-8 text-center">
+                    <div class="w-20 h-20 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                    </div>
+                    <h2 class="text-xl font-black text-gray-900 dark:text-white mb-2">Librería Vacía</h2>
+                    <p class="text-sm text-gray-500 max-w-md">No tienes documentos registrados en este equipo. Crea actividades de tipo "Documento" y aparecerán organizadas aquí a modo de Wiki interna.</p>
+                </div>
+            @endif
+        </div>
+    </div>
+</x-app-layout>

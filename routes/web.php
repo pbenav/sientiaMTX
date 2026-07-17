@@ -204,6 +204,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/teams/{team}/groups/{group}/members/{user}', [GroupController::class, 'removeMember'])->name('teams.groups.removeMember');
 
     // Activities routes (universal polymorphic activities infrastructure)
+    // Biblioteca / Wiki
+    Route::get('/teams/{team}/library', [\App\Http\Controllers\TeamLibraryController::class, 'index'])->name('teams.library');
+
     Route::resource('teams.activities', \App\Http\Controllers\ActivityController::class)->except(['show', 'edit', 'update', 'destroy']);
     Route::prefix('teams/{team}')->group(function() {
         // Search - unified (handles both Activity and legacy Task)
