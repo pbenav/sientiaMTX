@@ -332,7 +332,95 @@ class AppointmentController extends Controller
         
         \App\Jobs\SyncAppointmentWithGoogleJob::dispatchSync($appointment);
         
-        return view('appointments.show', compact('appointment', 'team'));
+        // --- Buscar siguiente cita (Next Appointment) ---
+        $user = auth()->user();
+        $sessionFilters = session("appointments_filters_{$team->id}", []);
+        
+        $query = Appointment::where('user_id', $user->id)
+            ->whereHas('service', fn($q) => $q->where('team_id', $team->id));
+
+        // Aplicar filtros de sesión
+        if (!empty($sessionFilters['service_id'])) {
+            $query->where('service_id', $sessionFilters['service_id']);
+        }
+        if (!empty($sessionFilters['date_from'])) {
+            $query->where('appointment_date', '>=', $sessionFilters['date_from']);
+        }
+        if (!empty($sessionFilters['date_to'])) {
+            $query->where('appointment_date', '<=', $sessionFilters['date_to']);
+        }
+        if (!empty($sessionFilters['search'])) {
+            $search = $sessionFilters['search'];
+            $query->where(function($q) use ($search) {
+                $q->where('localizador', 'like', "%{$search}%")
+                  ->orWhereHas('visitor', function($vq) use ($search) {
+                      $vq->where('first_name', 'like', "%{$search}%")
+                         ->orWhere('last_name', 'like', "%{$search}%")
+                         ->orWhere('dni', 'like', "%{$search}%")
+                         ->orWhere('email', 'like', "%{$search}%");
+                  });
+            });
+        }
+        
+        // Saltar las completadas, canceladas o bloqueadas
+        $query->whereNotIn('status', ['completed', 'cancelled', 'blocked']);
+        
+        // Aplicar el mismo orden de la lista
+        $sortBy = $sessionFilters['sort_by'] ?? 'appointment_date';
+        $sortDir = ($sessionFilters['sort_dir'] ?? 'asc') === 'desc' ? 'desc' : 'asc';
+
+        if ($sortBy === 'appointment_date') {
+            $query->orderBy('appointment_date', $sortDir)->orderBy('appointment_time', $sortDir);
+        } elseif ($sortBy === 'created_at' || $sortBy === 'localizador' || $sortBy === 'status') {
+            $query->orderBy('appointments.' . $sortBy, $sortDir);
+        } elseif ($sortBy === 'visitor') {
+            $query->join('appointment_visitors', 'appointments.visitor_id', '=', 'appointment_visitors.id')
+                  ->orderBy('appointment_visitors.first_name', $sortDir)
+                  ->select('appointments.*');
+        } elseif ($sortBy === 'service') {
+            $query->join('appointment_services', 'appointments.service_id', '=', 'appointment_services.id')
+                  ->orderBy('appointment_services.name', $sortDir)
+                  ->select('appointments.*');
+        } else {
+            $query->orderBy('appointment_date', 'asc')->orderBy('appointment_time', 'asc');
+        }
+
+        $orderedIds = $query->pluck('appointments.id')->toArray();
+        
+        $nextAppointment = null;
+        $currentIndex = array_search($appointment->id, $orderedIds);
+        
+        if ($currentIndex !== false && isset($orderedIds[$currentIndex + 1])) {
+            $nextAppointment = Appointment::find($orderedIds[$currentIndex + 1]);
+        } elseif ($currentIndex === false && count($orderedIds) > 0) {
+             if (in_array($sortBy, ['appointment_date', ''])) {
+                 $nextAppId = null;
+                 $apps = Appointment::whereIn('id', $orderedIds)
+                     ->select('id', 'appointment_date', 'appointment_time')
+                     ->get()
+                     ->keyBy('id');
+                     
+                 foreach($orderedIds as $id) {
+                     $app = $apps[$id] ?? null;
+                     if ($app) {
+                         if ($app->appointment_date > $appointment->appointment_date || 
+                            ($app->appointment_date == $appointment->appointment_date && $app->appointment_time > $appointment->appointment_time)) {
+                             $nextAppId = $id;
+                             break;
+                         }
+                     }
+                 }
+                 if ($nextAppId) {
+                     $nextAppointment = Appointment::find($nextAppId);
+                 } else {
+                     $nextAppointment = Appointment::find($orderedIds[0]);
+                 }
+             } else {
+                 $nextAppointment = Appointment::find($orderedIds[0]);
+             }
+        }
+        
+        return view('appointments.show', compact('appointment', 'team', 'nextAppointment'));
     }
 
     /**

@@ -1,24 +1,6 @@
 <x-app-layout maxWidth="[1600px]">
 @section('title', 'Cita '.$appointment->localizador)
 
-@php
-    $nextAppointment = App\Models\Appointment::whereHas('service', function($q) use ($team) {
-            $q->where('team_id', $team->id);
-        })
-        ->where('appointment_date', $appointment->appointment_date)
-        ->where(function ($query) use ($appointment) {
-            $query->where('appointment_time', '>', $appointment->appointment_time)
-                  ->orWhere(function ($q) use ($appointment) {
-                      $q->where('appointment_time', '=', $appointment->appointment_time)
-                        ->where('id', '>', $appointment->id);
-                  });
-        })
-        ->where('status', 'confirmed')
-        ->orderBy('appointment_time', 'asc')
-        ->orderBy('id', 'asc')
-        ->first();
-@endphp
-
 <x-slot name="header">
     <div class="flex items-center gap-3 flex-wrap">
         <div class="flex items-center gap-2 min-w-0 flex-1">
