@@ -447,7 +447,7 @@ class AppointmentController extends Controller
             'visitor_city'      => 'nullable|string|max:255',
             'visitor_postal_code' => 'nullable|string|max:50',
             'visitor_observations' => 'nullable|string|max:2000',
-            'tracked_minutes'   => 'nullable|integer|min:0',
+            'tracked_time_format' => 'nullable|string|regex:/^\d{1,3}:\d{2}:\d{2}$/',
         ]);
 
         // Si cambia fecha/hora, revalidar disponibilidad
@@ -531,17 +531,22 @@ class AppointmentController extends Controller
             }
         }
 
-        if ($request->has('tracked_minutes') && ($appointment->activity || $appointment->task)) {
+        if ($request->has('tracked_time_format') && ($appointment->activity || $appointment->task)) {
             $taskObj = $appointment->activity ?? $appointment->task;
-            $minutes = (int) $request->input('tracked_minutes');
+            $timeFormat = $request->input('tracked_time_format');
+            $parts = explode(':', $timeFormat);
+            $totalSeconds = 0;
+            if (count($parts) === 3) {
+                $totalSeconds = ($parts[0] * 3600) + ($parts[1] * 60) + $parts[2];
+            }
             
             // Borrar time logs de tipo task para esta actividad/tarea
             $taskObj->timeLogs()->delete();
             
-            if ($minutes > 0) {
+            if ($totalSeconds > 0) {
                 // Crear un único log de la duración deseada
                 $start = Carbon::parse($appointment->appointment_date->format('Y-m-d') . ' ' . $appointment->appointment_time);
-                $end = $start->copy()->addMinutes($minutes);
+                $end = $start->copy()->addSeconds($totalSeconds);
                 
                 $taskObj->timeLogs()->create([
                     'user_id' => $appointment->user_id ?? auth()->id(),
