@@ -24,6 +24,10 @@ class ChatMessageController extends Controller
             if ($isGroup) {
                 $group = \App\Models\ChatGroup::with('users')->find($groupId);
                 if (!$group) return response()->json(['error' => 'Group not found'], 404);
+
+                if (!$group->users()->where('user_id', $userId)->exists()) {
+                    return response()->json(['error' => 'No autorizado'], 403);
+                }
                 
                 // Mark as read for this user in pivot table
                 $group->users()->updateExistingPivot($userId, ['last_read_at' => now()]);
@@ -244,6 +248,13 @@ class ChatMessageController extends Controller
 
         if ($message->sender_id !== auth()->id()) {
             return response()->json(['success' => false, 'message' => 'No autorizado'], 403);
+        }
+
+        if ($message->chat_group_id) {
+            $group = \App\Models\ChatGroup::find($message->chat_group_id);
+            if ($group && !$group->users()->where('user_id', auth()->id())->exists()) {
+                return response()->json(['success' => false, 'message' => 'No autorizado'], 403);
+            }
         }
 
         try {

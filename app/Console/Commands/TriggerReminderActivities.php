@@ -21,18 +21,19 @@ class TriggerReminderActivities extends Command
         $this->info('Ejecutando TriggerReminderActivities...');
         $this->line('Server now (UTC): ' . now()->toDateTimeString());
 
-        // 1. Buscar recordatorios pendientes que deben dispararse (vencieron o vencen en los próximos 2h)
+        // 1. Buscar recordatorios pendientes que deben dispararse
+        // Ventana: desde vencidos hace <= 5 min hasta vencen en las próximas 4h
+        // Esto permite recordatorios configurados con 1h, 2h, 4h, etc. de anticipación
+        $now = now();
         $reminders = ReminderActivity::with(['assignedTo', 'assignedUser', 'creator', 'team'])
             ->where(function ($query) {
-                $query->whereIn('status', ['pending', 'snoozed'])
-                    ->orWhereNull('status');
+                $query->whereJsonContains('status->value', 'pending')
+                    ->orWhereJsonContains('status->value', 'snoozed');
             })
+            ->orWhereNull('status')
             ->whereNotNull('due_date')
-            ->where('due_date', '<=', now()->addHours(2))
-            ->where(function ($query) {
-                $query->where('due_date', '>=', now()->subHours(24))
-                    ->orWhere('repeat', '>', 0);
-            })
+            ->where('due_date', '<=', $now->copy()->addHours(4))
+            ->where('due_date', '>=', $now->copy()->subMinutes(5))
             ->get();
 
         $this->line("Recordatorios encontrados en ventana: {$reminders->count()}");
@@ -116,7 +117,7 @@ class TriggerReminderActivities extends Command
 
             // Actualizar status a triggered si está pendiente
             if ($reminder->status_value === 'pending') {
-                $reminder->update(['status_value' => 'triggered']);
+                $reminder->update(['status' => ['value' => 'triggered']]);
             }
         }
 
@@ -181,8 +182,8 @@ class TriggerReminderActivities extends Command
 
     protected function handleRepeatingReminders(): void
     {
-        $repeating = ReminderActivity::where('repeat', true)
-            ->where('status_value', 'triggered')
+        $repeating = ReminderActivity::whereRaw("JSON_EXTRACT(metadata, '$.repeat') = 1")
+            ->where('status', 'triggered')
             ->whereNotNull('due_date')
             ->get();
 
@@ -219,7 +220,7 @@ class TriggerReminderActivities extends Command
                 $metadata['notified_at'] = null;
                 $reminder->update([
                     'metadata' => $metadata,
-                    'status_value' => 'pending',
+                    'status' => ['value' => 'pending'],
                 ]);
                 $this->line("  [repeat] ID:{$reminder->id} '{$reminder->title}' — reseteado para repetir");
             }

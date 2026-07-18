@@ -72,7 +72,8 @@ class CheckUrgentTasks extends Command
         // También incluir actividades tipo reminder con urgencia high/critical
         $reminderActivities = Activity::with(['assignedTo', 'assignedUser', 'creator', 'team'])
             ->where('type', 'reminder')
-            ->whereIn('status_value', ['pending', 'snoozed'])
+            ->whereJsonContains('status->value', 'pending')
+            ->orWhereJsonContains('status->value', 'snoozed')
             ->whereNotNull('due_date')
             ->where('due_date', '>', now())
             ->where(function ($q) {

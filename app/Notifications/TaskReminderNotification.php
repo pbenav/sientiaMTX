@@ -34,8 +34,9 @@ class TaskReminderNotification extends Notification implements ShouldQueue
         $url = route('teams.activities.show', [$this->task->team_id, $this->task]);
         
         $now = now();
-        $isOverdue = $this->task->due_date->isPast();
-        $diff = $this->task->due_date->diffForHumans($now, [
+        $dueDate = $this->task->due_date ?? $now;
+        $isOverdue = $dueDate->isPast();
+        $diff = $dueDate->diffForHumans($now, [
             'parts' => 2,
             'join' => true,
             'syntax' => \Carbon\CarbonInterface::DIFF_ABSOLUTE,
@@ -50,7 +51,7 @@ class TaskReminderNotification extends Notification implements ShouldQueue
             ->greeting(__('notifications.hello', ['name' => $notifiable->name]))
             ->line(__('notifications.task_reminder_line', [
                 'title' => $this->task->title,
-                'due' => $this->task->due_date->format('d/m/Y H:i')
+                'due' => $dueDate->format('d/m/Y H:i')
             ]) . ' (' . $expiryText . ')')
             ->action(__('notifications.view_task'), $url)
             ->line(__('notifications.thank_you'));
@@ -66,7 +67,7 @@ class TaskReminderNotification extends Notification implements ShouldQueue
         return [
             'task_id' => $this->task->id,
             'title' => $this->task->title,
-            'due_date' => $this->task->due_date,
+            'due_date' => $this->task->due_date?->toDateTimeString(),
             'team_id' => $this->task->team_id,
             'message' => __('notifications.task_reminder_short', ['title' => $this->task->title])
         ];
@@ -92,10 +93,11 @@ class TaskReminderNotification extends Notification implements ShouldQueue
     {
         $url = route('teams.activities.show', [$this->task->team_id, $this->task]);
         
+        $dueDate = $this->task->due_date?->format('d/m/Y H:i') ?? 'Sin fecha';
         return [
             'text' => "🔔 *Recordatorio de Tarea*\n\n" . 
                       "La tarea *{$this->task->title}* vence pronto.\n" .
-                      "📅 Fecha: {$this->task->due_date->format('d/m/Y H:i')}\n\n" .
+                      "📅 Fecha: {$dueDate}\n\n" .
                       "[Ver Tarea]($url)"
         ];
     }
