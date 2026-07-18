@@ -47,12 +47,54 @@ class CheckUrgentTasks extends Command
         // 1. Recopilar usuarios y sus tareas/recordatorios que necesitan notificación
         $userTasks = [];
 
+        // Obtener todos los team_ids existentes para estas tareas urgentes
+        $urgentTeamIds = Task::select('team_id')
+            ->whereIn('status', ['pending', 'in_progress'])
+            ->whereNotNull('due_date')
+            ->whereIn('urgency', ['high', 'critical'])
+            ->where('due_date', '>', now())
+            ->distinct()
+            ->pluck('team_id')
+            ->filter()
+            ->values();
+
+        // Obtener los team_ids a los que pertenece cada usuario del sistema
+        // para filtrar solo tareas de equipos donde el usuario es miembro
+        $userTeamMap = []; // user_id => collection de team_ids
+        $teamUsers = []; // team_id => collection de user_ids
+
+        if ($urgentTeamIds->isNotEmpty()) {
+            $teamUserRelations = \DB::table('team_user')
+                ->whereIn('team_id', $urgentTeamIds)
+                ->select('user_id', 'team_id')
+                ->get();
+
+            foreach ($teamUserRelations as $relation) {
+                $userId = (int) $relation->user_id;
+                $teamId = (int) $relation->team_id;
+
+                if (!isset($userTeamMap[$userId])) {
+                    $userTeamMap[$userId] = collect();
+                }
+                $userTeamMap[$userId] = $userTeamMap[$userId]->push($teamId);
+
+                if (!isset($teamUsers[$teamId])) {
+                    $teamUsers[$teamId] = collect();
+                }
+                $teamUsers[$teamId] = $teamUsers[$teamId]->push($userId);
+            }
+        }
+
         $tasks = Task::with(['assignedTo', 'assignedUser', 'creator'])
             ->whereIn('status', ['pending', 'in_progress'])
             ->whereNotNull('due_date')
             ->whereIn('urgency', ['high', 'critical'])
             ->where('due_date', '>', now()) // Solo tareas que aún no han vencido
-            ->get();
+            ->get()
+            ->filter(function ($task) use ($teamUsers) {
+                // Solo incluir tareas de equipos que tienen miembros asignados
+                return isset($teamUsers[$task->team_id]) && $teamUsers[$task->team_id]->isNotEmpty();
+            });
 
         $this->line("Tareas urgentes activas no vencidas: {$tasks->count()}");
 
@@ -118,7 +160,20 @@ class CheckUrgentTasks extends Command
                 continue;
             }
 
+            // Verificar que al menos un usuario a notificar es miembro del equipo
+            if (!$activity->team_id) {
+                $this->line("  [skip] ID:{$activity->id} '{$activity->title}' — sin team_id");
+                continue;
+            }
+
             foreach ($usersToNotify->unique('id') as $user) {
+                // CRÍTICO: Verificar que el usuario es miembro del equipo de la tarea
+                $userTeams = $userTeamMap[$user->id] ?? collect();
+                if (!$userTeams->contains($activity->team_id)) {
+                    $this->line("  [skip] ID:{$activity->id} '{$activity->title}' — user {$user->name} no es miembro del equipo {$activity->team_id}");
+                    continue;
+                }
+
                 $settings = $user->notification_settings ?? $user->defaultNotificationSettings();
                 $leadHours = (int) ($settings['notify_before_hours'] ?? 2);
 

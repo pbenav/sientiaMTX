@@ -36,11 +36,38 @@ class TriggerReminderActivities extends Command
             ->where('due_date', '>=', $now->copy()->subMinutes(5))
             ->get();
 
-        $this->line("Recordatorios encontrados en ventana: {$reminders->count()}");
+        // Construir mapa de usuarios a equipos para validación
+        $teamUsers = []; // team_id => collection de user_ids
+        $userTeams = []; // user_id => collection de team_ids
+
+        if ($reminders->isNotEmpty()) {
+            $reminderTeamIds = $reminders->pluck('team_id')->filter()->unique();
+            if ($reminderTeamIds->isNotEmpty()) {
+                $relations = \DB::table('team_user')
+                    ->whereIn('team_id', $reminderTeamIds)
+                    ->select('user_id', 'team_id')
+                    ->get();
+
+                foreach ($relations as $rel) {
+                    $uid = (int) $rel->user_id;
+                    $tid = (int) $rel->team_id;
+                    if (!isset($userTeams[$uid])) $userTeams[$uid] = collect();
+                    $userTeams[$uid] = $userTeams[$uid]->push($tid);
+                    if (!isset($teamUsers[$tid])) $teamUsers[$tid] = collect();
+                    $teamUsers[$tid] = $teamUsers[$tid]->push($uid);
+                }
+            }
+        }
 
         $triggeredCount = 0;
 
         foreach ($reminders as $reminder) {
+            // CRÍTICO: Verificar que el recordatorio pertenece a un equipo válido
+            if (!$reminder->team_id) {
+                $this->line("  [skip] ID:{$reminder->id} '{$reminder->title}' — sin team_id");
+                continue;
+            }
+
             // Verificar si ya fue notificado (evitar duplicados en menos de 12h)
             $metadata = $reminder->metadata ?? [];
             $lastNotified = $metadata['notified_at'] ?? null;
@@ -80,8 +107,14 @@ class TriggerReminderActivities extends Command
             $this->line("  [channels] ID:{$reminder->id} '{$reminder->title}' — " . implode(', ', $channels));
 
             // Para cada canal configurado, enviar a los usuarios que tengan ese canal activado
+            // Y que sean miembros del equipo del recordatorio
             if (in_array('email', $channels, true) || in_array('mail', $channels, true)) {
                 foreach ($usersToNotify->unique('id') as $user) {
+                    // Verificar que el usuario es miembro del equipo
+                    if (!isset($userTeams[$user->id]) || !$userTeams[$user->id]->contains($reminder->team_id)) {
+                        $this->line("    [skip] user {$user->name} no es miembro del equipo {$reminder->team_id}");
+                        continue;
+                    }
                     if ($user->wantsNotification('mail')) {
                         $this->sendNotification($user, $reminder);
                         $triggeredCount++;
@@ -92,6 +125,10 @@ class TriggerReminderActivities extends Command
 
             if (in_array('telegram', $channels, true)) {
                 foreach ($usersToNotify->unique('id') as $user) {
+                    if (!isset($userTeams[$user->id]) || !$userTeams[$user->id]->contains($reminder->team_id)) {
+                        $this->line("    [skip] user {$user->name} no es miembro del equipo {$reminder->team_id}");
+                        continue;
+                    }
                     if ($user->wantsNotification('telegram') && !empty($user->telegram_chat_id)) {
                         $this->sendTelegramNotification($user, $reminder);
                         $triggeredCount++;
@@ -102,6 +139,10 @@ class TriggerReminderActivities extends Command
 
             if (in_array('push', $channels, true) || in_array('web_push', $channels, true)) {
                 foreach ($usersToNotify->unique('id') as $user) {
+                    if (!isset($userTeams[$user->id]) || !$userTeams[$user->id]->contains($reminder->team_id)) {
+                        $this->line("    [skip] user {$user->name} no es miembro del equipo {$reminder->team_id}");
+                        continue;
+                    }
                     if ($user->wantsNotification('web_push')) {
                         $this->sendPushNotification($user, $reminder);
                         $triggeredCount++;
