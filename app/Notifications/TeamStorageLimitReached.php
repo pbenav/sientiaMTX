@@ -6,10 +6,12 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use App\Traits\DeterminesNotificationChannels;
+use NotificationChannels\WebPush\WebPushMessage;
 
-class TeamStorageLimitReached extends Notification
+class TeamStorageLimitReached extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, DeterminesNotificationChannels;
 
     public $team;
     public $percentage;
@@ -23,20 +25,24 @@ class TeamStorageLimitReached extends Notification
         $this->percentage = $percentage;
     }
 
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
-     */
-    public function via(object $notifiable): array
+    public function toWebPush($notifiable, $notification): WebPushMessage
     {
-        $channels = ['database'];
-        if (method_exists($notifiable, 'wantsNotification') && $notifiable->wantsNotification('mail', 'high')) {
-            $channels[] = 'mail';
-        } elseif (!method_exists($notifiable, 'wantsNotification')) {
-            $channels[] = 'mail'; // Fallback
-        }
-        return $channels;
+        return (new WebPushMessage)
+            ->title('⚠️ Alerta de Almacenamiento: ' . $this->team->name)
+            ->icon('/images/logo-icon.png')
+            ->body('Tu equipo ha alcanzado el ' . $this->percentage . '% de su capacidad de almacenamiento.')
+            ->action('Gestionar', 'storage')
+            ->options(['TTL' => 1000]);
+    }
+
+    public function toTelegram($notifiable): array
+    {
+        return [
+            'text' => "⚠️ *Alerta de Almacenamiento*\n\n" .
+                      "Equipo: *{$this->team->name}*\n" .
+                      "Capacidad alcanzada: *{$this->percentage}%*\n\n" .
+                      "Te recomendamos realizar una limpieza de archivos obsoletos."
+        ];
     }
 
     /**

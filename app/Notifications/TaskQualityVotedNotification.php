@@ -8,10 +8,13 @@ use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
+use App\Traits\DeterminesNotificationChannels;
+use NotificationChannels\WebPush\WebPushMessage;
 
 class TaskQualityVotedNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, DeterminesNotificationChannels;
 
     public $task;
     public $voter;
@@ -24,10 +27,37 @@ class TaskQualityVotedNotification extends Notification implements ShouldQueue
         $this->score = $score;
     }
 
-    public function via($notifiable)
+    public function toWebPush($notifiable, $notification): WebPushMessage
     {
-        // Store in database primarily for standard alerting
-        return ['database'];
+        return (new WebPushMessage)
+            ->title("⭐ ¡Valoración excelente!")
+            ->icon('/images/logo-icon.png')
+            ->body("{$this->voter->name} ha puntuado tu tarea \"{$this->task->title}\" con {$this->score} estrellas.")
+            ->action('Ver Tarea', 'view_task')
+            ->options(['TTL' => 1000]);
+    }
+
+    public function toTelegram($notifiable): array
+    {
+        $url = route('teams.activities.show', [$this->task->team_id, $this->task]);
+
+        return [
+            'text' => "⭐ *¡Valoración Excellentе!*\n\n" .
+                      "{$this->voter->name} ha puntuado tu tarea *{$this->task->title}* con {$this->score} estrellas.\n\n" .
+                      "[Ver Tarea]({$url})"
+        ];
+    }
+
+    public function toMail($notifiable): MailMessage
+    {
+        $url = route('teams.activities.show', [$this->task->team_id, $this->task]);
+
+        return (new MailMessage)
+            ->subject("⭐ ¡Valoración excelente en: {$this->task->title}!")
+            ->greeting("Hola, " . explode(' ', $notifiable->name)[0])
+            ->line("{$this->voter->name} ha puntuado tu tarea \"{$this->task->title}\" con {$this->score} estrellas.")
+            ->action('Ver Tarea', $url)
+            ->line('¡Sigue así!');
     }
 
     public function toArray($notifiable)

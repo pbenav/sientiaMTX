@@ -11,6 +11,9 @@ Artisan::command('inspire', function () {
 // Comprueba tareas urgentes y envía notificaciones — cada 30 minutos
 Schedule::command('tasks:check-urgent')->everyThirtyMinutes();
 
+// Dispara notificaciones de actividades tipo reminder según canales configurados — cada 10 minutos
+Schedule::command('reminders:trigger')->everyTenMinutes();
+
 // Comprueba tareas programadas que alcanzan su fecha de inicio — cada 10 minutos
 Schedule::command('tasks:check-scheduled-wakeup')->everyTenMinutes();
 

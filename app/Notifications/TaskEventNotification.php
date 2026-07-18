@@ -8,10 +8,12 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use App\Traits\DeterminesNotificationChannels;
+use NotificationChannels\WebPush\WebPushMessage;
 
-class TaskEventNotification extends Notification
+class TaskEventNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, DeterminesNotificationChannels;
 
     protected $task;
     protected $type;
@@ -29,17 +31,30 @@ class TaskEventNotification extends Notification
     }
 
     /**
-     * Get the notification's delivery channels.
+     * Get the Web Push representation of the notification.
      */
-    public function via(object $notifiable): array
+    public function toWebPush(object $notifiable, $notification): WebPushMessage
     {
-        $channels = ['database'];
-        if (method_exists($notifiable, 'wantsNotification') && $notifiable->wantsNotification('mail')) {
-            $channels[] = 'mail';
-        } elseif (!method_exists($notifiable, 'wantsNotification')) {
-            $channels[] = 'mail'; // Fallback
-        }
-        return $channels;
+        return (new WebPushMessage)
+            ->title($this->getSubject())
+            ->icon('/images/logo-icon.png')
+            ->body($this->getMessage())
+            ->action('Ver Tarea', 'view_task')
+            ->options(['TTL' => 1000]);
+    }
+
+    /**
+     * Get the telegram representation of the notification.
+     */
+    public function toTelegram(object $notifiable): array
+    {
+        $url = route('teams.activities.show', [$this->task->team_id, $this->task->id]);
+
+        return [
+            'text' => "📌 *{$this->getSubject()}*\n\n" .
+                      $this->getMessage() . "\n\n" .
+                      "[Ver Tarea]({$url})"
+        ];
     }
 
     /**
@@ -49,12 +64,13 @@ class TaskEventNotification extends Notification
     {
         $subject = $this->getSubject();
         $message = $this->getMessage();
+        $url = route('teams.activities.show', [$this->task->team_id, $this->task->id]);
 
         return (new MailMessage)
             ->subject($subject)
             ->greeting('Hola, ' . explode(' ', $notifiable->name)[0])
             ->line($message)
-            ->action('Ver Tarea', route('teams.activities.show', [$this->task->team_id, $this->task->id]))
+            ->action('Ver Tarea', $url)
             ->line('Gracias por usar SientiaMTX.');
     }
 

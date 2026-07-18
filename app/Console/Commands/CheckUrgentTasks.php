@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Activity;
 use App\Models\Task;
 use App\Notifications\TaskReminderNotification;
 use App\Notifications\TaskSummaryNotification;
@@ -43,7 +44,7 @@ class CheckUrgentTasks extends Command
                 }
             });
 
-        // 1. Recopilar usuarios y sus tareas que necesitan notificación
+        // 1. Recopilar usuarios y sus tareas/recordatorios que necesitan notificación
         $userTasks = [];
 
         $tasks = Task::with(['assignedTo', 'assignedUser', 'creator'])
@@ -55,23 +56,64 @@ class CheckUrgentTasks extends Command
 
         $this->line("Tareas urgentes activas no vencidas: {$tasks->count()}");
 
-        foreach ($tasks as $task) {
-            // Construir lista de destinatarios:
-            // 1. Usuarios asignados via tabla pivote (task_assignments)
-            $usersToNotify = $task->assignedTo->collect();
+        $allActivities = $tasks->map(fn($t) => (object)[
+            'id' => 'task_' . $t->id,
+            'original' => $t,
+            'type' => 'task',
+            'assignedTo' => $t->assignedTo,
+            'assignedUser' => $t->assignedUser,
+            'creator' => $t->creator,
+            'team_id' => $t->team_id,
+            'title' => $t->title,
+            'due_date' => $t->due_date,
+            'metadata' => $t->metadata ?? [],
+        ]);
 
-            // 2. Usuario asignado directamente via assigned_user_id (tareas individuales)
-            if ($task->assignedUser && !$usersToNotify->contains('id', $task->assigned_user_id)) {
-                $usersToNotify->push($task->assignedUser);
+        // También incluir actividades tipo reminder con urgencia high/critical
+        $reminderActivities = Activity::with(['assignedTo', 'assignedUser', 'creator', 'team'])
+            ->where('type', 'reminder')
+            ->whereIn('status_value', ['pending', 'snoozed'])
+            ->whereNotNull('due_date')
+            ->where('due_date', '>', now())
+            ->where(function ($q) {
+                $q->whereRaw("JSON_EXTRACT(metadata, '$.urgency') IN ('high', 'critical')")
+                  ->orWhereRaw("JSON_EXTRACT(metadata, '$.priority') IN ('high', 'critical')");
+            })
+            ->get()
+            ->map(fn($a) => (object)[
+                'id' => 'reminder_' . $a->id,
+                'original' => $a,
+                'type' => 'reminder',
+                'assignedTo' => $a->assignedTo,
+                'assignedUser' => $a->assignedUser,
+                'creator' => $a->creator,
+                'team_id' => $a->team_id,
+                'title' => $a->title,
+                'due_date' => $a->due_date,
+                'metadata' => $a->metadata ?? [],
+            ]);
+
+        $allActivities = $allActivities->merge($reminderActivities);
+
+        foreach ($allActivities as $activity) {
+            $task = $activity->original;
+
+            // Construir lista de destinatarios:
+            // 1. Usuarios asignados via tabla pivote
+            $usersToNotify = $activity->assignedTo->collect();
+
+            // 2. Usuario asignado directamente
+            if ($activity->assignedUser && !$usersToNotify->contains('id', $activity->assignedUser->id ?? null)) {
+                $usersToNotify->push($activity->assignedUser);
             }
 
             // 3. Creador (si no está ya incluido)
-            if ($task->creator && !$usersToNotify->contains('id', $task->created_by_id)) {
-                $usersToNotify->push($task->creator);
+            if ($activity->creator && !$usersToNotify->contains('id', $activity->creator->id ?? null)) {
+                $usersToNotify->push($activity->creator);
             }
 
             if ($usersToNotify->isEmpty()) {
-                $this->line("  [skip] ID:{$task->id} '{$task->title}' — sin usuarios a notificar");
+                $this->line("  [skip] ID:{$activity->id} '{$activity->title}' — sin usuarios a notificar");
                 continue;
             }
 
@@ -84,18 +126,17 @@ class CheckUrgentTasks extends Command
                 
                 // Convertir la hora actual y la fecha vencimiento al timezone del usuario
                 $nowInUserTz = now($userTimezone);
-                $dueInUserTz = $task->due_date->copy()->setTimezone($userTimezone);
+                $dueInUserTz = $activity->due_date->copy()->setTimezone($userTimezone);
                 
                 // Calcular horas restantes en el timezone del usuario
                 $diffHours = $nowInUserTz->diffInHours($dueInUserTz, false);
 
-                $this->line("  ID:{$task->id} '{$task->title}' — due={$dueInUserTz} ({$userTimezone}) restanH={$diffHours} leadH={$leadHours} user={$user->name}");
+                $this->line("  ID:{$activity->id} '{$activity->title}' — due={$dueInUserTz} ({$userTimezone}) restanH={$diffHours} leadH={$leadHours} user={$user->name}");
 
                 // Solo notificar si está dentro del margen de antelación del usuario
-                // Usar un margen pequeño (0.1 horas = 6 minutos) para evitar problemas de precisión con decimales
                 $toleranceBuffer = 0.1;
                 if ($diffHours >= -$toleranceBuffer && $diffHours <= ($leadHours + $toleranceBuffer)) {
-                    $metadata = $task->metadata ?? [];
+                    $metadata = $activity->metadata;
                     $lastNotified = $metadata['last_reminder_sent_at'] ?? null;
 
                     // Evitar duplicados en menos de 12 horas
