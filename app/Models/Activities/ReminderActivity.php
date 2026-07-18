@@ -11,7 +11,7 @@ use App\Contracts\ExportableActivityInterface;
 /**
  * Subtipo: Recordatorio
  *
- * Aparece en Matrix y Gantt. Se dispara por fecha (due_date).
+ * Aparece en Matrix y Gantt. Se dispara según la configuración de notificación.
  * Puede tener múltiples canales de notificación.
  *
  * metadata esperado:
@@ -20,8 +20,15 @@ use App\Contracts\ExportableActivityInterface;
  *   "repeat": false,
  *   "repeat_interval": null,   // daily | weekly | monthly
  *   "notified_at": null,
- *   "snooze_until": null
+ *   "snooze_until": null,
+ *   "notify_before_minutes": null,  // Notificar X minutos antes de due_date
+ *   "notify_at_hour": null          // Notificar a una hora exacta (formato "HH:MM" o "HH:MM:SS")
  * }
+ *
+ * Reglas de notificación:
+ * - Si notify_before_minutes está definido: notificar due_date - X minutos
+ * - Si notify_at_hour está definido: notificar a esa hora en la fecha de due_date
+ * - Si no se define ninguno: notificar en la due_date exacta
  */
 class ReminderActivity extends Activity implements ExportableActivityInterface
 {
@@ -69,11 +76,13 @@ class ReminderActivity extends Activity implements ExportableActivityInterface
     public static function getSpecsSchema(): array
     {
         return [
-            'channels'        => 'array|nullable',
-            'repeat'          => 'boolean|nullable',
-            'repeat_interval' => 'string|nullable',
-            'notified_at'     => 'string|nullable',
-            'snooze_until'    => 'string|nullable',
+            'channels'              => 'array|nullable',
+            'repeat'                => 'boolean|nullable',
+            'repeat_interval'       => 'string|nullable',
+            'notified_at'           => 'string|nullable',
+            'snooze_until'          => 'string|nullable',
+            'notify_before_minutes' => 'integer|nullable',
+            'notify_at_hour'        => 'string|nullable',
         ];
     }
 }

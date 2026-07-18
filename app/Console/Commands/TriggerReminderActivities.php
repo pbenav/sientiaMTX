@@ -14,17 +14,20 @@ class TriggerReminderActivities extends Command
 {
     protected $signature = 'reminders:trigger';
 
-    protected $description = 'Dispara notificaciones de actividades tipo reminder según los canales configurados y la fecha de vencimiento';
+    protected $description = 'Dispara notificaciones de actividades tipo reminder según los canales configurados y la fecha de notificación';
 
     public function handle()
     {
         $this->info('Ejecutando TriggerReminderActivities...');
         $this->line('Server now (UTC): ' . now()->toDateTimeString());
 
-        // 1. Buscar recordatorios pendientes que deben dispararse
-        // Ventana: desde vencidos hace <= 5 min hasta vencen en las próximas 4h
-        // Esto permite recordatorios configurados con 1h, 2h, 4h, etc. de anticipación
         $now = now();
+
+        // Buscar recordatorios que tengan due_date definida Y al menos una configuración de notificación
+        // Configuraciones posibles:
+        //   - notify_before_minutes: notificar X minutos antes de due_date
+        //   - notify_at_hour: notificar a una hora exacta (se usa la fecha de due_date)
+        //   - si no se define ninguno, se notifica en la due_date exacta
         $reminders = ReminderActivity::with(['assignedTo', 'assignedUser', 'creator', 'team'])
             ->where(function ($query) {
                 $query->whereJsonContains('status->value', 'pending')
@@ -32,13 +35,26 @@ class TriggerReminderActivities extends Command
             })
             ->orWhereNull('status')
             ->whereNotNull('due_date')
-            ->where('due_date', '<=', $now->copy()->addHours(4))
-            ->where('due_date', '>=', $now->copy()->subMinutes(5))
+            ->where(function ($q) {
+                // Solo recordatorios que tengan alguna configuración de notificación
+                $q->whereNotNull('metadata->notify_before_minutes')
+                  ->orWhereNotNull('metadata->notify_at_hour')
+                  ->orWhere(function ($inner) {
+                      // Si no tiene ninguna configuración explícita, se notifica en la due_date exacta
+                      // Esto se hace incluyendo todos los que tengan due_date
+                      // La lógica de "si no se define ninguna, se notifica en due_date" se aplica en el loop
+                  });
+            })
+            // Ventana amplia: 24h atrás hasta 24h adelante para capturar todo
+            ->where('due_date', '<=', $now->copy()->addHours(24))
+            ->where('due_date', '>=', $now->copy()->subHours(24))
             ->get();
 
+        $this->line("Recordatorios con due_date en ventana de 24h: {$reminders->count()}");
+
         // Construir mapa de usuarios a equipos para validación
-        $teamUsers = []; // team_id => collection de user_ids
-        $userTeams = []; // user_id => collection de team_ids
+        $teamUsers = [];
+        $userTeams = [];
 
         if ($reminders->isNotEmpty()) {
             $reminderTeamIds = $reminders->pluck('team_id')->filter()->unique();
@@ -62,7 +78,6 @@ class TriggerReminderActivities extends Command
         $triggeredCount = 0;
 
         foreach ($reminders as $reminder) {
-            // CRÍTICO: Verificar que el recordatorio pertenece a un equipo válido
             if (!$reminder->team_id) {
                 $this->line("  [skip] ID:{$reminder->id} '{$reminder->title}' — sin team_id");
                 continue;
@@ -86,6 +101,21 @@ class TriggerReminderActivities extends Command
                 }
             }
 
+            // Calcular la hora exacta de notificación
+            $notifyAt = $this->calculateNotifyAt($reminder, $now);
+
+            if (!$notifyAt) {
+                $this->line("  [skip] ID:{$reminder->id} '{$reminder->title}' — sin configuración de notificación válida");
+                continue;
+            }
+
+            // Verificar si estamos dentro de la ventana de notificación (tolerancia de 1 min)
+            $diffMinutes = $now->diffInMinutes($notifyAt, false);
+            if ($diffMinutes < -1 || $diffMinutes > 2) {
+                $this->line("  [skip] ID:{$reminder->id} '{$reminder->title}' — notificación programada para {$notifyAt->toDateTimeString()} (diferencia: {$diffMinutes} min)");
+                continue;
+            }
+
             // Construir lista de destinatarios
             $usersToNotify = $reminder->assignedTo->collect();
 
@@ -102,15 +132,13 @@ class TriggerReminderActivities extends Command
                 continue;
             }
 
-            // Obtener canales configurados para este recordatorio
             $channels = $reminder->getChannels();
-            $this->line("  [channels] ID:{$reminder->id} '{$reminder->title}' — " . implode(', ', $channels));
+            $this->line("  [notify_at] ID:{$reminder->id} '{$reminder->title}' — {$notifyAt->toDateTimeString()} | [channels] " . implode(', ', $channels));
 
-            // Para cada canal configurado, enviar a los usuarios que tengan ese canal activado
-            // Y que sean miembros del equipo del recordatorio
+            $anySent = false;
+
             if (in_array('email', $channels, true) || in_array('mail', $channels, true)) {
                 foreach ($usersToNotify->unique('id') as $user) {
-                    // Verificar que el usuario es miembro del equipo
                     if (!isset($userTeams[$user->id]) || !$userTeams[$user->id]->contains($reminder->team_id)) {
                         $this->line("    [skip] user {$user->name} no es miembro del equipo {$reminder->team_id}");
                         continue;
@@ -118,6 +146,7 @@ class TriggerReminderActivities extends Command
                     if ($user->wantsNotification('mail')) {
                         $this->sendNotification($user, $reminder);
                         $triggeredCount++;
+                        $anySent = true;
                         $this->line("    [✓] Email enviado a {$user->name}");
                     }
                 }
@@ -132,6 +161,7 @@ class TriggerReminderActivities extends Command
                     if ($user->wantsNotification('telegram') && !empty($user->telegram_chat_id)) {
                         $this->sendTelegramNotification($user, $reminder);
                         $triggeredCount++;
+                        $anySent = true;
                         $this->line("    [✓] Telegram enviado a {$user->name}");
                     }
                 }
@@ -146,26 +176,64 @@ class TriggerReminderActivities extends Command
                     if ($user->wantsNotification('web_push')) {
                         $this->sendPushNotification($user, $reminder);
                         $triggeredCount++;
+                        $anySent = true;
                         $this->line("    [✓] Push enviado a {$user->name}");
                     }
                 }
             }
 
-            // Marcar como notificado
-            $metadata['notified_at'] = now()->toDateTimeString();
-            $metadata['last_channel_sent'] = $channels;
-            $reminder->update(['metadata' => $metadata]);
+            if ($anySent) {
+                $metadata['notified_at'] = now()->toDateTimeString();
+                $metadata['last_channel_sent'] = $channels;
+                $reminder->update(['metadata' => $metadata]);
 
-            // Actualizar status a triggered si está pendiente
-            if ($reminder->status_value === 'pending') {
-                $reminder->update(['status' => ['value' => 'triggered']]);
+                if ($reminder->status_value === 'pending') {
+                    $reminder->update(['status' => ['value' => 'triggered']]);
+                }
+            } else {
+                $this->line("  [skip] ID:{$reminder->id} '{$reminder->title}' — todos los canales desactivados para los destinatarios, se salta sin marcar como triggered");
             }
         }
 
-        // 2. Manejar recordatorios repetitivos
         $this->handleRepeatingReminders();
 
         $this->info("Recordatorios procesados: {$triggeredCount}");
+    }
+
+    /**
+     * Calcula la hora exacta de notificación basada en la configuración del recordatorio.
+     *
+     * Reglas:
+     * - Si notify_before_minutes está definido: notificar due_date - X minutos
+     * - Si notify_at_hour está definido: notificar a esa hora en la fecha de due_date
+     * - Si no se define nada: notificar en la due_date exacta
+     */
+    protected function calculateNotifyAt(ReminderActivity $reminder, Carbon $now): ?Carbon
+    {
+        $dueDate = $reminder->due_date->copy();
+        $metadata = $reminder->metadata ?? [];
+
+        if (isset($metadata['notify_before_minutes']) && $metadata['notify_before_minutes'] !== null && $metadata['notify_before_minutes'] !== '') {
+            // Notificar X minutos antes de la due_date
+            $minutesBefore = (int) $metadata['notify_before_minutes'];
+            return $dueDate->copy()->subMinutes($minutesBefore);
+        }
+
+        if (isset($metadata['notify_at_hour']) && $metadata['notify_at_hour'] !== null && $metadata['notify_at_hour'] !== '') {
+            // Notificar a una hora exacta
+            $notifyAtHour = $metadata['notify_at_hour'];
+            // Formatos aceptados: "15:30", "15:30:00", o solo hora "15"
+            if (is_string($notifyAtHour) && preg_match('/^(\d{1,2}):?(\d{2})?/?(\d{2})?$/', $notifyAtHour, $matches)) {
+                $hour = (int) $matches[1];
+                $minute = isset($matches[2]) ? (int) $matches[2] : 0;
+                $second = isset($matches[3]) ? (int) $matches[3] : 0;
+                return $dueDate->copy()->setHour($hour)->setMinute($minute)->setSecond($second);
+            }
+            return null;
+        }
+
+        // Sin configuración: notificar en la due_date exacta
+        return $dueDate;
     }
 
     protected function sendNotification(User $user, ReminderActivity $reminder): void
@@ -214,7 +282,6 @@ class TriggerReminderActivities extends Command
     protected function sendPushNotification(User $user, ReminderActivity $reminder): void
     {
         try {
-            // Usar TaskReminderNotification que ya implementa toWebPush
             $user->notify(new TaskReminderNotification($reminder));
         } catch (\Exception $e) {
             Log::error("Failed to send Push reminder to user {$user->id}: " . $e->getMessage());
@@ -257,7 +324,6 @@ class TriggerReminderActivities extends Command
             }
 
             if ($nextTrigger && $nextTrigger->isPast()) {
-                // Resetear para que vuelva a dispararse en el próximo cron
                 $metadata['notified_at'] = null;
                 $reminder->update([
                     'metadata' => $metadata,

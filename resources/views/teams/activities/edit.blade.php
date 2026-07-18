@@ -265,32 +265,6 @@
                                 <x-guest-crud :initialGuests="old('metadata.guests', data_get($activity->metadata, 'guests', []))" :initialMessage="old('metadata.invitation_message', data_get($activity->metadata, 'invitation_message', ''))" />
                             </div>
                         </div>
-                    @elseif ($activity->type === 'reminder')
-                        <!-- RECORDATORIO ESPECÍFICO -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="md:col-span-2">
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Canales de Notificación</label>
-                                @php $channels = data_get($activity->metadata, 'channels', ['email']); @endphp
-                                <div class="flex flex-wrap gap-4 mt-2">
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" name="metadata[channels][]" value="email" {{ in_array('email', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
-                                        <span class="text-sm text-gray-700 dark:text-gray-300"> Correo Electrónico</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" name="metadata[channels][]" value="push" {{ in_array('push', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
-                                        <span class="text-sm text-gray-700 dark:text-gray-300"> Notificación en la App (Push/Nudge)</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" name="metadata[channels][]" value="whatsapp" {{ in_array('whatsapp', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
-                                        <span class="text-sm text-gray-700 dark:text-gray-300"> WhatsApp</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" name="metadata[channels][]" value="telegram" {{ in_array('telegram', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
-                                        <span class="text-sm text-gray-700 dark:text-gray-300"> Telegram</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
                     @endif
         </div>
     </div>
@@ -655,6 +629,59 @@
                             <div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-focus:ring-4 peer-focus:ring-red-500/20 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-red-600"></div>
                         </label>
                     </div>
+
+                    @if ($activity->type === 'reminder')
+                    <!-- RECORDATORIO ESPECÍFICO -->
+                    <div class="bg-gray-50/50 dark:bg-gray-800/20 border border-gray-150 dark:border-gray-800 rounded-3xl p-6 mt-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-8 h-8 rounded-xl bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-400 flex items-center justify-center shrink-0 shadow-sm border border-pink-200 dark:border-pink-500/10">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.158c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xs font-black uppercase tracking-widest text-pink-700 dark:text-pink-400">Configuración de Notificación</h3>
+                                <p class="text-[10px] text-gray-500 dark:text-gray-400">Elige los canales y cuándo se enviará la notificación.</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Canales de Notificación</label>
+                                @php $channels = data_get($activity->metadata, 'channels', ['email']); @endphp
+                                <div class="flex flex-wrap gap-4 mt-2">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" name="metadata[channels][]" value="email" {{ in_array('email', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
+                                        <span class="text-sm text-gray-700 dark:text-gray-300"> Correo Electrónico</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" name="metadata[channels][]" value="push" {{ in_array('push', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
+                                        <span class="text-sm text-gray-700 dark:text-gray-300"> Notificación en la App (Push/Nudge)</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" name="metadata[channels][]" value="whatsapp" {{ in_array('whatsapp', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
+                                        <span class="text-sm text-gray-700 dark:text-gray-300"> WhatsApp</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" name="metadata[channels][]" value="telegram" {{ in_array('telegram', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
+                                        <span class="text-sm text-gray-700 dark:text-gray-300"> Telegram</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Notificar X minutos antes de la fecha de vencimiento</label>
+                                <input type="number" name="metadata[notify_before_minutes]" value="{{ old('metadata.notify_before_minutes', data_get($activity->metadata, 'notify_before_minutes')) }}" min="1" max="10080" placeholder="Ej: 30" class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all">
+                                <p class="text-[10px] text-gray-400 mt-1">Si se establece, se notifica X minutos antes de la due_date. Si no se establece, se notifica en la due_date exacta.</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Notificar a una hora específica (HH:MM)</label>
+                                <input type="time" name="metadata[notify_at_hour]" value="{{ old('metadata.notify_at_hour', data_get($activity->metadata, 'notify_at_hour')) }}" step="60" class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all">
+                                <p class="text-[10px] text-gray-400 mt-1">Si se establece, se notifica a esa hora exacta en la fecha de due_date. No se puede usar junto con "minutos antes".</p>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
                 </div>
         </div>
     </div>
