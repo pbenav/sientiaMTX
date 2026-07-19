@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Team;
 use App\Models\Activity;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class TeamLibraryController extends Controller
@@ -27,13 +28,11 @@ class TeamLibraryController extends Controller
             $query->where('status->value', $request->input('status'));
         }
 
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->input('date_from'));
-        }
+        $dateFrom = $request->filled('date_from') ? $request->input('date_from') : '1970-01-01';
+        $dateTo = $request->filled('date_to') ? $request->input('date_to') : Carbon::today()->toDateString();
 
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->input('date_to'));
-        }
+        $query->whereDate('created_at', '>=', $dateFrom);
+        $query->whereDate('created_at', '<=', $dateTo);
 
         $documents = $query->orderBy('is_archived', 'asc') // Active first
             ->orderBy('created_at', 'desc')
@@ -52,6 +51,6 @@ class TeamLibraryController extends Controller
             $activeDocument = $documents->first();
         }
 
-        return view('teams.library.index', compact('team', 'documents', 'activeDocument'));
+        return view('teams.library.index', compact('team', 'documents', 'activeDocument', 'dateFrom', 'dateTo'));
     }
 }

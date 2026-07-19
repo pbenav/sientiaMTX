@@ -61,19 +61,26 @@
                             </select>
                         </div>
                         <div class="flex gap-2">
-                            <input type="date" name="date_from" value="{{ request('date_from') }}" placeholder="Desde"
+                            <input type="date" name="date_from" value="{{ request('date_from', $dateFrom) }}" placeholder="Desde"
                                    class="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 px-2.5 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all text-gray-600 dark:text-gray-400">
-                            <input type="date" name="date_to" value="{{ request('date_to') }}" placeholder="Hasta"
+                            <input type="date" name="date_to" value="{{ request('date_to', $dateTo) }}" placeholder="Hasta"
                                    class="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 px-2.5 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all text-gray-600 dark:text-gray-400">
                         </div>
                         @if(request('doc'))
                             <input type="hidden" name="doc" value="{{ request('doc') }}">
                         @endif
-                        <button type="submit" class="w-full bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold py-2 rounded-xl transition-colors">
-                            Filtrar
-                        </button>
-                        @if(request('status') || request('date_from') || request('date_to'))
-                            <a href="{{ route('teams.library', $team) }}{{ request('q') ? '?q=' . request('q') : '' }}" class="block w-full text-center text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 py-1 transition-colors">
+                        <div class="flex gap-2">
+                            <button type="submit" class="flex-1 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold py-2 rounded-xl transition-colors">
+                                Filtrar
+                            </button>
+                            <a href="{{ route('teams.library', $team) }}" class="flex items-center justify-center px-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs font-bold rounded-xl transition-colors" title="Resetear filtros">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                            </a>
+                        </div>
+                        @if(request('status') || request('q'))
+                            <a href="{{ route('teams.library', $team) }}" class="block w-full text-center text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 py-1 transition-colors">
                                 Limpiar filtros
                             </a>
                         @endif
@@ -82,18 +89,19 @@
                 
                 <div class="flex-1 overflow-y-auto no-scrollbar p-2">
                     @forelse($documents as $doc)
-                        <a href="{{ route('teams.library', [$team, 'doc' => $doc->id]) }}" 
-                           class="flex items-start gap-2.5 p-2.5 rounded-xl transition-all mb-1 {{ $activeDocument && $activeDocument->id == $doc->id ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400' }}">
-                           <div class="mt-0.5 shrink-0">
-                               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 {{ $doc->status_value == 'completed' ? 'text-emerald-500' : 'text-gray-400' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                               </svg>
-                           </div>
-                           <div class="flex flex-col min-w-0">
-                               <span class="text-sm font-semibold truncate">{{ $doc->title }}</span>
-                               <span class="text-[10px] uppercase font-bold {{ $doc->status_value == 'completed' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400' }}">{{ __("activities.statuses.{$doc->status_value}") }}</span>
-                           </div>
-                        </a>
+                         <a href="{{ route('teams.library', [$team, 'doc' => $doc->id]) }}" 
+                            class="flex items-start gap-2.5 p-2.5 rounded-xl transition-all mb-1 {{ $activeDocument && $activeDocument->id == $doc->id ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400' }}">
+                            <div class="mt-0.5 shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 {{ $doc->status_value == 'completed' ? 'text-emerald-500' : 'text-gray-400' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            </div>
+                            <div class="flex flex-col min-w-0">
+                                <span class="text-sm font-semibold truncate">{{ $doc->title }}</span>
+                                <span class="text-[10px] uppercase font-bold {{ $doc->status_value == 'completed' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400' }}">{{ __("activities.statuses.{$doc->status_value}") }}</span>
+                                <span class="text-[10px] text-gray-400">{{ $doc->created_at->format('d/m/Y') }}</span>
+                            </div>
+                         </a>
                     @empty
                         <div class="text-center p-6">
                             <span class="text-xs text-gray-400">No hay documentos en la biblioteca.</span>
