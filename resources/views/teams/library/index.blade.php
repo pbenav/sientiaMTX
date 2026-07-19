@@ -52,9 +52,11 @@
                             <select name="status" class="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 px-2.5 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all">
                                 <option value="">Todos los estados</option>
                                 <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Borrador</option>
-                                <option value="review" {{ request('status') == 'review' ? 'selected' : '' }}>En revisión</option>
+                                <option value="uploaded" {{ request('status') == 'uploaded' ? 'selected' : '' }}>Subido</option>
+                                <option value="editing" {{ request('status') == 'editing' ? 'selected' : '' }}>En edición</option>
+                                <option value="reviewed" {{ request('status') == 'reviewed' ? 'selected' : '' }}>Revisado</option>
                                 <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Aprobado</option>
-                                <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rechazado</option>
+                                <option value="published" {{ request('status') == 'published' ? 'selected' : '' }}>Publicado</option>
                                 <option value="archived" {{ request('status') == 'archived' ? 'selected' : '' }}>Archivado</option>
                             </select>
                         </div>
