@@ -2707,14 +2707,13 @@
                         </div>
                     `,
                     didOpen: (el) => {
-                        el.querySelector('#print-btn-with').onclick = () => { window._sientiaPrintMode = 'with'; Swal.close(); };
-                        el.querySelector('#print-btn-without').onclick = () => { window._sientiaPrintMode = 'without'; Swal.close(); };
+                        el.querySelector('#print-btn-with').onclick = () => Swal.close({ value: 'with' });
+                        el.querySelector('#print-btn-without').onclick = () => Swal.close({ value: 'without' });
                     }
                 });
 
-                if (!window._sientiaPrintMode) return;
-                const withHeaders = window._sientiaPrintMode === 'with';
-                window._sientiaPrintMode = null; // reset for next time
+                if (!result || !result.value) return;
+                const withHeaders = result.value === 'with';
 
                 const printWin = window.open('', '_blank', 'width=850,height=900');
                 const brandLabel = options.brand || 'Sientia MTX';

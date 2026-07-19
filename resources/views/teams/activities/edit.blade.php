@@ -1905,6 +1905,41 @@
             }
         })();
 
+        function printSection(sectionLabel, contentId) {
+            const el = document.getElementById(contentId);
+            if (!el) {
+                console.error('Print section element not found:', contentId);
+                return;
+            }
+            const content = el.innerHTML;
+            const activityTitle = @json($activity->title);
+            if (typeof SientiaPrint === 'undefined' || typeof SientiaPrint.print === 'undefined') {
+                console.warn('SientiaPrint not available, using fallback print');
+                const printWin = window.open('', '_blank', 'width=850,height=900');
+                printWin.document.write('<!DOCTYPE html><html><head><title>' + activityTitle + '</title><style>body{font-family:system-ui,sans-serif;padding:2rem;line-height:1.6;color:#1e293b}h1,h2,h3{margin-top:1.5rem;margin-bottom:.75rem}img{max-width:100%}table{border-collapse:collapse;width:100%}td,th{border:1px solid #e2e8f0;padding:.5rem}pre{background:#f1f5f9;padding:1rem;border-radius:.5rem;overflow-x:auto}code{background:#f1f5f9;padding:.125rem .25rem;border-radius:.25rem}</style></head><body>' + content + '</body></html>');
+                printWin.document.close();
+                setTimeout(() => { printWin.print(); }, 500);
+                return;
+            }
+            SientiaPrint.print(activityTitle, content, { brand: 'Sientia MTX • ' + sectionLabel });
+        }
+
+        function printPrivateNotes() {
+            const editor = document.getElementById('reply-content-private');
+            let rawContent = editor ? editor.value : '';
+            const activityTitle = @json($activity->title);
+            if (typeof SientiaPrint === 'undefined' || typeof SientiaPrint.print === 'undefined') {
+                const printWin = window.open('', '_blank', 'width=850,height=900');
+                let htmlContent = typeof marked !== 'undefined' ? marked.parse(rawContent) : rawContent.replace(/\n/g, '<br>');
+                printWin.document.write('<!DOCTYPE html><html><head><title>' + activityTitle + '</title><style>body{font-family:system-ui,sans-serif;padding:2rem;line-height:1.6;color:#1e293b}h1,h2,h3{margin-top:1.5rem;margin-bottom:.75rem}img{max-width:100%}</style></head><body>' + htmlContent + '</body></html>');
+                printWin.document.close();
+                setTimeout(() => { printWin.print(); }, 500);
+                return;
+            }
+            let htmlContent = typeof marked !== 'undefined' ? marked.parse(rawContent) : rawContent.replace(/\n/g, '<br>');
+            SientiaPrint.print(activityTitle, htmlContent, { brand: 'Sientia MTX • Notas Privadas' });
+        }
+
         function printDocumentBook() {
             const printWin = window.open('', '_blank');
             const title = @json($activity->title);
