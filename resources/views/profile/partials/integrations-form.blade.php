@@ -470,11 +470,28 @@
         <!-- 📱 TELEGRAM NOTIFICATIONS (Global Maestro) -->
         <div x-transition x-data="{
             userTelegramId: {{ !empty($user->telegram_chat_id) ? 'true' : 'false' }},
-            testTelegram() {
-                if (typeof window.testTelegram === 'function') {
-                    window.testTelegram();
-                } else {
-                    console.warn('testTelegram no está definido en el contexto actual.');
+            testing: false,
+            testResult: null,
+            async testTelegram() {
+                this.testing = true;
+                this.testResult = null;
+                try {
+                    const response = await fetch('{{ route('profile.telegram.test') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json',
+                        },
+                        body: JSON.stringify({ chat_id: '{{ $user->telegram_chat_id }}' })
+                    });
+                    const data = await response.json();
+                    this.testResult = { success: data.success, message: data.message };
+                } catch (e) {
+                    this.testResult = { success: false, message: 'Error de conexión.' };
+                } finally {
+                    this.testing = false;
+                    setTimeout(() => this.testResult = null, 5000);
                 }
             }
         }" class="p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl space-y-6">
@@ -538,11 +555,18 @@
                     </div>
                 </div>
 
-                <div class="pt-2 border-t border-gray-50 dark:border-gray-800 flex justify-end">
-                    <button type="button" @click="testTelegram()" 
-                        class="text-[10px] font-black text-sky-600 uppercase hover:text-sky-700 transition-colors flex items-center gap-1.5">
-                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                        Probar mi conexión
+                <div class="pt-2 border-t border-gray-50 dark:border-gray-800 flex items-center justify-end gap-4">
+                    <span x-show="testResult" x-cloak
+                        :class="testResult?.success ? 'text-emerald-600' : 'text-red-500'"
+                        class="text-[10px] font-bold transition-all"
+                        x-text="testResult?.message">
+                    </span>
+                    <button type="button" @click="testTelegram()" :disabled="testing || !userTelegramId"
+                        :class="(!userTelegramId) ? 'opacity-40 cursor-not-allowed' : 'hover:text-sky-700'"
+                        class="text-[10px] font-black text-sky-600 uppercase transition-colors flex items-center gap-1.5">
+                        <svg x-show="!testing" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                        <svg x-show="testing" x-cloak class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <span x-text="testing ? 'Enviando...' : 'Probar mi conexión'"></span>
                     </button>
                 </div>
             </form>
