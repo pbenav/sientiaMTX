@@ -31,9 +31,9 @@ class TriggerReminderActivities extends Command
         $reminders = ReminderActivity::with(['assignedTo', 'assignedUser', 'creator', 'team'])
             ->where(function ($query) {
                 $query->whereJsonContains('status->value', 'pending')
-                    ->orWhereJsonContains('status->value', 'snoozed');
+                    ->orWhereJsonContains('status->value', 'snoozed')
+                    ->orWhereNull('status');
             })
-            ->orWhereNull('status')
             ->whereNotNull('due_date')
             ->where(function ($q) {
                 // Solo recordatorios que tengan alguna configuración de notificación
