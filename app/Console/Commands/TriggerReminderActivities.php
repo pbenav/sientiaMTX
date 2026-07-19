@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 
 class TriggerReminderActivities extends Command
 {
-    protected $signature = 'reminders:trigger';
+    protected $signature = 'reminders:trigger {--activity= : ID de una actividad concreta para forzar su disparo (ignora ventana temporal y anti-duplicado)}';
 
     protected $description = 'Dispara notificaciones de actividades tipo reminder según los canales configurados y la fecha de notificación';
 
@@ -22,35 +22,33 @@ class TriggerReminderActivities extends Command
         $this->line('Server now (UTC): ' . now()->toDateTimeString());
 
         $now = now();
+        $forceActivityId = $this->option('activity');
 
-        // Buscar recordatorios que tengan due_date definida Y al menos una configuración de notificación
-        // Configuraciones posibles:
-        //   - notify_before_minutes: notificar X minutos antes de due_date
-        //   - notify_at_hour: notificar a una hora exacta (se usa la fecha de due_date)
-        //   - si no se define ninguno, se notifica en la due_date exacta
-        $reminders = ReminderActivity::with(['assignedTo', 'assignedUser', 'creator', 'team'])
-            ->where(function ($query) {
-                $query->whereJsonContains('status->value', 'pending')
-                    ->orWhereJsonContains('status->value', 'snoozed')
-                    ->orWhereNull('status');
-            })
-            ->whereNotNull('due_date')
-            ->where(function ($q) {
-                // Solo recordatorios que tengan alguna configuración de notificación
-                $q->whereNotNull('metadata->notify_before_minutes')
-                  ->orWhereNotNull('metadata->notify_at_hour')
-                  ->orWhere(function ($inner) {
-                      // Si no tiene ninguna configuración explícita, se notifica en la due_date exacta
-                      // Esto se hace incluyendo todos los que tengan due_date
-                      // La lógica de "si no se define ninguna, se notifica en due_date" se aplica en el loop
-                  });
-            })
-            // Ventana amplia: 24h atrás hasta 24h adelante para capturar todo
-            ->where('due_date', '<=', $now->copy()->addHours(24))
-            ->where('due_date', '>=', $now->copy()->subHours(24))
-            ->get();
+        if ($forceActivityId) {
+            $this->warn("[MODO TEST] Forzando disparo solo para activity ID: {$forceActivityId}");
+            $reminders = ReminderActivity::with(['assignedTo', 'assignedUser', 'creator', 'team'])
+                ->where('id', $forceActivityId)
+                ->get();
+        } else {
+            // Buscar recordatorios que tengan due_date definida Y al menos una configuración de notificación
+            $reminders = ReminderActivity::with(['assignedTo', 'assignedUser', 'creator', 'team'])
+                ->where(function ($query) {
+                    $query->whereJsonContains('status->value', 'pending')
+                        ->orWhereJsonContains('status->value', 'snoozed')
+                        ->orWhereNull('status');
+                })
+                ->whereNotNull('due_date')
+                ->where(function ($q) {
+                    $q->whereNotNull('metadata->notify_before_minutes')
+                      ->orWhereNotNull('metadata->notify_at_hour')
+                      ->orWhere(function ($inner) {});
+                })
+                ->where('due_date', '<=', $now->copy()->addHours(24))
+                ->where('due_date', '>=', $now->copy()->subHours(24))
+                ->get();
+        }
 
-        $this->line("Recordatorios con due_date en ventana de 24h: {$reminders->count()}");
+        $this->line("Recordatorios encontrados: {$reminders->count()}");
 
         // Construir mapa de usuarios a equipos para validación
         $teamUsers = [];
@@ -83,17 +81,17 @@ class TriggerReminderActivities extends Command
                 continue;
             }
 
-            // Verificar si ya fue notificado (evitar duplicados en menos de 12h)
+            // Verificar si ya fue notificado (evitar duplicados en menos de 12h) — se salta en modo test
             $metadata = $reminder->metadata ?? [];
             $lastNotified = $metadata['notified_at'] ?? null;
 
-            if ($lastNotified && Carbon::parse($lastNotified)->addHours(12)->isFuture()) {
+            if (!$forceActivityId && $lastNotified && Carbon::parse($lastNotified)->addHours(12)->isFuture()) {
                 $this->line("  [skip] ID:{$reminder->id} '{$reminder->title}' — ya notificado recientemente ({$lastNotified})");
                 continue;
             }
 
-            // Verificar snooze
-            if ($reminder->isSnoozed()) {
+            // Verificar snooze — se salta en modo test
+            if (!$forceActivityId && $reminder->isSnoozed()) {
                 $snoozeUntil = $reminder->isSnoozedUntil();
                 if ($snoozeUntil && $snoozeUntil->isFuture()) {
                     $this->line("  [snoozed] ID:{$reminder->id} '{$reminder->title}' — hasta {$snoozeUntil}");
@@ -104,16 +102,18 @@ class TriggerReminderActivities extends Command
             // Calcular la hora exacta de notificación
             $notifyAt = $this->calculateNotifyAt($reminder, $now);
 
-            if (!$notifyAt) {
+            if (!$notifyAt && !$forceActivityId) {
                 $this->line("  [skip] ID:{$reminder->id} '{$reminder->title}' — sin configuración de notificación válida");
                 continue;
             }
 
-            // Verificar si estamos dentro de la ventana de notificación (tolerancia de 1 min)
-            $diffMinutes = $now->diffInMinutes($notifyAt, false);
-            if ($diffMinutes < -1 || $diffMinutes > 2) {
-                $this->line("  [skip] ID:{$reminder->id} '{$reminder->title}' — notificación programada para {$notifyAt->toDateTimeString()} (diferencia: {$diffMinutes} min)");
-                continue;
+            // Verificar ventana de notificación — se salta en modo test
+            if (!$forceActivityId) {
+                $diffMinutes = $now->diffInMinutes($notifyAt, false);
+                if ($diffMinutes < -1 || $diffMinutes > 2) {
+                    $this->line("  [skip] ID:{$reminder->id} '{$reminder->title}' — notificación programada para {$notifyAt->toDateTimeString()} (diferencia: {$diffMinutes} min)");
+                    continue;
+                }
             }
 
             // Construir lista de destinatarios
