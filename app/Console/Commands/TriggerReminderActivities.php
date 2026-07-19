@@ -137,48 +137,22 @@ class TriggerReminderActivities extends Command
 
             $anySent = false;
 
-            if (in_array('email', $channels, true) || in_array('mail', $channels, true)) {
-                foreach ($usersToNotify->unique('id') as $user) {
-                    if (!isset($userTeams[$user->id]) || !$userTeams[$user->id]->contains($reminder->team_id)) {
-                        $this->line("    [skip] user {$user->name} no es miembro del equipo {$reminder->team_id}");
-                        continue;
-                    }
-                    if ($user->wantsNotification('mail')) {
-                        $this->sendNotification($user, $reminder);
-                        $triggeredCount++;
-                        $anySent = true;
-                        $this->line("    [✓] Email enviado a {$user->name}");
-                    }
+            // Un único bucle: TaskReminderNotification usa DeterminesNotificationChannels
+            // cuyo via() ya decide internamente qué canales usar (mail, TelegramChannel, WebPush).
+            // Los bucles separados por canal causaban triple envío a Telegram.
+            foreach ($usersToNotify->unique('id') as $user) {
+                if (!isset($userTeams[$user->id]) || !$userTeams[$user->id]->contains($reminder->team_id)) {
+                    $this->line("    [skip] user {$user->name} no es miembro del equipo {$reminder->team_id}");
+                    continue;
                 }
-            }
 
-            if (in_array('telegram', $channels, true)) {
-                foreach ($usersToNotify->unique('id') as $user) {
-                    if (!isset($userTeams[$user->id]) || !$userTeams[$user->id]->contains($reminder->team_id)) {
-                        $this->line("    [skip] user {$user->name} no es miembro del equipo {$reminder->team_id}");
-                        continue;
-                    }
-                    if ($user->wantsNotification('telegram') && !empty($user->telegram_chat_id)) {
-                        $this->sendTelegramNotification($user, $reminder);
-                        $triggeredCount++;
-                        $anySent = true;
-                        $this->line("    [✓] Telegram enviado a {$user->name}");
-                    }
-                }
-            }
-
-            if (in_array('push', $channels, true) || in_array('web_push', $channels, true)) {
-                foreach ($usersToNotify->unique('id') as $user) {
-                    if (!isset($userTeams[$user->id]) || !$userTeams[$user->id]->contains($reminder->team_id)) {
-                        $this->line("    [skip] user {$user->name} no es miembro del equipo {$reminder->team_id}");
-                        continue;
-                    }
-                    if ($user->wantsNotification('web_push')) {
-                        $this->sendPushNotification($user, $reminder);
-                        $triggeredCount++;
-                        $anySent = true;
-                        $this->line("    [✓] Push enviado a {$user->name}");
-                    }
+                try {
+                    $user->notify(new TaskReminderNotification($reminder));
+                    $triggeredCount++;
+                    $anySent = true;
+                    $this->line("    [✓] Notificación enviada a {$user->name}");
+                } catch (\Exception $e) {
+                    Log::error("Failed to send TaskReminderNotification to user {$user->id}: " . $e->getMessage());
                 }
             }
 
