@@ -61,9 +61,9 @@
                             </select>
                         </div>
                         <div class="flex gap-2">
-                            <input type="date" name="date_from" value="{{ request('date_from', '1970-01-01') }}" placeholder="Desde"
+                            <input type="date" name="date_from" value="{{ request('date_from') }}" placeholder="Desde"
                                    class="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 px-2.5 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all text-gray-600 dark:text-gray-400">
-                            <input type="date" name="date_to" value="{{ request('date_to', now()->format('Y-m-d')) }}" placeholder="Hasta"
+                            <input type="date" name="date_to" value="{{ request('date_to') }}" placeholder="Hasta"
                                    class="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 px-2.5 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all text-gray-600 dark:text-gray-400">
                         </div>
                         @if(request('doc'))
