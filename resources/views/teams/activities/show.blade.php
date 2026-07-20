@@ -782,7 +782,7 @@
                         </html>
                     `);
                     printWin.document.close();
-                    setTimeout(() => { printWin.print(); }, 500);
+                    printWin.onload = () => { printWin.print(); };
                 }
 
                 async function printPrivateNotes() {
@@ -965,7 +965,7 @@
                         </html>
                     `);
                     printWin.document.close();
-                    setTimeout(() => { printWin.print(); }, 500);
+                    printWin.onload = () => { printWin.print(); };
                 }
 
                 async function printFullTask() {
