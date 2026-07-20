@@ -164,6 +164,105 @@ class GDPRController extends Controller
                 'reason' => $kudo->reason,
                 'created_at' => $kudo->created_at,
             ]),
+            'ai_chat_messages' => $user->aiChatMessages()->get()->map(fn($msg) => [
+                'id' => $msg->id,
+                'message' => $msg->message,
+                'is_user_message' => $msg->is_user_message,
+                'created_at' => $msg->created_at,
+            ]),
+            'gamification_logs' => $user->gamificationLogs()->get()->map(fn($log) => [
+                'event' => $log->event,
+                'points' => $log->points,
+                'description' => $log->description,
+                'created_at' => $log->created_at,
+            ]),
+            'security_logs' => $user->securityLogs()->get()->map(fn($log) => [
+                'action' => $log->action,
+                'ip_address' => $log->ip_address,
+                'user_agent' => $log->user_agent,
+                'created_at' => $log->created_at,
+            ]),
+            'attachment_logs' => $user->attachmentLogs()->get()->map(fn($log) => [
+                'action' => $log->action,
+                'file_name' => $log->file_name,
+                'file_type' => $log->file_type,
+                'created_at' => $log->created_at,
+            ]),
+            'task_private_notes' => $user->taskPrivateNotes()->get()->map(fn($note) => [
+                'content' => $note->content,
+                'task_title' => $note->task ? $note->task->title : null,
+                'created_at' => $note->created_at,
+            ]),
+            'activity_ratings' => \App\Models\ActivityRating::where('user_id', $user->id)->get()->map(fn($rating) => [
+                'activity_title' => $rating->activity ? $rating->activity->title : null,
+                'score' => $rating->score,
+                'type' => $rating->type,
+                'comment' => $rating->comment,
+                'created_at' => $rating->created_at,
+            ]),
+            'task_ratings' => $user->taskRatings()->get()->map(fn($rating) => [
+                'task_title' => $rating->task ? $rating->task->title : null,
+                'score' => $rating->score,
+                'comment' => $rating->comment,
+                'created_at' => $rating->created_at,
+            ]),
+            'forum_threads' => $user->forumThreads()->get()->map(fn($thread) => [
+                'title' => $thread->title,
+                'content' => $thread->content,
+                'created_at' => $thread->created_at,
+            ]),
+            'forum_messages' => $user->forumMessages()->get()->map(fn($message) => [
+                'content' => $message->content,
+                'thread_title' => $message->thread ? $message->thread->title : null,
+                'created_at' => $message->created_at,
+            ]),
+            'appointment_blocks' => $user->appointmentBlocks()->get()->map(fn($block) => [
+                'start_time' => $block->start_time,
+                'end_time' => $block->end_time,
+                'is_available' => $block->is_available,
+                'created_at' => $block->created_at,
+            ]),
+            'appointment_services' => $user->appointmentServices()->get()->map(fn($service) => [
+                'name' => $service->name,
+                'duration' => $service->duration,
+                'price' => $service->price,
+                'created_at' => $service->created_at,
+            ]),
+            'appointment_schedules' => $user->appointmentSchedules()->get()->map(fn($schedule) => [
+                'day_of_week' => $schedule->day_of_week,
+                'start_time' => $schedule->start_time,
+                'end_time' => $schedule->end_time,
+                'is_available' => $schedule->is_available,
+                'created_at' => $schedule->created_at,
+            ]),
+            'invitations' => $user->invitations()->get()->map(fn($invitation) => [
+                'email' => $invitation->email,
+                'role' => $invitation->role,
+                'status' => $invitation->status,
+                'created_at' => $invitation->created_at,
+            ]),
+            'task_histories' => $user->taskHistories()->get()->map(fn($history) => [
+                'task_title' => $history->task ? $history->task->title : null,
+                'action' => $history->action,
+                'old_values' => $history->old_values,
+                'new_values' => $history->new_values,
+                'notes' => $history->notes,
+                'created_at' => $history->created_at,
+            ]),
+            'activity_histories' => \App\Models\ActivityHistory::where('user_id', $user->id)->get()->map(fn($history) => [
+                'activity_title' => $history->activity ? $history->activity->title : null,
+                'action' => $history->action,
+                'old_values' => $history->old_values,
+                'new_values' => $history->new_values,
+                'notes' => $history->notes,
+                'created_at' => $history->created_at,
+            ]),
+            'task_assignments' => $user->taskAssignments()->get()->map(fn($assignment) => [
+                'task_title' => $assignment->task ? $assignment->task->title : null,
+                'assigned_at' => $assignment->assigned_at,
+                'assigned_by' => $assignment->assignedBy ? $assignment->assignedBy->name : null,
+                'created_at' => $assignment->created_at,
+            ]),
         ];
 
         $filename = 'sientia_mtx_data_' . $user->id . '_' . now()->format('Y-m-d') . '.json';
@@ -214,7 +313,24 @@ class GDPRController extends Controller
         // 4. Borrar mensajes de chat
         \App\Models\ChatMessage::where('sender_id', $user->id)->delete();
 
-        // 5. Revocar sesión y borrar usuario
+        // 5. Anonimizar borrar datos adicionales del usuario
+        $user->aiChatMessages()->delete();
+        $user->taskPrivateNotes()->delete();
+        $user->securityLogs()->delete();
+        $user->attachmentLogs()->delete();
+        \App\Models\ActivityRating::where('user_id', $user->id)->delete();
+        $user->taskRatings()->delete();
+        $user->forumThreads()->delete();
+        $user->forumMessages()->delete();
+        $user->appointmentBlocks()->delete();
+        $user->appointmentServices()->delete();
+        $user->appointmentSchedules()->delete();
+        $user->invitations()->delete();
+        $user->taskHistories()->delete();
+        \App\Models\ActivityHistory::where('user_id', $user->id)->delete();
+        $user->taskAssignments()->delete();
+
+        // 6. Revocar sesión y borrar usuario
         auth()->logout();
         $user->delete();
 

@@ -562,6 +562,34 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
         return $this->hasMany(UserMoodLog::class);
     }
 
+    // Chat & Communication Relationships
+    public function aiChatMessages(): HasMany
+    {
+        return $this->hasMany(AiChatMessage::class);
+    }
+
+    // Notes & Ratings Relationships
+    public function taskPrivateNotes(): HasMany
+    {
+        return $this->hasMany(TaskPrivateNote::class);
+    }
+
+    public function taskRatings(): HasMany
+    {
+        return $this->hasMany(TaskRating::class);
+    }
+
+    // Security & Audit Relationships
+    public function securityLogs(): HasMany
+    {
+        return $this->hasMany(SecurityLog::class);
+    }
+
+    public function attachmentLogs(): HasMany
+    {
+        return $this->hasMany(AttachmentLog::class);
+    }
+
     /**
      * Generates a 7-day statistical snapshot for AI analysis.
      */

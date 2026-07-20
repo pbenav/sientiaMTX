@@ -88,6 +88,12 @@
 
                 <div class="p-4 sm:p-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none sm:rounded-2xl transition-colors">
                     <div class="max-w-4xl">
+                        @include('profile.partials.gdpr-erasure-form')
+                    </div>
+                </div>
+
+                <div class="p-4 sm:p-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none sm:rounded-2xl transition-colors">
+                    <div class="max-w-4xl">
                         @include('profile.partials.delete-user-form')
                     </div>
                 </div>
