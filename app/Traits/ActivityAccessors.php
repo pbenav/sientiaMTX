@@ -2,7 +2,7 @@
 
 namespace App\Traits;
 
-use Illuminate\Support\Facades\Lang;
+
 
 trait ActivityAccessors
 {
@@ -102,14 +102,14 @@ trait ActivityAccessors
     public function getTypeLabelAttribute(): string
     {
         return match($this->type) {
-            'task'      => Lang::__('Tarea'),
-            'document'  => Lang::__('Documento'),
-            'note'      => Lang::__('Nota'),
-            'link'      => Lang::__('Enlace'),
-            'agreement' => Lang::__('Acuerdo'),
-            'meeting'   => Lang::__('Reunión'),
-            'reminder'  => Lang::__('Recordatorio'),
-            default     => Lang::__('Actividad'),
+            'task'      => trans('Tarea'),
+            'document'  => trans('Documento'),
+            'note'      => trans('Nota'),
+            'link'      => trans('Enlace'),
+            'agreement' => trans('Acuerdo'),
+            'meeting'   => trans('Reunión'),
+            'reminder'  => trans('Recordatorio'),
+            default     => trans('Actividad'),
         };
     }
 
