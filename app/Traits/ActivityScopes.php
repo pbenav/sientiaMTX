@@ -74,23 +74,26 @@ trait ActivityScopes
         $builder = $query instanceof Relation ? $query->getQuery() : $query;
 
         return $builder->where(function ($q) use ($user, $isManager) {
-            // 1. GESTIÓN (Managers): Ven todo lo público Y todas las plantillas/esqueleto del equipo
-            // Pero NO ven las actividades privadas de otros usuarios a menos que estén asignados a ellas
+            // Política de privacidad:
+            // - 'public': lo ve todo el equipo
+            // - 'semi-private' o 'semiprivate': creador + asignados
+            // - 'private' o NULL: solo creador (nada más)
             if ($isManager) {
-                $q->where('visibility', '!=', 'private')
+                $q->where('visibility', 'public')
                   ->orWhere(function ($template) {
                       $template->where('is_template', true)
-                               ->where('visibility', '!=', 'private');
+                               ->where('visibility', 'public');
                   })
                   ->orWhere('created_by_id', $user->id)
-                  ->orWhereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
-                  ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
+                  ->orWhere(function ($semi) use ($user) {
+                      $semi->whereIn('visibility', ['semi-private', 'semiprivate'])
+                           ->where(function ($assigned) use ($user) {
+                               $assigned->whereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
+                                        ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
+                           });
+                  });
             } else {
-                // 2. EJECUCIÓN (Miembros): "Al vuelo". Ven las tareas si:
-                // - No tienen asignados y son explícitamente públicas
-                // - O si ellos mismos son el creador
-                // - O si están asignados directamente
-                // - O si un grupo suyo está asignado
+                // Miembros: solo ven público sin asignados, o si son creador/assignado
                 $q->where(function ($unassigned) {
                     $unassigned->where('visibility', 'public')
                                ->whereDoesntHave('assignments')
@@ -102,6 +105,13 @@ trait ActivityScopes
                                });
                 })
                 ->orWhere('created_by_id', $user->id)
+                ->orWhere(function ($semi) use ($user) {
+                    $semi->whereIn('visibility', ['semi-private', 'semiprivate'])
+                         ->where(function ($assigned) use ($user) {
+                             $assigned->whereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
+                                      ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
+                         });
+                })
                 ->orWhereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
                 ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
             }

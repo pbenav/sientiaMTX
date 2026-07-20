@@ -14,7 +14,7 @@ trait ActivityAccessors
 
     public function getPrivacyLevelAttribute(): string
     {
-        return $this->visibility ?? 'public';
+        return $this->visibility ?? 'private';
     }
 
     public function getAvgQualityScoreAttribute(): float
