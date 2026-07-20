@@ -132,43 +132,81 @@ trait ActivityScopes
     public function scopeFocusedFor(Builder $query, $user, Team $team, $includeFuture = false)
     {
         $userId = $user->id;
+        $isManager = $team->isManager($user);
 
-        $query->where('is_template', false)
-            ->whereDoesntHave('children')
-            ->where(function ($q) use ($userId) {
-                $q->whereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId))
-                  ->orWhereHas('assignedGroups', fn($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $userId)))
+        if ($isManager) {
+            // Coordinadores/Managers: ven plantillas, raíces (con o sin hijos) e instancias asignadas
+            $query->where(function ($q) use ($userId) {
+                // 1. Plantillas maestras
+                $q->where('is_template', true)
+                  // 2. Tareas raíz creadas por el manager (independientemente de si tienen hijos)
                   ->orWhere(function($roots) use ($userId) {
                       $roots->whereNull('parent_id')
                             ->where('created_by_id', $userId);
-                  })
-                  ->orWhere(function ($unassigned) {
-                      $unassigned->where('visibility', 'public')
-                                 ->whereDoesntHave('assignedTo')
-                                 ->whereDoesntHave('assignedGroups')
-                                 ->whereNotExists(function ($sub) {
-                                     $sub->select(DB::raw(1))
-                                         ->from('activity_task_mapping')
-                                         ->join('task_assignments', 'activity_task_mapping.task_id', '=', 'task_assignments.task_id')
-                                         ->whereColumn('activity_task_mapping.activity_id', 'activities.id');
-                                 });
-                  })
-                  ->orWhereExists(function ($sub) use ($userId) {
-                      $sub->select(DB::raw(1))
-                          ->from('activity_task_mapping')
-                          ->join('task_assignments', 'activity_task_mapping.task_id', '=', 'task_assignments.task_id')
-                          ->whereColumn('activity_task_mapping.activity_id', 'activities.id')
-                          ->where(function ($a) use ($userId) {
-                              $a->where('task_assignments.user_id', $userId)
-                                ->orWhereExists(function ($g) use ($userId) {
-                                    $g->select(DB::raw(1))
-                                      ->from('group_user')
-                                      ->whereColumn('group_user.group_id', 'task_assignments.group_id')
-                                      ->where('group_user.user_id', $userId);
-                                });
-                          });
+                  });
+            })
+            ->orWhere(function ($q) use ($userId) {
+                // 3. Instancias/hojas asignadas al manager (ejecución directa)
+                $q->whereDoesntHave('children')
+                  ->where(function ($inner) use ($userId) {
+                      $inner->whereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId))
+                            ->orWhereHas('assignedGroups', fn($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $userId)))
+                            ->orWhereExists(function ($sub) use ($userId) {
+                                $sub->select(DB::raw(1))
+                                    ->from('activity_task_mapping')
+                                    ->join('task_assignments', 'activity_task_mapping.task_id', '=', 'task_assignments.task_id')
+                                    ->whereColumn('activity_task_mapping.activity_id', 'activities.id')
+                                    ->where(function ($a) use ($userId) {
+                                        $a->where('task_assignments.user_id', $userId)
+                                          ->orWhereExists(function ($g) use ($userId) {
+                                              $g->select(DB::raw(1))
+                                                ->from('group_user')
+                                                ->whereColumn('group_user.group_id', 'task_assignments.group_id')
+                                                ->where('group_user.user_id', $userId);
+                                          });
+                                    });
+                            });
                   });
             });
+        } else {
+            // Miembros normales: solo tareas hoja (sin hijos), no plantillas
+            $query->where('is_template', false)
+                ->whereDoesntHave('children')
+                ->where(function ($q) use ($userId) {
+                    $q->whereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId))
+                      ->orWhereHas('assignedGroups', fn($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $userId)))
+                      ->orWhere(function($roots) use ($userId) {
+                          $roots->whereNull('parent_id')
+                                ->where('created_by_id', $userId);
+                      })
+                      ->orWhere(function ($unassigned) {
+                          $unassigned->where('visibility', 'public')
+                                     ->whereDoesntHave('assignedTo')
+                                     ->whereDoesntHave('assignedGroups')
+                                     ->whereNotExists(function ($sub) {
+                                         $sub->select(DB::raw(1))
+                                             ->from('activity_task_mapping')
+                                             ->join('task_assignments', 'activity_task_mapping.task_id', '=', 'task_assignments.task_id')
+                                             ->whereColumn('activity_task_mapping.activity_id', 'activities.id');
+                                     });
+                      })
+                      ->orWhereExists(function ($sub) use ($userId) {
+                          $sub->select(DB::raw(1))
+                              ->from('activity_task_mapping')
+                              ->join('task_assignments', 'activity_task_mapping.task_id', '=', 'task_assignments.task_id')
+                              ->whereColumn('activity_task_mapping.activity_id', 'activities.id')
+                              ->where(function ($a) use ($userId) {
+                                  $a->where('task_assignments.user_id', $userId)
+                                    ->orWhereExists(function ($g) use ($userId) {
+                                        $g->select(DB::raw(1))
+                                          ->from('group_user')
+                                          ->whereColumn('group_user.group_id', 'task_assignments.group_id')
+                                          ->where('group_user.user_id', $userId);
+                                    });
+                              });
+                      });
+                });
+        }
 
         if (!$includeFuture) {
             $query->where(function ($q) {
@@ -255,16 +293,19 @@ trait ActivityScopes
     // ─── Helpers para scopes ─────────────────────────────────────────────────
     protected function getScopesKanbanTypes(): array
     {
-        return defined('KANBAN_TYPES') ? self::KANBAN_TYPES : [];
+        $const = \App\Models\Activity::class . '::KANBAN_TYPES';
+        return constant($const);
     }
 
     protected function getScopesMatrixTypes(): array
     {
-        return defined('MATRIX_TYPES') ? self::MATRIX_TYPES : [];
+        $const = \App\Models\Activity::class . '::MATRIX_TYPES';
+        return constant($const);
     }
 
     protected function getScopesGanttTypes(): array
     {
-        return defined('GANTT_TYPES') ? self::GANTT_TYPES : [];
+        $const = \App\Models\Activity::class . '::GANTT_TYPES';
+        return constant($const);
     }
 }
