@@ -1219,40 +1219,27 @@
                             title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Imprimir Ficha Técnica</span>',
                             background: isDark ? '#0f172a' : '#ffffff',
                             color: isDark ? '#f3f4f6' : '#1f2937',
-                            showConfirmButton: false,
-                            showCloseButton: true,
+                            showCancelButton: true,
+                            confirmButtonText: 'Con Cabeceras',
+                            cancelButtonText: 'Sin Cabeceras',
+                            confirmButtonColor: '#4f46e5',
+                            cancelButtonColor: '#6b7280',
                             customClass: {
                                 popup: 'rounded-[2.5rem] shadow-2xl border border-gray-200 dark:border-gray-800 p-6',
+                                confirmButton: 'px-6 py-3',
+                                cancelButton: 'px-6 py-3',
                             },
                             html: `
-                                <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-6 text-center px-4">
+                                <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-4 text-center px-4">
                                     ¿Deseas imprimir la ficha técnica completa incluyendo el membrete e identidad de Sientia MTX?
                                 </div>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-2">
-                                    <button type="button" id="print-full-btn-with-headers" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-indigo-100 dark:border-indigo-950 bg-indigo-50/50 dark:bg-indigo-950/30 hover:border-indigo-600 transition-all text-center group">
-                                        <div class="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform shadow-sm">
-                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                        </div>
-                                        <div class="font-black text-[10px] uppercase tracking-widest text-indigo-700 dark:text-indigo-300">Con Cabeceras</div>
-                                        <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Estilo oficial</div>
-                                    </button>
-                                    <button type="button" id="print-full-btn-no-headers" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-slate-900 hover:border-gray-600 transition-all text-center group">
-                                        <div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 group-hover:scale-110 transition-transform shadow-sm">
-                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                                        </div>
-                                        <div class="font-black text-[10px] uppercase tracking-widest text-gray-700 dark:text-gray-300">Sin Cabeceras</div>
-                                        <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Ficha limpia</div>
-                                    </button>
-                                </div>
                             `,
-                            didOpen: (el) => {
-                                el.querySelector('#print-full-btn-with-headers').onclick = () => Swal.close({ value: 'with' });
-                                el.querySelector('#print-full-btn-no-headers').onclick = () => Swal.close({ value: 'without' });
-                            }
                         });
 
-                        if (!result || !result.value) return;
-                        const withHeaders = result.value === 'with';
+                        console.log('Swal result:', result);
+
+                        if (!result || (!result.dismiss && !result.value)) return;
+                        const withHeaders = result.confirm;
 
                         const taskTitle = @json($task->title);
                         const taskId = @json($task->id);
