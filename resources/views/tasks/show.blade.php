@@ -1197,18 +1197,373 @@
             @endif
 
             <script>
-                function printSection(sectionLabel, contentId) {
-                    const content = document.getElementById(contentId).innerHTML;
+                async function printSection(sectionLabel, contentId) {
+                    const el = document.getElementById(contentId);
+                    if (!el) {
+                        console.error('Print section element not found:', contentId);
+                        return;
+                    }
+                    const content = el.innerHTML;
+                    const isDark = document.documentElement.classList.contains('dark');
+
+                    const result = await Swal.fire({
+                        title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Imprimir Sección</span>',
+                        background: isDark ? '#0f172a' : '#ffffff',
+                        color: isDark ? '#f3f4f6' : '#1f2937',
+                        showConfirmButton: false,
+                        showCloseButton: true,
+                        customClass: {
+                            popup: 'rounded-[2.5rem] shadow-2xl border border-gray-200 dark:border-gray-800 p-6',
+                        },
+                        html: `
+                            <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-6 text-center px-4">
+                                ¿Deseas imprimir la sección "<strong>${sectionLabel}</strong>" con el membrete de Sientia MTX?
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-2">
+                                <button type="button" id="print-section-btn-with-headers" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-indigo-100 dark:border-indigo-950 bg-indigo-50/50 dark:bg-indigo-950/30 hover:border-indigo-600 transition-all text-center group">
+                                    <div class="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform shadow-sm">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                    </div>
+                                    <div class="font-black text-[10px] uppercase tracking-widest text-indigo-700 dark:text-indigo-300">Con Cabeceras</div>
+                                    <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Estilo oficial</div>
+                                </button>
+                                <button type="button" id="print-section-btn-no-headers" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-slate-900 hover:border-gray-600 transition-all text-center group">
+                                    <div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 group-hover:scale-110 transition-transform shadow-sm">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                                    </div>
+                                    <div class="font-black text-[10px] uppercase tracking-widest text-gray-700 dark:text-gray-300">Sin Cabeceras</div>
+                                    <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Ficha limpia</div>
+                                </button>
+                            </div>
+                        `,
+                        didOpen: (el) => {
+                            el.querySelector('#print-section-btn-with-headers').onclick = () => { window._sientiaPrintSectionMode = 'with'; Swal.close(); };
+                            el.querySelector('#print-section-btn-no-headers').onclick = () => { window._sientiaPrintSectionMode = 'without'; Swal.close(); };
+                        }
+                    });
+
+                    if (!window._sientiaPrintSectionMode) return;
+                    const withHeaders = window._sientiaPrintSectionMode === 'with';
+                    window._sientiaPrintSectionMode = null;
+
                     const taskTitle = @json($task->title);
-                    SientiaPrint.print(taskTitle, content, { brand: 'Sientia MTX • ' + sectionLabel });
+                    const brandLabel = 'Sientia MTX • ' + sectionLabel;
+                    const now = new Date();
+                    const dateStr = now.toLocaleDateString() + ' a las ' + now.toLocaleTimeString();
+                    
+                    const headerHtml = withHeaders ? `
+                        <div class="print-header">
+                            <div class="title-container">
+                                <span class="brand">${brandLabel}</span>
+                                <h1 class="title">${taskTitle}</h1>
+                                <div class="meta">Generado el ${dateStr}</div>
+                            </div>
+                        </div>
+                    ` : `<h1 style="font-size: 22px; font-weight: 800; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 30px; letter-spacing: -0.02em;">${taskTitle}</h1>`;
+
+                    const printWin = window.open('', '_blank', 'width=850,height=900');
+                    printWin.document.write(`
+                        <!DOCTYPE html>
+                        <html>
+                            <head>
+                                <title>${taskTitle}</title>
+                                <meta charset="utf-8">
+                                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+                                <script src="https://cdn.tailwindcss.com"><\/script>
+                                <script>
+                                    tailwind.config = {
+                                        theme: {
+                                            extend: {
+                                                fontFamily: { sans: ['Inter', 'sans-serif'] },
+                                            }
+                                        }
+                                    }
+                                <\/script>
+                                <style>
+                                    body {
+                                        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                                        padding: 40px 60px;
+                                        color: #1e293b;
+                                        background-color: #fff;
+                                        -webkit-print-color-adjust: exact;
+                                        print-color-adjust: exact;
+                                    }
+                                    .print-header {
+                                        border-bottom: 4px solid #4f46e5;
+                                        margin-bottom: 40px;
+                                        padding-bottom: 20px;
+                                    }
+                                    .brand {
+                                        font-weight: 900;
+                                        font-size: 10px;
+                                        text-transform: uppercase;
+                                        letter-spacing: 0.3em;
+                                        color: #6366f1;
+                                        margin-bottom: 8px;
+                                        display: block;
+                                    }
+                                    .title {
+                                        font-size: 26px;
+                                        font-weight: 900;
+                                        color: #0f172a;
+                                        letter-spacing: -0.03em;
+                                        line-height: 1.1;
+                                        margin: 0 0 6px 0;
+                                    }
+                                    .meta {
+                                        font-size: 11px;
+                                        color: #94a3b8;
+                                        font-weight: 500;
+                                        letter-spacing: 0.02em;
+                                    }
+                                    .content {
+                                        margin-top: 30px;
+                                    }
+                                    .content h1, .content h2, .content h3, .content h4, .content h5, .content h6 {
+                                        margin-top: 1.5em;
+                                        margin-bottom: 0.5em;
+                                        font-weight: 700;
+                                        color: #0f172a;
+                                    }
+                                    .content p {
+                                        margin-bottom: 1em;
+                                        line-height: 1.7;
+                                    }
+                                    .content ul, .content ol {
+                                        margin-bottom: 1em;
+                                        padding-left: 1.5em;
+                                    }
+                                    .content li {
+                                        margin-bottom: 0.25em;
+                                    }
+                                    .content img {
+                                        max-width: 100%;
+                                        border-radius: 8px;
+                                    }
+                                    .content table {
+                                        border-collapse: collapse;
+                                        width: 100%;
+                                        margin-bottom: 1em;
+                                    }
+                                    .content td, .content th {
+                                        border: 1px solid #e2e8f0;
+                                        padding: 0.5rem;
+                                    }
+                                    .content pre {
+                                        background: #f1f5f9;
+                                        padding: 1rem;
+                                        border-radius: 0.5rem;
+                                        overflow-x: auto;
+                                    }
+                                    .content code {
+                                        background: #f1f5f9;
+                                        padding: 0.125rem 0.25rem;
+                                        border-radius: 0.25rem;
+                                    }
+                                    .watermark {
+                                        position: fixed;
+                                        bottom: 20px;
+                                        right: 20px;
+                                        font-size: 80px;
+                                        font-weight: 900;
+                                        color: rgba(99, 102, 241, 0.04);
+                                        pointer-events: none;
+                                        z-index: 0;
+                                    }
+                                </style>
+                            </head>
+                            <body>
+                                ${headerHtml}
+                                <div class="content">${content}</div>
+                                ${withHeaders ? '<div class="watermark">Sientia.</div>' : ''}
+                            </body>
+                        </html>
+                    `);
+                    printWin.document.close();
+                    setTimeout(() => { printWin.print(); }, 500);
                 }
 
-                function printPrivateNotes() {
+                async function printPrivateNotes() {
                     const editor = document.getElementById('reply-content-private');
                     let rawContent = editor ? editor.value : '';
-                    const taskTitle = @json($task->title);
+                    const isDark = document.documentElement.classList.contains('dark');
+
+                    const result = await Swal.fire({
+                        title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Imprimir Notas Privadas</span>',
+                        background: isDark ? '#0f172a' : '#ffffff',
+                        color: isDark ? '#f3f4f6' : '#1f2937',
+                        showConfirmButton: false,
+                        showCloseButton: true,
+                        customClass: {
+                            popup: 'rounded-[2.5rem] shadow-2xl border border-gray-200 dark:border-gray-800 p-6',
+                        },
+                        html: `
+                            <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-6 text-center px-4">
+                                ¿Deseas imprimir las notas privadas con el membrete de Sientia MTX?
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-2">
+                                <button type="button" id="print-notes-btn-with-headers" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-indigo-100 dark:border-indigo-950 bg-indigo-50/50 dark:bg-indigo-950/30 hover:border-indigo-600 transition-all text-center group">
+                                    <div class="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform shadow-sm">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                    </div>
+                                    <div class="font-black text-[10px] uppercase tracking-widest text-indigo-700 dark:text-indigo-300">Con Cabeceras</div>
+                                    <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Estilo oficial</div>
+                                </button>
+                                <button type="button" id="print-notes-btn-no-headers" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-slate-900 hover:border-gray-600 transition-all text-center group">
+                                    <div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 group-hover:scale-110 transition-transform shadow-sm">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                                    </div>
+                                    <div class="font-black text-[10px] uppercase tracking-widest text-gray-700 dark:text-gray-300">Sin Cabeceras</div>
+                                    <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Ficha limpia</div>
+                                </button>
+                            </div>
+                        `,
+                        didOpen: (el) => {
+                            el.querySelector('#print-notes-btn-with-headers').onclick = () => { window._sientiaPrintNotesMode = 'with'; Swal.close(); };
+                            el.querySelector('#print-notes-btn-no-headers').onclick = () => { window._sientiaPrintNotesMode = 'without'; Swal.close(); };
+                        }
+                    });
+
+                    if (!window._sientiaPrintNotesMode) return;
+                    const withHeaders = window._sientiaPrintNotesMode === 'with';
+                    window._sientiaPrintNotesMode = null;
+
                     let htmlContent = typeof marked !== 'undefined' ? marked.parse(rawContent) : rawContent.replace(/\n/g, '<br>');
-                    SientiaPrint.print(taskTitle, htmlContent, { brand: 'Sientia MTX • Notas Privadas' });
+                    const taskTitle = @json($task->title);
+                    const brandLabel = 'Sientia MTX • Notas Privadas';
+                    const now = new Date();
+                    const dateStr = now.toLocaleDateString() + ' a las ' + now.toLocaleTimeString();
+                    
+                    const headerHtml = withHeaders ? `
+                        <div class="print-header">
+                            <div class="title-container">
+                                <span class="brand">${brandLabel}</span>
+                                <h1 class="title">${taskTitle}</h1>
+                                <div class="meta">Generado el ${dateStr}</div>
+                            </div>
+                        </div>
+                    ` : `<h1 style="font-size: 22px; font-weight: 800; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 30px; letter-spacing: -0.02em;">${taskTitle}</h1>`;
+
+                    const printWin = window.open('', '_blank', 'width=850,height=900');
+                    printWin.document.write(`
+                        <!DOCTYPE html>
+                        <html>
+                            <head>
+                                <title>${taskTitle}</title>
+                                <meta charset="utf-8">
+                                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+                                <script src="https://cdn.tailwindcss.com"><\/script>
+                                <script>
+                                    tailwind.config = {
+                                        theme: {
+                                            extend: {
+                                                fontFamily: { sans: ['Inter', 'sans-serif'] },
+                                            }
+                                        }
+                                    }
+                                <\/script>
+                                <style>
+                                    body {
+                                        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                                        padding: 40px 60px;
+                                        color: #1e293b;
+                                        background-color: #fff;
+                                        -webkit-print-color-adjust: exact;
+                                        print-color-adjust: exact;
+                                    }
+                                    .print-header {
+                                        border-bottom: 4px solid #4f46e5;
+                                        margin-bottom: 40px;
+                                        padding-bottom: 20px;
+                                    }
+                                    .brand {
+                                        font-weight: 900;
+                                        font-size: 10px;
+                                        text-transform: uppercase;
+                                        letter-spacing: 0.3em;
+                                        color: #6366f1;
+                                        margin-bottom: 8px;
+                                        display: block;
+                                    }
+                                    .title {
+                                        font-size: 26px;
+                                        font-weight: 900;
+                                        color: #0f172a;
+                                        letter-spacing: -0.03em;
+                                        line-height: 1.1;
+                                        margin: 0 0 6px 0;
+                                    }
+                                    .meta {
+                                        font-size: 11px;
+                                        color: #94a3b8;
+                                        font-weight: 500;
+                                        letter-spacing: 0.02em;
+                                    }
+                                    .content {
+                                        margin-top: 30px;
+                                    }
+                                    .content h1, .content h2, .content h3, .content h4, .content h5, .content h6 {
+                                        margin-top: 1.5em;
+                                        margin-bottom: 0.5em;
+                                        font-weight: 700;
+                                        color: #0f172a;
+                                    }
+                                    .content p {
+                                        margin-bottom: 1em;
+                                        line-height: 1.7;
+                                    }
+                                    .content ul, .content ol {
+                                        margin-bottom: 1em;
+                                        padding-left: 1.5em;
+                                    }
+                                    .content li {
+                                        margin-bottom: 0.25em;
+                                    }
+                                    .content img {
+                                        max-width: 100%;
+                                        border-radius: 8px;
+                                    }
+                                    .content table {
+                                        border-collapse: collapse;
+                                        width: 100%;
+                                        margin-bottom: 1em;
+                                    }
+                                    .content td, .content th {
+                                        border: 1px solid #e2e8f0;
+                                        padding: 0.5rem;
+                                    }
+                                    .content pre {
+                                        background: #f1f5f9;
+                                        padding: 1rem;
+                                        border-radius: 0.5rem;
+                                        overflow-x: auto;
+                                    }
+                                    .content code {
+                                        background: #f1f5f9;
+                                        padding: 0.125rem 0.25rem;
+                                        border-radius: 0.25rem;
+                                    }
+                                    .watermark {
+                                        position: fixed;
+                                        bottom: 20px;
+                                        right: 20px;
+                                        font-size: 80px;
+                                        font-weight: 900;
+                                        color: rgba(99, 102, 241, 0.04);
+                                        pointer-events: none;
+                                        z-index: 0;
+                                    }
+                                </style>
+                            </head>
+                            <body>
+                                ${headerHtml}
+                                <div class="content">${htmlContent}</div>
+                                ${withHeaders ? '<div class="watermark">Sientia.</div>' : ''}
+                            </body>
+                        </html>
+                    `);
+                    printWin.document.close();
+                    setTimeout(() => { printWin.print(); }, 500);
                 }
 
                     async function printFullTask() {
