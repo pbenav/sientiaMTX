@@ -1347,6 +1347,26 @@ protected $listen = [
 
 ## 11. Checklist y criterios de aceptación
 
+---
+
+## 12. Progreso actualizado
+
+### Sprint 1 — Traits para Activity y Task
+
+**Activity.php: 938 → 481 líneas (48.7% reducción) ✅**
+
+- [x] ActivityScopes trait creado e integrado
+- [x] ActivityAccessors trait creado e integrado
+- [x] ActivityTracking trait creado e integrado
+- [x] ActivityVisibility trait creado e integrado
+- [x] ActivityConversion trait creado e integrado
+- [x] Todos los traits verificados con `php -l`
+- [x] Aplicación arranca correctamente (`php artisan about`)
+- [ ] `php artisan test` ejecutado
+- [ ] Commit realizado
+
+**Task.php: pendiente**
+
 ### Checklist de verificación (por cada paso)
 
 - [ ] Nuevo archivo creado en ubicación correcta
