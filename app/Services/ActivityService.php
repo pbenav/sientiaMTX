@@ -130,6 +130,9 @@ class ActivityService
             }
 
             // Metadata: merge parcial de campos específicos del tipo
+            // Recargamos el modelo para tener los datos más recientes de la BD
+            // (ej. capítulos agregados vía modal antes de guardar)
+            $activity->refresh();
             $newMetadata = $this->buildMetadata($activity->type, $data, true);
             if (!empty($newMetadata) || !empty($data['metadata'])) {
                 $updateData['metadata'] = array_merge(

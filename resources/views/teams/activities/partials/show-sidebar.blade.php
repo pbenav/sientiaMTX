@@ -403,56 +403,83 @@
                 </div>
             </div>
 
-            <!-- 6. Estado Card -->
+            <!-- 6. Estado, Prioridad y Visibilidad Card -->
             <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-4 shadow-sm">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide font-bold">{{ __('activities.status') }}</span>
-                    <span class="text-[11px] font-bold px-3 py-1 rounded-full border {{ $statusColor }} uppercase tracking-wider">
-                        {{ __('activities.statuses.' . $activity->status_value) }}
-                    </span>
-                </div>
-                @if($activity->type === 'task')
-                <div class="flex items-center justify-between">
-                    <span class="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide font-bold">{{ __('activities.quadrant') }}</span>
-                    <span class="text-[11px] font-bold {{ $qCfg['color'] }} uppercase tracking-wider">
-                        Q{{ $q }}: {{ __('activities.quadrants.' . $q . '.label') }}
-                    </span>
-                </div>
-                @endif
-                <div class="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800">
-                    <span class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wide">{{ __('activities.visibility') }}</span>
-                    <div class="flex items-center gap-1.5">
-                        @if($activity->privacy_level === 'private')
-                            <div class="w-2 h-2 rounded-full bg-amber-500"></div>
-                            <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">
-                                {{ __('activities.private') }}
-                            </span>
-                        @elseif($activity->privacy_level === 'semi-private')
-                            <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
-                            <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">
-                                {{ __('Semiprivada') }}
-                            </span>
-                        @else
-                            <div class="w-2 h-2 rounded-full bg-violet-500"></div>
-                            <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">
-                                {{ __('activities.public') }}
-                            </span>
-                        @endif
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Estado -->
+                    <div>
+                        <span class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide font-bold block mb-1.5">{{ __('activities.status') }}</span>
+                        <span class="text-[11px] font-bold px-3 py-1 rounded-full border {{ $statusColor }} uppercase tracking-wider">
+                            {{ __('activities.statuses.' . $activity->status_value) }}
+                        </span>
                     </div>
+                    <!-- Prioridad -->
+                    @if ($activity->type === 'task')
+                    <div>
+                        <span class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide font-bold block mb-1.5">{{ __('activities.priority') }}</span>
+                        <span class="text-xs font-semibold text-gray-800 dark:text-gray-200 js-priority-label">{{ __('activities.priorities.' . $activity->priority) }}</span>
+                    </div>
+                    @else
+                    <div>
+                        <span class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide font-bold block mb-1.5">&nbsp;</span>
+                        <span class="text-xs text-gray-300 dark:text-gray-600">&nbsp;</span>
+                    </div>
+                    @endif
                 </div>
-            </div>
 
-            <!-- 7. Prioridad Card -->
-            @if ($activity->type === 'task')
-            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-3 shadow-sm">
-                @foreach ([['activities.priority', $activity->priority, 'activities.priorities'], ['activities.urgency', $activity->urgency, 'activities.urgencies']] as [$lbl, $val, $map])
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Urgencia -->
+                    @if ($activity->type === 'task')
+                    <div>
+                        <span class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide font-bold block mb-1.5">{{ __('activities.urgency') }}</span>
+                        <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">{{ __('activities.urgencies.' . $activity->urgency) }}</span>
+                    </div>
+                    <!-- Cuadrante -->
+                    <div>
+                        <span class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide font-bold block mb-1.5">{{ __('activities.quadrant') }}</span>
+                        <span class="text-[11px] font-bold {{ $qCfg['color'] }} uppercase tracking-wider">
+                            Q{{ $q }}: {{ __('activities.quadrants.' . $q . '.label') }}
+                        </span>
+                    </div>
+                    @else
+                    <div>
+                        <span class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide font-bold block mb-1.5">&nbsp;</span>
+                        <span class="text-xs text-gray-300 dark:text-gray-600">&nbsp;</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide font-bold block mb-1.5">&nbsp;</span>
+                        <span class="text-xs text-gray-300 dark:text-gray-600">&nbsp;</span>
+                    </div>
+                    @endif
+                </div>
+
+                <div class="border-t border-gray-100 dark:border-gray-800 pt-3">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wide">{{ __($lbl) }}</span>
-                        <span class="text-xs font-semibold text-gray-800 dark:text-gray-200 {{ $map === 'activities.priorities' ? 'js-priority-label' : '' }}">{{ __($map . '.' . $val) }}</span>
+                        <span class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wide">{{ __('activities.visibility') }}</span>
+                        <div class="flex items-center gap-1.5">
+                            @if($activity->privacy_level === 'private')
+                                <div class="w-2 h-2 rounded-full bg-amber-500"></div>
+                                <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">
+                                    {{ __('activities.private') }}
+                                </span>
+                            @elseif($activity->privacy_level === 'semi-private')
+                                <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
+                                <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">
+                                    {{ __('Semiprivada') }}
+                                </span>
+                            @else
+                                <div class="w-2 h-2 rounded-full bg-violet-500"></div>
+                                <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">
+                                    {{ __('activities.public') }}
+                                </span>
+                            @endif
+                        </div>
                     </div>
-                @endforeach
+                </div>
 
-                <div class="pt-2 border-t border-gray-50 dark:border-gray-800/50 mt-2">
+                <!-- Prioridad Automática (solo tasks) -->
+                @if ($activity->type === 'task')
+                <div class="pt-2 border-t border-gray-50 dark:border-gray-800/50">
                     <button id="btn-auto-priority" onclick="toggleAutoPriority()" 
                         class="w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all duration-300 {{ $activity->auto_priority ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-800' : 'bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 border border-transparent hover:border-gray-200 dark:hover:border-gray-700' }}">
                         <div class="flex items-center gap-2">
@@ -471,8 +498,8 @@
                         </p>
                     @endif
                 </div>
+                @endif
             </div>
-            @endif
 
             <!-- Expediente Card -->
             @if ($activity->type !== 'note')
