@@ -74,7 +74,7 @@ class ActivityFactory
             'description'    => 'nullable|string|max:1000000',
             'priority'       => 'nullable|string|in:low,medium,high,critical',
             'urgency'        => 'nullable|string|in:low,medium,high,critical',
-            'visibility'     => 'nullable|string|in:public,private,semiprivate,team',
+            'visibility'     => 'nullable|string|in:public,private,semi-private,semiprivate,team',
             'is_template'    => 'nullable|boolean',
             'status'         => 'nullable|array',
             'due_date'       => 'nullable|date',

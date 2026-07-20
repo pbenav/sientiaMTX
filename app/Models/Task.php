@@ -169,7 +169,7 @@ class Task extends Model
                         $this->assignedTo->isNotEmpty() || 
                         $this->assignedGroups->isNotEmpty();
         
-        return $hasAssignees || $this->visibility === 'private';
+        return $hasAssignees || $this->visibility === 'private' || is_null($this->visibility);
     }
 
     public function getPrivacyLevelAttribute(): string
@@ -422,21 +422,28 @@ class Task extends Model
         $builder = $query instanceof \Illuminate\Database\Eloquent\Relations\Relation ? $query->getQuery() : $query;
 
         return $builder->where(function ($q) use ($user, $isManager) {
-            // 1. GESTIÓN (Managers): Ven todo lo público Y todas las plantillas/esqueleto del equipo (que no sean privadas)
+            // Política de privacidad:
+            // - 'public': lo ve todo el equipo
+            // - 'semi-private' o 'semiprivate': creador + asignados
+            // - 'private' o NULL: solo creador (nada más)
             if ($isManager) {
                 $q->where('visibility', 'public')
                   ->orWhere(function ($template) {
                       $template->where('is_template', true)
-                               ->where('visibility', '!=', 'private');
+                               ->where('visibility', 'public');
                   })
                   ->orWhere('created_by_id', $user->id)
-                  ->orWhere('assigned_user_id', $user->id);
+                  ->orWhere('assigned_user_id', $user->id)
+                  ->orWhere(function ($semi) use ($user) {
+                      $semi->whereIn('visibility', ['semi-private', 'semiprivate'])
+                           ->where(function ($assigned) use ($user) {
+                               $assigned->where('assigned_user_id', $user->id)
+                                        ->orWhereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
+                                        ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
+                           });
+                  });
             } else {
-                // 2. EJECUCIÓN (Miembros): "Al vuelo". Ven las tareas si:
-                // - No tienen asignados y son explícitamente públicas
-                // - O si ellos mismos son el creador
-                // - O si están asignados directamente
-                // - O si un grupo suyo está asignado
+                // Miembros: solo ven público sin asignados, o si son creador/assignado
                 $q->where(function ($unassigned) {
                     $unassigned->whereNull('assigned_user_id')
                                ->whereDoesntHave('assignedTo')
@@ -445,6 +452,14 @@ class Task extends Model
                 })
                 ->orWhere('created_by_id', $user->id)
                 ->orWhere('assigned_user_id', $user->id)
+                ->orWhere(function ($semi) use ($user) {
+                    $semi->whereIn('visibility', ['semi-private', 'semiprivate'])
+                         ->where(function ($assigned) use ($user) {
+                             $assigned->where('assigned_user_id', $user->id)
+                                      ->orWhereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
+                                      ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
+                         });
+                })
                 ->orWhereHas('assignedTo', fn($sub) => $sub->where('users.id', $user->id))
                 ->orWhereHas('assignedGroups', fn($sub) => $sub->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
             }
@@ -1048,26 +1063,21 @@ class Task extends Model
         
         $recipients = collect();
 
-        // 1. TAREAS PRIVADAS ('private')
-        // La completación de tareas privadas no debe molestar a nadie, solo a implicados directos si la completó otra persona.
-        if ($this->visibility === 'private') {
+        // 1. TAREAS PRIVADAS ('private' o NULL)
+        // Solo creador
+        if ($this->visibility === 'private' || is_null($this->visibility)) {
+            if ($this->creator && $this->creator->id !== $actorId) {
+                $recipients->push($this->creator);
+            }
+        } 
+        // 2. TAREAS SEMIPRIVADAS ('semi-private' o 'semiprivate')
+        // Creador + asignados
+        elseif (in_array($this->visibility, ['semi-private', 'semiprivate'])) {
             if ($this->creator && $this->creator->id !== $actorId) {
                 $recipients->push($this->creator);
             }
             if ($this->assignedUser && $this->assignedUser->id !== $actorId) {
                 $recipients->push($this->assignedUser);
-            }
-        } 
-        // 2. TAREAS SEMIPRIVADAS ('semiprivate')
-        // Si es semiprivada y Plan Maestro (is_template), se notifica al resto del equipo. Si es colaborativa normal, no se molesta.
-        elseif ($this->visibility === 'semiprivate') {
-            if ($this->is_template) {
-                $members = $this->team->members()->where('users.id', '!=', $actorId)->get();
-                $recipients = $recipients->merge($members);
-            } else {
-                if ($this->creator && $this->creator->id !== $actorId) {
-                    $recipients->push($this->creator);
-                }
             }
         } 
         // 3. TAREAS PÚBLICAS ('public')

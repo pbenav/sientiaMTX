@@ -467,7 +467,7 @@ class TaskActionController extends Controller
         $isAssigned = ($task instanceof Activity ? $task->assignedTo()->where('users.id', $user->id)->exists() : $task->assignments()->where('user_id', $user->id)->exists()) 
                    || $task->assigned_user_id === $user->id;
                    
-        if (!$isAssigned && (!$team->isManager($user) || $task->visibility === 'private')) {
+        if (!$isAssigned && (!$team->isManager($user) || in_array($task->visibility, ['private', null]))) {
             return response()->json(['message' => 'Solo los usuarios asignados pueden valorar esta tarea.'], 403);
         }
 

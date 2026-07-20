@@ -151,7 +151,7 @@ class ExpedienteController extends Controller
 
         // Privacy Check for detailed view - Strict Privacy applied to ALL users
         $user = auth()->user();
-        if ($expediente->visibility === 'private') {
+        if ($expediente->visibility === 'private' || is_null($expediente->visibility)) {
             // Check if user created it or is assigned directly to it or to its tasks
             $isCreator = $expediente->created_by_id === $user->id;
             

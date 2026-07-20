@@ -87,11 +87,19 @@ class SendMorningSummary extends Command
         $this->line("Processing summary for {$user->name}...");
 
         // Fetch tasks for today (scheduled for today or overdue)
+        $isManager = false;
+        foreach ($user->teams as $team) {
+            if (in_array($user->getRole($team), ['coordinator', 'moderator'])) {
+                $isManager = true;
+                break;
+            }
+        }
         $tasks = Activity::where(function($q) use ($user) {
                 $q->whereHas('assignedTo', function($sub) use ($user) {
                       $sub->where('users.id', $user->id);
                 });
             })
+            ->visibleTo($user, $isManager)
             ->whereIn('type', Activity::KANBAN_TYPES)
             ->where('progress_percentage', '<', 100)
             ->where('is_template', false)

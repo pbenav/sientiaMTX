@@ -27,6 +27,6 @@ class ActivityNote extends Model
 
     public function isPrivate(): bool
     {
-        return $this->visibility === 'private';
+        return $this->visibility === 'private' || is_null($this->visibility);
     }
 }

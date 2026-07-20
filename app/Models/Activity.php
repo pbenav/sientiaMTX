@@ -258,7 +258,7 @@ class Activity extends Model
 
     public function getPrivacyLevelAttribute(): string
     {
-        return $this->visibility ?? 'public';
+        return $this->visibility ?? 'private';
     }
 
     public function getAvgQualityScoreAttribute(): float
@@ -315,10 +315,18 @@ class Activity extends Model
     public function isVisibleTo(User $user): bool
     {
         if ($this->visibility === 'public') return true;
+        
+        // Creador siempre ve su actividad
         if ($this->created_by_id === $user->id) return true;
-
-        return $this->assignedTo->contains('id', $user->id)
-            || $this->assignedGroups->filter(fn($g) => $g->users->contains('id', $user->id))->isNotEmpty();
+        
+        // 'semi-private': creador + asignados
+        if (in_array($this->visibility, ['semi-private', 'semiprivate'])) {
+            return $this->assignedTo->contains('id', $user->id)
+                || $this->assignedGroups->filter(fn($g) => $g->users->contains('id', $user->id))->isNotEmpty();
+        }
+        
+        // 'private' o NULL: solo creador (ya verificado arriba)
+        return false;
     }
 
     // ─── Compatibilidad con partial timer (Task compat layer) ─────────────────
@@ -611,23 +619,26 @@ class Activity extends Model
         $builder = $query instanceof \Illuminate\Database\Eloquent\Relations\Relation ? $query->getQuery() : $query;
 
         return $builder->where(function ($q) use ($user, $isManager) {
-            // 1. GESTIÓN (Managers): Ven todo lo público Y todas las plantillas/esqueleto del equipo
-            // Pero NO ven las actividades privadas de otros usuarios a menos que estén asignados a ellas
+            // Política de privacidad:
+            // - 'public': lo ve todo el equipo
+            // - 'semi-private' o 'semiprivate': creador + asignados
+            // - 'private' o NULL: solo creador (nada más)
             if ($isManager) {
-                $q->where('visibility', '!=', 'private')
+                $q->where('visibility', 'public')
                   ->orWhere(function ($template) {
                       $template->where('is_template', true)
-                               ->where('visibility', '!=', 'private');
+                               ->where('visibility', 'public');
                   })
                   ->orWhere('created_by_id', $user->id)
-                  ->orWhereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
-                  ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
+                  ->orWhere(function ($semi) use ($user) {
+                      $semi->whereIn('visibility', ['semi-private', 'semiprivate'])
+                           ->where(function ($assigned) use ($user) {
+                               $assigned->whereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
+                                        ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
+                           });
+                  });
             } else {
-                // 2. EJECUCIÓN (Miembros): "Al vuelo". Ven las tareas si:
-                // - No tienen asignados y son explícitamente públicas
-                // - O si ellos mismos son el creador
-                // - O si están asignados directamente
-                // - O si un grupo suyo está asignado
+                // Miembros: solo ven público sin asignados, o si son creador/assignado
                 $q->where(function ($unassigned) {
                     $unassigned->where('visibility', 'public')
                                ->whereDoesntHave('assignments')
@@ -639,6 +650,13 @@ class Activity extends Model
                                });
                 })
                 ->orWhere('created_by_id', $user->id)
+                ->orWhere(function ($semi) use ($user) {
+                    $semi->whereIn('visibility', ['semi-private', 'semiprivate'])
+                         ->where(function ($assigned) use ($user) {
+                             $assigned->whereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
+                                      ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
+                         });
+                })
                 ->orWhereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
                 ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
             }
@@ -831,12 +849,15 @@ class Activity extends Model
             if ($this->visibility === 'public') {
                 return true;
             }
-            // For non-public activities, check if coordinator is involved
-            if ($this->created_by_id === $coordinator->id) return true;
-            if ($this->assignedTo->contains('id', $coordinator->id)) return true;
-            if ($this->assignedGroups->filter(fn($g) => $g->users->contains('id', $coordinator->id))->isNotEmpty()) return true;
-            
-            return false;
+            // 'semi-private': solo creador + asignados
+            if (in_array($this->visibility, ['semi-private', 'semiprivate'])) {
+                if ($this->created_by_id === $coordinator->id) return true;
+                if ($this->assignedTo->contains('id', $coordinator->id)) return true;
+                if ($this->assignedGroups->filter(fn($g) => $g->users->contains('id', $coordinator->id))->isNotEmpty()) return true;
+                return false;
+            }
+            // 'private' o NULL: solo creador
+            return $this->created_by_id === $coordinator->id;
         });
         
         $recipients = $recipients->merge($filteredCoordinators)->unique('id');
@@ -855,23 +876,21 @@ class Activity extends Model
         
         $recipients = collect();
 
-        if ($this->visibility === 'private') {
+        if ($this->visibility === 'private' || is_null($this->visibility)) {
+            // Privada: solo creador
+            if ($this->creator && $this->creator->id !== $actorId) {
+                $recipients->push($this->creator);
+            }
+        } elseif (in_array($this->visibility, ['semi-private', 'semiprivate'])) {
+            // Semi-privada: creador + asignados
             if ($this->creator && $this->creator->id !== $actorId) {
                 $recipients->push($this->creator);
             }
             if ($this->assignedUser && $this->assignedUser->id !== $actorId) {
                 $recipients->push($this->assignedUser);
             }
-        } elseif ($this->visibility === 'semiprivate') {
-            if ($this->is_template) {
-                $members = $this->team->members()->where('users.id', '!=', $actorId)->get();
-                $recipients = $recipients->merge($members);
-            } else {
-                if ($this->creator && $this->creator->id !== $actorId) {
-                    $recipients->push($this->creator);
-                }
-            }
         } else {
+            // Pública: coordinadores del equipo
             if ($this->is_template || ($this->creator && $this->team->isCoordinator($this->creator))) {
                 $coordinators = $this->team->coordinators()
                     ->when($actorId, fn($q) => $q->where('users.id', '!=', $actorId))
