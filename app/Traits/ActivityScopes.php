@@ -16,6 +16,54 @@ trait ActivityScopes
         return $query->where('type', $type);
     }
 
+    /**
+     * Filtra actividades por relevancia según su tipo y estado.
+     * Excluye estados obsoletos (deprecated, completed, cancelled, under_review).
+     * Las plantillas maestras se excluyen del filtro de estado.
+     */
+    public function scopeRelevant(Builder $query)
+    {
+        return $query->where(function ($q) {
+            // Plantillas maestras: siempre relevantes (independientemente del estado)
+            $q->where('is_template', true)
+            // No plantillas: filtrar por estado según tipo
+            ->orWhere(function ($sub) {
+                // task: solo pending + in_progress
+                $sub->where(function ($inner) {
+                    $inner->where('type', 'task')
+                          ->whereIn('status->value', ['pending', 'in_progress']);
+                })
+                // agreement: solo proposed
+                ->orWhere(function ($inner) {
+                    $inner->where('type', 'agreement')
+                          ->whereIn('status->value', ['proposed']);
+                })
+                // meeting: solo scheduled
+                ->orWhere(function ($inner) {
+                    $inner->where('type', 'meeting')
+                          ->whereIn('status->value', ['scheduled']);
+                })
+                // document: draft, editing, reviewed, uploaded (NO under_review)
+                ->orWhere(function ($inner) {
+                    $inner->where('type', 'document')
+                          ->whereIn('status->value', ['draft', 'editing', 'reviewed', 'uploaded']);
+                })
+                // reminder: solo pending
+                ->orWhere(function ($inner) {
+                    $inner->where('type', 'reminder')
+                          ->whereIn('status->value', ['pending']);
+                })
+                // link: solo active
+                ->orWhere(function ($inner) {
+                    $inner->where('type', 'link')
+                          ->whereIn('status->value', ['active']);
+                })
+                // sin estado definido (NULL): considerar relevante
+                ->orWhereNull('status->value');
+            });
+        });
+    }
+
     public function scopeOfTypes(Builder $query, array $types)
     {
         return $query->whereIn('type', $types);
@@ -51,19 +99,23 @@ trait ActivityScopes
     // ─── Scopes por vista (Kanban, Matriz, Gantt) ─────────────────────────────
     public function scopeForKanban(Builder $query)
     {
-        return $query->whereIn('type', $this->getScopesKanbanTypes());
+        return $query->whereIn('type', $this->getScopesKanbanTypes())
+                     ->relevant();
     }
 
     public function scopeForMatrix(Builder $query)
     {
-        return $query->whereIn('type', $this->getScopesMatrixTypes())->where('is_archived', false);
+        return $query->whereIn('type', $this->getScopesMatrixTypes())
+                     ->relevant()
+                     ->where('is_archived', false);
     }
 
     public function scopeForGantt(Builder $query)
     {
         return $query->whereIn('type', $this->getScopesGanttTypes())
-            ->whereNotNull('due_date')
-            ->where('is_archived', false);
+                     ->relevant()
+                     ->whereNotNull('due_date')
+                     ->where('is_archived', false);
     }
 
     // ─── Scopes de visibilidad ────────────────────────────────────────────────
