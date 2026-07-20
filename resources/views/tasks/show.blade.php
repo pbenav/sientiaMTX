@@ -1212,6 +1212,7 @@
                 }
 
                     async function printFullTask() {
+                        console.log('printFullTask called');
                         const isDark = document.documentElement.classList.contains('dark');
                         
                         const result = await Swal.fire({
