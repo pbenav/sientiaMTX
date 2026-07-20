@@ -767,6 +767,7 @@
             Alpine.store('timer', {
                 activeTaskId: {{ auth()->check() ? (auth()->user()->activeTaskLog()?->task_id ?? 'null') : 'null' }},
                 elapsed: {{ auth()->check() && auth()->user()->activeTaskLog() ? max(0, auth()->user()->activeTaskLog()->start_at->diffInSeconds(now(), false)) : 0 }},
+                taskStartTime: {{ auth()->check() && auth()->user()->activeTaskLog() ? auth()->user()->activeTaskLog()->start_at->timestamp * 1000 : 'null' }},
                 timer: null,
 
                 async fetch() {
@@ -775,18 +776,29 @@
                         const data = await res.json();
                         this.activeTaskId = data.active_task_id;
                         this.elapsed = Math.floor(data.task_elapsed);
-                        if (this.activeTaskId) this.tick();
-                        else this.stop();
+                        if (this.activeTaskId) {
+                            // Recalculate start time from server elapsed to keep accurate tracking
+                            this.taskStartTime = Date.now() - (this.elapsed * 1000);
+                            this.tick();
+                        } else {
+                            this.stop();
+                        }
                     } catch(e) { console.error('Timer sync failed', e); }
                 },
                 tick() {
                     if (this.timer) clearInterval(this.timer);
-                    this.timer = setInterval(() => { this.elapsed++; }, 1000);
+                    this.timer = setInterval(() => {
+                        if (this.taskStartTime) {
+                            this.elapsed = Math.floor((Date.now() - this.taskStartTime) / 1000);
+                        }
+                    }, 1000);
                 },
                 stop() {
                     if (this.timer) clearInterval(this.timer);
                     this.timer = null;
                     this.activeTaskId = null;
+                    this.taskStartTime = null;
+                    this.elapsed = 0;
                 },
                 init() {
                     if (this.activeTaskId) this.tick();
@@ -795,11 +807,19 @@
                     window.addEventListener('task-started', (e) => {
                         this.activeTaskId = e.detail.taskId;
                         this.elapsed = 0;
+                        this.taskStartTime = Date.now();
                         this.tick();
                     });
 
                     window.addEventListener('workday-toggled', (e) => {
                         if (!e.detail.working) this.stop();
+                    });
+
+                    // Sync with server when tab becomes visible (handles background throttling)
+                    document.addEventListener('visibilitychange', () => {
+                        if (document.visibilityState === 'visible' && this.activeTaskId) {
+                            this.fetch();
+                        }
                     });
                 }
             });
