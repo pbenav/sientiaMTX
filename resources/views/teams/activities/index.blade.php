@@ -377,7 +377,7 @@
                                             @endif
                                             @if ($activity->is_template)
                                                 @php
-                                                    $isCollaborative = isset($activity->metadata['assignment_mode']) && $activity->metadata['assignment_mode'] === 'distributed' && $activity->assignedTo->count() > 0;
+                                                    $isCollaborative = isset($activity->metadata['assignment_mode']) && $activity->metadata['assignment_mode'] === 'shared';
                                                 @endphp
                                                 @if($isCollaborative)
                                                     <span class="ml-2 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-tighter bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 rounded shadow-sm inline-flex items-center">

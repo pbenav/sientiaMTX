@@ -2275,7 +2275,7 @@
             <!-- 1. Plan Maestro Related (Only if template/child) -->
             @if ($task->is_template)
                 @php
-                    $isCollabShow = isset($task->metadata['assignment_mode']) && $task->metadata['assignment_mode'] === 'distributed' && $task->assignedTo->count() > 0;
+                    $isCollabShow = isset($task->metadata['assignment_mode']) && $task->metadata['assignment_mode'] === 'shared';
                 @endphp
                 <div class="{{ $isCollabShow ? 'bg-blue-50/30 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/30' : 'bg-violet-50/30 dark:bg-violet-900/10 border-violet-100 dark:border-violet-900/30' }} border rounded-2xl p-4 shadow-sm space-y-4">
                     <p class="text-[10px] font-bold {{ $isCollabShow ? 'text-blue-600 dark:text-blue-400' : 'text-violet-600 dark:text-violet-400' }} uppercase tracking-widest">

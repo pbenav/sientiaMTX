@@ -402,7 +402,7 @@
                                             @endif
                                             @if ($task->is_template)
                                                 @php
-                                                    $isCollab = isset($task->metadata['assignment_mode']) && $task->metadata['assignment_mode'] === 'distributed' && $task->assignedTo->count() > 0;
+                                                    $isCollab = isset($task->metadata['assignment_mode']) && $task->metadata['assignment_mode'] === 'shared';
                                                 @endphp
                                                 <span
                                                     class="ml-2 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-tighter {{ $isCollab ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' : 'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300' }} rounded shadow-sm inline-flex items-center">
@@ -520,7 +520,7 @@
                                             <div class="flex flex-col">
                                                 <span class="text-[11px] text-gray-500 dark:text-gray-400">{{ $task->creator?->name ?? '—' }}</span>
                                                 @php
-                                                    $isCollabOwner = $task->is_template && isset($task->metadata['assignment_mode']) && $task->metadata['assignment_mode'] === 'distributed' && $task->assignedTo->count() > 0;
+                                                    $isCollabOwner = $task->is_template && isset($task->metadata['assignment_mode']) && $task->metadata['assignment_mode'] === 'shared';
                                                 @endphp
                                                 <span class="text-[8px] font-black uppercase tracking-widest {{ $isCollabOwner ? 'text-blue-500/70 dark:text-blue-400/50' : 'text-violet-500/70 dark:text-violet-400/50' }}">
                                                     {{ $task->is_template ? ($isCollabOwner ? (__('activities.collaborative_task') ?? 'Tarea Colaborativa') : (__('tasks.template') ?? 'Plantilla')) : (__('tasks.owner_short') ?? 'Prop.') }}

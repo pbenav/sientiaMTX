@@ -499,7 +499,7 @@
                                                                         </span>
                                                                         @if($task->is_template)
                                                                             @php
-                                                                                $isCollabExp = isset($task->metadata['assignment_mode']) && $task->metadata['assignment_mode'] === 'distributed' && $task->assignedTo->count() > 0;
+                                                                                $isCollabExp = isset($task->metadata['assignment_mode']) && $task->metadata['assignment_mode'] === 'shared';
                                                                             @endphp
                                                                             <span class="text-[10px] px-1.5 py-0.5 rounded-md font-black {{ $isCollabExp ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900/30' : 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/30' }} border uppercase tracking-widest">{{ $isCollabExp ? __('activities.collaborative_task') ?? 'Tarea Colaborativa' : 'Plan Maestro' }}</span>
                                                                         @endif

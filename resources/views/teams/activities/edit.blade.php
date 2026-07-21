@@ -16,7 +16,15 @@
                     <h1 class="text-xl font-bold text-gray-900 dark:text-white heading truncate">
                         Editar Actividad: {{ $activity->title }} 
                         <span class="ml-2 text-sm font-medium text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400 px-2 py-1 rounded-md">
-                            {{ $activity->type_label }}
+                            @if ($activity->is_template)
+                                @if(isset($activity->metadata['assignment_mode']) && $activity->metadata['assignment_mode'] === 'shared')
+                                    {{ __('activities.collaborative_task') ?? 'Tarea Colaborativa' }}
+                                @else
+                                    {{ __('activities.plan_master') ?? 'Plan Maestro' }}
+                                @endif
+                            @else
+                                {{ $activity->type_label }}
+                            @endif
                         </span>
                     </h1>
                 </div>

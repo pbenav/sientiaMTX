@@ -215,7 +215,7 @@
                                                 <span class="truncate">{{ $task->title }}</span>
                                                 @if ($task->is_template)
                                                     @php
-                                                        $isCollaborative = isset($task->metadata['assignment_mode']) && $task->metadata['assignment_mode'] === 'distributed' && $task->assignedTo->count() > 0;
+                                                        $isCollaborative = isset($task->metadata['assignment_mode']) && $task->metadata['assignment_mode'] === 'shared';
                                                     @endphp
                                                     @if($isCollaborative)
                                                         <span class="px-1 py-0.5 rounded-[4px] bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-[6px] sm:text-[8px] font-black uppercase tracking-tighter shrink-0 border border-blue-200 dark:border-blue-700/50 shadow-sm" title="{{ __('activities.collaborative_task') ?? 'Tarea Colaborativa' }}">C</span>
