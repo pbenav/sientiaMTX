@@ -1,6 +1,6 @@
 
 <div x-data="telegramChat()" 
-     class="fixed z-[9999] flex flex-col items-end bottom-32 sm:bottom-24 right-4 pointer-events-none"
+     class="fixed z-[9999] flex flex-col items-end bottom-32 sm:bottom-24 right-4 pointer-events-none print-hide telegram-widget-container"
      :style="`transform: translate3d(${pos.x}px, ${pos.y}px, 0);`"
      @mousemove.window="drag($event)"
      @touchmove.window="drag($event)"

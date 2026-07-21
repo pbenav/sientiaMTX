@@ -6,7 +6,7 @@
      @quicknote-create.window="createNote()"
      @quicknote-toggle-all.window="toggleAll()"
      @quicknote-refresh.window="refreshNotes()"
-     class="fixed inset-0 pointer-events-none z-[9999]"
+     class="fixed inset-0 pointer-events-none z-[9999] print-hide quick-notes-container"
      style="touch-action: none;"
      x-init="window.addEventListener('blur', () => hideAll())">
 
