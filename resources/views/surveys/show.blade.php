@@ -895,7 +895,7 @@
             /* Aggressive hiding */
             header, nav, footer, aside, #sidebar, .view-switcher-container, #survey-floating-bar, 
             .status-banner, button:not(.print-hide), x-slot[name="header"] a,
-            .animate-pulse {
+            .animate-pulse, .ai-assistant-container {
                 display: none !important;
             }
 
