@@ -766,6 +766,9 @@ class ActivityService
         }
 
         // Permitimos valores nulos para que el usuario pueda vaciar campos explícitamente
+        if (isset($data['urgency'])) {
+            $base['urgency'] = $data['urgency'];
+        }
 
         return array_merge($base, $specifics);
     }

@@ -45,6 +45,7 @@ class StoreActivityRequest extends FormRequest
             'description' => 'nullable|string',
             'visibility' => 'required|in:public,private,semi-private',
             'priority' => 'required|in:low,medium,high,critical',
+            'urgency' => 'nullable|in:low,medium,high,critical',
             'auto_priority' => 'nullable|boolean',
             'progress_percentage' => 'nullable|integer|min:0|max:100',
             'due_date' => 'nullable|date',
