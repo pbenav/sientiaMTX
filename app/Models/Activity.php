@@ -161,6 +161,7 @@ class Activity extends Model
         return $this->belongsToMany(User::class, 'activity_assignments', 'activity_id', 'user_id')
             ->withPivot('assigned_at', 'assigned_by_id', 'completed_at')
             ->withTimestamps()
+            ->distinct()
             ->orderBy('name');
     }
 
@@ -181,7 +182,8 @@ class Activity extends Model
     {
         return $this->belongsToMany(Group::class, 'activity_assignments', 'activity_id', 'group_id')
             ->withPivot('assigned_at', 'assigned_by_id')
-            ->withTimestamps();
+            ->withTimestamps()
+            ->distinct();
     }
 
     public function ratings(): HasMany

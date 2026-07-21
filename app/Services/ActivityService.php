@@ -284,20 +284,52 @@ class ActivityService
 
     public function syncAssignments(Activity $activity, array $data): array
     {
-        $previousUserIds = $activity->assignments()->whereNotNull('user_id')->pluck('user_id')->toArray();
-        
-        // Borrar asignaciones actuales
-        $activity->assignments()->delete();
-
         $assignedBy  = auth()->id();
         $assignedAt  = now();
         $userIds     = $data['assigned_to'] ?? [];
         $groupIds    = $data['assigned_groups'] ?? [];
 
-        // Expand group members into userIds if they are not already there
-        // Actually, previous task assignment expansion was handled in Controller/Service
-        // but here we just store the group_id. We should also notify users in those groups!
-        // But for simplicity, let's keep it to direct user assignments first, or expand them for notifications.
+        // 1. Obtener asignaciones actuales (solo directas, sin expandir grupos todavía)
+        $currentAssignments = $activity->assignments()->get();
+        $currentUserIds = $currentAssignments->whereNotNull('user_id')->pluck('user_id')->toArray();
+        $currentGroupIds = $currentAssignments->whereNotNull('group_id')->pluck('group_id')->toArray();
+
+        // 2. Calcular diferencias
+        $userIdsToAdd = array_diff($userIds, $currentUserIds);
+        $userIdsToRemove = array_diff($currentUserIds, $userIds);
+        $groupIdsToAdd = array_diff($groupIds, $currentGroupIds);
+        $groupIdsToRemove = array_diff($currentGroupIds, $groupIds);
+
+        // 3. Eliminar los que ya no están asignados
+        if (!empty($userIdsToRemove)) {
+            $activity->assignments()->whereIn('user_id', $userIdsToRemove)->delete();
+        }
+        if (!empty($groupIdsToRemove)) {
+            $activity->assignments()->whereIn('group_id', $groupIdsToRemove)->delete();
+        }
+
+        // 4. Agregar nuevas asignaciones (manteniendo las viejas intactas)
+        foreach ($userIdsToAdd as $userId) {
+            \App\Models\ActivityAssignment::create([
+                'activity_id'    => $activity->id,
+                'user_id'        => $userId,
+                'group_id'       => null,
+                'assigned_by_id' => $assignedBy,
+                'assigned_at'    => $assignedAt,
+            ]);
+        }
+
+        foreach ($groupIdsToAdd as $groupId) {
+            \App\Models\ActivityAssignment::create([
+                'activity_id'    => $activity->id,
+                'user_id'        => null,
+                'group_id'       => $groupId,
+                'assigned_by_id' => $assignedBy,
+                'assigned_at'    => $assignedAt,
+            ]);
+        }
+
+        // 5. Expandir grupos para notificaciones
         $notifyUserIds = collect($userIds);
         foreach ($groupIds as $groupId) {
             $group = $activity->team->groups()->find($groupId);
@@ -307,31 +339,21 @@ class ActivityService
         }
         $uniqueNotifyUserIds = $notifyUserIds->unique()->toArray();
 
-        foreach ($userIds as $userId) {
-            ActivityAssignment::create([
-                'activity_id'    => $activity->id,
-                'user_id'        => $userId,
-                'group_id'       => null,
-                'assigned_by_id' => $assignedBy,
-                'assigned_at'    => $assignedAt,
-            ]);
-        }
-
-        foreach ($groupIds as $groupId) {
-            ActivityAssignment::create([
-                'activity_id'    => $activity->id,
-                'user_id'        => null,
-                'group_id'       => $groupId,
-                'assigned_by_id' => $assignedBy,
-                'assigned_at'    => $assignedAt,
-            ]);
-        }
-
         $isDistributedPlan = ($activity->is_template && $activity->type === 'task');
 
         if (!$isDistributedPlan) {
-            $newUserIds = array_diff($uniqueNotifyUserIds, $previousUserIds);
-            foreach ($newUserIds as $userId) {
+            // Calcular usuarios realmente nuevos (que no estaban en grupos ni asignados directos)
+            $previousNotifyUserIds = collect($currentUserIds);
+            foreach ($currentGroupIds as $groupId) {
+                $group = $activity->team->groups()->find($groupId);
+                if ($group) {
+                    $previousNotifyUserIds = $previousNotifyUserIds->merge($group->users->pluck('id'));
+                }
+            }
+            
+            $newUserIdsToNotify = array_diff($uniqueNotifyUserIds, $previousNotifyUserIds->unique()->toArray());
+
+            foreach ($newUserIdsToNotify as $userId) {
                 if ($userId && $userId !== $assignedBy) {
                     try {
                         \App\Models\User::find($userId)?->notify(new \App\Notifications\TaskAssignedNotification($activity, auth()->user()));
@@ -369,7 +391,11 @@ class ActivityService
             
         $existingUserIds = [];
         foreach ($existingInstances as $instance) {
-            $assignedUserId = $instance->assignments()->first()?->user_id;
+            // Buscamos a quién pertenece esta instancia usando metadata para ser más fiables,
+            // o recurrimos al primer assignment si es legacy.
+            $assignedUserId = data_get($instance->metadata, 'distributed_user_id') 
+                ?? $instance->assignments()->whereNotNull('user_id')->first()?->user_id;
+                
             if ($assignedUserId) {
                 $existingUserIds[$assignedUserId] = $instance;
             }
@@ -397,7 +423,8 @@ class ActivityService
             
             $childData['metadata'] = array_merge($parent->metadata ?? [], [
                 'is_distributed_instance' => true,
-                'assignment_mode' => 'shared'
+                'assignment_mode' => 'shared',
+                'distributed_user_id' => $userId
             ]);
 
             $instance = Activity::create([
