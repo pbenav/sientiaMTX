@@ -413,7 +413,6 @@ class TaskController extends Controller
             'description' => $task->description,
             'due_date' => $task->due_date,
             'priority' => $task->priority,
-            'urgency' => $task->urgency,
         ]);
 
         return redirect()->back()->with('success', __('tasks.synced_success'));
