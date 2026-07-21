@@ -15,11 +15,18 @@ trait HandlesEisenhowerMatrix
      */
     public function getQuadrant(Task|Activity $task): int
     {
+        $priority = $task->priority;
+        $urgency = $task->urgency ?? data_get($task->metadata, 'urgency', 'medium');
+
+        if (is_object($priority) && enum_exists(get_class($priority))) {
+            $priority = $priority->value;
+        }
+
         // Strictly match the Controller mapping: 
         // Important = high/critical, Not Important = low/medium
         // Urgent = high/critical, Not Urgent = low/medium
-        $isPriority = in_array($task->priority, ['high', 'critical']);
-        $isUrgent = in_array($task->urgency, ['high', 'critical']);
+        $isPriority = in_array($priority, ['high', 'critical']);
+        $isUrgent = in_array($urgency, ['high', 'critical']);
 
         if ($isPriority && $isUrgent) {
             return 1; // Do First (Important + Urgent)
