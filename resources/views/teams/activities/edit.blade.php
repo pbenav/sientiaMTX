@@ -619,46 +619,46 @@
             </div>
         </div>
         <div class="space-y-6 relative z-10">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50/30 dark:bg-gray-800/10 p-6 rounded-3xl border border-gray-150 dark:border-gray-800">
-                    <div x-data="{
-                        currentDate: '{{ old('scheduled_date', $activity->scheduled_date ? $activity->scheduled_date->format('Y-m-d\TH:i') : '') }}',
-                        addDays(days) {
-                            let d = new Date();
-                            if (days > 0) d.setDate(d.getDate() + days);
-                            d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-                            this.currentDate = d.toISOString().slice(0, 16);
-                        }
-                    }">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50/30 dark:bg-gray-800/10 p-6 rounded-3xl border border-gray-150 dark:border-gray-800"
+                 x-data="{
+                    startDate: '{{ old('scheduled_date', $activity->scheduled_date ? $activity->scheduled_date->format('Y-m-d\TH:i') : '') }}',
+                    endDate: '{{ old('due_date', $activity->due_date ? $activity->due_date->format('Y-m-d\TH:i') : '') }}',
+                    addDaysStart(days) {
+                        let d = new Date();
+                        if (days > 0) d.setDate(d.getDate() + days);
+                        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+                        this.startDate = d.toISOString().slice(0, 16);
+                    },
+                    addDaysEnd(days) {
+                        let d = this.startDate ? new Date(this.startDate) : new Date();
+                        if (days > 0) d.setDate(d.getDate() + days);
+                        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+                        this.endDate = d.toISOString().slice(0, 16);
+                    }
+                 }">
+                    <div>
                         <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">{{ __('activities.scheduled_date') ?? 'Fecha Programada' }}</label>
-                        <input type="datetime-local" name="scheduled_date" x-model="currentDate"
+                        <input type="datetime-local" name="scheduled_date" x-model="startDate"
                             class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 outline-none">
                         <div class="flex flex-wrap gap-1.5 mt-2.5 font-sans">
-                            <button type="button" @click="addDays(0)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-800/50 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors shadow-sm">Ahora</button>
-                            <button type="button" @click="addDays(1)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Día</button>
-                            <button type="button" @click="addDays(7)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Sem</button>
-                            <button type="button" @click="addDays(15)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+15 Días</button>
-                            <button type="button" @click="addDays(30)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Mes</button>
+                            <button type="button" @click="addDaysStart(0)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-800/50 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors shadow-sm">Ahora</button>
+                            <button type="button" @click="addDaysStart(1)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Día</button>
+                            <button type="button" @click="addDaysStart(7)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Sem</button>
+                            <button type="button" @click="addDaysStart(15)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+15 Días</button>
+                            <button type="button" @click="addDaysStart(30)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Mes</button>
                         </div>
                     </div>
 
-                    <div x-data="{
-                        currentDate: '{{ old('due_date', $activity->due_date ? $activity->due_date->format('Y-m-d\TH:i') : '') }}',
-                        addDays(days) {
-                            let d = new Date();
-                            if (days > 0) d.setDate(d.getDate() + days);
-                            d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-                            this.currentDate = d.toISOString().slice(0, 16);
-                        }
-                    }">
+                    <div>
                         <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">{{ __('activities.due_date') ?? 'Fecha de Vencimiento' }}</label>
-                        <input type="datetime-local" name="due_date" x-model="currentDate"
+                        <input type="datetime-local" name="due_date" x-model="endDate"
                             class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 outline-none">
                         <div class="flex flex-wrap gap-1.5 mt-2.5 font-sans">
-                            <button type="button" @click="addDays(0)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-800/50 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors shadow-sm">Ahora</button>
-                            <button type="button" @click="addDays(1)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Día</button>
-                            <button type="button" @click="addDays(7)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Sem</button>
-                            <button type="button" @click="addDays(15)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+15 Días</button>
-                            <button type="button" @click="addDays(30)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Mes</button>
+                            <button type="button" @click="addDaysEnd(0)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-800/50 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors shadow-sm">Ahora</button>
+                            <button type="button" @click="addDaysEnd(1)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Día</button>
+                            <button type="button" @click="addDaysEnd(7)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Sem</button>
+                            <button type="button" @click="addDaysEnd(15)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+15 Días</button>
+                            <button type="button" @click="addDaysEnd(30)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Mes</button>
                         </div>
                     </div>
 
