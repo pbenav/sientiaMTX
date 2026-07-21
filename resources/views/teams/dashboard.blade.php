@@ -277,7 +277,11 @@
                                                 @foreach ($task->children as $child)
                                                     <div
                                                         class="flex items-center gap-2 py-1 px-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-all group/sub">
-                                                        <div class="w-1 h-1 rounded-full bg-gray-400/50"></div>
+                                                        @if ($child->isBlockedByService() || $child->status_value === 'blocked' || $child->status === 'blocked')
+                                                            <div class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping shrink-0" title="Instancia Bloqueada"></div>
+                                                        @else
+                                                            <div class="w-1.5 h-1.5 rounded-full bg-gray-400/50 shrink-0"></div>
+                                                        @endif
                                                         <a href="{{ route('teams.activities.show', [$team, $child]) }}"
                                                             class="flex-1 text-[10px] text-gray-500 hover:text-gray-900 dark:hover:text-white">
                                                             {{ $child->title }}
