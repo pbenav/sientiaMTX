@@ -70,39 +70,25 @@ trait TaskScopes
             // - 'semi-private' o 'semiprivate': creador + asignados
             // - 'private' o NULL: solo creador (nada más)
             if ($isManager) {
-                $q->where('visibility', 'public')
-                  ->orWhere(function ($template) {
-                      $template->where('is_template', true)
-                               ->where('visibility', 'public');
-                  })
-                  ->orWhere('created_by_id', $user->id)
-                  ->orWhere('assigned_user_id', $user->id)
-                  ->orWhere(function ($semi) use ($user) {
-                      $semi->whereIn('visibility', ['semi-private', 'semiprivate'])
-                           ->where(function ($assigned) use ($user) {
-                               $assigned->where('assigned_user_id', $user->id)
-                                        ->orWhereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
-                                        ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
-                           });
-                  });
+                // Managers/coordinators can see ALL tasks except those strictly private to other users
+                $q->where(function ($mQuery) use ($user) {
+                    $mQuery->whereNotIn('visibility', ['private'])
+                           ->orWhereNull('visibility')
+                           ->orWhere('created_by_id', $user->id)
+                           ->orWhere('assigned_user_id', $user->id)
+                           ->orWhereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
+                           ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
+                });
             } else {
-                // Miembros: solo ven público sin asignados, o si son creador/assignado
+                // Miembros: ven público sin asignados, o si son creador/asignado
                 $q->where(function ($unassigned) {
                     $unassigned->whereNull('assigned_user_id')
                                ->whereDoesntHave('assignedTo')
                                ->whereDoesntHave('assignedGroups')
-                               ->where('visibility', 'public');
+                               ->whereNotIn('visibility', ['private', 'semi-private', 'semiprivate']);
                 })
                 ->orWhere('created_by_id', $user->id)
                 ->orWhere('assigned_user_id', $user->id)
-                ->orWhere(function ($semi) use ($user) {
-                    $semi->whereIn('visibility', ['semi-private', 'semiprivate'])
-                         ->where(function ($assigned) use ($user) {
-                             $assigned->where('assigned_user_id', $user->id)
-                                      ->orWhereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
-                                      ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
-                         });
-                })
                 ->orWhereHas('assignedTo', fn($sub) => $sub->where('users.id', $user->id))
                 ->orWhereHas('assignedGroups', fn($sub) => $sub->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
             }
@@ -119,14 +105,6 @@ trait TaskScopes
 
         $query->where(function ($main) use ($user, $isManager) {
             if ($isManager) {
-                // GESTIÓN (Managers/Coordinators): Ve el esqueleto (Plantillas y Raíces)
-                // Evitamos traer instancias que no estén asignadas a él como filas principales,
-                // ya que estas se verán dentro de sus respectivos Planes Maestros.
-                $main->where(function($q) {
-                    $q->whereNull('parent_id')
-                      ->orWhere('is_template', true);
-                });
-
                 // DEDUPLICACIÓN EN GESTIÓN: Si el manager tiene una instancia propia, 
                 // priorizamos ver el Plan Maestro (donde puede gestionar todo) y evitamos 
                 // ver la instancia suelta arriba para no triplicar.
@@ -134,7 +112,7 @@ trait TaskScopes
                     $q->where('is_template', true)
                       ->orWhereNull('assigned_user_id')
                       ->orWhere('assigned_user_id', '!=', $user->id)
-                      ->orWhereNull('parent_id'); // SIEMPRE ver tareas raíz, aunque estén asignadas a mí
+                      ->orWhereNull('parent_id'); // SIEMPRE ver tareas raíz
                 });
             } else {
                 // MIEMBRO (Contexto Ejecución): Ve su trabajo asignado Y las tareas puras (sin asignar a nadie)
