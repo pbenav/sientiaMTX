@@ -175,9 +175,9 @@
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M5.636 5.636l3.536 3.536m0 5.656l-3.536 3.536M9.172 9.172L15 15M15 9.172l-5.828 5.828" />
                                                         </svg>
                                                     </div>
-                                                @elseif ($task->status === 'blocked')
-                                                    <div class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></div>
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-red-500"
+                                                @elseif ($task->status_value === 'blocked' || $task->status === 'blocked')
+                                                    <div class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" title="Bloqueada"></div>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-red-500" title="Bloqueada"
                                                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
                                                             stroke-width="2.5"
