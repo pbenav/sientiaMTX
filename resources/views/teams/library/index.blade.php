@@ -31,7 +31,8 @@
 
     <div class="flex flex-col md:flex-row gap-6">
         <!-- Sidebar de Wiki -->
-        <div class="w-full md:w-1/4 xl:w-1/5 flex flex-col gap-4">
+        <!-- Sidebar de Wiki -->
+        <div class="w-full md:w-80 xl:w-96 shrink-0 flex flex-col gap-4">
             <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden flex flex-col h-[calc(100vh-14rem)] sticky top-24">
                 <div class="p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20">
                     <h3 class="text-xs font-black uppercase tracking-widest text-gray-900 dark:text-white flex items-center gap-2 mb-3">
@@ -112,19 +113,19 @@
         </div>
 
         <!-- Contenido principal -->
-        <div class="flex-1">
+        <div class="flex-1 min-w-0">
             @if($activeDocument)
                 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden min-h-[calc(100vh-14rem)] flex flex-col">
                     <div class="p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-start gap-4">
-                        <div>
+                        <div class="min-w-0">
                             <div class="flex items-center gap-2 mb-2">
-                                <span class="px-2 py-1 text-[10px] font-bold rounded bg-violet-50 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300 uppercase tracking-wider border border-violet-200 dark:border-violet-800">DOCUMENTO WIKI</span>
-                                <span class="px-2 py-1 text-[10px] font-bold rounded {{ $activeDocument->status_value == 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-800' : 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400' }} uppercase tracking-wider border">
+                                <span class="px-2 py-1 text-[10px] font-bold rounded bg-violet-50 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300 uppercase tracking-wider border border-violet-200 dark:border-violet-800 shrink-0">DOCUMENTO WIKI</span>
+                                <span class="px-2 py-1 text-[10px] font-bold rounded {{ $activeDocument->status_value == 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-800' : 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400' }} uppercase tracking-wider border shrink-0">
                                     {{ __("activities.statuses.{$activeDocument->status_value}") }}
                                 </span>
                             </div>
-                            <h2 class="text-2xl font-black text-gray-900 dark:text-white">{{ $activeDocument->title }}</h2>
-                            <div class="flex items-center gap-4 mt-2 text-[11px] text-gray-400 font-medium">
+                            <h2 class="text-2xl font-black text-gray-900 dark:text-white truncate">{{ $activeDocument->title }}</h2>
+                            <div class="flex items-center gap-4 mt-2 text-[11px] text-gray-400 font-medium shrink-0 flex-wrap">
                                 <span class="flex items-center gap-1">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                                     Creado: <strong class="text-gray-600 dark:text-gray-300">{{ $activeDocument->created_at->format('d/m/Y') }}</strong>
@@ -158,13 +159,13 @@
                         </a>
                     </div>
                     
-                    <div class="p-6 flex-1 flex flex-col">
+                    <div class="p-6 flex-1 flex flex-col min-w-0">
                         @php
                             $notesStr = is_string($activeDocument->notes) ? trim($activeDocument->notes) : '';
                             $hasNotes = $notesStr !== '' && $notesStr !== '[]' && strip_tags($notesStr) !== '';
                         @endphp
                         @if($hasNotes)
-                            <div class="prose dark:prose-invert max-w-none text-sm w-full mb-6">
+                            <div class="prose dark:prose-invert max-w-none text-sm w-full mb-6 break-words">
                                 {!! str($activeDocument->notes)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
                             </div>
                         @endif
@@ -174,30 +175,52 @@
                         @endphp
                         
                         @if(count($chapters) > 0)
-                            <div id="chapters-section" class="bg-gray-50/50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-colors space-y-6">
-                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+                            <div id="chapters-section" x-data="{ search: '' }" class="bg-gray-50/50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-colors space-y-6">
+                                <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-700">
                                     <div class="flex items-center gap-3">
                                         <div class="w-10 h-10 rounded-2xl bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0 border border-violet-200 dark:border-violet-800/50 shadow-sm">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                                             </svg>
                                         </div>
-                                        <div>
-                                            <h3 class="text-sm font-bold text-gray-800 dark:text-white">Libro: Estructura del Documento</h3>
+                                        <div class="min-w-0">
+                                            <h3 class="text-sm font-bold text-gray-800 dark:text-white truncate">Libro: Estructura del Documento</h3>
                                             <p class="text-[10px] text-gray-400 font-medium uppercase tracking-wide">{{ count($chapters) }} Capítulos</p>
                                         </div>
                                     </div>
-                                    <button type="button" onclick="printDocumentBook()" class="flex items-center gap-1.5 text-xs bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 px-3.5 py-2 rounded-xl border border-gray-200 dark:border-gray-700 font-bold transition-all shadow-sm active:scale-95">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                                        </svg>
-                                        Imprimir
-                                    </button>
+                                    <div class="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto">
+                                        <div class="relative w-full sm:w-64 shrink-0">
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <svg class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
+                                            </div>
+                                            <input type="text" x-model="search" class="block w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 sm:text-xs transition-colors" placeholder="Buscar en los capítulos...">
+                                        </div>
+                                        <button type="button" onclick="printDocumentBook()" class="flex items-center justify-center gap-1.5 text-xs bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 px-3.5 py-2 rounded-xl border border-gray-200 dark:border-gray-700 font-bold transition-all shadow-sm active:scale-95 w-full sm:w-auto shrink-0">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                            </svg>
+                                            <span class="whitespace-nowrap">Imprimir</span>
+                                        </button>
+                                    </div>
                                 </div>
                                 
-                                <div class="space-y-4">
+                                <div class="space-y-4 min-w-0">
                                     @foreach($chapters as $idx => $chapter)
-                                    <div x-data="{ open: false }" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-4 shadow-sm">
+                                    <div x-data="{ 
+                                            open: false,
+                                            rawContent: `{{ base64_encode($chapter['content'] ?? '') }}`,
+                                            decodedContent: '',
+                                            init() {
+                                                this.decodedContent = decodeURIComponent(escape(window.atob(this.rawContent)));
+                                            },
+                                            get isMatch() {
+                                                if (search === '') return true;
+                                                const s = search.toLowerCase();
+                                                return '{{ addslashes(strtolower($chapter['title'] ?? '')) }}'.includes(s) || this.decodedContent.toLowerCase().includes(s);
+                                            }
+                                         }" 
+                                         x-show="isMatch"
+                                         class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-4 shadow-sm transition-all duration-300">
                                         <div class="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800/50 cursor-pointer group" @click="open = !open">
                                             <div class="flex items-center gap-3 min-w-0">
                                                 <span class="w-7 h-7 rounded-xl bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 font-black text-xs flex items-center justify-center border border-violet-100 dark:border-violet-800/50 shrink-0 group-hover:scale-110 transition-transform">
@@ -217,12 +240,10 @@
                                             </div>
                                         </div>
                                         <div x-show="open" x-collapse style="display: none;" 
-                                             x-data="{ content: `{{ base64_encode($chapter['content'] ?? '') }}` }"
                                              x-init="$nextTick(() => { 
-                                                const decoded = decodeURIComponent(escape(window.atob(content)));
-                                                $refs.mdContainer.innerHTML = typeof marked !== 'undefined' ? marked.parse(decoded, {breaks: true, gfm: true}) : decoded; 
+                                                $refs.mdContainer.innerHTML = typeof marked !== 'undefined' ? marked.parse(decodedContent, {breaks: true, gfm: true}) : decodedContent; 
                                              })">
-                                            <div x-ref="mdContainer" id="chapter-content-{{ $idx }}" class="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 resize-y min-h-[120px] pr-4 p-4 bg-gray-50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/80 rounded-2xl mt-2 markdown-body">
+                                            <div x-ref="mdContainer" id="chapter-content-{{ $idx }}" class="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 resize-y min-h-[120px] pr-4 p-4 bg-gray-50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/80 rounded-2xl mt-2 markdown-body overflow-x-hidden">
                                                 <div class="flex items-center justify-center p-4">
                                                     <svg class="animate-spin h-5 w-5 text-violet-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                                                 </div>
