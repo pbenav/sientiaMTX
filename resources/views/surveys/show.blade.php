@@ -813,6 +813,8 @@
                 border: none !important;
                 border-radius: 0 !important;
                 margin-bottom: 0 !important;
+                overflow: visible !important;
+                display: block !important;
             }
 
             /* Container preservation - Ultra compact */
@@ -823,9 +825,14 @@
                 margin: 0.25rem !important;
             }
 
-            /* Main padding reduction */
-            .p-8, .sm\:p-12 { padding: 0 !important; }
-            .mb-12, .mb-10, .mb-8, .mb-4 { margin-bottom: 0.5rem !important; }
+            /* Main padding reduction and layout block fix */
+            .p-8, .sm\:p-12, .pb-0, .mb-12, .mb-10, .mb-8, .mb-4 { 
+                padding: 0 !important; 
+                margin-bottom: 0.5rem !important;
+                display: block !important;
+                page-break-inside: auto !important;
+                break-inside: auto !important;
+            }
 
             /* Card preservation */
             .bg-white { 
