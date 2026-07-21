@@ -53,11 +53,23 @@
     <div class="w-full sm:px-6 lg:px-8">
         <div
             class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm dark:shadow-none transition-colors">
-            <form id="create-task-form" method="POST" action="{{ route('teams.activities.store', $team) }}" class="space-y-6" enctype="multipart/form-data" @submit="console.log('chapter_title:', document.querySelector('input[name=\'metadata[chapter_title]\']')?.value, 'chapter_content:', document.querySelector('textarea[name=\'metadata[chapter_content]\']')?.value)">
+            <form id="create-task-form" method="POST" action="{{ route('teams.activities.store', $team) }}" class="" enctype="multipart/form-data" @submit="console.log('chapter_title:', document.querySelector('input[name=\'metadata[chapter_title]\']')?.value, 'chapter_content:', document.querySelector('textarea[name=\'metadata[chapter_content]\']')?.value)">
                 @csrf
                 <input type="hidden" name="type" value="{{ $type }}">
+                <div x-data="{ activeTab: '{{ request('tab', 'general') }}' }">
+                    <!-- Tabs Nav -->
+                    <div class="flex gap-4 border-b border-gray-200 dark:border-gray-800 pb-2 mb-6 overflow-x-auto">
+                        <button type="button" @click="activeTab = 'general'" :class="activeTab === 'general' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">General</button>
+                        <button type="button" @click="activeTab = 'planning'" :class="activeTab === 'planning' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">Planificación y Estado</button>
+                        <button type="button" @click="activeTab = 'team'" :class="activeTab === 'team' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">Equipo y Ejecución</button>
+                        <button type="button" @click="activeTab = 'context'" :class="activeTab === 'context' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">Contexto y Vinculaciones</button>
+                    </div>
+    
 
-                <!-- Title -->
+                
+                    <!-- TAB: General -->
+                    <div x-show="activeTab === 'general'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;" class="space-y-6">
+<!-- Title -->
                 <div>
                     <label
                         class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">{{ __('tasks.name') }}</label>
@@ -236,200 +248,6 @@
 
 
                 @if($type === "task")
-                <!-- Assignment Mode -->
-                <div class="mb-6 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
-                    <label class="block text-sm font-bold text-gray-900 dark:text-white mb-3">{{ __('tasks.assignment_mode') ?? 'Modo de Asignación (Si delegas a otros)' }}</label>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="relative flex">
-                            <input type="radio" id="mode_shared" name="assignment_mode" value="shared" class="peer sr-only" {{ old('assignment_mode', 'shared') === 'shared' ? 'checked' : '' }}>
-                            <label for="mode_shared" class="cursor-pointer w-full p-4 bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-xl peer-checked:border-violet-500 peer-checked:bg-violet-50 dark:peer-checked:bg-violet-950/30 transition-all flex gap-3 hover:border-violet-300 dark:hover:border-violet-700/50 group">
-                                <div class="mt-0.5 w-5 h-5 rounded-full border-2 border-gray-300 dark:border-gray-600 group-hover:border-violet-400 peer-checked:border-violet-500 peer-checked:bg-violet-500 flex items-center justify-center shrink-0 transition-all">
-                                    <div class="w-2 h-2 rounded-full bg-white opacity-0 peer-checked:opacity-100 transition-all"></div>
-                                </div>
-                                <div class="flex flex-col">
-                                    <span class="text-sm font-bold text-gray-900 dark:text-white mb-1">{{ __('tasks.shared_task') ?? 'Tarea Compartida (Colaborativa)' }}</span>
-                                    <span class="text-[11px] text-gray-500 leading-tight">{{ __('tasks.shared_hint') ?? 'Es UNA única tarea. Todos trabajan sobre ella, comparten el progreso y el tiempo se suma.' }}</span>
-                                </div>
-                            </label>
-                        </div>
-                        <div class="relative flex">
-                            <input type="radio" id="mode_distributed" name="assignment_mode" value="distributed" class="peer sr-only" {{ old('assignment_mode') === 'distributed' ? 'checked' : '' }}>
-                            <label for="mode_distributed" class="cursor-pointer w-full p-4 bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-xl peer-checked:border-violet-500 peer-checked:bg-violet-50 dark:peer-checked:bg-violet-950/30 transition-all flex gap-3 hover:border-violet-300 dark:hover:border-violet-700/50 group">
-                                <div class="mt-0.5 w-5 h-5 rounded-full border-2 border-gray-300 dark:border-gray-600 group-hover:border-violet-400 peer-checked:border-violet-500 peer-checked:bg-violet-500 flex items-center justify-center shrink-0 transition-all">
-                                    <div class="w-2 h-2 rounded-full bg-white opacity-0 peer-checked:opacity-100 transition-all"></div>
-                                </div>
-                                <div class="flex flex-col">
-                                    <span class="text-sm font-bold text-gray-900 dark:text-white mb-1">{{ __('tasks.distributed_task') ?? 'Plan Maestro (Distribución)' }}</span>
-                                    <span class="text-[11px] text-gray-500 leading-tight">{{ __('tasks.distributed_hint') ?? 'Crea un contenedor de solo-lectura y genera una copia (instancia) independiente para cada miembro.' }}</span>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                @endif
-
-                <!-- Assigned To -->
-                <!-- Assigned To -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8" x-data="{
-                    selectAll(status) {
-                        document.querySelectorAll('.user-checkbox').forEach(cb => {
-                            cb.checked = status;
-                            cb.dispatchEvent(new Event('change', { bubbles: true }));
-                        });
-                    },
-                    syncGroup(groupCb) {
-                        try {
-                            const memberIds = JSON.parse(groupCb.dataset.members);
-                            const isChecked = groupCb.checked;
-                            memberIds.forEach(id => {
-                                const userCb = document.getElementById('user_checkbox_' + id);
-                                if (userCb) {
-                                    userCb.checked = isChecked;
-                                    userCb.dispatchEvent(new Event('change', { bubbles: true }));
-                                }
-                            });
-                        } catch (err) {
-                            console.error('Group sync error:', err);
-                        }
-                    }
-                }">
-                    @if ($members->count() > 0)
-                        <div class="space-y-3">
-                            <div class="flex items-center justify-between">
-                                <label class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                    </svg>
-                                    {{ __('tasks.assigned_to') }}
-                                </label>
-                                <div class="flex gap-2">
-                                    <button type="button" @click="selectAll(true)" class="text-[10px] font-black uppercase tracking-widest text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 transition-colors">
-                                        {{ __('tasks.all') ?? 'Todo' }}
-                                    </button>
-                                    <span class="text-gray-300 dark:text-gray-700 text-[10px]">|</span>
-                                    <button type="button" @click="selectAll(false)" class="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
-                                        {{ __('tasks.none') ?? 'Nada' }}
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 space-y-2.5 max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
-                                @foreach ($members as $user)
-                                    <label class="flex items-center gap-3 p-2 rounded-xl hover:bg-white dark:hover:bg-gray-800 cursor-pointer group transition-all border border-transparent hover:border-gray-100 dark:hover:border-gray-700 shadow-sm hover:shadow-md">
-                                        <input type="checkbox" name="assigned_to[]" value="{{ $user->id }}"
-                                            id="user_checkbox_{{ $user->id }}"
-                                            {{ in_array($user->id, old('assigned_to', [])) ? 'checked' : '' }}
-                                            class="user-checkbox accent-violet-600 w-5 h-5 rounded-lg border-gray-300 dark:border-gray-600 focus:ring-violet-500/20 transition-all">
-                                        <div class="flex flex-col min-w-0">
-                                            <span class="text-sm font-bold text-gray-700 dark:text-gray-200 leading-tight group-hover:text-gray-900 dark:group-hover:text-white transition-colors truncate">{{ $user->name }}</span>
-                                            <span class="text-[10px] text-gray-500 dark:text-gray-400 truncate">{{ $user->email }}</span>
-                                        </div>
-                                    </label>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
-
-                    @if ($groups->count() > 0)
-                        <div class="space-y-3">
-                            <label class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                                {{ __('tasks.assign_groups') }}
-                            </label>
-                            <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 space-y-2.5 max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
-                                @foreach ($groups as $group)
-                                    <label class="flex items-center gap-3 p-3 rounded-xl hover:bg-white dark:hover:bg-gray-800 cursor-pointer group transition-all border border-transparent hover:border-gray-100 dark:hover:border-gray-700 shadow-sm hover:shadow-md">
-                                        <input type="checkbox" name="assigned_groups[]" value="{{ $group->id }}"
-                                            data-members="{{ json_encode($group->users->pluck('id')) }}"
-                                            @change="syncGroup($el)"
-                                            {{ in_array($group->id, old('assigned_groups', [])) ? 'checked' : '' }}
-                                            class="group-checkbox accent-violet-600 w-5 h-5 rounded-lg border-gray-300 dark:border-gray-600 focus:ring-violet-500/20 transition-all">
-                                        <div class="flex flex-col min-w-0">
-                                            <span class="text-sm font-bold text-gray-700 dark:text-gray-200 leading-tight group-hover:text-gray-900 dark:group-hover:text-white transition-colors truncate">{{ $group->name }}</span>
-                                            <span class="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">
-                                                {{ $group->users->count() }} {{ __('teams.members') }}
-                                            </span>
-                                        </div>
-                                    </label>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
-                </div>
-                
-                <!-- Contexto y Vinculaciones Card -->
-                <div class="bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 mb-8 space-y-6 transition-all shadow-sm">
-                    <div class="flex items-center gap-3 mb-1">
-                        <div class="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0 shadow-sm border border-violet-200 dark:border-violet-500/10">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-xs font-black uppercase tracking-widest text-violet-700 dark:text-violet-400">{{ __('Contexto y Vinculaciones') }}</h3>
-                            <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ __('Asocia esta tarea a un expediente, dependencias o servicios.') }}</p>
-                        </div>
-                    </div>
-
-                    <!-- Primary: Expediente (Pre-eminent) -->
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">
-                            {{ __('Expediente Vinculado') }}
-                        </label>
-                        <select name="expediente_id" id="expediente_id_select"
-                            class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white transition-all cursor-pointer">
-                            <option value="">{{ __('(Ningún expediente)') }}</option>
-                            @foreach ($expedientes as $exp)
-                                <option value="{{ $exp->id }}" 
-                                    data-code="{{ $exp->code }}"
-                                    {{ (old('expediente_id', request('expediente_id')) == $exp->id) ? 'selected' : '' }}>
-                                    {{ $exp->code }} — {{ $exp->title }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <!-- Secondary grid -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                        <!-- Tarea Padre -->
-                        <div>
-                            <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-2">
-                                {{ __('tasks.dependency') ?? 'Dependencia (Tarea Padre)' }}
-                            </label>
-                            <select name="parent_id" id="parent_id_select"
-                                class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
-                                <option value="">{{ __('tasks.no_dependency') ?? 'Sin dependencia' }}</option>
-                                @foreach ($parentActivities as $t)
-                                    <option value="{{ $t->id }}" {{ old('parent_id') == $t->id ? 'selected' : '' }}
-                                        data-assignee="{{ $t->assignedUser ? $t->assignedUser->name : __('tasks.unassigned') }}">
-                                        {{ $t->title }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <!-- Servicio -->
-                        <div>
-                            <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-2">
-                                {{ __('Dependencia de Servicio') }}
-                            </label>
-                            <select name="service_id" 
-                                class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
-                                <option value="">{{ __('Sin dependencia externa') }}</option>
-                                @foreach ($services as $service)
-                                    <option value="{{ $service->id }}" 
-                                        {{ old('service_id') == $service->id ? 'selected' : '' }}>
-                                        {{ $service->icon }} {{ $service->name }} 
-                                        ({{ $service->getStatusLabel() }})
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                @if($type === "task")
                 <!-- Observations (Markdown) -->
                 <div>
                     <x-markdown-editor 
@@ -444,7 +262,100 @@
                 </div>
                 @endif
 
-                <!-- Priority + Urgency -->
+                <!-- Visibility -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">
+                        {{ __('tasks.visibility') }}
+                    </label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <label class="relative flex cursor-pointer">
+                            <input type="radio" name="visibility" value="public" class="peer sr-only"
+                                {{ old('visibility', 'private') === 'public' ? 'checked' : '' }}>
+                            <div
+                                class="w-full p-3 bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-xl peer-checked:border-violet-500 peer-checked:bg-violet-50 dark:peer-checked:bg-violet-950/30 transition-all flex items-center gap-3">
+                                <div
+                                    class="w-8 h-8 rounded-lg bg-white dark:bg-gray-900 flex items-center justify-center text-violet-600 shadow-sm border border-gray-100 dark:border-gray-800">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    </svg>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span
+                                        class="text-sm font-bold text-gray-900 dark:text-white">{{ __('tasks.public') }}</span>
+                                    <span class="text-[10px] text-gray-500">{{ __('tasks.public_hint') }}</span>
+                                </div>
+                            </div>
+                        </label>
+                        <label class="relative flex cursor-pointer">
+                            <input type="radio" name="visibility" value="private" class="peer sr-only"
+                                {{ old('visibility', 'private') === 'private' ? 'checked' : '' }}>
+                            <div
+                                class="w-full p-3 bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-xl peer-checked:border-amber-500 peer-checked:bg-amber-50 dark:peer-checked:bg-amber-950/30 transition-all flex items-center gap-3">
+                                <div
+                                    class="w-8 h-8 rounded-lg bg-white dark:bg-gray-900 flex items-center justify-center text-amber-600 shadow-sm border border-gray-100 dark:border-gray-800">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span
+                                        class="text-sm font-bold text-gray-900 dark:text-white">{{ __('tasks.private') }}</span>
+                                    <span class="text-[10px] text-gray-500">{{ __('tasks.private_hint') }}</span>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Integrated Attachments Section -->
+            <div class="pt-8 border-t border-gray-100 dark:border-gray-800">
+                    <div class="flex items-center justify-end mb-6">
+                                <div class="flex items-center gap-2">
+                                    @php
+                                        $isGoogleLinked = auth()->user()->teams()->where('team_id', $team->id)->wherePivotNotNull('google_token')->exists();
+                                    @endphp
+                                    @if($isGoogleLinked)
+                                        <button type="button" onclick="openDrivePicker()"
+                                            class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-blue-600 dark:text-blue-400 text-xs font-bold px-4 py-2 rounded-xl border border-blue-200 dark:border-blue-800 transition-all shadow-sm flex items-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M7.71 3.5L1.15 15l3.43 6 6.55-11.5H7.71zM9.73 15L6.3 21h13.12l3.43-6H9.73zM18.74 3.5l-6.55 11.5 3.43 6L22.18 9.5l-3.44-6z"/>
+                                            </svg>
+                                            {{ __('Google Drive') }}
+                                        </button>
+                                    @endif
+
+                                    <button type="button" onclick="Swal.fire({icon: 'info', title: 'Guarda primero', text: 'Para crear documentos con OnlyOffice, primero debes crear y guardar la actividad. Una vez guardada, podrás crear documentos desde la pestaña de edición o vista.'})" class="flex items-center gap-1.5 text-xs bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-200 dark:border-teal-500/20 hover:bg-teal-600 hover:text-white hover:border-teal-600 dark:hover:bg-teal-500 dark:hover:text-white dark:hover:border-teal-500 px-4 py-2 rounded-xl font-bold transition-all shadow-sm active:scale-95">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                        </svg>
+                                        {{ __('Crear en OnlyOffice') }}
+                                    </button>
+                                    <label class="cursor-pointer bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-900/40 text-violet-600 dark:text-violet-400 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-violet-200 dark:border-violet-500/20 flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                                        </svg>
+                                        {{ __('tasks.add_attachment') }}
+                                        <input type="file" name="attachments[]" multiple class="hidden" onchange="updateFileList(this)">
+                                    </label>
+                                </div>
+                                <input type="hidden" name="drive_attachments" id="drive_attachments_input">
+                    </div>
+
+                    <div id="file-list-preview" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-4">
+                        <!-- Temporary list for selected files -->
+                    </div>
+                </div>
+
+                
+                    </div>
+
+                    <!-- TAB: Planning -->
+                    <div x-show="activeTab === 'planning'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;" class="space-y-6">
+<!-- Priority + Urgency -->
                 <div class="grid grid-cols-1 @if($type === 'task') md:grid-cols-2 @endif gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">
@@ -610,55 +521,6 @@
                     </label>
                 </div>
 
-
-                <!-- Visibility -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">
-                        {{ __('tasks.visibility') }}
-                    </label>
-                    <div class="grid grid-cols-2 gap-4">
-                        <label class="relative flex cursor-pointer">
-                            <input type="radio" name="visibility" value="public" class="peer sr-only"
-                                {{ old('visibility', 'private') === 'public' ? 'checked' : '' }}>
-                            <div
-                                class="w-full p-3 bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-xl peer-checked:border-violet-500 peer-checked:bg-violet-50 dark:peer-checked:bg-violet-950/30 transition-all flex items-center gap-3">
-                                <div
-                                    class="w-8 h-8 rounded-lg bg-white dark:bg-gray-900 flex items-center justify-center text-violet-600 shadow-sm border border-gray-100 dark:border-gray-800">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                    </svg>
-                                </div>
-                                <div class="flex flex-col">
-                                    <span
-                                        class="text-sm font-bold text-gray-900 dark:text-white">{{ __('tasks.public') }}</span>
-                                    <span class="text-[10px] text-gray-500">{{ __('tasks.public_hint') }}</span>
-                                </div>
-                            </div>
-                        </label>
-                        <label class="relative flex cursor-pointer">
-                            <input type="radio" name="visibility" value="private" class="peer sr-only"
-                                {{ old('visibility', 'private') === 'private' ? 'checked' : '' }}>
-                            <div
-                                class="w-full p-3 bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-xl peer-checked:border-amber-500 peer-checked:bg-amber-50 dark:peer-checked:bg-amber-950/30 transition-all flex items-center gap-3">
-                                <div
-                                    class="w-8 h-8 rounded-lg bg-white dark:bg-gray-900 flex items-center justify-center text-amber-600 shadow-sm border border-gray-100 dark:border-gray-800">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                    </svg>
-                                </div>
-                                <div class="flex flex-col">
-                                    <span
-                                        class="text-sm font-bold text-gray-900 dark:text-white">{{ __('tasks.private') }}</span>
-                                    <span class="text-[10px] text-gray-500">{{ __('tasks.private_hint') }}</span>
-                                </div>
-                            </div>
-                        </label>
-                    </div>
-                </div>
 
                 <!-- Autoprogrammable (Recurrence) -->
                 <div x-data="{ 
@@ -880,6 +742,133 @@
                 </div>
 
                 @if($type === "task")
+                
+                    </div>
+
+                    <!-- TAB: Team -->
+                    <div x-show="activeTab === 'team'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;" class="space-y-6">
+<!-- Assignment Mode -->
+                <div class="mb-6 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <label class="block text-sm font-bold text-gray-900 dark:text-white mb-3">{{ __('tasks.assignment_mode') ?? 'Modo de Asignación (Si delegas a otros)' }}</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="relative flex">
+                            <input type="radio" id="mode_shared" name="assignment_mode" value="shared" class="peer sr-only" {{ old('assignment_mode', 'shared') === 'shared' ? 'checked' : '' }}>
+                            <label for="mode_shared" class="cursor-pointer w-full p-4 bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-xl peer-checked:border-violet-500 peer-checked:bg-violet-50 dark:peer-checked:bg-violet-950/30 transition-all flex gap-3 hover:border-violet-300 dark:hover:border-violet-700/50 group">
+                                <div class="mt-0.5 w-5 h-5 rounded-full border-2 border-gray-300 dark:border-gray-600 group-hover:border-violet-400 peer-checked:border-violet-500 peer-checked:bg-violet-500 flex items-center justify-center shrink-0 transition-all">
+                                    <div class="w-2 h-2 rounded-full bg-white opacity-0 peer-checked:opacity-100 transition-all"></div>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-bold text-gray-900 dark:text-white mb-1">{{ __('tasks.shared_task') ?? 'Tarea Compartida (Colaborativa)' }}</span>
+                                    <span class="text-[11px] text-gray-500 leading-tight">{{ __('tasks.shared_hint') ?? 'Es UNA única tarea. Todos trabajan sobre ella, comparten el progreso y el tiempo se suma.' }}</span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="relative flex">
+                            <input type="radio" id="mode_distributed" name="assignment_mode" value="distributed" class="peer sr-only" {{ old('assignment_mode') === 'distributed' ? 'checked' : '' }}>
+                            <label for="mode_distributed" class="cursor-pointer w-full p-4 bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-xl peer-checked:border-violet-500 peer-checked:bg-violet-50 dark:peer-checked:bg-violet-950/30 transition-all flex gap-3 hover:border-violet-300 dark:hover:border-violet-700/50 group">
+                                <div class="mt-0.5 w-5 h-5 rounded-full border-2 border-gray-300 dark:border-gray-600 group-hover:border-violet-400 peer-checked:border-violet-500 peer-checked:bg-violet-500 flex items-center justify-center shrink-0 transition-all">
+                                    <div class="w-2 h-2 rounded-full bg-white opacity-0 peer-checked:opacity-100 transition-all"></div>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-bold text-gray-900 dark:text-white mb-1">{{ __('tasks.distributed_task') ?? 'Plan Maestro (Distribución)' }}</span>
+                                    <span class="text-[11px] text-gray-500 leading-tight">{{ __('tasks.distributed_hint') ?? 'Crea un contenedor de solo-lectura y genera una copia (instancia) independiente para cada miembro.' }}</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                <!-- Assigned To -->
+                <!-- Assigned To -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8" x-data="{
+                    selectAll(status) {
+                        document.querySelectorAll('.user-checkbox').forEach(cb => {
+                            cb.checked = status;
+                            cb.dispatchEvent(new Event('change', { bubbles: true }));
+                        });
+                    },
+                    syncGroup(groupCb) {
+                        try {
+                            const memberIds = JSON.parse(groupCb.dataset.members);
+                            const isChecked = groupCb.checked;
+                            memberIds.forEach(id => {
+                                const userCb = document.getElementById('user_checkbox_' + id);
+                                if (userCb) {
+                                    userCb.checked = isChecked;
+                                    userCb.dispatchEvent(new Event('change', { bubbles: true }));
+                                }
+                            });
+                        } catch (err) {
+                            console.error('Group sync error:', err);
+                        }
+                    }
+                }">
+                    @if ($members->count() > 0)
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <label class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                    </svg>
+                                    {{ __('tasks.assigned_to') }}
+                                </label>
+                                <div class="flex gap-2">
+                                    <button type="button" @click="selectAll(true)" class="text-[10px] font-black uppercase tracking-widest text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 transition-colors">
+                                        {{ __('tasks.all') ?? 'Todo' }}
+                                    </button>
+                                    <span class="text-gray-300 dark:text-gray-700 text-[10px]">|</span>
+                                    <button type="button" @click="selectAll(false)" class="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
+                                        {{ __('tasks.none') ?? 'Nada' }}
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 space-y-2.5 max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+                                @foreach ($members as $user)
+                                    <label class="flex items-center gap-3 p-2 rounded-xl hover:bg-white dark:hover:bg-gray-800 cursor-pointer group transition-all border border-transparent hover:border-gray-100 dark:hover:border-gray-700 shadow-sm hover:shadow-md">
+                                        <input type="checkbox" name="assigned_to[]" value="{{ $user->id }}"
+                                            id="user_checkbox_{{ $user->id }}"
+                                            {{ in_array($user->id, old('assigned_to', [])) ? 'checked' : '' }}
+                                            class="user-checkbox accent-violet-600 w-5 h-5 rounded-lg border-gray-300 dark:border-gray-600 focus:ring-violet-500/20 transition-all">
+                                        <div class="flex flex-col min-w-0">
+                                            <span class="text-sm font-bold text-gray-700 dark:text-gray-200 leading-tight group-hover:text-gray-900 dark:group-hover:text-white transition-colors truncate">{{ $user->name }}</span>
+                                            <span class="text-[10px] text-gray-500 dark:text-gray-400 truncate">{{ $user->email }}</span>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
+                    @if ($groups->count() > 0)
+                        <div class="space-y-3">
+                            <label class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                                {{ __('tasks.assign_groups') }}
+                            </label>
+                            <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 space-y-2.5 max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+                                @foreach ($groups as $group)
+                                    <label class="flex items-center gap-3 p-3 rounded-xl hover:bg-white dark:hover:bg-gray-800 cursor-pointer group transition-all border border-transparent hover:border-gray-100 dark:hover:border-gray-700 shadow-sm hover:shadow-md">
+                                        <input type="checkbox" name="assigned_groups[]" value="{{ $group->id }}"
+                                            data-members="{{ json_encode($group->users->pluck('id')) }}"
+                                            @change="syncGroup($el)"
+                                            {{ in_array($group->id, old('assigned_groups', [])) ? 'checked' : '' }}
+                                            class="group-checkbox accent-violet-600 w-5 h-5 rounded-lg border-gray-300 dark:border-gray-600 focus:ring-violet-500/20 transition-all">
+                                        <div class="flex flex-col min-w-0">
+                                            <span class="text-sm font-bold text-gray-700 dark:text-gray-200 leading-tight group-hover:text-gray-900 dark:group-hover:text-white transition-colors truncate">{{ $group->name }}</span>
+                                            <span class="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">
+                                                {{ $group->users->count() }} {{ __('teams.members') }}
+                                            </span>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                </div>
+                
                 <!-- Gamification Features (Resiliencia Colectiva) -->
                 <div class="bg-amber-50/20 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 rounded-2xl p-6 space-y-6">
                     <div class="flex items-center gap-3 mb-2">
@@ -958,46 +947,88 @@
                 @endif
 
 
-                <!-- Integrated Attachments Section -->
-            <div class="pt-8 border-t border-gray-100 dark:border-gray-800">
-                    <div class="flex items-center justify-end mb-6">
-                                <div class="flex items-center gap-2">
-                                    @php
-                                        $isGoogleLinked = auth()->user()->teams()->where('team_id', $team->id)->wherePivotNotNull('google_token')->exists();
-                                    @endphp
-                                    @if($isGoogleLinked)
-                                        <button type="button" onclick="openDrivePicker()"
-                                            class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-blue-600 dark:text-blue-400 text-xs font-bold px-4 py-2 rounded-xl border border-blue-200 dark:border-blue-800 transition-all shadow-sm flex items-center gap-2">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                                                <path d="M7.71 3.5L1.15 15l3.43 6 6.55-11.5H7.71zM9.73 15L6.3 21h13.12l3.43-6H9.73zM18.74 3.5l-6.55 11.5 3.43 6L22.18 9.5l-3.44-6z"/>
-                                            </svg>
-                                            {{ __('Google Drive') }}
-                                        </button>
-                                    @endif
-
-                                    <button type="button" onclick="Swal.fire({icon: 'info', title: 'Guarda primero', text: 'Para crear documentos con OnlyOffice, primero debes crear y guardar la actividad. Una vez guardada, podrás crear documentos desde la pestaña de edición o vista.'})" class="flex items-center gap-1.5 text-xs bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-200 dark:border-teal-500/20 hover:bg-teal-600 hover:text-white hover:border-teal-600 dark:hover:bg-teal-500 dark:hover:text-white dark:hover:border-teal-500 px-4 py-2 rounded-xl font-bold transition-all shadow-sm active:scale-95">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                        </svg>
-                                        {{ __('Crear en OnlyOffice') }}
-                                    </button>
-                                    <label class="cursor-pointer bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-900/40 text-violet-600 dark:text-violet-400 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-violet-200 dark:border-violet-500/20 flex items-center gap-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
-                                        </svg>
-                                        {{ __('tasks.add_attachment') }}
-                                        <input type="file" name="attachments[]" multiple class="hidden" onchange="updateFileList(this)">
-                                    </label>
-                                </div>
-                                <input type="hidden" name="drive_attachments" id="drive_attachments_input">
+                
                     </div>
 
-                    <div id="file-list-preview" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-4">
-                        <!-- Temporary list for selected files -->
+                    <!-- TAB: Context -->
+                    <div x-show="activeTab === 'context'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;" class="space-y-6">
+<!-- Contexto y Vinculaciones Card -->
+                <div class="bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 mb-8 space-y-6 transition-all shadow-sm">
+                    <div class="flex items-center gap-3 mb-1">
+                        <div class="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0 shadow-sm border border-violet-200 dark:border-violet-500/10">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xs font-black uppercase tracking-widest text-violet-700 dark:text-violet-400">{{ __('Contexto y Vinculaciones') }}</h3>
+                            <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ __('Asocia esta tarea a un expediente, dependencias o servicios.') }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Primary: Expediente (Pre-eminent) -->
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">
+                            {{ __('Expediente Vinculado') }}
+                        </label>
+                        <select name="expediente_id" id="expediente_id_select"
+                            class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white transition-all cursor-pointer">
+                            <option value="">{{ __('(Ningún expediente)') }}</option>
+                            @foreach ($expedientes as $exp)
+                                <option value="{{ $exp->id }}" 
+                                    data-code="{{ $exp->code }}"
+                                    {{ (old('expediente_id', request('expediente_id')) == $exp->id) ? 'selected' : '' }}>
+                                    {{ $exp->code }} — {{ $exp->title }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Secondary grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                        <!-- Tarea Padre -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-2">
+                                {{ __('tasks.dependency') ?? 'Dependencia (Tarea Padre)' }}
+                            </label>
+                            <select name="parent_id" id="parent_id_select"
+                                class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
+                                <option value="">{{ __('tasks.no_dependency') ?? 'Sin dependencia' }}</option>
+                                @foreach ($parentActivities as $t)
+                                    <option value="{{ $t->id }}" {{ old('parent_id') == $t->id ? 'selected' : '' }}
+                                        data-assignee="{{ $t->assignedUser ? $t->assignedUser->name : __('tasks.unassigned') }}">
+                                        {{ $t->title }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Servicio -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-2">
+                                {{ __('Dependencia de Servicio') }}
+                            </label>
+                            <select name="service_id" 
+                                class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
+                                <option value="">{{ __('Sin dependencia externa') }}</option>
+                                @foreach ($services as $service)
+                                    <option value="{{ $service->id }}" 
+                                        {{ old('service_id') == $service->id ? 'selected' : '' }}>
+                                        {{ $service->icon }} {{ $service->name }} 
+                                        ({{ $service->getStatusLabel() }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
                 </div>
 
-                <div class="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
+                @if($type === "task")
+                
+                    </div>
+
+                </div>
+<div class="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
                     <a href="{{ route('teams.dashboard', $team) }}"
                         class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all font-medium">{{ __('tasks.back') }}</a>
                     <button type="submit"

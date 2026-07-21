@@ -39,7 +39,7 @@ trait TaskScopes
     public function scopeOverdue($query)
     {
         return $query->where('due_date', '<', now())
-            ->whereNotIn('status', ['completed', 'cancelled']);
+            ->whereNotIn('status->value', ['completed', 'cancelled']);
     }
 
     public function scopeDueToday($query)

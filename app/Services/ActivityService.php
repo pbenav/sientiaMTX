@@ -593,7 +593,7 @@ class ActivityService
         }
 
         if (!empty($filters['status'])) {
-            $query->whereJsonContains('status->value', $filters['status']);
+            is_array($filters['status']) ? $query->whereIn('status->value', $filters['status']) : $query->where('status->value', $filters['status']);
         } elseif (session('hide_completed_tasks', true)) {
             $query->whereNotIn('status->value', ['completed', 'cancelled']);
         }

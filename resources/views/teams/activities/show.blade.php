@@ -671,7 +671,7 @@
                                 <title>${taskTitle}</title>
                                 <meta charset="utf-8">
                                 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-                                <script src="https://cdn.tailwindcss.com"><\/script>
+                                <script src="https://cdn.tailwindcss.com">${'<'}/script>
                                 <script>
                                     tailwind.config = {
                                         theme: {
@@ -680,7 +680,7 @@
                                             }
                                         }
                                     }
-                                <\/script>
+                                ${'<'}/script>
                                 <style>
                                     body {
                                         font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -854,7 +854,7 @@
                                 <title>${taskTitle}</title>
                                 <meta charset="utf-8">
                                 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-                                <script src="https://cdn.tailwindcss.com"><\/script>
+                                <script src="https://cdn.tailwindcss.com">${'<'}/script>
                                 <script>
                                     tailwind.config = {
                                         theme: {
@@ -863,7 +863,7 @@
                                             }
                                         }
                                     }
-                                <\/script>
+                                ${'<'}/script>
                                 <style>
                                     body {
                                         font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -1161,7 +1161,7 @@
                         '  <head>',
                         '    <title>' + title + ' - Libro Digital</title>',
                         '    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">',
-                        '    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"><\/script>',
+                        '    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"><' + '/script>',
                         '    <style>',
                         '      @page { size: A4; margin: 2.5cm 2cm; }',
                         '      body { font-family: \'Merriweather\', serif; color: #1e293b; line-height: 1.8; margin: 0; padding: 0; font-size: 14px; }',

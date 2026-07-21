@@ -52,7 +52,7 @@ class TaskController extends Controller
             if ($filters['status'] === 'trashed') {
                 $query->onlyTrashed();
             } else {
-                $query->where('status', $filters['status']);
+                $query->where('status->value', $filters['status']);
             }
         }
 
@@ -108,13 +108,13 @@ class TaskController extends Controller
         } else {
             // Default sort: Priority (Critical -> Low), Status (Pending -> Others), and Progress (High -> Low)
             $query->orderByRaw("FIELD(priority, 'critical', 'high', 'medium', 'low') ASC")
-                  ->orderByRaw("FIELD(status, 'pending', 'blocked', 'in_progress', 'completed', 'cancelled') ASC")
+                  ->orderByRaw("FIELD(json_unquote(json_extract(status, '$.value')), 'pending', 'blocked', 'in_progress', 'completed', 'cancelled') ASC")
                   ->orderBy('progress_percentage', 'desc');
         }
 
         // --- Hide completed filter (session-based preference) ---
         if (session('hide_completed_tasks', true) && !$filters['status']) {
-            $query->whereNotIn('status', ['completed', 'cancelled']);
+            $query->whereNotIn('status->value', ['completed', 'cancelled']);
         }
 
         // --- Pagination ---
@@ -335,7 +335,7 @@ class TaskController extends Controller
         $tasks = $team->tasks()
             ->visibleTo(auth()->user(), $team->isManager(auth()->user()))
             ->operationalFor(auth()->user(), $team)
-            ->where('status', $status)
+            ->where('status->value', $status)
             ->with(['assignedTo', 'tags'])
             ->get();
 
@@ -354,9 +354,9 @@ class TaskController extends Controller
                 ->visibleTo(auth()->user(), $team->isManager(auth()->user()))
                 ->operationalFor(auth()->user(), $team)
                 ->with(['assignedTo', 'tags'])
-                ->when(session('hide_completed_tasks', true), fn($q) => $q->whereNotIn('status', ['completed', 'cancelled']))
+                ->when(session('hide_completed_tasks', true), fn($q) => $q->whereNotIn('status->value', ['completed', 'cancelled']))
                 ->orderByRaw("FIELD(priority, 'critical', 'high', 'medium', 'low') ASC")
-                ->orderByRaw("FIELD(status, 'pending', 'blocked', 'in_progress', 'completed', 'cancelled') ASC")
+                ->orderByRaw("FIELD(json_unquote(json_extract(status, '$.value')), 'pending', 'blocked', 'in_progress', 'completed', 'cancelled') ASC")
                 ->orderBy('progress_percentage', 'desc')
                 ->get()
                 ->filter(function ($task) use ($q) {

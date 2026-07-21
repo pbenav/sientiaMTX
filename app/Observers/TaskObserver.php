@@ -31,7 +31,7 @@ class TaskObserver
 
         // Cascade completion: If this task is completed, all children should be completed
         if ($task->isDirty('status') && $task->status === 'completed') {
-            $task->children()->whereNotIn('status', ['completed', 'cancelled'])->each(function($child) {
+            $task->children()->whereNotIn('status->value', ['completed', 'cancelled'])->each(function($child) {
                 $meta = $child->metadata ?? [];
                 $meta['was_incomplete_before_parent_completion'] = true;
                 $meta['original_status_before_cascade'] = $child->status;
