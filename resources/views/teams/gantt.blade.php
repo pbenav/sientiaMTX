@@ -399,7 +399,7 @@
                     correctedStart.setHours(correctedStart.getHours() + 2);
 
                     const payload = { scheduled_date: fmt(correctedStart), due_date: fmt(end) };
-                    fetch(`{{ url('/teams/'.$team->id.'/tasks') }}/${t.id}/move`, {
+                    fetch(`{{ url('/teams/'.$team->id.'/activities') }}/${t.id}/move`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                         body: JSON.stringify(payload)
                     }).then(r => r.json()).then(data => {
@@ -715,7 +715,7 @@
                             // Si ya hay un timer, significa que es el segundo clic (doble clic)
                             clearTimeout(clickTimer);
                             clickTimer = null;
-                            window.location.href = `{{ url('/teams/'.$team->id.'/tasks') }}/${task.id}`;
+                            window.location.href = `{{ url('/teams/'.$team->id.'/activities') }}/${task.id}`;
                         } else {
                             // Iniciar el timer para esperar un posible segundo clic
                             clickTimer = setTimeout(() => {
