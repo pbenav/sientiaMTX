@@ -203,7 +203,7 @@
                                             @endif
 
                                             <a href="{{ route('teams.activities.show', [$team, $task]) }}"
-                                                title="Estado: {{ __('tasks.statuses.'.$task->status) }}&#10;Progreso: {{ $task->progress }}%&#10;Fecha límite: {{ $task->due_date ? $task->due_date->format('d/m/Y') : 'Sin fecha' }}"
+                                                title="Estado: {{ \Illuminate\Support\Facades\Lang::has('tasks.statuses.'.($task->status_value ?? 'pending')) ? __('tasks.statuses.'.($task->status_value ?? 'pending')) : ucfirst($task->status_value ?? 'pending') }}&#10;Progreso: {{ $task->progress }}%&#10;Fecha límite: {{ $task->due_date ? $task->due_date->format('d/m/Y') : 'Sin fecha' }}"
                                                 class="flex-1 text-[11px] sm:text-sm text-gray-950 dark:text-gray-50 group-hover:text-black dark:group-hover:text-white transition-colors flex items-center gap-1.5 font-black truncate">
                                                 @if ($task->visibility === 'private')
                                                     <svg xmlns="http://www.w3.org/2000/svg"
