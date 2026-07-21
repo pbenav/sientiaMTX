@@ -268,6 +268,11 @@ class ActivityService
                 \Illuminate\Support\Facades\Log::error('Error deleting remote Google events during Activity delete: ' . $e->getMessage());
             }
 
+            // Cascade delete children
+            $activity->children()->each(function (Activity $child) {
+                $this->delete($child);
+            });
+
             $activity->delete();
         });
     }
@@ -277,6 +282,11 @@ class ActivityService
         DB::transaction(function () use ($activity) {
             $activity->restore();
             $this->recordHistory($activity, auth()->user(), 'restored');
+
+            // Cascade restore children
+            $activity->children()->withTrashed()->whereNotNull('deleted_at')->each(function (Activity $child) {
+                $this->restore($child);
+            });
         });
     }
 
