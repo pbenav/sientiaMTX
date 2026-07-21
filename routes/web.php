@@ -342,6 +342,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/teams/{team}/activities/{activity}/rate', [TaskActionController::class, 'rate'])->name('teams.activities.rate');
     Route::post('/teams/{team}/activities/bulk-nudge', [TaskActionController::class, 'bulkNudge'])->name('teams.activities.bulk-nudge');
     Route::post('/teams/{team}/activities/{activity}/move', [TaskActionController::class, 'move'])->name('teams.activities.move');
+    Route::post('/teams/{team}/tasks/{task}/move', [TaskActionController::class, 'move'])->name('teams.tasks.move');
     Route::post('/teams/{team}/activities/{activity}/toggle-auto-priority', [TaskActionController::class, 'toggleAutoPriority'])->name('teams.activities.toggle-auto-priority');
     Route::post('/teams/{team}/activities/{activity}/copy-to-team', [TaskExportController::class, 'copyToTeam'])->name('teams.activities.copy-to-team');
     Route::post('/teams/{team}/activities/{activity}/clone', [TaskExportController::class, 'cloneTask'])->name('teams.activities.clone');

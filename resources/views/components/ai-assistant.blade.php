@@ -522,7 +522,7 @@
                     const response = await fetch(`{{ route('ai.history') }}?team_id=${this.teamId || ''}`);
                     const data = await response.json();
                     if (data.messages && data.messages.length > 0) {
-                        console.log(`Ax.ia: Recuperados ${data.messages.length} mensajes del historial.`);
+
                         
                         // Re-evaluar is_error en tiempo de ejecución al cargar el historial
                         this.messages = data.messages.map(msg => {

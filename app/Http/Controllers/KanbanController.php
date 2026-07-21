@@ -111,7 +111,7 @@ class KanbanController extends Controller
 
         $completedTasks = $team->activities()
             ->with(['expediente', 'assignedUser'])
-            ->forKanban()
+            ->whereIn('type', \App\Models\Activity::KANBAN_TYPES)
             ->visibleTo($user, $isManager)
             ->notEphemeral()
             ->where('is_archived', true)

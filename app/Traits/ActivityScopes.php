@@ -99,21 +99,18 @@ trait ActivityScopes
     // ─── Scopes por vista (Kanban, Matriz, Gantt) ─────────────────────────────
     public function scopeForKanban(Builder $query)
     {
-        return $query->whereIn('type', $this->getScopesKanbanTypes())
-                     ->relevant();
+        return $query->whereIn('type', $this->getScopesKanbanTypes());
     }
 
     public function scopeForMatrix(Builder $query)
     {
         return $query->whereIn('type', $this->getScopesMatrixTypes())
-                     ->relevant()
                      ->where('is_archived', false);
     }
 
     public function scopeForGantt(Builder $query)
     {
         return $query->whereIn('type', $this->getScopesGanttTypes())
-                     ->relevant()
                      ->whereNotNull('due_date')
                      ->where('is_archived', false);
     }

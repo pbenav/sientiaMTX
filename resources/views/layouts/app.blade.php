@@ -110,7 +110,7 @@
     @auth
     <script>
         document.addEventListener('alpine:init', () => {
-            console.log('🚀 SientiaChat Engine: Initializing stores...');
+
 
             Alpine.store('chatStore', {
                 unreadConversations: [],
@@ -284,7 +284,7 @@
 
                 init() {
                     this.originalTitle = document.title;
-                    console.log('✅ SientiaChat Component: Initialized');
+
                     this.pollInterval = setInterval(() => this.checkNewMessages(), 4000);
 
                     // --- Real Presence System ---
@@ -2756,8 +2756,8 @@
                             <title>${title}</title>
                             <meta charset="utf-8">
                             <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-                            <script src="https://cdn.tailwindcss.com"></script>
-                            <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+                            <script src="https://cdn.tailwindcss.com"><\/script>
+                            <script src="https://cdn.tailwindcss.com?plugins=typography"><\/script>
                             <script>
                                 tailwind.config = {
                                     theme: {

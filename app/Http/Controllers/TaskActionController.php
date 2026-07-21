@@ -155,6 +155,20 @@ class TaskActionController extends Controller
             }
         }
 
+        // Determine the original quadrant before updating (using same logic as HandlesEisenhowerMatrix)
+        $originalQuadrant = null;
+        $isPriority = in_array($task->priority, ['high', 'critical']);
+        $isUrgent = in_array($task->urgency, ['high', 'critical']);
+        if ($isPriority && $isUrgent) {
+            $originalQuadrant = 1;
+        } elseif ($isPriority && !$isUrgent) {
+            $originalQuadrant = 2;
+        } elseif (!$isPriority && $isUrgent) {
+            $originalQuadrant = 3;
+        } else {
+            $originalQuadrant = 4;
+        }
+
         if ($request->has('quadrant') && $validated['quadrant'] !== null) {
             $mappingQ = [
                 1 => ['priority' => 'high', 'urgency' => 'high'],
@@ -191,16 +205,82 @@ class TaskActionController extends Controller
             }
         }
 
-        // Handle bulk reordering if full_order is provided
+        // Handle bulk reordering: normalize matrix_order for all tasks in the affected quadrants
+        // This ensures that when tasks are dragged between quadrants, their positions
+        // are preserved correctly after page reload
         if ($request->has('full_order') && is_array($request->full_order)) {
             $fullOrder = $request->full_order;
-            // Use a transaction for bulk updates to ensure atomicity and speed
-            \Illuminate\Support\Facades\DB::transaction(function() use ($fullOrder, $team, $task) {
+            $targetQ = $validated['quadrant'] ?? null;
+            $sourceQ = $originalQuadrant;
+            
+            \Illuminate\Support\Facades\DB::transaction(function() use ($fullOrder, $team, $targetQ, $sourceQ) {
+                // Apply the frontend-provided order to the target quadrant tasks
                 foreach ($fullOrder as $index => $id) {
-                    if ($task instanceof Activity) {
-                        \App\Models\Activity::where('id', $id)->where('team_id', $team->id)->update(['matrix_order' => $index]);
-                    } else {
-                        \App\Models\Task::where('id', $id)->where('team_id', $team->id)->update(['matrix_order' => $index]);
+                    \App\Models\Activity::where('id', $id)->where('team_id', $team->id)->update(['matrix_order' => $index]);
+                    \App\Models\Task::where('id', $id)->where('team_id', $team->id)->update(['matrix_order' => $index]);
+                }
+
+                // Reassign consecutive matrix_order values per quadrant based on current DB order
+                // This normalizes gaps and handles tasks not in full_order (e.g., hidden tasks)
+                $quadrantIds = array_unique(array_filter([$sourceQ, $targetQ], fn($q) => $q !== null && $q !== 'completed'));
+                
+                if (!empty($quadrantIds)) {
+                    foreach ($quadrantIds as $q) {
+                        $priorityValues = in_array($q, [1, 2]) ? ['high', 'critical'] : ['low', 'medium'];
+                        $urgencyValues = in_array($q, [1, 3]) ? ['high', 'critical'] : ['low', 'medium'];
+                        
+                        // Gather all task IDs in this quadrant (both from DB and full_order)
+                        $activitiesInQ = \App\Models\Activity::where('team_id', $team->id)
+                            ->whereIn('priority', $priorityValues)
+                            ->whereIn('urgency', $urgencyValues)
+                            ->whereNotNull('matrix_order')
+                            ->orderBy('matrix_order', 'asc')
+                            ->pluck('id')
+                            ->toArray();
+                        
+                        // Merge with full_order IDs that belong to this quadrant, preserving frontend order
+                        $quadrantOrder = [];
+                        foreach ($fullOrder as $fid) {
+                            if (in_array($fid, $activitiesInQ)) {
+                                $quadrantOrder[] = $fid;
+                            }
+                        }
+                        // Add any tasks not in full_order (e.g., hidden tasks) at the end
+                        foreach ($activitiesInQ as $aid) {
+                            if (!in_array($aid, $quadrantOrder)) {
+                                $quadrantOrder[] = $aid;
+                            }
+                        }
+                        
+                        // Assign consecutive matrix_order values
+                        foreach ($quadrantOrder as $idx => $activityId) {
+                            \App\Models\Activity::where('id', $activityId)->update(['matrix_order' => $idx]);
+                        }
+                        
+                        // Same for legacy Task table
+                        $tasksInQ = \App\Models\Task::where('team_id', $team->id)
+                            ->whereIn('priority', $priorityValues)
+                            ->whereIn('urgency', $urgencyValues)
+                            ->whereNotNull('matrix_order')
+                            ->orderBy('matrix_order', 'asc')
+                            ->pluck('id')
+                            ->toArray();
+                        
+                        $taskOrder = [];
+                        foreach ($fullOrder as $fid) {
+                            if (in_array($fid, $tasksInQ)) {
+                                $taskOrder[] = $fid;
+                            }
+                        }
+                        foreach ($tasksInQ as $tid) {
+                            if (!in_array($tid, $taskOrder)) {
+                                $taskOrder[] = $tid;
+                            }
+                        }
+                        
+                        foreach ($taskOrder as $idx => $taskId) {
+                            \App\Models\Task::where('id', $taskId)->update(['matrix_order' => $idx]);
+                        }
                     }
                 }
             });

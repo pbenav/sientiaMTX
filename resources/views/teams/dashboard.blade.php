@@ -541,7 +541,7 @@
                                 emptyMsg.className =
                                     'col-span-full py-8 text-center text-xs text-gray-700 italic empty-msg';
                                 emptyMsg.textContent = l.getAttribute('data-q') === 'completed' ?
-                                    '{{ __('teams.drop_to_complete') }}' : '{{ __('teams.no_tasks') }}';
+                                    @json(__('teams.drop_to_complete')) : @json(__('teams.no_tasks'));
                                 l.appendChild(emptyMsg);
                             }
                         } else if (emptyMsg) {

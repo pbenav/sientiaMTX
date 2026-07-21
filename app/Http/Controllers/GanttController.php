@@ -226,6 +226,18 @@ class GanttController extends Controller
         $ganttTaskIds = collect();
         $showCompleted = !session('hide_completed_tasks', true) || $request->status;
 
+        // Build a set of completed template/parent IDs to exclude their children
+        $completedParentIds = collect();
+        foreach ($baseTasks as $task) {
+            if (($task->is_template || $task->parent_id) && in_array($task->status_value, ['completed', 'cancelled'])) {
+                $completedParentIds->push($task->id);
+                // Also track children of completed parents
+                if ($task->parent && in_array($task->parent->status_value, ['completed', 'cancelled'])) {
+                    $completedParentIds->push($task->parent->id);
+                }
+            }
+        }
+
         foreach ($baseTasks as $task) {
             $isTaskCompleted = in_array($task->status_value, ['completed', 'cancelled']);
 
@@ -242,13 +254,25 @@ class GanttController extends Controller
             if (!$isManager && ($task->is_template || $task->children->count() > 0) && $hasMyAssignedChild) {
                 // Skip this container, we will show the child instead
             } else {
-                if ($showCompleted || !$isTaskCompleted) {
-                    $ganttTaskIds->push($task->id);
+                // Plantillas maestras completadas: nunca mostrar en Gantt (no aportan valor)
+                if (!($task->is_template && $isTaskCompleted)) {
+                    if ($showCompleted || !$isTaskCompleted) {
+                        $ganttTaskIds->push($task->id);
+                    }
                 }
+            }
+
+            // No mostrar hijos de plantillas/tareas completadas
+            if ($task->parent_id && $completedParentIds->contains($task->parent_id)) {
+                continue;
             }
 
             if ($task->is_template && $team->isCoordinator($user)) {
                 // For coordinators, we push children EXCEPT their own (to avoid redundancy with the master bar)
+                // BUT: skip if the parent template is completed
+                if ($isTaskCompleted) {
+                    continue;
+                }
                 $task->children->each(function ($child) use ($ganttTaskIds, $showCompleted, $user, $isTaskCompleted) {
                     $childCompleted = in_array($child->status_value, ['completed', 'cancelled']) || $isTaskCompleted;
                     if ($showCompleted || !$childCompleted) {
@@ -260,6 +284,10 @@ class GanttController extends Controller
                 });
             } elseif ($task->children->count() > 0 && !$task->is_template) {
                 // If it's a plain container (like an Occurrence), show its children if they match filters
+                // BUT: skip if this container or its parent is completed
+                if ($isTaskCompleted) {
+                    continue;
+                }
                 $task->children->each(function ($child) use ($ganttTaskIds, $showCompleted, $user, $isManager, $isTaskCompleted) {
                     $childCompleted = in_array($child->status_value, ['completed', 'cancelled']) || $isTaskCompleted;
                     if ($showCompleted || !$childCompleted) {

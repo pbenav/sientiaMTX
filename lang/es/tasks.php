@@ -132,7 +132,12 @@ return [
         'editing'     => 'En edición',
         'reviewed'    => 'Revisado',
         'reviewing'   => 'En revisión',
-        'deprecated'  => 'Obsoleto',
+        'deprecated'   => 'Obsoleto',
+        'legacy'       => 'Legacy',
+        'under_review' => 'En revisión',
+        'in_debate'    => 'En debate',
+        'accepted'     => 'Aceptada',
+        'finished'     => 'Finalizada',
     ],
 
     'urgent' => 'Urgente',
