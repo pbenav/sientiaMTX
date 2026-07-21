@@ -870,9 +870,19 @@
             .space-y-2 > * + * { margin-top: 0.15rem !important; }
 
             /* Page Management */
-            .grid > div {
+            .grid-cols-1.md\:grid-cols-2 > div,
+            .lg\:grid-cols-4 > div {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
+            }
+            
+            /* Global Layout Fix */
+            .lg\:grid-cols-12 {
+                display: block !important;
+            }
+            .lg\:col-span-8 {
+                width: 100% !important;
+                max-width: 100% !important;
             }
             
             /* Aggressive hiding */
