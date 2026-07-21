@@ -129,7 +129,7 @@
 @endif
 
 @if(count($chapters) > 0)
-    <div id="chapters-section" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-colors space-y-6 mt-6">
+    <div id="chapters-section" x-data="{ search: '' }" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-colors space-y-6 mt-6">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100 dark:border-gray-800">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-2xl bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0 border border-violet-100 dark:border-violet-800/50 shadow-sm">
@@ -138,28 +138,54 @@
                     </svg>
                 </div>
                 <div>
-                    <h3 class="text-sm font-bold text-gray-800 dark:text-white">Estructura del Documento (Modo Libro)</h3>
+                    <h3 class="text-sm font-bold text-gray-800 dark:text-white">Estructura del Documento</h3>
                     <p class="text-[10px] text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">{{ count($chapters) }} Capítulos integrados</p>
                 </div>
             </div>
-            <button type="button" onclick="printDocumentBook()" class="flex items-center gap-1.5 text-xs bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 px-3.5 py-2 rounded-xl border border-gray-200 dark:border-gray-700 font-bold transition-all shadow-sm active:scale-95">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-                📖 Imprimir Libro
-            </button>
+            
+            <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                <div class="relative w-full sm:w-64">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
+                    </div>
+                    <input type="text" x-model="search" class="block w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 sm:text-xs transition-colors" placeholder="Buscar en los capítulos...">
+                </div>
+
+                <button type="button" onclick="printDocumentBook()" class="flex items-center justify-center gap-1.5 text-xs bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 px-3.5 py-2 rounded-xl border border-gray-200 dark:border-gray-700 font-bold transition-all shadow-sm active:scale-95 w-full sm:w-auto shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                    <span class="whitespace-nowrap">Imprimir Libro</span>
+                </button>
+            </div>
         </div>
         
         <div class="space-y-4">
             @foreach($chapters as $idx => $chapter)
-            <div x-data="{ open: false }" class="bg-gray-50/40 dark:bg-gray-800/20 border border-gray-100 dark:border-gray-800/60 rounded-2xl p-5 space-y-4">
+            <div x-data="{ 
+                    open: false,
+                    rawContent: `{{ base64_encode($chapter['content'] ?? '') }}`,
+                    decodedContent: '',
+                    init() {
+                        this.decodedContent = decodeURIComponent(escape(window.atob(this.rawContent)));
+                    },
+                    get isMatch() {
+                        if (search === '') return true;
+                        const s = search.toLowerCase();
+                        return '{{ addslashes(strtolower($chapter['title'] ?? '')) }}'.includes(s) || this.decodedContent.toLowerCase().includes(s);
+                    }
+                 }" 
+                 x-show="isMatch"
+                 class="bg-gray-50/40 dark:bg-gray-800/20 border border-gray-100 dark:border-gray-800/60 rounded-2xl p-5 space-y-4 transition-all duration-300">
                 <div class="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800/50 cursor-pointer group" @click="open = !open">
                     <div class="flex items-center gap-3 min-w-0">
                         <span class="w-7 h-7 rounded-xl bg-violet-100 dark:bg-violet-950 text-violet-700 dark:text-violet-300 font-black text-xs flex items-center justify-center border border-violet-200 dark:border-violet-800 shadow-sm shrink-0 group-hover:scale-110 transition-transform">
                             {{ $idx + 1 }}
                         </span>
                         <div class="min-w-0">
-                            <h4 class="text-xs font-bold text-gray-900 dark:text-white truncate group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">{{ $chapter['title'] ?? 'Capítulo sin título' }}</h4>
+                            <h4 class="text-xs font-bold text-gray-900 dark:text-white truncate group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+                                {{ $chapter['title'] ?? 'Capítulo sin título' }}
+                            </h4>
                             <p class="text-[10px] text-gray-400">Por {{ $chapter['author_name'] ?? 'Autor' }} • {{ isset($chapter['updated_at']) ? \Carbon\Carbon::parse($chapter['updated_at'])->diffForHumans() : '' }}</p>
                         </div>
                     </div>
@@ -182,10 +208,8 @@
                     </div>
                 </div>
                 <div x-show="open" x-collapse style="display: none;"
-                     x-data="{ content: `{{ base64_encode($chapter['content'] ?? '') }}` }"
                      x-init="$nextTick(() => { 
-                        const decoded = decodeURIComponent(escape(window.atob(content)));
-                        $refs.mdContainer.innerHTML = typeof marked !== 'undefined' ? marked.parse(decoded, {breaks: true, gfm: true}) : decoded; 
+                        $refs.mdContainer.innerHTML = typeof marked !== 'undefined' ? marked.parse(decodedContent, {breaks: true, gfm: true}) : decodedContent; 
                      })">
                     <div x-ref="mdContainer" id="chapter-content-{{ $idx }}" style="height: 200px; max-height: none; overflow-y: auto;" class="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 resize-y min-h-[120px] custom-scrollbar pr-4 p-4 bg-white dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800/80 rounded-2xl shadow-sm mt-2 markdown-body">
                         <div class="flex items-center justify-center p-4">
