@@ -741,12 +741,12 @@
                     </div>
                 </div>
 
-                @if($type === "task")
-                
                     </div>
 
                     <!-- TAB: Team -->
                     <div x-show="activeTab === 'team'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;" class="space-y-6">
+                
+                @if($type === "task")
 <!-- Assignment Mode -->
                 <div class="mb-6 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
                     <label class="block text-sm font-bold text-gray-900 dark:text-white mb-3">{{ __('tasks.assignment_mode') ?? 'Modo de Asignación (Si delegas a otros)' }}</label>
@@ -942,12 +942,8 @@
                                 </div>
                             </label>
                         </div>
-                    </div>
                 </div>
-                @endif
 
-
-                
                     </div>
 
                     <!-- TAB: Context -->
@@ -1023,8 +1019,6 @@
                     </div>
                 </div>
 
-                @if($type === "task")
-                
                     </div>
 
                 </div>
