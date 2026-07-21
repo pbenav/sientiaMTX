@@ -1192,7 +1192,7 @@
                         '      <div class="cover-team">' + teamName + '</div>',
                         '      <h1 class="cover-title">' + title + '</h1>',
                         '      <div class="cover-badge">DOCUMENTO VERSIÓN ' + docVersion + '</div>',
-                        '      <div class="cover-footer">Sientia MTX • Exportado el ' + new Date().toLocaleDateString(\'es-ES\') + '</div>',
+                        '      <div class="cover-footer">Sientia MTX • Exportado el ' + new Date().toLocaleDateString('es-ES') + '</div>',
                         '    </div>',
                         '    <div class="toc-page">',
                         '      <h2 class="toc-main-title">Índice General</h2>',

@@ -46,7 +46,10 @@ trait ActivityAccessors
     // ─── Accessors de estado/progreso ─────────────────────────────────────────
     public function getStatusValueAttribute(): ?string
     {
-        return $this->status['value'] ?? null;
+        if (is_array($this->status)) {
+            return $this->status['value'] ?? null;
+        }
+        return is_string($this->status) ? $this->status : null;
     }
 
     /**
