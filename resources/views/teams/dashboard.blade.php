@@ -55,12 +55,19 @@
                     </select>
                 </div>
 
-                @if (request()->filled('skill_id'))
+                @if (request()->filled('skill_id') || request()->filled('hide_completed'))
                     <a href="{{ route('teams.eisenhower', $team) }}"
                         class="text-xs font-bold text-red-500 hover:text-red-600 transition-colors uppercase tracking-widest">
                         {{ __('tasks.clear_filters') ?? 'Limpiar' }}
                     </a>
                 @endif
+                
+                <!-- Hide Completed Toggle -->
+                <label class="flex items-center gap-2 cursor-pointer ml-auto bg-white dark:bg-gray-800 px-3 py-2 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+                    <input type="hidden" name="filter_matrix" value="1">
+                    <input type="checkbox" name="hide_completed" value="1" onchange="this.form.submit()" {{ $hideCompleted ? 'checked' : '' }} class="rounded border-gray-300 dark:border-gray-600 text-violet-600 focus:ring-violet-500 bg-gray-50 dark:bg-gray-900">
+                    <span class="text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest">Ocultar Completadas</span>
+                </label>
             </form>
         </div>
 
@@ -196,6 +203,7 @@
                                             @endif
 
                                             <a href="{{ route('teams.activities.show', [$team, $task]) }}"
+                                                title="Estado: {{ __('tasks.statuses.'.$task->status) }}&#10;Progreso: {{ $task->progress }}%&#10;Fecha límite: {{ $task->due_date ? $task->due_date->format('d/m/Y') : 'Sin fecha' }}"
                                                 class="flex-1 text-[11px] sm:text-sm text-gray-950 dark:text-gray-50 group-hover:text-black dark:group-hover:text-white transition-colors flex items-center gap-1.5 font-black truncate">
                                                 @if ($task->visibility === 'private')
                                                     <svg xmlns="http://www.w3.org/2000/svg"
@@ -221,6 +229,14 @@
                                                         <span class="px-1 py-0.5 rounded-[4px] bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-[6px] sm:text-[8px] font-black uppercase tracking-tighter shrink-0 border border-blue-200 dark:border-blue-700/50 shadow-sm" title="{{ __('activities.collaborative_task') ?? 'Tarea Colaborativa' }}">C</span>
                                                     @else
                                                         <span class="px-1 py-0.5 rounded-[4px] bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 text-[6px] sm:text-[8px] font-black uppercase tracking-tighter shrink-0 border border-violet-200 dark:border-violet-700/50 shadow-sm" title="{{ __('tasks.plan_master') }}">M</span>
+                                                        @php
+                                                            $allChilds = clone $task->children;
+                                                            $cTotal = $allChilds->count();
+                                                            $cCompleted = $allChilds->filter->isCompleted()->count();
+                                                        @endphp
+                                                        @if($cTotal > 0)
+                                                            <span class="text-[7px] text-gray-500 font-mono font-bold shrink-0" title="Instancias completadas">{{ $cCompleted }}/{{ $cTotal }}</span>
+                                                        @endif
                                                     @endif
                                                 @endif
                                                 @if ($task->assigned_user_id === auth()->id() && $task->parent_id)

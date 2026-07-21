@@ -275,7 +275,12 @@ class TeamController extends Controller
             4 => [],
         ];
 
-        $hideCompleted = session('hide_completed_tasks', true);
+        if (request()->has('filter_matrix')) {
+            $hideCompleted = request()->has('hide_completed');
+            session(['hide_completed_tasks' => $hideCompleted]);
+        } else {
+            $hideCompleted = session('hide_completed_tasks', true);
+        }
         $completedLimit = (int) config('settings.kanban_completed_limit', 10);
 
         foreach ($allTasks as $task) {
