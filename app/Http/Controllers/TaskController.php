@@ -7,6 +7,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Task;
+use App\Models\Activity;
 use App\Models\Team;
 use App\Models\TaskAttachment;
 use App\Models\AttachmentLog;
@@ -202,7 +203,7 @@ class TaskController extends Controller
     /**
      * Display the specified task
      */
-    public function show(Team $team, Task $task)
+    public function show(Team $team, Activity $task)
     {
         if ($task->team_id !== $team->id) {
             return redirect()->route('teams.dashboard', $team)->with('warning', __('tasks.not_found_in_team'));
@@ -219,7 +220,7 @@ class TaskController extends Controller
     /**
      * Show the form for editing the task
      */
-    public function edit(Team $team, Task $task)
+    public function edit(Team $team, Activity $task)
     {
         if ($task->team_id !== $team->id) {
             return redirect()->route('teams.dashboard', $team)->with('warning', __('tasks.not_found_in_team'));
@@ -236,7 +237,7 @@ class TaskController extends Controller
     /**
      * Update the task in storage
      */
-    public function update(\App\Http\Requests\UpdateTaskRequest $request, Team $team, Task $task)
+    public function update(\App\Http\Requests\UpdateTaskRequest $request, Team $team, Activity $task)
     {
         // Redirect legacy task updates to the new Activity system
         return redirect()->route('teams.activities.update', [$team, $task->id])
@@ -246,7 +247,7 @@ class TaskController extends Controller
     /**
      * Remove the task from storage
      */
-    public function destroy(Team $team, Task $task)
+    public function destroy(Team $team, Activity $task)
     {
         // Redirect legacy task deletion to the new Activity system
         return redirect()->route('teams.activities.destroy', [$team, $task->id]);
@@ -300,7 +301,7 @@ class TaskController extends Controller
     /**
      * Merge this task into another target task, centralizing all relationships.
      */
-    public function merge(Request $request, Team $team, Task $task)
+    public function merge(Request $request, Team $team, Activity $task)
     {
         $request->validate([
             'target_task_id' => 'required|exists:tasks,id',
@@ -399,7 +400,7 @@ class TaskController extends Controller
     /**
      * Manual Sync (Scenario B): Push master template changes to all assigned instances.
      */
-    public function syncToChildren(Request $request, Team $team, Task $task)
+    public function syncToChildren(Request $request, Team $team, Activity $task)
     {
         $this->authorize('update', $task);
 
