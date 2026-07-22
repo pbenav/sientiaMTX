@@ -229,16 +229,16 @@ Route::middleware('auth')->group(function () {
         Route::post('activities/{activity}/archive', [\App\Http\Controllers\ActivityController::class, 'archive'])->name('teams.activities.archive');
         Route::post('activities/{activity}/unarchive', [\App\Http\Controllers\ActivityController::class, 'unarchive'])->name('teams.activities.unarchive');
         Route::patch('activities/{activity}/status', [\App\Http\Controllers\ActivityController::class, 'changeStatus'])->name('teams.activities.change-status');
-        Route::post('activities/{activity}/notes', [\App\Http\Controllers\ActivityController::class, 'addNote'])->name('teams.activities.notes.store');
-        Route::patch('activities/{activity}/notes/{note}', [\App\Http\Controllers\ActivityController::class, 'updateNote'])->name('teams.activities.notes.update');
-        Route::delete('activities/{activity}/notes/{note}', [\App\Http\Controllers\ActivityController::class, 'deleteNote'])->name('teams.activities.notes.destroy');
-        Route::post('activities/{activity}/attachments', [\App\Http\Controllers\ActivityController::class, 'uploadAttachment'])->name('teams.activities.attachments.upload');
-        Route::delete('activities/{activity}/attachments/{attachment}', [\App\Http\Controllers\ActivityController::class, 'deleteAttachment'])->name('teams.activities.attachments.destroy');
-        Route::get('activities/{activity}/attachments/{attachment}/download', [\App\Http\Controllers\ActivityController::class, 'downloadAttachment'])->name('teams.activities.attachments.download');
-        Route::get('activities/{activity}/attachments/{attachment}/view', [\App\Http\Controllers\ActivityController::class, 'viewAttachment'])->name('teams.activities.attachments.view');
+        Route::post('activities/{activity}/notes', [\App\Http\Controllers\ActivityNoteController::class, 'addNote'])->name('teams.activities.notes.store');
+        Route::patch('activities/{activity}/notes/{note}', [\App\Http\Controllers\ActivityNoteController::class, 'updateNote'])->name('teams.activities.notes.update');
+        Route::delete('activities/{activity}/notes/{note}', [\App\Http\Controllers\ActivityNoteController::class, 'deleteNote'])->name('teams.activities.notes.destroy');
+        Route::post('activities/{activity}/attachments', [\App\Http\Controllers\ActivityAttachmentController::class, 'uploadAttachment'])->name('teams.activities.attachments.upload');
+        Route::delete('activities/{activity}/attachments/{attachment}', [\App\Http\Controllers\ActivityAttachmentController::class, 'deleteAttachment'])->name('teams.activities.attachments.destroy');
+        Route::get('activities/{activity}/attachments/{attachment}/download', [\App\Http\Controllers\ActivityAttachmentController::class, 'downloadAttachment'])->name('teams.activities.attachments.download');
+        Route::get('activities/{activity}/attachments/{attachment}/view', [\App\Http\Controllers\ActivityAttachmentController::class, 'viewAttachment'])->name('teams.activities.attachments.view');
         Route::post('activities/{activity}/attachments/{attachment}/to-drive', [\App\Http\Controllers\GoogleDriveController::class, 'uploadActivityAttachmentToDrive'])->name('teams.activities.attachments.to-drive');
-        Route::patch('activities/{activity}/attachments/{attachment}', [\App\Http\Controllers\ActivityController::class, 'updateAttachment'])->name('teams.activities.attachments.update');
-        Route::post('activities/{activity}/attachments/{attachment}/replace', [\App\Http\Controllers\ActivityController::class, 'replaceAttachmentContent'])->name('teams.activities.attachments.replace');
+        Route::patch('activities/{activity}/attachments/{attachment}', [\App\Http\Controllers\ActivityAttachmentController::class, 'updateAttachment'])->name('teams.activities.attachments.update');
+        Route::post('activities/{activity}/attachments/{attachment}/replace', [\App\Http\Controllers\ActivityAttachmentController::class, 'replaceAttachmentContent'])->name('teams.activities.attachments.replace');
 
 
         // Portabilidad, Clonación e Integraciones de Actividades (Universal Polymorphic Integration)
@@ -254,16 +254,16 @@ Route::middleware('auth')->group(function () {
         Route::post('activities/{activity}/restore-metadata', [\App\Http\Controllers\ActivityController::class, 'restoreMetadata'])->name('teams.activities.restore-metadata');
 
         // Gestión de Capítulos para Documentos
-        Route::post('activities/{activity}/chapters', [\App\Http\Controllers\ActivityController::class, 'addChapter'])->name('teams.activities.chapters.store');
-        Route::patch('activities/{activity}/chapters/{chapterId}', [\App\Http\Controllers\ActivityController::class, 'updateChapter'])->name('teams.activities.chapters.update');
-        Route::delete('activities/{activity}/chapters/{chapterId}', [\App\Http\Controllers\ActivityController::class, 'deleteChapter'])->name('teams.activities.chapters.destroy');
+        Route::post('activities/{activity}/chapters', [\App\Http\Controllers\ActivityChapterController::class, 'addChapter'])->name('teams.activities.chapters.store');
+        Route::patch('activities/{activity}/chapters/{chapterId}', [\App\Http\Controllers\ActivityChapterController::class, 'updateChapter'])->name('teams.activities.chapters.update');
+        Route::delete('activities/{activity}/chapters/{chapterId}', [\App\Http\Controllers\ActivityChapterController::class, 'deleteChapter'])->name('teams.activities.chapters.destroy');
 
         Route::post('activities/{activity}/google-sync', [\App\Http\Controllers\GoogleController::class, 'syncTask'])->name('google.sync_activity');
         Route::post('activities/{activity}/google-disconnect', [\App\Http\Controllers\GoogleController::class, 'disconnectTask'])->name('google.disconnect_activity');
         Route::post('activities/{activity}/google-calendar', [\App\Http\Controllers\GoogleController::class, 'exportTaskToCalendar'])->name('google.export_calendar_activity');
 
         // Private Notes
-        Route::post('activities/{activity}/private-notes', [\App\Http\Controllers\ActivityController::class, 'updatePrivateNote'])->name('teams.activities.private-notes.update');
+        Route::post('activities/{activity}/private-notes', [\App\Http\Controllers\ActivityNoteController::class, 'updatePrivateNote'])->name('teams.activities.private-notes.update');
     });
 
     // Legacy Task routes - all redirect to Activity equivalents
