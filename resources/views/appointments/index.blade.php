@@ -54,6 +54,9 @@
 <div class="py-8">
     <div class="max-w-full mx-auto sm:px-6 lg:px-8 space-y-8">
 
+        {{-- Banner de Contador Activo --}}
+        @include('partials.active-timer-banner')
+
         {{-- Alerta si no está configurado --}}
         @if(!$settings || !$settings->is_public)
             <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-5 flex items-start gap-4">
@@ -255,13 +258,25 @@
                 </div>
                 <div class="divide-y divide-gray-100 dark:divide-gray-800 max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700">
                     @forelse($todayCitas as $cita)
-                        <div class="flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                        @php
+                            $userActiveLog = auth()->user()?->activeTaskLog();
+                            $isActiveTimerCita = $userActiveLog && (
+                                ($cita->activity_id && $userActiveLog->task_id == $cita->activity_id) ||
+                                ($cita->task_id && $userActiveLog->task_id == $cita->task_id)
+                            );
+                        @endphp
+                        <div class="flex items-center gap-4 p-4 {{ $isActiveTimerCita ? 'bg-amber-50/70 dark:bg-amber-900/30 border-l-4 border-amber-500' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50' }} transition-colors">
                             <div class="w-14 text-center shrink-0">
                                 <p class="text-lg font-black text-cyan-600 dark:text-cyan-400 tabular-nums leading-none">{{ substr($cita->appointment_time, 0, 5) }}</p>
                                 <p class="text-[9px] font-bold text-gray-400 uppercase mt-0.5">{{ $cita->slot_duration_minutes }}min</p>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm font-bold text-gray-900 dark:text-white truncate">{{ $cita->visitor->full_name }}</p>
+                                <p class="text-sm font-bold text-gray-900 dark:text-white truncate flex items-center gap-1.5">
+                                    <span class="truncate">{{ $cita->visitor->full_name }}</span>
+                                    @if($isActiveTimerCita)
+                                        <span class="px-1.5 py-0.5 rounded text-[9px] font-black bg-amber-500 text-white animate-pulse shrink-0">⏱️ En curso</span>
+                                    @endif
+                                </p>
                                 <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ $cita->service->name }}</p>
                             </div>
                                 <div class="flex items-center gap-3 shrink-0">

@@ -31,6 +31,9 @@
     </x-slot>
 
     <div class="space-y-6">
+        {{-- Banner de Contador Activo --}}
+        @include('partials.active-timer-banner')
+
         <!-- Filtros y Búsqueda -->
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm transition-all">
             <form action="{{ route('teams.activities.index', $team) }}" method="GET" class="flex flex-wrap items-center gap-4">

@@ -32,6 +32,9 @@
 <div class="py-8">
     <div class="max-w-full mx-auto sm:px-6 lg:px-8 space-y-6">
 
+        {{-- Banner de Contador Activo --}}
+        @include('partials.active-timer-banner')
+
         @if(session('success'))
             <div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 rounded-2xl p-4 text-sm font-bold flex items-center gap-3">
                 <svg class="w-5 h-5 shrink-0 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
@@ -255,7 +258,15 @@
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                             @foreach($appointments as $cita)
-                                <tr onclick="if(!event.target.closest('input, button, a, label, form')) window.location.href='{{ route('appointments.show', [$team, $cita]) }}'" class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group cursor-pointer">
+                                @php
+                                    $userActiveLog = auth()->user()?->activeTaskLog();
+                                    $isActiveTimerCita = $userActiveLog && (
+                                        ($cita->activity_id && $userActiveLog->task_id == $cita->activity_id) ||
+                                        ($cita->task_id && $userActiveLog->task_id == $cita->task_id)
+                                    );
+                                @endphp
+                                <tr onclick="if(!event.target.closest('input, button, a, label, form')) window.location.href='{{ route('appointments.show', [$team, $cita]) }}'"
+                                    class="{{ $isActiveTimerCita ? 'bg-amber-50/70 dark:bg-amber-900/30 border-l-4 border-amber-500' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50' }} transition-colors group cursor-pointer">
                                     <td class="px-5 py-3.5 text-center">
                                         <input type="checkbox" name="appointment_ids[]" value="{{ $cita->id }}" form="bulk-form" class="bulk-cb w-4 h-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500 dark:bg-gray-800 dark:border-gray-600" @change="updateCount()">
                                     </td>
@@ -272,7 +283,12 @@
                                     </td>
                                     <td class="px-5 py-3.5">
                                         <div class="flex flex-col">
-                                            <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $cita->service->name }}</span>
+                                            <span class="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                                                {{ $cita->service->name }}
+                                                @if($isActiveTimerCita)
+                                                    <span class="px-1.5 py-0.5 rounded text-[9px] font-black bg-amber-500 text-white animate-pulse">⏱️ En curso</span>
+                                                @endif
+                                            </span>
                                             @if(in_array($cita->modality, ['jitsi', 'meet']))
                                                 <span class="inline-flex items-center gap-1 text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase mt-0.5 tracking-wider">
                                                     💻 Videocita ({{ ucfirst($cita->modality) }})
@@ -301,7 +317,21 @@
                                             if ($cita->activity) $seconds = $cita->activity->totalTrackedSeconds();
                                             elseif ($cita->task) $seconds = $cita->task->totalTrackedSeconds();
                                         @endphp
-                                        @if($seconds > 0)
+                                        @if($isActiveTimerCita)
+                                            <div class="flex flex-col items-center gap-1">
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-white animate-pulse shadow-sm">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+                                                    En Curso
+                                                </span>
+                                                @if($cita->activity_id || $cita->task_id)
+                                                    <button type="button" 
+                                                        onclick="event.stopPropagation(); fetch('{{ route('time-logs.toggle-task', $cita->activity_id ?? $cita->task_id) }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } }).then(r => r.json()).then(() => { if (window.Alpine && Alpine.store('timer')) Alpine.store('timer').stop(); window.location.reload(); });"
+                                                        class="text-[10px] font-black text-rose-600 dark:text-rose-400 hover:underline cursor-pointer">
+                                                        [Parar]
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        @elseif($seconds > 0)
                                             <div class="flex items-center justify-center gap-1 text-gray-600 dark:text-gray-400" title="Tiempo dedicado a esta cita">
                                                 <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                                 <span class="text-xs font-bold tabular-nums">{{ floor($seconds / 60) }}<span class="text-[10px] ml-0.5 opacity-70">m</span></span>
