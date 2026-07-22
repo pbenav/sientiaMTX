@@ -21,7 +21,14 @@ class TeamLibraryController extends Controller
 
         if ($request->filled('q')) {
             $searchTerm = '%' . $request->input('q') . '%';
-            $query->where('title', 'LIKE', $searchTerm);
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('title', 'LIKE', $searchTerm)
+                  ->orWhere('description', 'LIKE', $searchTerm)
+                  ->orWhere('metadata', 'LIKE', $searchTerm)
+                  ->orWhereHas('notes', function ($nq) use ($searchTerm) {
+                      $nq->where('content', 'LIKE', $searchTerm);
+                  });
+            });
         }
 
         if ($request->filled('status')) {

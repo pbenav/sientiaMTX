@@ -44,10 +44,17 @@
                     <form action="{{ route('teams.library', $team) }}" method="GET" class="space-y-3">
                         <div class="relative">
                             <input type="text" name="q" value="{{ request('q') }}" placeholder="Buscar en la wiki..." 
-                                   class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 pl-8 pr-3 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all placeholder-gray-400">
+                                   class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 pl-8 pr-8 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all placeholder-gray-400">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-2.5 top-2.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
+                            @if(request('q'))
+                            <a href="{{ request()->fullUrlWithQuery(['q' => '']) }}" class="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" title="Limpiar búsqueda">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </a>
+                            @endif
                         </div>
                         <div class="flex gap-2">
                             <select name="status" class="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 px-2.5 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all">
@@ -138,11 +145,35 @@
                                 @endif
                             </div>
                             @if($activeDocument->description)
-                                <div x-data="{ content: `{{ base64_encode($activeDocument->description) }}` }"
-                                     x-init="$nextTick(() => { 
-                                        const decoded = decodeURIComponent(escape(window.atob(content)));
-                                        $refs.descContainer.innerHTML = typeof marked !== 'undefined' ? marked.parse(decoded, {breaks: true, gfm: true}) : decoded; 
-                                     })">
+                                <div x-data="{ 
+                                        content: `{{ base64_encode($activeDocument->description) }}`,
+                                        search: @js(request('q', '')),
+                                        init() {
+                                            $nextTick(() => {
+                                                const decoded = decodeURIComponent(escape(window.atob(this.content)));
+                                                let html = typeof marked !== 'undefined' ? marked.parse(decoded, {breaks: true, gfm: true}) : decoded;
+                                                this.$refs.descContainer.innerHTML = html;
+                                                if (this.search && this.search.trim() !== '') {
+                                                    let s = this.search.trim();
+                                                    let escaped = s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                                                    let regex = new RegExp('(' + escaped + ')', 'gi');
+                                                    let walker = document.createTreeWalker(this.$refs.descContainer, NodeFilter.SHOW_TEXT, null, false);
+                                                    let nodesToReplace = [];
+                                                    let node;
+                                                    while (node = walker.nextNode()) {
+                                                        if (node.parentNode && ['SCRIPT', 'STYLE', 'MARK'].includes(node.parentNode.nodeName)) continue;
+                                                        if (node.nodeValue.match(regex)) nodesToReplace.push(node);
+                                                    }
+                                                    nodesToReplace.forEach(n => {
+                                                        let span = document.createElement('span');
+                                                        span.innerHTML = n.nodeValue.replace(regex, '<mark class=\'bg-yellow-300 dark:bg-yellow-900 text-gray-900 dark:text-yellow-100 rounded px-1.5 py-0.5 font-bold shadow-sm search-highlight-mark\'>$1</mark>');
+                                                        n.parentNode.replaceChild(span, n);
+                                                    });
+                                                }
+                                                this.$dispatch('matches-updated');
+                                            });
+                                        }
+                                     }">
                                     <div x-ref="descContainer" class="prose prose-sm dark:prose-invert max-w-none text-gray-500 dark:text-gray-400 mt-2 markdown-body">
                                         <div class="flex items-center p-2">
                                             <svg class="animate-spin h-4 w-4 text-violet-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -165,8 +196,38 @@
                             $hasNotes = $notesStr !== '' && $notesStr !== '[]' && strip_tags($notesStr) !== '';
                         @endphp
                         @if($hasNotes)
-                            <div class="prose dark:prose-invert max-w-none text-sm w-full mb-6 break-words">
-                                {!! str($activeDocument->notes)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
+                            <div x-data="{
+                                    rawNotes: `{{ base64_encode($activeDocument->notes) }}`,
+                                    search: @js(request('q', '')),
+                                    init() {
+                                        $nextTick(() => {
+                                            const decoded = decodeURIComponent(escape(window.atob(this.rawNotes)));
+                                            let html = typeof marked !== 'undefined' ? marked.parse(decoded, {breaks: true, gfm: true}) : decoded;
+                                            this.$refs.notesContainer.innerHTML = html;
+                                            if (this.search && this.search.trim() !== '') {
+                                                let s = this.search.trim();
+                                                let escaped = s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                                                let regex = new RegExp('(' + escaped + ')', 'gi');
+                                                let walker = document.createTreeWalker(this.$refs.notesContainer, NodeFilter.SHOW_TEXT, null, false);
+                                                let nodesToReplace = [];
+                                                let node;
+                                                while (node = walker.nextNode()) {
+                                                    if (node.parentNode && ['SCRIPT', 'STYLE', 'MARK'].includes(node.parentNode.nodeName)) continue;
+                                                    if (node.nodeValue.match(regex)) nodesToReplace.push(node);
+                                                }
+                                                nodesToReplace.forEach(n => {
+                                                    let span = document.createElement('span');
+                                                    span.innerHTML = n.nodeValue.replace(regex, '<mark class=\'bg-yellow-300 dark:bg-yellow-900 text-gray-900 dark:text-yellow-100 rounded px-1.5 py-0.5 font-bold shadow-sm search-highlight-mark\'>$1</mark>');
+                                                    n.parentNode.replaceChild(span, n);
+                                                });
+                                            }
+                                            this.$dispatch('matches-updated');
+                                        });
+                                    }
+                                 }" class="prose dark:prose-invert max-w-none text-sm w-full mb-6 break-words">
+                                <div x-ref="notesContainer">
+                                    {!! str($activeDocument->notes)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
+                                </div>
                             </div>
                         @endif
 
@@ -175,7 +236,56 @@
                         @endphp
                         
                         @if(count($chapters) > 0)
-                            <div id="chapters-section" x-data="{ search: '' }" class="bg-gray-50/50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-colors space-y-6">
+                            <div id="chapters-section" x-data="{ 
+                                    search: @js(request('q', '')),
+                                    currentIndex: 0,
+                                    totalMatches: 0,
+                                    init() {
+                                        $watch('search', () => {
+                                            this.currentIndex = 0;
+                                            this.updateMatches();
+                                        });
+                                        setTimeout(() => this.updateMatches(), 400);
+                                    },
+                                    updateMatches() {
+                                        setTimeout(() => {
+                                            const marks = document.querySelectorAll('mark.search-highlight-mark');
+                                            this.totalMatches = marks.length;
+                                            if (this.totalMatches === 0) {
+                                                this.currentIndex = 0;
+                                                return;
+                                            }
+                                            if (this.currentIndex >= this.totalMatches || this.currentIndex < 0) {
+                                                this.currentIndex = 0;
+                                            }
+                                            this.highlightCurrent(marks);
+                                        }, 100);
+                                    },
+                                    highlightCurrent(marks) {
+                                        const list = marks || document.querySelectorAll('mark.search-highlight-mark');
+                                        if (list.length === 0) return;
+                                        list.forEach((m, idx) => {
+                                            if (idx === this.currentIndex) {
+                                                m.className = 'bg-violet-600 text-white dark:bg-violet-500 font-extrabold rounded px-2 py-0.5 shadow-md ring-2 ring-violet-400 transition-all search-highlight-mark search-highlight-active';
+                                                m.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                            } else {
+                                                m.className = 'bg-yellow-300 dark:bg-yellow-900 text-gray-900 dark:text-yellow-100 rounded px-1.5 py-0.5 font-bold shadow-sm search-highlight-mark';
+                                            }
+                                        });
+                                    },
+                                    nextMatch() {
+                                        if (this.totalMatches <= 0) return;
+                                        this.currentIndex = (this.currentIndex + 1) % this.totalMatches;
+                                        this.highlightCurrent();
+                                    },
+                                    prevMatch() {
+                                        if (this.totalMatches <= 0) return;
+                                        this.currentIndex = (this.currentIndex - 1 + this.totalMatches) % this.totalMatches;
+                                        this.highlightCurrent();
+                                    }
+                                }" 
+                                @matches-updated.window="updateMatches()"
+                                class="bg-gray-50/50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-colors space-y-6">
                                 <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-700">
                                     <div class="flex items-center gap-3">
                                         <div class="w-10 h-10 rounded-2xl bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0 border border-violet-200 dark:border-violet-800/50 shadow-sm">
@@ -193,8 +303,34 @@
                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                                 <svg class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
                                             </div>
-                                            <input type="text" x-model="search" class="block w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 sm:text-xs transition-colors" placeholder="Buscar en los capítulos...">
+                                            <input type="text" x-model="search" @keydown.enter.prevent="nextMatch()" @keydown.shift.enter.prevent="prevMatch()" class="block w-full pl-9 pr-9 py-2 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 sm:text-xs transition-colors" placeholder="Buscar en el documento...">
+                                            <button type="button" x-show="search.length > 0" @click="search = ''; totalMatches = 0;" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" style="display: none;" title="Limpiar búsqueda">
+                                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            </button>
                                         </div>
+
+                                        <!-- Navegador de ocurrencias -->
+                                        <div class="flex items-center gap-1.5 shrink-0 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-2.5 py-1.5 shadow-sm" x-show="search.trim().length > 0">
+                                            <span class="text-xs font-bold text-gray-500 dark:text-gray-400 font-mono mr-1 select-none flex items-center gap-1">
+                                                <template x-if="totalMatches > 0">
+                                                    <span><span x-text="currentIndex + 1" class="text-violet-600 dark:text-violet-400 font-extrabold"></span>/<span x-text="totalMatches"></span></span>
+                                                </template>
+                                                <template x-if="totalMatches === 0">
+                                                    <span class="text-rose-500 font-semibold">0/0</span>
+                                                </template>
+                                            </span>
+                                            <button type="button" @click="prevMatch()" :disabled="totalMatches <= 1" class="p-1 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 disabled:opacity-30 disabled:hover:text-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Ocurrencia anterior (Shift+Enter)">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+                                                </svg>
+                                            </button>
+                                            <button type="button" @click="nextMatch()" :disabled="totalMatches <= 1" class="p-1 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 disabled:opacity-30 disabled:hover:text-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Siguiente ocurrencia (Enter)">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            </button>
+                                        </div>
+
                                         <button type="button" onclick="printDocumentBook()" class="flex items-center justify-center gap-1.5 text-xs bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 px-3.5 py-2 rounded-xl border border-gray-200 dark:border-gray-700 font-bold transition-all shadow-sm active:scale-95 w-full sm:w-auto shrink-0">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -212,11 +348,51 @@
                                             decodedContent: '',
                                             init() {
                                                 this.decodedContent = decodeURIComponent(escape(window.atob(this.rawContent)));
+                                                if (this.search && this.search.trim() !== '' && this.isMatch) {
+                                                    this.open = true;
+                                                }
+                                                $watch('search', value => {
+                                                    if (value && value.trim() !== '' && this.isMatch) {
+                                                        this.open = true;
+                                                    } else if (!value || value.trim() === '') {
+                                                        this.open = false;
+                                                    }
+                                                    this.updateContent();
+                                                });
                                             },
                                             get isMatch() {
-                                                if (search === '') return true;
-                                                const s = search.toLowerCase();
+                                                if (!this.search || this.search.trim() === '') return true;
+                                                const s = this.search.trim().toLowerCase();
                                                 return '{{ addslashes(strtolower($chapter['title'] ?? '')) }}'.includes(s) || this.decodedContent.toLowerCase().includes(s);
+                                            },
+                                            updateContent() {
+                                                if (!this.$refs.mdContainer) return;
+                                                let html = typeof marked !== 'undefined' ? marked.parse(this.decodedContent, {breaks: true, gfm: true}) : this.decodedContent;
+                                                this.$refs.mdContainer.innerHTML = html;
+                                                
+                                                if (this.search && this.search.trim() !== '') {
+                                                    let s = this.search.trim();
+                                                    let escaped = s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                                                    let regex = new RegExp('(' + escaped + ')', 'gi');
+                                                    let walker = document.createTreeWalker(this.$refs.mdContainer, NodeFilter.SHOW_TEXT, null, false);
+                                                    let nodesToReplace = [];
+                                                    let node;
+                                                    
+                                                    while (node = walker.nextNode()) {
+                                                        if (node.parentNode && ['SCRIPT', 'STYLE', 'MARK'].includes(node.parentNode.nodeName)) continue;
+                                                        if (node.nodeValue.match(regex)) {
+                                                            nodesToReplace.push(node);
+                                                        }
+                                                    }
+                                                    
+                                                    nodesToReplace.forEach(n => {
+                                                        let span = document.createElement('span');
+                                                        span.innerHTML = n.nodeValue.replace(regex, '<mark class=\'bg-yellow-300 dark:bg-yellow-900 text-gray-900 dark:text-yellow-100 rounded px-1.5 py-0.5 font-bold shadow-sm search-highlight-mark\'>$1</mark>');
+                                                        n.parentNode.replaceChild(span, n);
+                                                    });
+                                                }
+
+                                                this.$dispatch('matches-updated');
                                             }
                                          }" 
                                          x-show="isMatch"
@@ -240,9 +416,7 @@
                                             </div>
                                         </div>
                                         <div x-show="open" x-collapse style="display: none;" 
-                                             x-init="$nextTick(() => { 
-                                                $refs.mdContainer.innerHTML = typeof marked !== 'undefined' ? marked.parse(decodedContent, {breaks: true, gfm: true}) : decodedContent; 
-                                             })">
+                                             x-init="$nextTick(() => { updateContent(); })">
                                             <div x-ref="mdContainer" id="chapter-content-{{ $idx }}" class="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 resize-y min-h-[120px] pr-4 p-4 bg-gray-50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/80 rounded-2xl mt-2 markdown-body overflow-x-hidden">
                                                 <div class="flex items-center justify-center p-4">
                                                     <svg class="animate-spin h-5 w-5 text-violet-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -304,6 +478,27 @@
 
 @if(isset($activeDocument))
 <script>
+let scrollSearchMatchTimeout = null;
+window.scrollToFirstSearchMatch = function() {
+    if (scrollSearchMatchTimeout) clearTimeout(scrollSearchMatchTimeout);
+    scrollSearchMatchTimeout = setTimeout(() => {
+        const firstMark = document.querySelector('mark.search-highlight-mark');
+        if (firstMark) {
+            firstMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstMark.classList.add('ring-4', 'ring-violet-500', 'ring-offset-2', 'transition-all');
+            setTimeout(() => {
+                firstMark.classList.remove('ring-4', 'ring-violet-500', 'ring-offset-2');
+            }, 2500);
+        }
+    }, 350);
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (@js(request('q', '')) !== '') {
+        window.scrollToFirstSearchMatch();
+    }
+});
+
 function printDocumentBook() {
     const printWin = window.open('', '_blank');
     const title = @json($activeDocument->title);

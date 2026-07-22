@@ -129,7 +129,55 @@
 @endif
 
 @if(count($chapters) > 0)
-    <div id="chapters-section" x-data="{ search: '' }" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-colors space-y-6 mt-6">
+    <div id="chapters-section" x-data="{ 
+            search: '',
+            currentIndex: 0,
+            totalMatches: 0,
+            init() {
+                $watch('search', () => {
+                    this.currentIndex = 0;
+                    this.updateMatches();
+                });
+            },
+            updateMatches() {
+                setTimeout(() => {
+                    const marks = document.querySelectorAll('mark.search-highlight-mark');
+                    this.totalMatches = marks.length;
+                    if (this.totalMatches === 0) {
+                        this.currentIndex = 0;
+                        return;
+                    }
+                    if (this.currentIndex >= this.totalMatches || this.currentIndex < 0) {
+                        this.currentIndex = 0;
+                    }
+                    this.highlightCurrent(marks);
+                }, 100);
+            },
+            highlightCurrent(marks) {
+                const list = marks || document.querySelectorAll('mark.search-highlight-mark');
+                if (list.length === 0) return;
+                list.forEach((m, idx) => {
+                    if (idx === this.currentIndex) {
+                        m.className = 'bg-violet-600 text-white dark:bg-violet-500 font-extrabold rounded px-2 py-0.5 shadow-md ring-2 ring-violet-400 transition-all search-highlight-mark search-highlight-active';
+                        m.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    } else {
+                        m.className = 'bg-yellow-300 dark:bg-yellow-900 text-gray-900 dark:text-yellow-100 rounded px-1.5 py-0.5 font-bold shadow-sm search-highlight-mark';
+                    }
+                });
+            },
+            nextMatch() {
+                if (this.totalMatches <= 0) return;
+                this.currentIndex = (this.currentIndex + 1) % this.totalMatches;
+                this.highlightCurrent();
+            },
+            prevMatch() {
+                if (this.totalMatches <= 0) return;
+                this.currentIndex = (this.currentIndex - 1 + this.totalMatches) % this.totalMatches;
+                this.highlightCurrent();
+            }
+        }" 
+        @matches-updated.window="updateMatches()"
+        class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-colors space-y-6 mt-6">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100 dark:border-gray-800">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-2xl bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0 border border-violet-100 dark:border-violet-800/50 shadow-sm">
@@ -148,7 +196,32 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <svg class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
                     </div>
-                    <input type="text" x-model="search" class="block w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 sm:text-xs transition-colors" placeholder="Buscar en los capítulos...">
+                    <input type="text" x-model="search" @keydown.enter.prevent="nextMatch()" @keydown.shift.enter.prevent="prevMatch()" class="block w-full pl-9 pr-9 py-2 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 sm:text-xs transition-colors" placeholder="Buscar en los capítulos...">
+                    <button type="button" x-show="search.length > 0" @click="search = ''; totalMatches = 0;" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" style="display: none;" title="Limpiar búsqueda">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+
+                <!-- Navegador de ocurrencias -->
+                <div class="flex items-center gap-1.5 shrink-0 bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl px-2.5 py-1.5 shadow-sm" x-show="search.trim().length > 0">
+                    <span class="text-xs font-bold text-gray-500 dark:text-gray-400 font-mono mr-1 select-none flex items-center gap-1">
+                        <template x-if="totalMatches > 0">
+                            <span><span x-text="currentIndex + 1" class="text-violet-600 dark:text-violet-400 font-extrabold"></span>/<span x-text="totalMatches"></span></span>
+                        </template>
+                        <template x-if="totalMatches === 0">
+                            <span class="text-rose-500 font-semibold">0/0</span>
+                        </template>
+                    </span>
+                    <button type="button" @click="prevMatch()" :disabled="totalMatches <= 1" class="p-1 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 disabled:opacity-30 disabled:hover:text-gray-500 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Ocurrencia anterior (Shift+Enter)">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+                        </svg>
+                    </button>
+                    <button type="button" @click="nextMatch()" :disabled="totalMatches <= 1" class="p-1 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 disabled:opacity-30 disabled:hover:text-gray-500 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Siguiente ocurrencia (Enter)">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
                 </div>
 
                 <button type="button" onclick="printDocumentBook()" class="flex items-center justify-center gap-1.5 text-xs bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 px-3.5 py-2 rounded-xl border border-gray-200 dark:border-gray-700 font-bold transition-all shadow-sm active:scale-95 w-full sm:w-auto shrink-0">
@@ -168,11 +241,50 @@
                     decodedContent: '',
                     init() {
                         this.decodedContent = decodeURIComponent(escape(window.atob(this.rawContent)));
+                        if (search && search.trim() !== '' && this.isMatch) {
+                            this.open = true;
+                        }
+                        $watch('search', value => {
+                            if (value && value.trim() !== '' && this.isMatch) {
+                                this.open = true;
+                            } else if (!value || value.trim() === '') {
+                                this.open = false;
+                            }
+                            this.updateContent();
+                        });
                     },
                     get isMatch() {
-                        if (search === '') return true;
-                        const s = search.toLowerCase();
+                        if (!search || search.trim() === '') return true;
+                        const s = search.trim().toLowerCase();
                         return '{{ addslashes(strtolower($chapter['title'] ?? '')) }}'.includes(s) || this.decodedContent.toLowerCase().includes(s);
+                    },
+                    updateContent() {
+                        if (!this.$refs.mdContainer) return;
+                        let html = typeof marked !== 'undefined' ? marked.parse(this.decodedContent, {breaks: true, gfm: true}) : this.decodedContent;
+                        this.$refs.mdContainer.innerHTML = html;
+                        
+                        if (search && search.trim() !== '') {
+                            let s = search.trim();
+                            let escaped = s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                            let regex = new RegExp('(' + escaped + ')', 'gi');
+                            let walker = document.createTreeWalker(this.$refs.mdContainer, NodeFilter.SHOW_TEXT, null, false);
+                            let nodesToReplace = [];
+                            let node;
+                            
+                            while (node = walker.nextNode()) {
+                                if (node.parentNode && ['SCRIPT', 'STYLE', 'MARK'].includes(node.parentNode.nodeName)) continue;
+                                if (node.nodeValue.match(regex)) {
+                                    nodesToReplace.push(node);
+                                }
+                            }
+                            
+                            nodesToReplace.forEach(n => {
+                                let span = document.createElement('span');
+                                span.innerHTML = n.nodeValue.replace(regex, '<mark class=\'bg-yellow-300 dark:bg-yellow-900 text-gray-900 dark:text-yellow-100 rounded px-1.5 py-0.5 font-bold shadow-sm search-highlight-mark\'>$1</mark>');
+                                n.parentNode.replaceChild(span, n);
+                            });
+                        }
+                        this.$dispatch('matches-updated');
                     }
                  }" 
                  x-show="isMatch"
@@ -208,9 +320,7 @@
                     </div>
                 </div>
                 <div x-show="open" x-collapse style="display: none;"
-                     x-init="$nextTick(() => { 
-                        $refs.mdContainer.innerHTML = typeof marked !== 'undefined' ? marked.parse(decodedContent, {breaks: true, gfm: true}) : decodedContent; 
-                     })">
+                     x-init="$nextTick(() => { updateContent(); })">
                     <div x-ref="mdContainer" id="chapter-content-{{ $idx }}" style="height: 200px; max-height: none; overflow-y: auto;" class="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 resize-y min-h-[120px] custom-scrollbar pr-4 p-4 bg-white dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800/80 rounded-2xl shadow-sm mt-2 markdown-body">
                         <div class="flex items-center justify-center p-4">
                             <svg class="animate-spin h-5 w-5 text-violet-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
