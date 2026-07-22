@@ -172,16 +172,25 @@
 
     .markdown-content img, .prose img {
         max-width: 100%;
+        max-height: 520px;
         height: auto;
-        border-radius: 1.25rem;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        margin: 2.5rem auto;
-        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-radius: 1rem;
+        object-fit: contain;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+        margin: 1.25rem auto;
+        border: 1px solid rgba(0, 0, 0, 0.08);
         display: block;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .markdown-content img:hover, .prose img:hover {
+        transform: scale(1.01);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
     }
 
     .dark .markdown-content img, .dark .prose img {
         border-color: rgba(255, 255, 255, 0.1);
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
     }
 </style>

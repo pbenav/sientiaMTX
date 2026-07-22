@@ -76,9 +76,9 @@
 
                     <!-- Print -->
                     <button type="button"
-                        onclick="printMessage({{ $message->id }})"
+                        onclick="openForumPrintModal({{ $message->id }})"
                         class="p-1 text-gray-400 hover:text-emerald-500 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors"
-                        title="Imprimir mensaje">
+                        title="Opciones de impresión">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                         </svg>
@@ -175,90 +175,166 @@
                 </div>
 
                 @if($message->attachments->isNotEmpty())
-                    <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800/60 grid grid-cols-1 {{ $isRoot ? 'sm:grid-cols-2' : '' }} gap-2">
-                        @foreach($message->attachments as $attachment)
-                            <div class="flex flex-col gap-2 p-3 rounded-2xl bg-gray-50/80 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-700/50 group/file transition-all hover:bg-white dark:hover:bg-gray-800 shadow-sm hover:shadow-md">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-white dark:bg-gray-900 flex items-center justify-center text-gray-400 shrink-0 shadow-sm border border-gray-100 dark:border-gray-700">
-                                        @if(!$attachment->exists)
-                                            <div class="p-2 text-red-500/50">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                                </svg>
-                                            </div>
-                                        @elseif(str_contains($attachment->mime_type, 'image'))
-                                            <img src="{{ $attachment->storage_provider === 'google' ? $attachment->web_view_link : route('teams.attachments.view', [$team, $attachment]) }}" class="w-full h-full object-cover rounded-xl">
-                                        @else
-                                            <div class="p-2">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.414a6 6 0 108.486 8.486L20.5 13" />
-                                                </svg>
-                                            </div>
-                                        @endif
-                                    </div>
-                                    <div class="min-w-0 flex-1">
-                                        <p class="text-[10px] font-black text-gray-900 dark:text-gray-100 truncate leading-tight">
+                    @php
+                        $imageAttachments = $message->attachments->filter(fn($a) => str_contains($a->mime_type, 'image'));
+                        $otherAttachments = $message->attachments->reject(fn($a) => str_contains($a->mime_type, 'image'));
+                    @endphp
+
+                    {{-- Image Attachments Gallery --}}
+                    @if($imageAttachments->isNotEmpty())
+                        <div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-800/60">
+                            <span class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider block mb-2">Imágenes adjuntas ({{ $imageAttachments->count() }})</span>
+                            <div class="flex flex-wrap gap-3">
+                                @foreach($imageAttachments as $attachment)
+                                    @php
+                                        $imgUrl = $attachment->storage_provider === 'google' ? $attachment->web_view_link : route('teams.attachments.view', [$team, $attachment]);
+                                        $downloadUrl = $attachment->storage_provider === 'google' ? $attachment->web_view_link : route('teams.attachments.download', [$team, $attachment]);
+                                    @endphp
+                                    <div class="group/img relative w-48 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 bg-gray-900/5 dark:bg-gray-800/50 shadow-sm hover:shadow-md transition-all shrink-0">
+                                        <div class="h-28 w-full overflow-hidden bg-gray-900/20 cursor-pointer flex items-center justify-center relative"
+                                             onclick="openImageLightbox('{{ $imgUrl }}', '{{ addslashes($attachment->file_name) }}')">
                                             @if($attachment->exists)
-                                                <a href="{{ $attachment->storage_provider === 'google' ? $attachment->web_view_link : route('teams.attachments.download', [$team, $attachment]) }}" 
-                                                   target="_blank" class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
+                                                <img src="{{ $imgUrl }}" alt="{{ $attachment->file_name }}"
+                                                     class="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-300">
+                                                <div class="absolute inset-0 bg-black/0 group-hover/img:bg-black/25 transition-all flex items-center justify-center">
+                                                    <span class="opacity-0 group-hover/img:opacity-100 bg-black/60 text-white text-[9px] font-bold px-2.5 py-1 rounded-full backdrop-blur-sm transition-all transform translate-y-1 group-hover/img:translate-y-0 flex items-center gap-1">
+                                                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                                                        Ampliar
+                                                    </span>
+                                                </div>
+                                            @else
+                                                <div class="w-full h-full flex items-center justify-center text-red-500 text-xs font-bold">Archivo Purgado</div>
+                                            @endif
+                                        </div>
+                                        
+                                        <div class="p-2 flex items-center justify-between bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800">
+                                            <div class="min-w-0 flex-1 pr-1.5">
+                                                <p class="text-[10px] font-bold text-gray-800 dark:text-gray-200 truncate" title="{{ $attachment->file_name }}">
                                                     {{ $attachment->file_name }}
-                                                </a>
-                                            @else
-                                                <span class="text-gray-400 line-through decoration-red-500/50">{{ $attachment->file_name }}</span>
-                                            @endif
-                                        </p>
-                                        <p class="text-[9px] text-gray-400 mt-0.5 flex items-center gap-1">
-                                            @if(!$attachment->exists)
-                                                <span class="text-red-500 font-bold uppercase tracking-tighter">Archivo Purgado</span>
-                                            @elseif($attachment->storage_provider === 'google')
-                                                <span class="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1 rounded-[4px] font-black uppercase text-[7px]">Google Drive</span>
-                                            @else
-                                                {{ number_format($attachment->file_size / 1024, 1) }} KB
-                                            @endif
-                                        </p>
+                                                </p>
+                                                <p class="text-[8px] text-gray-400">
+                                                    @if($attachment->storage_provider === 'google')
+                                                        <span class="text-blue-500 font-bold">Drive</span>
+                                                    @else
+                                                        {{ number_format($attachment->file_size / 1024, 1) }} KB
+                                                    @endif
+                                                </p>
+                                            </div>
+                                            
+                                            <div class="flex items-center gap-0.5 shrink-0">
+                                                @if($attachment->exists)
+                                                    <a href="{{ $downloadUrl }}" target="_blank"
+                                                       class="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md transition-colors"
+                                                       title="Descargar">
+                                                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                                    </a>
+                                                @endif
+
+                                                @if ($isCurrentUser || auth()->user()->getRole($team) === 'coordinator')
+                                                    @if($attachment->storage_provider === 'local')
+                                                        <button type="button" onclick="editAttachmentImage({{ $attachment->id }}, '{{ route('teams.attachments.view', [$team, $attachment]) }}')"
+                                                            class="p-1 text-gray-400 hover:text-violet-500 rounded-md transition-colors" title="Editar Imagen">
+                                                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+                                                        </button>
+                                                    @endif
+
+                                                    <button type="button" onclick="renameAttachment({{ $attachment->id }}, '{{ addslashes($attachment->file_name) }}')"
+                                                        class="p-1 text-gray-400 hover:text-blue-500 rounded-md transition-colors" title="Renombrar">
+                                                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                                    </button>
+
+                                                    <form action="{{ route('teams.attachments.destroy', [$team, $attachment]) }}" method="POST"
+                                                        onsubmit="return confirm('¿Seguro que quieres eliminar este adjunto?')" class="inline">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="p-1 text-gray-400 hover:text-red-500 rounded-md transition-colors" title="Eliminar">
+                                                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </div>
+                                        </div>
                                     </div>
-
-                                    <!-- Actions for Attachments -->
-                                    @if ($isCurrentUser || auth()->user()->getRole($team) === 'coordinator')
-                                    <div class="flex items-center gap-1 ml-2 shrink-0">
-                                        @if($attachment->storage_provider === 'local' && str_starts_with($attachment->mime_type, 'image/'))
-                                            <button type="button" onclick="editAttachmentImage({{ $attachment->id }}, '{{ route('teams.attachments.view', [$team, $attachment]) }}')"
-                                                class="p-1.5 text-gray-400 hover:text-violet-500 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm rounded-lg transition-colors"
-                                                title="Editar Imagen">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                                                </svg>
-                                            </button>
-                                        @endif
-
-                                        <!-- Edit/Rename -->
-                                        <button type="button" onclick="renameAttachment({{ $attachment->id }}, '{{ addslashes($attachment->file_name) }}')"
-                                            class="p-1.5 text-gray-400 hover:text-blue-500 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm rounded-lg transition-colors"
-                                            title="Renombrar">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                            </svg>
-                                        </button>
-
-                                        <!-- Delete -->
-                                        <form action="{{ route('teams.attachments.destroy', [$team, $attachment]) }}" method="POST"
-                                            onsubmit="return confirm('¿Seguro que quieres eliminar este adjunto?')" class="inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit"
-                                                class="p-1.5 text-gray-400 hover:text-red-500 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm rounded-lg transition-colors"
-                                                title="Eliminar">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                            </button>
-                                        </form>
-                                    </div>
-                                    @endif
-                                </div>
+                                @endforeach
                             </div>
-                        @endforeach
-                    </div>
+                        </div>
+                    @endif
+
+                    {{-- Non-Image Document Attachments --}}
+                    @if($otherAttachments->isNotEmpty())
+                        <div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800/60 grid grid-cols-1 {{ $isRoot ? 'sm:grid-cols-2' : '' }} gap-2">
+                            @foreach($otherAttachments as $attachment)
+                                <div class="flex flex-col gap-2 p-3 rounded-2xl bg-gray-50/80 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-700/50 group/file transition-all hover:bg-white dark:hover:bg-gray-800 shadow-sm hover:shadow-md">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-white dark:bg-gray-900 flex items-center justify-center text-gray-400 shrink-0 shadow-sm border border-gray-100 dark:border-gray-700">
+                                            @if(!$attachment->exists)
+                                                <div class="p-2 text-red-500/50">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                    </svg>
+                                                </div>
+                                            @else
+                                                <div class="p-2">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.414a6 6 0 108.486 8.486L20.5 13" />
+                                                    </svg>
+                                                </div>
+                                            @endif
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-[10px] font-black text-gray-900 dark:text-gray-100 truncate leading-tight">
+                                                @if($attachment->exists)
+                                                    <a href="{{ $attachment->storage_provider === 'google' ? $attachment->web_view_link : route('teams.attachments.download', [$team, $attachment]) }}" 
+                                                       target="_blank" class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
+                                                        {{ $attachment->file_name }}
+                                                    </a>
+                                                @else
+                                                    <span class="text-gray-400 line-through decoration-red-500/50">{{ $attachment->file_name }}</span>
+                                                @endif
+                                            </p>
+                                            <p class="text-[9px] text-gray-400 mt-0.5 flex items-center gap-1">
+                                                @if(!$attachment->exists)
+                                                    <span class="text-red-500 font-bold uppercase tracking-tighter">Archivo Purgado</span>
+                                                @elseif($attachment->storage_provider === 'google')
+                                                    <span class="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1 rounded-[4px] font-black uppercase text-[7px]">Google Drive</span>
+                                                @else
+                                                    {{ number_format($attachment->file_size / 1024, 1) }} KB
+                                                @endif
+                                            </p>
+                                        </div>
+
+                                        <!-- Actions for Attachments -->
+                                        @if ($isCurrentUser || auth()->user()->getRole($team) === 'coordinator')
+                                        <div class="flex items-center gap-1 ml-2 shrink-0">
+                                            <!-- Edit/Rename -->
+                                            <button type="button" onclick="renameAttachment({{ $attachment->id }}, '{{ addslashes($attachment->file_name) }}')"
+                                                class="p-1.5 text-gray-400 hover:text-blue-500 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm rounded-lg transition-colors"
+                                                title="Renombrar">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                </svg>
+                                            </button>
+
+                                            <!-- Delete -->
+                                            <form action="{{ route('teams.attachments.destroy', [$team, $attachment]) }}" method="POST"
+                                                onsubmit="return confirm('¿Seguro que quieres eliminar este adjunto?')" class="inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                    class="p-1.5 text-gray-400 hover:text-red-500 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm rounded-lg transition-colors"
+                                                    title="Eliminar">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
                 @endif
             </div>
 

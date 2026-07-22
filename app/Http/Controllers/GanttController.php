@@ -127,6 +127,9 @@ class GanttController extends Controller
                                         ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($task->assignedUser->name, 0, 2)) 
                                         : ($task->children->count() > 0 ? 'EQ' : '??'),
                     'user_id'      => $task->assigned_user_id ?? $task->created_by_id,
+                    'user_ids'     => $task->relationLoaded('assignedTo') && $task->assignedTo->isNotEmpty()
+                                        ? $task->assignedTo->pluck('id')->push($task->created_by_id)->filter()->unique()->values()->toArray()
+                                        : array_values(array_filter([$task->assigned_user_id, $task->created_by_id])),
                     'weight'       => data_get($task->metadata, 'cognitive_load', 1),
                     'parent_id'    => $task->parent_id ? (string)$task->parent_id : null,
                     'parent_title' => $task->parent?->title,

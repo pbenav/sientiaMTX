@@ -226,9 +226,9 @@
                                 <input type="range" id="wave-amplifier" min="5" max="30" step="5" value="15" 
                                        title="Ajustar amplificación visual"
                                        class="w-16 h-1 bg-emerald-200/50 dark:bg-emerald-800/50 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                                       oninput="document.getElementById('user-scale-badge').innerText = 'x' + parseFloat(this.value).toFixed(1); renderActionWave();">
+                                       oninput="document.getElementById('user-scale-badge').innerText = 'x' + (parseFloat(this.value) / 10).toFixed(1); renderActionWave();">
                                 <span id="user-scale-badge" class="px-1.5 py-0.5 rounded bg-emerald-500 text-white text-[8px] font-black inline-block min-w-[32px] text-center">
-                                    x15.0
+                                    x1.5
                                 </span>
                             </div>
                         </div>
@@ -237,14 +237,12 @@
 
                 @php
                     $maxWeight = collect($actionHeat)->max('weight') ?: 1;
-                    // Usamos un factor de amplificación dinámico (por defecto 15.0) para la visualización inicial en PHP
-                    $amplificationFactor = 15.0;
                     $width = 100 / ($daysInMonth - 1);
                     $pts = []; $upts = [];
                     foreach($actionHeat as $day => $d) {
                         $h = ($d['weight'] / $maxWeight) * 85;
-                        $uh = ($d['user_weight'] / $maxWeight) * $amplificationFactor * 85;
-                        if ($uh > 95) $uh = 95; // Tope para que no se salga de la pantalla
+                        $uh = ($d['user_weight'] / $maxWeight) * 1.5 * 85;
+                        if ($uh > 95) $uh = 95;
                         $pts[] = ($day-1)*$width . ',' . (100-$h);
                         $upts[] = ($day-1)*$width . ',' . (100-$uh);
                     }
@@ -255,8 +253,8 @@
                 <div class="relative h-24 mb-6">
                     <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-full overflow-visible">
                         <defs><linearGradient id="waveGradient" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:rgba(124, 58, 237, 0.3)"/><stop offset="100%" style="stop-color:rgba(59, 130, 246, 0.05)"/></linearGradient></defs>
-                        <path id="wave-team-path" d="{{$pathData}}" fill="url(#waveGradient)" class="transition-all duration-1000" />
-                        <path id="wave-user-line" d="{{$userLineData}}" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-[0_0_5px_rgba(16,185,129,0.8)] transition-all duration-1000" />
+                        <path id="wave-team-path" d="{{$pathData}}" fill="url(#waveGradient)" class="transition-all duration-300" />
+                        <path id="wave-user-line" d="{{$userLineData}}" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-[0_0_5px_rgba(16,185,129,0.8)] transition-all duration-300" />
                     </svg>
                     <div class="absolute inset-0 flex items-end gap-px">
                         @for($i=1; $i<=$daysInMonth; $i++)
@@ -504,14 +502,14 @@
                 });
                 heat[i] = { 
                     weight: dayT.reduce((a,t)=>a+Math.max(1, parseFloat(t.weight)||0),0), 
-                    uweight: dayT.filter(t=>t.user_id==userId).reduce((a,t)=>a+Math.max(1, parseFloat(t.weight)||0),0),
+                    uweight: dayT.filter(t => t.user_id == userId || (Array.isArray(t.user_ids) && t.user_ids.includes(userId))).reduce((a,t)=>a+Math.max(1, parseFloat(t.weight)||0),0),
                     count: dayT.length,
-                    user_count: dayT.filter(t=>t.user_id==userId).length
+                    user_count: dayT.filter(t => t.user_id == userId || (Array.isArray(t.user_ids) && t.user_ids.includes(userId))).length
                 };
             }
             const max = Math.max(...heat.filter(h=>h).map(h=>h.weight)) || 1;
             const ampInput = document.getElementById('wave-amplifier');
-            const amplificationFactor = ampInput ? parseFloat(ampInput.value) : 15.0;
+            const amplificationFactor = ampInput ? (parseFloat(ampInput.value) / 10.0) : 1.5;
             
             const wFact = 100/(days-1);
             let pts = [], upts = [];
@@ -546,10 +544,9 @@
             document.getElementById('wave-team-path')?.setAttribute('d', `M0,100 L${pts.join(' L')} L100,100 Z`);
             document.getElementById('wave-user-line')?.setAttribute('d', `M${upts.join(' L')}`);
             
-            // El badge visualizador se actualiza al mover el slider (oninput),
-            // pero nos aseguramos de que esté visible.
             const scaleBadge = document.getElementById('user-scale-badge');
-            if (scaleBadge) {
+            if (scaleBadge && ampInput) {
+                scaleBadge.innerText = 'x' + (parseFloat(ampInput.value) / 10.0).toFixed(1);
                 scaleBadge.classList.remove('hidden');
                 scaleBadge.classList.add('inline-block');
             }

@@ -168,6 +168,14 @@
                                 </svg>
                             </button>
                         </form>
+
+                        <button type="button" @click="$dispatch('open-modal', 'print-forum-modal'); $dispatch('set-print-target', { mode: 'thread' })"
+                            class="p-2 bg-white text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 border border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-emerald-900/30 dark:hover:text-emerald-400 rounded-xl transition-colors shadow-sm"
+                            title="Imprimir hilo">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                            </svg>
+                        </button>
                     </div>
                 @endif
             </div>
@@ -459,6 +467,115 @@
                 </div>
             </div>
         </div>
+        <!-- Print Forum Modal -->
+        <x-modal name="print-forum-modal" focusable>
+            <div class="p-6" x-data="{ 
+                    printScope: 'single',
+                    targetMessageId: null,
+                    includeHeaders: true,
+                    includeAuthorMeta: true,
+                    includeAttachments: true
+                 }"
+                 @set-print-target.window="
+                    printScope = $event.detail.mode || 'single';
+                    targetMessageId = $event.detail.messageId || null;
+                 ">
+                
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="p-2.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                        </svg>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white heading">
+                        Opciones de Impresión
+                    </h2>
+                </div>
+
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                    Selecciona qué contenido deseas imprimir y configura la inclusión de cabeceras o metadatos.
+                </p>
+
+                <!-- Scope -->
+                <div class="mb-6 space-y-3">
+                    <label class="block text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300">¿Qué deseas imprimir?</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <label class="flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all"
+                               :class="printScope === 'single' ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200' : 'bg-gray-50 dark:bg-gray-800/40 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400'">
+                            <input type="radio" name="print_scope" value="single" x-model="printScope" class="accent-emerald-600">
+                            <div class="flex flex-col">
+                                <span class="text-xs font-bold">Solo mensaje seleccionado</span>
+                                <span class="text-[10px] text-gray-400">Imprime únicamente la intervención elegida</span>
+                            </div>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all"
+                               :class="printScope === 'thread' ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200' : 'bg-gray-50 dark:bg-gray-800/40 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400'">
+                            <input type="radio" name="print_scope" value="thread" x-model="printScope" class="accent-emerald-600">
+                            <div class="flex flex-col">
+                                <span class="text-xs font-bold">Todo el hilo completo</span>
+                                <span class="text-[10px] text-gray-400">Imprime todos los mensajes del hilo</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Headers & Options -->
+                <div class="mb-6 space-y-3">
+                    <label class="block text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300">Cabeceras y Detalle</label>
+                    <div class="space-y-2">
+                        <label class="flex items-center gap-3 p-2.5 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30 cursor-pointer">
+                            <input type="checkbox" x-model="includeHeaders" class="rounded text-emerald-600 focus:ring-emerald-500">
+                            <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Incluir cabecera del hilo (Título, Equipo, Autor original y Fecha)</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-2.5 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30 cursor-pointer">
+                            <input type="checkbox" x-model="includeAuthorMeta" class="rounded text-emerald-600 focus:ring-emerald-500">
+                            <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Incluir autor, fecha y hora de cada mensaje</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-2.5 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30 cursor-pointer">
+                            <input type="checkbox" x-model="includeAttachments" class="rounded text-emerald-600 focus:ring-emerald-500">
+                            <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Incluir lista de archivos adjuntos</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex justify-end gap-3">
+                    <x-secondary-button x-on:click="$dispatch('close')">
+                        Cancelar
+                    </x-secondary-button>
+
+                    <button type="button" 
+                            @click="executeForumPrint({ scope: printScope, targetId: targetMessageId, headers: includeHeaders, authorMeta: includeAuthorMeta, attachments: includeAttachments }); $dispatch('close')"
+                            class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-emerald-600/20 active:scale-95 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                        </svg>
+                        Imprimir Documento
+                    </button>
+                </div>
+            </div>
+        </x-modal>
+
+        <!-- Image Lightbox Modal -->
+        <div id="forum-image-lightbox" class="hidden fixed inset-0 z-[120] overflow-y-auto" onclick="closeImageLightbox()">
+            <div class="flex items-center justify-center min-h-screen p-4">
+                <div class="fixed inset-0 bg-black/80 backdrop-blur-md transition-opacity"></div>
+                <div class="relative max-w-5xl w-full p-2 flex flex-col items-center justify-center z-10" onclick="event.stopPropagation()">
+                    <div class="w-full flex items-center justify-between mb-3 text-white/90">
+                        <span id="lightbox-caption" class="text-xs font-bold truncate max-w-lg"></span>
+                        <div class="flex items-center gap-2">
+                            <a id="lightbox-download" href="#" target="_blank" class="text-white/80 hover:text-white px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 bg-white/10 hover:bg-white/20 rounded-xl backdrop-blur-sm transition-colors">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                Original
+                            </a>
+                            <button type="button" onclick="closeImageLightbox()" class="text-white/80 hover:text-white p-1.5 bg-white/10 hover:bg-white/20 rounded-xl backdrop-blur-sm transition-colors">
+                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <img id="lightbox-img" src="" alt="" class="max-h-[82vh] max-w-full object-contain rounded-2xl shadow-2xl border border-white/10">
+                </div>
+            </div>
+        </div>
     @endpush
 
     @push('scripts')
@@ -560,24 +677,220 @@
                 }
             }
 
-            if (typeof window.printMessage === 'undefined') {
-                window.printMessage = function(messageId) {
-                    const content = document.getElementById('msg-content-' + messageId) || document.getElementById('message-view-' + messageId);
-                    if (!content) return;
-                    const printWindow = window.open('', '', 'height=600,width=800');
-                    printWindow.document.write('<html><head><title>Imprimir Mensaje</title>');
-                    printWindow.document.write('<style>body { font-family: sans-serif; padding: 20px; line-height: 1.5; color: #333; } pre { background: #f4f4f4; padding: 10px; border-radius: 5px; overflow-x: auto; }</style>');
-                    printWindow.document.write('</head><body>');
-                    printWindow.document.write(content.innerHTML);
-                    printWindow.document.write('</body></html>');
-                    printWindow.document.close();
-                    printWindow.focus();
-                    setTimeout(() => {
-                        printWindow.print();
-                        printWindow.close();
-                    }, 250);
-                };
-            }
+            window.openImageLightbox = function(src, caption = '') {
+                const lightbox = document.getElementById('forum-image-lightbox');
+                const img = document.getElementById('lightbox-img');
+                const cap = document.getElementById('lightbox-caption');
+                const dl = document.getElementById('lightbox-download');
+                if (lightbox && img) {
+                    img.src = src;
+                    if (cap) cap.innerText = caption;
+                    if (dl) dl.href = src;
+                    lightbox.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                }
+            };
+
+            window.closeImageLightbox = function() {
+                const lightbox = document.getElementById('forum-image-lightbox');
+                if (lightbox) {
+                    lightbox.classList.add('hidden');
+                    document.body.style.overflow = 'auto';
+                }
+            };
+
+            document.addEventListener('click', function(e) {
+                if (e.target && e.target.tagName === 'IMG' && e.target.closest('.markdown-content')) {
+                    openImageLightbox(e.target.src, e.target.alt || 'Imagen del mensaje');
+                }
+            });
+
+            window.openForumPrintModal = function(messageId = null) {
+                window.dispatchEvent(new CustomEvent('set-print-target', {
+                    detail: {
+                        mode: messageId ? 'single' : 'thread',
+                        messageId: messageId
+                    }
+                }));
+                window.dispatchEvent(new CustomEvent('open-modal', { detail: 'print-forum-modal' }));
+            };
+
+            window.printMessage = function(messageId) {
+                window.openForumPrintModal(messageId);
+            };
+
+            window.executeForumPrint = function(options) {
+                const threadTitle = @json($thread->title);
+                const teamName = @json($team->name);
+                const threadAuthor = @json($thread->user->name);
+                const threadDate = @json($thread->created_at->format('d/m/Y H:i'));
+                const linkedTask = @json($thread->task ? $thread->task->title : null);
+
+                let headerHtml = '';
+                if (options.headers) {
+                    headerHtml = `
+                        <div class="print-header">
+                            <div class="print-team">${teamName} • Foro</div>
+                            <h1 class="print-title">${threadTitle}</h1>
+                            <div class="print-meta">
+                                Creado por <strong>${threadAuthor}</strong> el ${threadDate}
+                                ${linkedTask ? ` • Tarea vinculada: <strong>${linkedTask}</strong>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                function buildMessageHtml(msgEl) {
+                    if (!msgEl) return '';
+                    const msgId = msgEl.id ? msgEl.id.replace('msg-', '') : '';
+                    const userName = msgEl.querySelector('.text-xs.font-bold')?.innerText || 'Usuario';
+                    const dateStr = msgEl.querySelector('[title]')?.getAttribute('title') || '';
+                    const isOp = msgEl.innerText.includes('OP');
+                    const textEl = msgEl.querySelector('.markdown-content');
+                    
+                    let contentHtml = '';
+                    if (textEl) {
+                        const clone = textEl.cloneNode(true);
+                        clone.querySelectorAll('button, template, script').forEach(el => el.remove());
+                        contentHtml = clone.innerHTML;
+                    }
+                    
+                    let attachmentsHtml = '';
+                    if (options.attachments) {
+                        const fileLinks = msgEl.querySelectorAll('a[target="_blank"]');
+                        const imageImgs = msgEl.querySelectorAll('.group\\/img img');
+                        
+                        let itemsHtml = '';
+                        fileLinks.forEach(link => {
+                            const text = link.innerText.trim();
+                            if (text && text !== 'Original' && !text.includes('Ampliar')) itemsHtml += `<li>${text}</li>`;
+                        });
+
+                        let imagesHtml = '';
+                        imageImgs.forEach(img => {
+                            if (img.src && !img.src.includes('profile_photo')) {
+                                imagesHtml += `<div style="margin-top: 8px; break-inside: avoid; page-break-inside: avoid;"><img src="${img.src}" style="max-width: 100%; max-height: 240px; border-radius: 6px; border: 1px solid #cbd5e1; display: block;"></div>`;
+                            }
+                        });
+
+                        if (itemsHtml || imagesHtml) {
+                            attachmentsHtml = `<div class="print-attachments"><strong>Adjuntos:</strong>${itemsHtml ? '<ul>' + itemsHtml + '</ul>' : ''}${imagesHtml}</div>`;
+                        }
+                    }
+
+                    let authorMetaHtml = '';
+                    if (options.authorMeta) {
+                        authorMetaHtml = `
+                            <div class="msg-author">
+                                <span><strong>${userName}</strong> ${isOp ? '<span class="op-badge">OP</span>' : ''}</span>
+                                <span class="msg-date">${dateStr}</span>
+                            </div>
+                        `;
+                    }
+
+                    return `
+                        <div class="print-message">
+                            ${authorMetaHtml}
+                            <div class="msg-body">${contentHtml}</div>
+                            ${attachmentsHtml}
+                        </div>
+                    `;
+                }
+
+                let messagesHtml = '';
+
+                if (options.scope === 'single' && options.targetId) {
+                    const msgEl = document.getElementById('msg-' + options.targetId);
+                    if (msgEl) {
+                        messagesHtml = buildMessageHtml(msgEl);
+                    }
+                } else {
+                    const msgEls = document.querySelectorAll('.space-y-6 > .space-y-4 > [id^="msg-"], [id^="msg-"]');
+                    const processed = new Set();
+                    msgEls.forEach(msgEl => {
+                        if (msgEl.id && !processed.has(msgEl.id)) {
+                            processed.add(msgEl.id);
+                            messagesHtml += buildMessageHtml(msgEl);
+                        }
+                    });
+                }
+
+                const printWin = window.open('', '_blank');
+                printWin.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                        <head>
+                            <title>${threadTitle} - Impresión</title>
+                            <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet">
+                            <style>
+                                @page { size: A4; margin: 1.5cm; }
+                                svg { max-width: 16px !important; max-height: 16px !important; width: 16px !important; height: 16px !important; display: inline-block; vertical-align: middle; }
+                                body {
+                                    font-family: 'Outfit', -apple-system, sans-serif;
+                                    color: #1e293b;
+                                    line-height: 1.5;
+                                    margin: 0;
+                                    padding: 0;
+                                    font-size: 12px;
+                                    orphans: 3;
+                                    widows: 3;
+                                }
+                                .print-header {
+                                    border-bottom: 2px solid #cbd5e1;
+                                    padding-bottom: 1rem;
+                                    margin-bottom: 1.25rem;
+                                    break-after: avoid;
+                                    page-break-after: avoid;
+                                }
+                                .print-team { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1.5px; }
+                                .print-title { font-size: 20px; font-weight: 900; color: #0f172a; margin: 0.3rem 0; line-height: 1.25; }
+                                .print-meta { font-size: 11px; color: #64748b; }
+                                .print-message {
+                                    border: 1px solid #e2e8f0;
+                                    border-radius: 10px;
+                                    padding: 1rem;
+                                    margin-bottom: 1rem;
+                                    background: #fff;
+                                    break-inside: auto;
+                                    page-break-inside: auto;
+                                }
+                                .msg-author {
+                                    font-size: 11px;
+                                    border-bottom: 1px solid #f1f5f9;
+                                    padding-bottom: 0.4rem;
+                                    margin-bottom: 0.6rem;
+                                    color: #475569;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: space-between;
+                                    break-after: avoid;
+                                    page-break-after: avoid;
+                                }
+                                .op-badge { background: #f1f5f9; color: #7c3aed; padding: 2px 6px; border-radius: 4px; font-weight: 800; font-size: 9px; margin-left: 4px; }
+                                .msg-date { color: #94a3b8; font-size: 10px; }
+                                .msg-body p { margin-top: 0; margin-bottom: 0.5rem; orphans: 3; widows: 3; }
+                                .msg-body h1, .msg-body h2, .msg-body h3, .msg-body h4 { break-after: avoid; page-break-after: avoid; margin-top: 1rem; margin-bottom: 0.4rem; }
+                                .msg-body img { max-width: 100%; max-height: 240px; object-fit: contain; border-radius: 6px; border: 1px solid #cbd5e1; display: block; margin: 0.5rem 0; break-inside: avoid; page-break-inside: avoid; }
+                                .msg-body pre { background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.6rem; border-radius: 6px; font-size: 10px; overflow-x: auto; break-inside: avoid; page-break-inside: avoid; }
+                                .print-attachments { margin-top: 0.6rem; padding-top: 0.4rem; border-top: 1px dashed #cbd5e1; font-size: 10px; color: #475569; break-inside: avoid; page-break-inside: avoid; }
+                                .print-attachments ul { margin: 0.2rem 0 0 1rem; padding: 0; }
+                            </style>
+                        </head>
+                        <body>
+                            ${headerHtml}
+                            ${messagesHtml || '<p style="color:#94a3b8; font-style:italic;">No se encontró contenido para imprimir.</p>'}
+                            <script>
+                                window.onload = () => {
+                                    setTimeout(() => {
+                                        window.print();
+                                    }, 350);
+                                };
+                            <\/script>
+                        </body>
+                    </html>
+                `);
+                printWin.document.close();
+            };
 
             function editMessage(messageId, content) {
                 document.getElementById(`message-view-${messageId}`).classList.add('hidden');
