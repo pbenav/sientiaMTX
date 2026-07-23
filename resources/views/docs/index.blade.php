@@ -171,13 +171,13 @@
             overflow-x: auto;
         }
         @media print {
+            * {
+                font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
+            }
             #docs-sidebar, #docs-mobile-toggle, nav, footer, button { display: none !important; }
             .prose { 
                 max-width: 100% !important; 
-                font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
-                font-variant-emoji: emoji !important;
             }
-            .prose h1, .prose h2, .prose h3, .prose h4 { font-family: inherit !important; }
             .prose svg { max-width: 1.5em !important; height: auto !important; display: inline-block !important; vertical-align: middle !important; }
             body:not(.print-clean-mode) .docs-print-header { display: block !important; }
             body.print-clean-mode .docs-print-header { display: none !important; }

@@ -207,18 +207,8 @@
     }
 
     @media print {
-        .markdown-content h1, .prose h1,
-        .prose :where(h1):not(:where([class~="not-prose"], [class~="not-prose"] *)),
-        .markdown-content h2, .prose h2,
-        .prose :where(h2):not(:where([class~="not-prose"], [class~="not-prose"] *)),
-        .markdown-content h3, .prose h3,
-        .prose :where(h3):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+        .markdown-content *, .prose * {
             font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
-        }
-
-        .markdown-content, .prose {
-            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
-            font-variant-emoji: emoji !important;
         }
         
         .markdown-content img.emoji, .prose img.emoji {
