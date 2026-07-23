@@ -193,4 +193,38 @@
         border-color: rgba(255, 255, 255, 0.1);
         box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
     }
+
+    .markdown-content img.emoji, .prose img.emoji {
+        display: inline-block !important;
+        margin: 0 .1em !important;
+        width: 1.25em !important;
+        height: 1.25em !important;
+        vertical-align: -0.2em !important;
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+    }
+
+    @media print {
+        .markdown-content h1, .prose h1,
+        .prose :where(h1):not(:where([class~="not-prose"], [class~="not-prose"] *)),
+        .markdown-content h2, .prose h2,
+        .prose :where(h2):not(:where([class~="not-prose"], [class~="not-prose"] *)),
+        .markdown-content h3, .prose h3,
+        .prose :where(h3):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
+        }
+
+        .markdown-content, .prose {
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
+            font-variant-emoji: emoji !important;
+        }
+        
+        .markdown-content img.emoji, .prose img.emoji {
+            width: 1em !important;
+            height: 1em !important;
+            vertical-align: -0.1em !important;
+        }
+    }
 </style>

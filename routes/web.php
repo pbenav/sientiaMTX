@@ -207,6 +207,16 @@ Route::middleware('auth')->group(function () {
     // Biblioteca / Wiki
     Route::get('/teams/{team}/library', [\App\Http\Controllers\TeamLibraryController::class, 'index'])->name('teams.library');
 
+    // Trash Routes
+    Route::prefix('teams/{team}/trash')->name('teams.trash.')->group(function() {
+        Route::get('/', [\App\Http\Controllers\TeamTrashController::class, 'index'])->name('index');
+        Route::post('activities/{id}/restore', [\App\Http\Controllers\TeamTrashController::class, 'restoreActivity'])->name('restore.activity');
+        Route::delete('activities/{id}/force-delete', [\App\Http\Controllers\TeamTrashController::class, 'forceDeleteActivity'])->name('force-delete.activity');
+        Route::post('expedientes/{id}/restore', [\App\Http\Controllers\TeamTrashController::class, 'restoreExpediente'])->name('restore.expediente');
+        Route::delete('expedientes/{id}/force-delete', [\App\Http\Controllers\TeamTrashController::class, 'forceDeleteExpediente'])->name('force-delete.expediente');
+        Route::delete('empty', [\App\Http\Controllers\TeamTrashController::class, 'empty'])->name('empty');
+    });
+
     Route::resource('teams.activities', \App\Http\Controllers\ActivityController::class)->except(['show', 'edit', 'update', 'destroy']);
     Route::prefix('teams/{team}')->group(function() {
         // Search - unified (handles both Activity and legacy Task)

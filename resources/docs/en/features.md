@@ -1,4 +1,4 @@
-# Sientia MTX: Feature Master Guide (v1.1.0)
+# Sientia MTX: Feature Master Guide (v1.2.0)
 
 SientiaMTX is a high-performance productivity ecosystem that merges the Eisenhower methodology with advanced Artificial Intelligence.
 
