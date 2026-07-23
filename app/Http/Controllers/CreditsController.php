@@ -6,8 +6,22 @@
 
 namespace App\Http\Controllers;
 
+/**
+ * Controlador que muestra la página de créditos y reconocimientos de la aplicación.
+ *
+ * Presenta una vista con las dependencias de terceros organizadas por categoría
+ * (backend, frontend, fuentes, servicios, infraestructura) junto con sus versiones,
+ * descripciones, licencias y enlaces oficiales.
+ *
+ * Ruta asociada: GET /credits
+ */
 class CreditsController extends Controller
 {
+    /**
+     * Muestra la vista de créditos con todas las dependencias y licencias del proyecto.
+     *
+     * @return \Illuminate\View\View
+     */
     public function index()
     {
         $credits = [

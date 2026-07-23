@@ -2,8 +2,18 @@
 
 namespace App\Traits;
 
+/**
+ * Trait ActivityTracking
+ *
+ * Proporciona métodos para calcular el tiempo total rastreado en actividades
+ * y sus hijos, tanto en segundos como en formato legible humano.
+ */
 trait ActivityTracking
 {
+    /**
+     * Calcula el total de segundos rastreados en esta actividad y sus hijos.
+     * Suma los registros de tiempo propios (con end_at definido) más los de los hijos.
+     */
     public function totalTrackedSeconds(): int
     {
         // Own logs
@@ -21,6 +31,9 @@ trait ActivityTracking
         return $ownSeconds + $childrenSeconds;
     }
 
+    /**
+     * Devuelve el tiempo total rastreado en formato legible (ej: "2h 30m" o "45m").
+     */
     public function totalTrackedTimeHuman(): string
     {
         $seconds = $this->totalTrackedSeconds();
@@ -36,7 +49,7 @@ trait ActivityTracking
     }
 
     /**
-     * Get aggregate time tracked today by ALL USERS on this activity and its children.
+     * Obtiene el tiempo total rastreado HOY por TODOS los usuarios en esta actividad y sus hijos.
      */
     public function totalTrackedTimeTodaySeconds(): int
     {
@@ -58,7 +71,7 @@ trait ActivityTracking
     }
 
     /**
-     * Get human-readable aggregate time tracked today.
+     * Devuelve el tiempo rastreado HOY en formato legible (ej: "2h 30m" o "45m").
      */
     public function totalTrackedTimeTodayHuman(): string
     {

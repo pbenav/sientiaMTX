@@ -3,26 +3,44 @@
 namespace App\Traits;
 
 
-
+/**
+ * Trait ActivityAccessors
+ *
+ * Define los accesores (getters) para atributos calculados del modelo Activity.
+ * Proporciona acceso a: tipo/metadatos, asignación, estado/progreso,
+ * urgencia (Matriz Eisenhower), especialidad/servicio y helpers UI.
+ */
 trait ActivityAccessors
 {
     // ─── Accessors de tipo/metadatos ──────────────────────────────────────────
+
+    /**
+     * Determina si la actividad es autoprogramable (puede generar ocurrencias automáticamente).
+     */
     public function getIsAutoprogrammableAttribute(): bool
     {
         return data_get($this->metadata, 'is_autoprogrammable', false);
     }
 
+    /**
+     * Devuelve el nivel de privacidad de la actividad.
+     * Si visibility es null, retorna 'private' como valor por defecto.
+     */
     public function getPrivacyLevelAttribute(): string
     {
         return $this->visibility ?? 'private';
     }
 
+    /**
+     * Devuelve el puntaje promedio de calidad almacenado en metadata.
+     */
     public function getAvgQualityScoreAttribute(): float
     {
         return data_get($this->metadata, 'avg_quality_score', 0);
     }
 
     // ─── Accessors de asignación ──────────────────────────────────────────────
+
     /**
      * Devuelve el primer usuario asignado individualmente (compat. con vista de tareas).
      * Si se ha cargado eager loading de assignedTo, lo usa sin hacer nueva query.
@@ -35,6 +53,9 @@ trait ActivityAccessors
         return $this->assignedTo()->first();
     }
 
+    /**
+     * Devuelve el ID del primer usuario asignado individualmente.
+     */
     public function getAssignedUserIdAttribute(): ?int
     {
         if ($this->relationLoaded('assignedTo')) {
@@ -44,6 +65,12 @@ trait ActivityAccessors
     }
 
     // ─── Accessors de estado/progreso ─────────────────────────────────────────
+
+    /**
+     * Extrae el valor de estado desde el atributo status (soporta array o string).
+     * Si status es un array, retorna status['value']; si es string, lo retorna directo;
+     * si es null o no es string, retorna null.
+     */
     public function getStatusValueAttribute(): ?string
     {
         if (is_array($this->status)) {
@@ -54,7 +81,8 @@ trait ActivityAccessors
 
     /**
      * Compat con Task: devuelve el % de progreso.
-     * Para Activity usa progress_percentage directamente.
+     * Si el estado indica completado (completed, done, approved, triggered, accepted, finished), retorna 100;
+     * de lo contrario, retorna progress_percentage como entero.
      */
     public function getProgressAttribute(): int
     {
@@ -63,12 +91,20 @@ trait ActivityAccessors
     }
 
     // ─── Accessors de urgencia (Matriz Eisenhower) ────────────────────────────
+
+    /**
+     * Devuelve el nivel de urgencia de la actividad (low, medium, high, critical).
+     * Se almacena en metadata['urgency'].
+     */
     public function getUrgencyAttribute(): string
     {
         $meta = $this->metadata ?? [];
         return $meta['urgency'] ?? 'medium';
     }
 
+    /**
+     * Establece el nivel de urgencia en metadata['urgency'].
+     */
     public function setUrgencyAttribute(string $value): void
     {
         $meta = $this->metadata ?? [];
@@ -77,17 +113,29 @@ trait ActivityAccessors
     }
 
     // ─── Accessores de especialidad y servicio (Task compat layer) ────────────
+
+    /**
+     * Devuelve el ID de la habilidad/especialidad asociada.
+     * Busca primero en metadata['skill_id'], luego en skills eager-loaded.
+     */
     public function getSkillIdAttribute(): ?int
     {
         return data_get($this->metadata, 'skill_id') ?? ($this->relationLoaded('skills') ? $this->skills->first()?->id : null);
     }
 
+    /**
+     * Devuelve el ID del servicio asociado.
+     */
     public function getServiceIdAttribute(): ?int
     {
         return data_get($this->metadata, 'service_id');
     }
 
     // ─── Accessores UI helpers ────────────────────────────────────────────────
+
+    /**
+     * Devuelve el icono SVG correspondiente al tipo de actividad para uso en UI.
+     */
     public function getTypeIconAttribute(): string
     {
         return match($this->type) {
@@ -102,6 +150,9 @@ trait ActivityAccessors
         };
     }
 
+    /**
+     * Devuelve la etiqueta en español correspondiente al tipo de actividad.
+     */
     public function getTypeLabelAttribute(): string
     {
         return match($this->type) {
@@ -116,6 +167,9 @@ trait ActivityAccessors
         };
     }
 
+    /**
+     * Devuelve el color del badge correspondiente al tipo de actividad.
+     */
     public function getTypeBadgeColorAttribute(): string
     {
         return match($this->type) {

@@ -15,19 +15,43 @@ use Illuminate\Support\Facades\Redirect;
 
 use App\Traits\AwardsGamification;
 
+/**
+ * Controlador de integración con Google (Calendar, Tasks, Meet).
+ *
+ * Maneja:
+ *   - Autenticación OAuth2 con Google
+ *   - Sincronización bidireccional de tareas con Google Tasks
+ *   - Exportación de tareas a Google Calendar
+ *   - Importación de eventos y tareas desde Google
+ *   - Desconexión de cuentas y tareas individuales
+ */
 class GoogleController extends Controller
 {
     use AwardsGamification;
 
+    /**
+     * Servicio de integración con Google.
+     *
+     * @var GoogleService
+     */
     protected $googleService;
 
+    /**
+     * Inyecta el servicio de Google.
+     */
     public function __construct(GoogleService $googleService)
     {
         $this->googleService = $googleService;
     }
 
     /**
-     * Redirect to Google for authentication.
+     * Redirige al usuario a la página de autenticación de Google OAuth2.
+     *
+     * Captura el team_id y el modo popup en el estado para restaurar el contexto
+     * en el callback.
+     *
+     * @param  Request  $request
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function redirect(Request $request)
     {
@@ -50,7 +74,14 @@ class GoogleController extends Controller
     }
 
     /**
-     * Handle the callback from Google.
+     * Maneja el callback OAuth2 de Google.
+     *
+     * Intercambia el código por tokens, actualiza el pivot team-user con
+     * google_id, google_email, google_token y google_refresh_token.
+     * Detecta modo popup para cerrar la ventana o redirigir al perfil.
+     *
+     * @param  Request  $request
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\View\View
      */
     public function callback(Request $request)
     {
@@ -134,7 +165,13 @@ class GoogleController extends Controller
     }
 
     /**
-     * Show events (Calendar events) for the current user to select.
+     * Muestra eventos de Google Calendar y tareas para que el usuario seleccione qué importar.
+     *
+     * Carga hasta 50 eventos de calendario y 50 tareas, verificando cuáles ya existen
+     * localmente. Combina ambos tipos y los ordena por fecha.
+     *
+     * @param  Request  $request
+     * @return \Illuminate\View\View
      */
     public function sync(Request $request)
     {
@@ -222,7 +259,14 @@ class GoogleController extends Controller
     }
 
     /**
-     * Import selected tasks.
+     * Importa eventos de calendario y tareas seleccionadas desde Google.
+     *
+     * Procesa IDs de tipo 'cal:*' (eventos de calendario) y 'task:*' (tareas de Google Tasks),
+     * creando registros locales de Task para los que no existen. Asigna visibilidad, prioridad
+     * baja y al usuario autenticado como asignado.
+     *
+     * @param  Request  $request
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function import(Request $request)
     {
@@ -341,7 +385,13 @@ class GoogleController extends Controller
     }
 
     /**
-     * Disconnect Google account (clear tokens).
+     * Desconecta la cuenta Google del equipo o globalmente (limpia tokens).
+     *
+     * Si se proporciona team_id, limpia solo los pivotes de ese equipo.
+     * Si no, limpia los campos Google del usuario globalmente (legacy).
+     *
+     * @param  Request  $request
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function disconnect(Request $request)
     {
@@ -372,7 +422,13 @@ class GoogleController extends Controller
     }
 
     /**
-     * Disconnect a task from Google Tasks/Calendar locally.
+     * Desconecta una actividad de Google Tasks/Calendar localmente.
+     *
+     * Intenta eliminar el recurso en Google antes de limpiar los IDs locales.
+     *
+     * @param  \App\Models\Team  $team
+     * @param  int  $taskId
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function disconnectTask(\App\Models\Team $team, $taskId)
     {
@@ -417,7 +473,16 @@ class GoogleController extends Controller
     }
 
     /**
-     * Sync a specific task with Google Tasks (Bidirectional).
+     * Sincroniza una tarea específica con Google Tasks de forma bidireccional.
+     *
+     * Si la tarea no tiene google_task_id, la exporta. Si ya está exportada, compara
+     * timestamps de Google vs local vs última sincronización para determinar qué lado
+     * es más reciente y propagar los cambios. Maneja propagación de títulos en plantillas
+     * e instancias, y sincronización ascendente de progreso en jerarquía padre.
+     *
+     * @param  \App\Models\Team  $team
+     * @param  int  $taskId
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function syncTask(\App\Models\Team $team, $taskId)
     {
@@ -584,7 +649,15 @@ class GoogleController extends Controller
     }
 
     /**
-     * Export a specific task to Google Calendar as an Event.
+     * Exporta una tarea a Google Calendar como evento, o la quita si ya existe.
+     *
+     * Modo toggle: si ya tiene google_calendar_event_id, lo elimina; si no, lo crea.
+     * Incluye asistentes (asignados internos + invitados externos) y envía invitaciones
+     * nativas de Google Calendar.
+     *
+     * @param  \App\Models\Team  $team
+     * @param  int  $taskId
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function exportTaskToCalendar(\App\Models\Team $team, $taskId)
     {

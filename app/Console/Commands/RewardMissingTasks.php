@@ -8,13 +8,44 @@ use App\Models\GamificationLog;
 use App\Models\User;
 use App\Traits\AwardsGamification;
 
+/**
+ * Otorga puntos de gamificación a tareas completadas que carecen de registro en el sistema.
+ *
+ * Compara las tareas con estado 'completed' contra los registros existentes en
+ * gamification_logs y otorga las recompensas correspondientes a aquellas que no
+ * tengan un registro asociado, utilizando el trait AwardsGamification.
+ *
+ * # Ejecución
+ * ```bash
+ * php artisan gamification:reward-missing
+ * ```
+ *
+ * @author  SientiaMTX Team
+ * @version 1.0.0
+ */
 class RewardMissingTasks extends Command
 {
     use AwardsGamification;
 
+    /**
+     * Firma del comando.
+     */
     protected $signature = 'gamification:reward-missing';
+
+    /**
+     * Descripción del comando.
+     */
     protected $description = 'Otorga puntos de gamificación a tareas completadas que no tienen registro.';
 
+    /**
+     * Punto de entrada principal del comando.
+     *
+     * Identifica tareas completadas sin registro en gamification_logs, itera sobre
+     * cada una aplicando la lógica de recompensa del trait AwardsGamification y
+     * reporta el total de tareas recompensadas.
+     *
+     * @return int 0 en caso de éxito.
+     */
     public function handle()
     {
         $this->info('Buscando tareas completadas sin registro de gamificación...');

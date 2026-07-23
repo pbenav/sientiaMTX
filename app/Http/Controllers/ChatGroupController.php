@@ -7,8 +7,19 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Controlador para la gestión de grupos de chat (creación, renombrado, eliminación, miembros).
+ */
 class ChatGroupController extends Controller
 {
+    /**
+     * Crea un nuevo grupo de chat con los participantes especificados.
+     *
+     * El creador se añade automáticamente como miembro con last_read_at establecido.
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe contener receiver_ids (array obligatorio) y name (opcional, máx 100)
+     * @return \Illuminate\Http\JsonResponse Respuesta con success=true y datos del grupo creado, o error con código 422/500
+     */
     public function createGroup(Request $request): JsonResponse
     {
         $request->validate([
@@ -53,6 +64,14 @@ class ChatGroupController extends Controller
         }
     }
 
+    /**
+     * Obtiene la lista de grupos recientes del usuario con su último mensaje.
+     *
+     * Retorna los grupos ordenados por última actividad, incluyendo el último mensaje
+     * enviado en cada grupo y la lista de nombres de participantes.
+     *
+     * @return \Illuminate\Http\JsonResponse Respuesta con success=true y array de grupos con metadatos
+     */
     public function getRecentGroups(): JsonResponse
     {
         $user = auth()->user();
@@ -92,6 +111,15 @@ class ChatGroupController extends Controller
         return response()->json(['success' => true, 'groups' => $groups]);
     }
 
+    /**
+     * Renombra un grupo de chat.
+     *
+     * Solo los miembros del grupo pueden renombrarlo.
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe contener name (obligatorio, máx 100)
+     * @param  int  $groupId  ID del grupo a renombrar
+     * @return \Illuminate\Http\JsonResponse Respuesta con success=true y nuevo nombre, o error 403
+     */
     public function renameGroup(Request $request, $groupId): JsonResponse
     {
         $request->validate([
@@ -113,6 +141,15 @@ class ChatGroupController extends Controller
         ]);
     }
 
+    /**
+     * Elimina un grupo de chat y todos sus mensajes adjuntos.
+     *
+     * Solo los miembros del grupo pueden eliminarlo. Borra los archivos adjuntos
+     * del almacenamiento antes de eliminar los mensajes y el grupo.
+     *
+     * @param  int  $groupId  ID del grupo a eliminar
+     * @return \Illuminate\Http\JsonResponse Respuesta con success=true, o error 403
+     */
     public function deleteGroup($groupId): JsonResponse
     {
         $group = ChatGroup::findOrFail($groupId);
@@ -141,6 +178,16 @@ class ChatGroupController extends Controller
         return response()->json(['success' => true]);
     }
 
+    /**
+     * Añade un nuevo miembro a un grupo de chat.
+     *
+     * Solo los miembros actuales del grupo pueden añadir participantes.
+     * Crea un mensaje de sistema notificando la incorporación del nuevo miembro.
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe contener user_id (obligatorio, debe existir)
+     * @param  int  $groupId  ID del grupo al que añadir el miembro
+     * @return \Illuminate\Http\JsonResponse Respuesta con success=true y nuevo conteo de participantes, o error 403
+     */
     public function addGroupMember(Request $request, $groupId): JsonResponse
     {
         $request->validate([

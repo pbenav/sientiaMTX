@@ -10,8 +10,21 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Controlador para gestionar llamadas de voz y video (Jitsi Meet y Google Meet)
+ * desde el sistema de chat grupal e individual.
+ */
 class ChatCallController extends Controller
 {
+    /**
+     * Inicia una llamada de video/voz mediante Jitsi Meet.
+     *
+     * Crea una sala única de Jitsi y notifica a todos los receptores
+     * mediante un mensaje en el chat (individual o grupal).
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe contener receiver_id (obligatorio) y receiver_ids (opcional, array)
+     * @return \Illuminate\Http\JsonResponse Respuesta con success=true y room name, o error con código 500
+     */
     public function startCall(Request $request): JsonResponse
     {
         $request->validate([
@@ -64,6 +77,15 @@ class ChatCallController extends Controller
         }
     }
 
+    /**
+     * Inicia una reunión de Google Meet y la notifica por chat.
+     *
+     * Requiere que el usuario tenga Google vinculado y OAuth configurado.
+     * Busca un equipo compartido con el primer receptor para obtener el token de Google.
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe contener receiver_id (obligatorio) y receiver_ids (opcional, array)
+     * @return \Illuminate\Http\JsonResponse Respuesta con success=true y meet_url, o error con código 403/422/500
+     */
     public function startGoogleMeet(Request $request): JsonResponse
     {
         $request->validate([
@@ -143,6 +165,15 @@ class ChatCallController extends Controller
         }
     }
 
+    /**
+     * Genera un enlace de Google Meet sin notificar a nadie.
+     *
+     * Útil para que el usuario obtenga un enlace de reunión para copiar manualmente.
+     * Requiere que el usuario tenga Google vinculado con un equipo.
+     *
+     * @param  \Illuminate\Http\Request  $request  Puede contener team_id opcional
+     * @return \Illuminate\Http\JsonResponse Respuesta con success=true y meet_url, o error con código 403/503
+     */
     public function generateMeetLink(Request $request): JsonResponse
     {
         $user = auth()->user();

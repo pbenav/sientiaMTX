@@ -16,11 +16,24 @@ use Illuminate\Support\Facades\Notification;
 use App\Traits\HandlesEisenhowerMatrix;
 use Illuminate\Http\Request;
 
+/**
+ * Controlador de gestión de equipos.
+ *
+ * Maneja:
+ *   - Listado, creación, edición y eliminación de equipos
+ *   - Transferencia de propiedad
+ *   - Dashboard con matriz de Eisenhower por equipo
+ *   - Colores de cuadrantes y orden de equipos
+ *   - Red activa, mención de usuarios, favoritos
+ *   - Configuraciones premium por equipo y masivas
+ */
 class TeamController extends Controller
 {
     use HandlesEisenhowerMatrix;
     /**
-     * Display a listing of user's teams
+     * Listado de equipos del usuario autenticado.
+     *
+     * @return \Illuminate\View\View
      */
     public function index()
     {
@@ -34,7 +47,13 @@ class TeamController extends Controller
     }
 
     /**
-     * Display a listing of all teams for site administrators
+     * Listado de todos los equipos para administradores del sitio.
+     *
+     * Soporta búsqueda por nombre/descripción, ordenamiento y paginación.
+     * Requiere autorización admin.
+     *
+     * @param  Request  $request
+     * @return \Illuminate\View\View
      */
     public function indexAdmin(Request $request)
     {
@@ -70,7 +89,9 @@ class TeamController extends Controller
     }
 
     /**
-     * Show the form for creating a new team
+     * Muestra el formulario para crear un nuevo equipo.
+     *
+     * @return \Illuminate\View\View
      */
     public function create()
     {
@@ -78,7 +99,10 @@ class TeamController extends Controller
     }
 
     /**
-     * Store a newly created team in storage
+     * Almacena un nuevo equipo y asigna al creador como coordinador.
+     *
+     * @param  Request  $request
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
     {
@@ -101,7 +125,10 @@ class TeamController extends Controller
     }
 
     /**
-     * Display the specified team
+     * Muestra un equipo, redirigiendo al listado de actividades.
+     *
+     * @param  Team  $team
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function show(Team $team)
     {
@@ -113,7 +140,10 @@ class TeamController extends Controller
     }
 
     /**
-     * Show the form for editing the team
+     * Muestra el formulario de edición de un equipo.
+     *
+     * @param  Team  $team
+     * @return \Illuminate\View\View
      */
     public function edit(Team $team)
     {
@@ -126,7 +156,14 @@ class TeamController extends Controller
     }
 
     /**
-     * Update the team in storage
+     * Actualiza un equipo: nombre, descripción, chat IDs, cuotas de disco y configuraciones premium.
+     *
+     * Protege los flags has_whatsapp y has_appointments para que solo admins globales puedan modificarlos.
+     * Normaliza colores hexadecimales de cuadrantes y calcula soft_disk_quota en bytes.
+     *
+     * @param  Request  $request
+     * @param  Team  $team
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function update(Request $request, Team $team)
     {
@@ -192,7 +229,10 @@ class TeamController extends Controller
     }
 
     /**
-     * Remove the team from storage
+     * Elimina permanentemente un equipo (forceDelete).
+     *
+     * @param  Team  $team
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy(Team $team)
     {
@@ -208,7 +248,14 @@ class TeamController extends Controller
 
 
     /**
-     * Show dashboard with matriz de Eisenhower
+     * Dashboard con matriz de Eisenhower para un equipo.
+     *
+     * Carga actividades con relaciones, aplica filtros de visibilidad según rol (manager vs member),
+     * agrupa por cuadrante, maneja tareas completadas con límite configurable, y carga servicios
+     * con sus reportes recientes.
+     *
+     * @param  Team  $team
+     * @return \Illuminate\View\View
      */
     public function dashboard(Team $team)
     {
@@ -315,7 +362,14 @@ class TeamController extends Controller
     }
 
     /**
-     * Transfer team ownership to another user
+     * Transfiere la propiedad de un equipo a otro usuario.
+     *
+     * Asigna el rol de coordinador al nuevo y antiguo propietario.
+     * Requiere autorización transferOwnership.
+     *
+     * @param  Request  $request
+     * @param  Team  $team
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function transferOwnership(Request $request, Team $team)
     {
@@ -354,7 +408,13 @@ class TeamController extends Controller
     }
 
     /**
-     * Update a quadrant color for the team.
+     * Actualiza el color de un cuadrante de la matriz de Eisenhower para el equipo.
+     *
+     * Normaliza colores hexadecimales de 4 a 6 dígitos. Requiere autorización update.
+     *
+     * @param  Request  $request
+     * @param  Team  $team
+     * @return \Illuminate\Http\JsonResponse
      */
     public function updateQuadrantColor(Request $request, Team $team)
     {
@@ -382,7 +442,10 @@ class TeamController extends Controller
         return response()->json(['success' => true]);
     }
     /**
-     * Update the sort order of teams for the authenticated user.
+     * Actualiza el orden de arrastre de equipos para el usuario autenticado.
+     *
+     * @param  Request  $request
+     * @return \Illuminate\Http\JsonResponse
      */
     public function updateOrder(Request $request)
     {
@@ -399,7 +462,14 @@ class TeamController extends Controller
         return response()->json(['success' => true]);
     }
     /**
-     * Get the active network member list partial for real-time updates.
+     * Obtiene la lista parcial de miembros activos de la red para actualizaciones en tiempo real.
+     *
+     * Devuelve HTML parcial y/o datos JSON de heatmap con ubicación, estado y contadores.
+     * Requiere autorización view.
+     *
+     * @param  Team  $team
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\View\View|\Illuminate\Http\JsonResponse
      */
     public function activeNetwork(Team $team, \Illuminate\Http\Request $request)
     {
@@ -444,7 +514,10 @@ class TeamController extends Controller
     }
 
     /**
-     * Get team members for mentions in JSON format.
+     * Obtiene miembros del equipo para menciones en formato JSON.
+     *
+     * @param  Team  $team
+     * @return \Illuminate\Http\JsonResponse
      */
     public function mentionUsers(Team $team)
     {
@@ -464,6 +537,12 @@ class TeamController extends Controller
         return response()->json($members);
     }
 
+    /**
+     * Alterna si un equipo es favorito del usuario autenticado.
+     *
+     * @param  Team  $team
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function toggleFavorite(Team $team)
     {
         $this->authorize('view', $team);
@@ -482,7 +561,13 @@ class TeamController extends Controller
     }
 
     /**
-     * Alternar configuración individual (Premium) de un equipo (Solo Admin)
+     * Alterna configuración individual (Premium) de un equipo.
+     *
+     * Solo admin. Alterna has_appointments, has_whatsapp o microsites_enabled.
+     *
+     * @param  Request  $request
+     * @param  Team  $team
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function toggleSetting(Request $request, Team $team)
     {
@@ -506,7 +591,12 @@ class TeamController extends Controller
     }
 
     /**
-     * Activar o desactivar una configuración en todos los equipos (Solo Admin)
+     * Activa o desactiva una configuración premium en todos los equipos del sistema.
+     *
+     * Solo admin. Aplica a has_appointments, has_whatsapp o microsites_enabled.
+     *
+     * @param  Request  $request
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function bulkSettings(Request $request)
     {

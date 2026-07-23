@@ -7,8 +7,29 @@ use App\Models\Microsite;
 use App\Services\Microsite\MicrositeContentService;
 use Illuminate\Http\Request;
 
+/**
+ * Controlador público para la visualización de micrositios accesibles sin autenticación.
+ *
+ * Proporciona un directorio de micrositios públicos con búsqueda y filtrado por equipo,
+ * así como la visualización individual de cada micrositio con procesamiento de contenido
+ * HTML/CSS a través de MicrositeContentService. Contabiliza las visitas incrementando
+ * el contador de vistas.
+ *
+ * Rutas asociadas:
+ *   - GET /microsites/directory
+ *   - GET /microsites/{slug}
+ */
 class PublicMicrositeController extends Controller
 {
+    /**
+     * Muestra el directorio público de todos los micrositios publicados.
+     *
+     * Incluye la lista paginada con búsqueda por título y ciudad, y los micrositios
+     * con coordenadas para visualización en mapa.
+     *
+     * @param Request $request Parámetro opcional 'q' para búsqueda
+     * @return \Illuminate\View\View
+     */
     public function directory(Request $request)
     {
         // El mapa y listado de todos los micrositios públicos
@@ -39,6 +60,17 @@ class PublicMicrositeController extends Controller
         return view('microsites.public.directory', compact('microsites', 'mapMicrosites'));
     }
 
+    /**
+     * Muestra un micrositio público individual por su slug.
+     *
+     * Verifica que el micrositio esté publicado y que el equipo aún tenga habilitada
+     * la función de micrositios. Incrementa el contador de vistas y procesa el contenido
+     * HTML/CSS mediante MicrositeContentService.
+     *
+     * @param string $slug Identificador único del micrositio
+     * @return \Illuminate\View\View
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     */
     public function show(string $slug)
     {
         $microsite = Microsite::where('slug', $slug)

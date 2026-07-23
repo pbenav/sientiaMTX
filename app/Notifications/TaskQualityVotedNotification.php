@@ -16,10 +16,20 @@ class TaskQualityVotedNotification extends Notification implements ShouldQueue
 {
     use Queueable, DeterminesNotificationChannels;
 
+    /** @var Task|Activity */
     public $task;
+
+    /** @var User */
     public $voter;
+
+    /** @var int */
     public $score;
 
+    /**
+     * @param  Task|Activity  $task  Tarea o actividad valorada
+     * @param  User  $voter  Usuario que emite la valoración
+     * @param  int  $score  Puntuación en estrellas (1-5)
+     */
     public function __construct(Task|Activity $task, User $voter, int $score)
     {
         $this->task = $task;
@@ -27,6 +37,9 @@ class TaskQualityVotedNotification extends Notification implements ShouldQueue
         $this->score = $score;
     }
 
+    /**
+     * Formatea la notificación push web para la valoración de tarea.
+     */
     public function toWebPush($notifiable, $notification): WebPushMessage
     {
         return (new WebPushMessage)
@@ -37,6 +50,9 @@ class TaskQualityVotedNotification extends Notification implements ShouldQueue
             ->options(['TTL' => 1000]);
     }
 
+    /**
+     * Formatea la notificación de Telegram para la valoración de tarea.
+     */
     public function toTelegram($notifiable): array
     {
         $url = route('teams.activities.show', [$this->task->team_id, $this->task]);
@@ -48,6 +64,9 @@ class TaskQualityVotedNotification extends Notification implements ShouldQueue
         ];
     }
 
+    /**
+     * Formatea el correo electrónico para la valoración de tarea.
+     */
     public function toMail($notifiable): MailMessage
     {
         $url = route('teams.activities.show', [$this->task->team_id, $this->task]);
@@ -60,6 +79,9 @@ class TaskQualityVotedNotification extends Notification implements ShouldQueue
             ->line('¡Sigue así!');
     }
 
+    /**
+     * Convierte la notificación en un array para almacenamiento en base de datos.
+     */
     public function toArray($notifiable)
     {
         return [

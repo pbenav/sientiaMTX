@@ -6,11 +6,48 @@ use Illuminate\Console\Command;
 use App\Models\Activity;
 use Carbon\Carbon;
 
+/**
+ * Genera ocurrencias futuras para actividades autoprogramables cuando se alcanza el umbral de preaviso.
+ *
+ * Recorre todas las actividades marcadas como autoprogramables en su metadata,
+ * evalúa si la próxima ocurrencia está dentro del período de anticipación
+ * configurado y las "despierta" para generar las instancias correspondientes.
+ * Opcionalmente permite limpiar ocurrencias futuras redundantes del modelo anterior.
+ *
+ * # Ejecución
+ * ```bash
+ * php artisan sientia:activities-autoprogram-wakeup
+ * php artisan sientia:activities-autoprogram-wakeup --cleanup
+ * ```
+ *
+ * @author  SientiaMTX Team
+ * @version 1.0.0
+ */
 class WakeupAutoprogrammedActivities extends Command
 {
+    /**
+     * Firma del comando con opción opcional de limpieza.
+     *
+     * --cleanup : Elimina ocurrencias futuras redundantes de actividades maestras autoprogramables.
+     */
     protected $signature = 'sientia:activities-autoprogram-wakeup {--cleanup : Realizar limpieza de ejecuciones futuras previas}';
+
+    /**
+     * Descripción del comando.
+     */
     protected $description = 'Procesa las actividades autoprogramables para generar la siguiente ocurrencia si está dentro del preaviso definido.';
 
+    /**
+     * Punto de entrada principal del comando.
+     *
+     * Si se proporciona la bandera --cleanup, ejecuta la limpieza de ocurrencias futuras.
+     * Luego itera sobre las actividades autoprogramables y genera sus próximas ocurrencias
+     * cuando se cumple el umbral de anticipación definido en los ajustes de autoprogramación
+     * almacenados en la metadata JSON. Incluye una salvaguarda de 5 iteraciones máximas
+     * para evitar bucles infinitos.
+     *
+     * @return int Código de salida del comando (SUCCESS).
+     */
     public function handle()
     {
         if ($this->option('cleanup')) {
@@ -62,6 +99,15 @@ class WakeupAutoprogrammedActivities extends Command
         return Command::SUCCESS;
     }
 
+    /**
+     * Elimina ocurrencias futuras de actividades autoprogramables maestras.
+     *
+     * Busca actividades maestras que tengan hijos generados y elimina aquellos cuya
+     * fecha de ejecución esté programada para después del día actual y cuyo estado
+     * sea pendiente. Esto permite resetear el sistema al nuevo modelo JIT.
+     *
+     * @return void
+     */
     protected function cleanupFutureOccurrences()
     {
         // Buscamos actividades que tienen hijos generados pero que son autoprogramables (maestras)

@@ -7,11 +7,44 @@ use App\Models\AppointmentVisitor;
 use App\Models\Appointment;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Unifica visitantes duplicados por dirección de correo electrónico.
+ *
+ * Identifica visitantes con emails duplicados, conserva el registro más antiguo como
+ * principal y fusiona los datos de los duplicados en las observaciones del registro
+ * principal. Reasigna todas las citas asociadas al visitante duplicado al principal
+ * antes de eliminarlos, todo dentro de una transacción de base de datos.
+ *
+ * # Ejecución
+ * ```bash
+ * php artisan visitors:cleanup-duplicates
+ * ```
+ *
+ * @author  SientiaMTX Team
+ * @version 1.0.0
+ */
 class CleanupDuplicateVisitors extends Command
 {
+    /**
+     * Firma del comando.
+     */
     protected $signature = 'visitors:cleanup-duplicates';
+
+    /**
+     * Descripción del comando.
+     */
     protected $description = 'Unifica visitantes duplicados por email conservando los datos adicionales en observaciones.';
 
+    /**
+     * Punto de entrada principal del comando.
+     *
+     * Encuentra todos los emails duplicados, selecciona el registro más antiguo como
+     * principal, reasigna las citas, fusiona la información en las observaciones y
+     * elimina los duplicados. Todo ocurre dentro de una transacción que se revierte
+     * en caso de error.
+     *
+     * @return int 0 en caso de éxito, 1 en caso de error.
+     */
     public function handle()
     {
         // Encontrar emails duplicados

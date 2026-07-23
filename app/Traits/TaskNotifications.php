@@ -2,10 +2,28 @@
 
 namespace App\Traits;
 
+/**
+ * Trait TaskNotifications
+ *
+ * Maneja las notificaciones automáticas para eventos de tareas:
+ * - notifyCreatorAndCoordinators: notifica al creador y coordinadores sobre un evento
+ * - notifyCoordinatorsIfCompleted: notifica a coordinadores cuando una tarea se completa
+ *   según las reglas de privacidad (private, semi-private, public) y tipo de tarea.
+ *
+ * @mixin \App\Models\Task
+ */
 trait TaskNotifications
 {
     /**
-     * Notify creator and coordinators about a task event.
+     * Notifica al creador y coordinadores sobre un evento de tarea.
+     *
+     * Recipients:
+     * 1. Creador (si no es el usuario autenticado)
+     * 2. Coordinadores filtrados por visibilidad:
+     *    - 'public': todos los coordinadores
+     *    - No pública: solo coordinadores involucrados (creador, asignado, o en grupos)
+     *
+     * @param \Illuminate\Notifications\Notification $notification Instancia de notificación a enviar
      */
     public function notifyCreatorAndCoordinators($notification)
     {
@@ -42,7 +60,15 @@ trait TaskNotifications
     }
 
     /**
-     * Notify coordinators if the task is completed and meets specific criteria.
+     * Notifica a los coordinadores si la tarea fue completada y cumple criterios específicos.
+     *
+     * Reglas de notificación al completar:
+     * - 'private' o NULL: solo al creador (si no es quien completó)
+     * - 'semi-private': creador + asignado (si no son quien completó)
+     * - 'public' + template/coordinator-created: a todos los coordinadores (excluyendo al actor)
+     * - 'public' normal: solo al creador (si no es quien completó)
+     *
+     * Envía TaskCompletedNotification a cada destinatario.
      */
     public function notifyCoordinatorsIfCompleted()
     {

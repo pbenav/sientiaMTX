@@ -7,8 +7,13 @@ use App\Models\Task;
 
 class ActivityObserver
 {
+    /** Indica si se está ejecutando una sincronización en curso para evitar recursión */
     public static bool $isSyncing = false;
 
+    /**
+     * Sincroniza los cambios de una actividad con su tarea asociada en activity_task_mapping.
+     * Actualiza datos, asignaciones y etiquetas de la tarea.
+     */
     public function saved(Activity $activity): void
     {
         if (static::$isSyncing || TaskObserver::$isSyncing) {
@@ -100,6 +105,10 @@ class ActivityObserver
         }
     }
 
+    /**
+     * Elimina la tarea asociada cuando se elimina la actividad.
+     * Realiza soft delete o hard delete según el tipo de eliminación.
+     */
     public function deleted(Activity $activity): void
     {
         if (static::$isSyncing || TaskObserver::$isSyncing) {
@@ -131,6 +140,9 @@ class ActivityObserver
         }
     }
 
+    /**
+     * Restaura la tarea asociada cuando se restaura la actividad eliminada.
+     */
     public function restored(Activity $activity): void
     {
         if (static::$isSyncing || TaskObserver::$isSyncing) {

@@ -9,8 +9,32 @@ use Illuminate\Http\Request;
 use App\Http\Requests\Microsite\StoreMicrositeRequest;
 use App\Http\Requests\Microsite\UpdateMicrositeRequest;
 
+/**
+ * Controlador de administración de micrositios dentro de un equipo.
+ *
+ * Permite a los usuarios con permisos crear, editar, listar y eliminar micrositios
+ * vinculados a un equipo. Incluye verificación de permisos a nivel de equipo y pivot
+ * (allow_microsites). Los micrositios almacenan HTML, CSS y metadatos de publicación.
+ *
+ * Rutas asociadas:
+ *   - GET /teams/{team}/microsites
+ *   - GET /teams/{team}/microsites/create
+ *   - POST /teams/{team}/microsites
+ *   - GET /teams/{team}/microsites/{microsite}/edit
+ *   - PUT/PATCH /teams/{team}/microsites/{microsite}
+ *   - DELETE /teams/{team}/microsites/{microsite}
+ */
 class MicrositeController extends Controller
 {
+    /**
+     * Muestra la lista de micrositios del usuario dentro de un equipo.
+     *
+     * Verifica que los micrositios estén habilitados para el equipo y que el usuario
+     * tenga permiso de gestión de micrositios.
+     *
+     * @param Team $team
+     * @return \Illuminate\View\View
+     */
     public function index(Team $team)
     {
         $user = auth()->user();
@@ -28,6 +52,14 @@ class MicrositeController extends Controller
         return view('microsites.index', compact('team', 'microsites'));
     }
 
+    /**
+     * Muestra el formulario de creación de un nuevo micrositio.
+     *
+     * Verifica los permisos de micrositios del usuario y equipo.
+     *
+     * @param Team $team
+     * @return \Illuminate\View\View
+     */
     public function create(Team $team)
     {
         $user = auth()->user();
@@ -38,6 +70,16 @@ class MicrositeController extends Controller
         return view('microsites.create', compact('team'));
     }
 
+    /**
+     * Crea un nuevo micrositio para el usuario autenticado.
+     *
+     * Utiliza StoreMicrositeRequest para la validación. Asocia el micrositio al equipo
+     * y al usuario actual, y determina el estado de publicación.
+     *
+     * @param StoreMicrositeRequest $request
+     * @param Team $team
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function store(StoreMicrositeRequest $request, Team $team)
     {
         $data = $request->validated();
@@ -53,6 +95,15 @@ class MicrositeController extends Controller
         return redirect()->route('teams.microsites.index', $team)->with('success', 'Micrositio creado correctamente.');
     }
 
+    /**
+     * Muestra el formulario de edición de un micrositio existente.
+     *
+     * Verifica que el micrositio pertenezca al usuario autenticado y al equipo.
+     *
+     * @param Team $team
+     * @param Microsite $microsite
+     * @return \Illuminate\View\View
+     */
     public function edit(Team $team, Microsite $microsite)
     {
         if ($microsite->user_id !== auth()->id() || $microsite->team_id !== $team->id) {
@@ -62,6 +113,16 @@ class MicrositeController extends Controller
         return view('microsites.edit', compact('team', 'microsite'));
     }
 
+    /**
+     * Actualiza un micrositio existente.
+     *
+     * Utiliza UpdateMicrositeRequest para la validación. Verifica la propiedad del micrositio.
+     *
+     * @param UpdateMicrositeRequest $request
+     * @param Team $team
+     * @param Microsite $microsite
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function update(UpdateMicrositeRequest $request, Team $team, Microsite $microsite)
     {
         if ($microsite->user_id !== auth()->id() || $microsite->team_id !== $team->id) {
@@ -78,6 +139,15 @@ class MicrositeController extends Controller
         return redirect()->route('teams.microsites.index', $team)->with('success', 'Micrositio actualizado correctamente.');
     }
 
+    /**
+     * Elimina un micrositio.
+     *
+     * Solo el propietario del micrositio puede eliminarlo.
+     *
+     * @param Team $team
+     * @param Microsite $microsite
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function destroy(Team $team, Microsite $microsite)
     {
         if ($microsite->user_id !== auth()->id() || $microsite->team_id !== $team->id) {

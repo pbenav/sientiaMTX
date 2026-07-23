@@ -12,6 +12,11 @@ use Illuminate\Queue\SerializesModels;
 class AppointmentCancelledMail extends Mailable
 {
     use Queueable;
+
+    /**
+     * @param  Appointment  $appointment  Cita cancelada
+     * @param  string|null  $reason  Motivo de la cancelación
+     */
     public function __construct(
         public Appointment $appointment,
         public ?string $reason = null
@@ -19,6 +24,9 @@ class AppointmentCancelledMail extends Mailable
         $this->reason = $reason ?? $appointment->cancellation_reason;
     }
 
+    /**
+     * Obtener el sobre del correo.
+     */
     public function envelope(): Envelope
     {
         return new Envelope(
@@ -26,6 +34,9 @@ class AppointmentCancelledMail extends Mailable
         );
     }
 
+    /**
+     * Obtener el contenido del correo.
+     */
     public function content(): Content
     {
         return new Content(markdown: 'mail.appointments.cancelled');

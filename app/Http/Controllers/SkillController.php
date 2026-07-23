@@ -10,8 +10,23 @@ use App\Models\Skill;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
+/**
+ * Controlador para la gestión de habilidades (skills) globales y por equipo.
+ *
+ * Permite crear, actualizar, eliminar habilidades, heredar habilidades globales
+ * a equipos específicos, y consultar tareas asociadas a una habilidad.
+ */
 class SkillController extends Controller
 {
+    /**
+     * Lista las habilidades globales (admin) o muestra la vista de edición de habilidades del equipo.
+     *
+     * Si se proporciona $team, verifica permisos de actualización y redirige a la vista de edición.
+     * Si no, verifica permisos de admin y retorna la vista de administración global.
+     *
+     * @param  \App\Models\Team|null  $team  Equipo a editar (opcional)
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\View\View Redirección a edición de equipo o vista de administración
+     */
     public function index(\App\Models\Team $team = null)
     {
         $query = Skill::with(['team', 'tasks'])->withCount('tasks')->orderBy('name');
@@ -31,6 +46,16 @@ class SkillController extends Controller
         return view('settings.skills', compact('skills', 'teams', 'team'));
     }
 
+    /**
+     * Crea una nueva habilidad (global o de equipo).
+     *
+     * Si se crea dentro de un equipo y existe una habilidad global con el mismo nombre,
+     * migra las actividades del equipo que usaban la habilidad global a la nueva local.
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe contener name (obligatorio), team_id, description, color, icon (opcionales)
+     * @param  \App\Models\Team|null  $team  Equipo al que pertenece la habilidad (opcional, para global)
+     * @return \Illuminate\Http\RedirectResponse Redirección con mensaje de éxito
+     */
     public function store(Request $request, \App\Models\Team $team = null)
     {
         if ($team) {
@@ -74,6 +99,17 @@ class SkillController extends Controller
         return back()->with('success', 'Habilidad creada correctamente.');
     }
 
+    /**
+     * Actualiza una habilidad existente.
+     *
+     * Verifica permisos de admin (global) o actualización de equipo (local).
+     * Si se proporciona un team_id en el request, lo asigna a la habilidad.
+     *
+     * @param  \Illuminate\Http\Request  $request  Campos a actualizar (name, description, color, icon, team_id)
+     * @param  \App\Models\Team|null  $team  Equipo contexto (opcional)
+     * @param  \App\Models\Skill  $skill  Habilidad a actualizar
+     * @return \Illuminate\Http\RedirectResponse Redirección con mensaje de éxito
+     */
     public function update(Request $request, \App\Models\Team $team = null, Skill $skill)
     {
         // Handle case where route might be global but skill belongs to team
@@ -104,6 +140,16 @@ class SkillController extends Controller
         return back()->with('success', 'Habilidad actualizada correctamente.');
     }
 
+    /**
+     * Elimina una habilidad si no tiene tareas asociadas.
+     *
+     * Verifica permisos de admin (global) o actualización de equipo (local).
+     * Bloquea la eliminación si hay actividades que usan la habilidad.
+     *
+     * @param  \App\Models\Team|null  $team  Equipo contexto (opcional)
+     * @param  \App\Models\Skill  $skill  Habilidad a eliminar
+     * @return \Illuminate\Http\RedirectResponse Redirección con mensaje de éxito o error
+     */
     public function destroy(\App\Models\Team $team = null, Skill $skill)
     {
         if ($team) {
@@ -125,6 +171,15 @@ class SkillController extends Controller
         return back()->with('success', 'Habilidad eliminada correctamente.');
     }
 
+    /**
+     * Hereda todas las habilidades globales no existentes en el equipo.
+     *
+     * Crea copias locales de las habilidades globales y migra las actividades
+     * existentes del equipo que usaban la habilidad global a la nueva copia local.
+     *
+     * @param  \App\Models\Team  $team  Equipo que heredará las habilidades
+     * @return \Illuminate\Http\RedirectResponse Redirección con mensaje de éxito o info
+     */
     public function inherit(\App\Models\Team $team)
     {
         $this->authorize('update', $team);
@@ -167,6 +222,17 @@ class SkillController extends Controller
         return back()->with('info', "Todas las habilidades globales ya estaban presentes en el equipo.");
     }
 
+    /**
+     * Obtiene las tareas asociadas a una habilidad específica (API JSON).
+     *
+     * Consulta actividades de tipo 'task' que tengan la habilidad indicada,
+     * incluyendo el cognitive_load extraído de metadata.
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe estar autenticado
+     * @param  \App\Models\Team  $team  Equipo de las tareas
+     * @param  string  $skillName  Nombre de la habilidad para filtrar
+     * @return \Illuminate\Http\JsonResponse Respuesta con tareas paginadas
+     */
     public function tasks(Request $request, \App\Models\Team $team, $skillName)
     {
         $tasks = \App\Models\Activity::visibleTo(auth()->user(), $team->isManager(auth()->user()))

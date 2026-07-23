@@ -11,8 +11,24 @@ use Illuminate\Http\Request;
 
 use App\Models\AiChatMessage;
 
+/**
+ * Controlador para las interacciones con el asistente de IA (Ax.ia).
+ *
+ * Maneja la obtención de modelos disponibles, historial de chat, envío de mensajes
+ * con archivos adjuntos, reutilización de archivos existentes, y auto-corrección
+ * de payloads JSON corruptos generados por la IA.
+ */
 class AiChatController extends Controller
 {
+    /**
+     * Obtiene la lista de modelos de IA disponibles para el usuario actual.
+     *
+     * Permite sobreescribir la clave API temporalmente y limpiar el caché de modelo.
+     *
+     * @param  \Illuminate\Http\Request  $request  Puede contener team_id y api_key (opcional)
+     * @param  \App\Contracts\AiAssistantInterface  $aiService  Instancia del servicio de IA
+     * @return \Illuminate\Http\JsonResponse Respuesta con models array y current_model
+     */
     public function getAvailableModels(Request $request, AiAssistantInterface $aiService)
     {
         $aiService->forUser($request->user(), $request->team_id);
@@ -35,6 +51,15 @@ class AiChatController extends Controller
         ]);
     }
 
+    /**
+     * Obtiene el historial de mensajes de chat con IA del usuario.
+     *
+     * Retorna los últimos 20 mensajes ordenados cronológicamente (más antiguo primero),
+     * incluyendo la relación con taskAttachment.
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe contener team_id
+     * @return \Illuminate\Http\JsonResponse Respuesta con messages array y current_model
+     */
     public function getHistory(Request $request)
     {
         $messages = AiChatMessage::where('user_id', $request->user()->id)
@@ -52,6 +77,18 @@ class AiChatController extends Controller
         ]);
     }
 
+    /**
+     * Procesa una solicitud al asistente de IA y retorna la respuesta.
+     *
+     * Maneja contexto de tareas, adjuntos (archivos locales, Google Drive, TaskAttachments,
+     * ActivityAttachments), hilos de foro, historial de conversación, auto-corrección
+     * de JSON corrupto, y gamificación (recharge logic). Persiste tanto el mensaje del usuario
+     * como la respuesta de la IA en la base de datos.
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe contener prompt (opcional si hay archivo), team_id (opcional), task_id (opcional), file (opcional), reuse_file_path (opcional), attachment_id (opcional), forum_thread_id (opcional)
+     * @param  \App\Contracts\AiAssistantInterface  $aiAssistant  Instancia del servicio de IA
+     * @return \Illuminate\Http\JsonResponse Respuesta con message (respuesta de IA), current_model, user_message_id, ai_message_id
+     */
     public function ask(Request $request, AiAssistantInterface $aiAssistant)
     {
         $request->validate([
@@ -370,6 +407,13 @@ class AiChatController extends Controller
         ]);
     }
 
+    /**
+     * Elimina un mensaje de chat con IA y su archivo adjunto si existe.
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe estar autenticado
+     * @param  int  $id  ID del mensaje a eliminar
+     * @return \Illuminate\Http\JsonResponse Respuesta con success=true
+     */
     public function deleteMessage(Request $request, int $id)
     {
         $message = AiChatMessage::where('user_id', $request->user()->id)->findOrFail($id);
@@ -380,6 +424,15 @@ class AiChatController extends Controller
         return response()->json(['success' => true]);
     }
 
+    /**
+     * Elimina todo el historial de chat con IA del usuario, incluyendo archivos adjuntos.
+     *
+     * Primero borra los archivos adjuntos almacenados en el disco público,
+     * luego elimina todos los mensajes de la base de datos.
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe contener team_id (opcional, para filtrar)
+     * @return \Illuminate\Http\JsonResponse Respuesta con success=true
+     */
     public function clearHistory(Request $request)
     {
         $messages = AiChatMessage::where('user_id', $request->user()->id)

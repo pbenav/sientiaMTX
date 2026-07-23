@@ -9,6 +9,13 @@ use Symfony\Component\HttpFoundation\Response;
 
 class TrackUserActivity
 {
+    /**
+     * Gestiona el seguimiento de actividad del usuario, detecta solicitudes en segundo
+     * plano (polls, heartbeats, widget refreshes), controla la expiración por inactividad
+     * y detiene los temporizadores de trabajo si corresponde.
+     *
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     */
     public function handle(Request $request, Closure $next): Response
     {
         if (Auth::check()) {

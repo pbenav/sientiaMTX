@@ -9,8 +9,22 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Controlador para gestionar las operaciones de chat (mensajes individuales y grupales).
+ *
+ * Maneja la carga de historial de mensajes, envío, borrado masivo y eliminación individual.
+ */
 class ChatMessageController extends Controller
 {
+    /**
+     * Obtiene el historial de mensajes entre dos usuarios o dentro de un grupo.
+     *
+     * Marca los mensajes como leídos y las notificaciones de Laravel como leídas.
+     * Para grupos, verifica la membresía del usuario antes de devolver los mensajes.
+     *
+     * @param  string  $identifier  ID del usuario receptor o 'group_{id}' para grupos
+     * @return \Illuminate\Http\JsonResponse Respuesta con member info y array de mensajes formateados
+     */
     public function index($identifier): JsonResponse
     {
         $userId = auth()->id();
@@ -123,6 +137,16 @@ class ChatMessageController extends Controller
     }
 
 
+    /**
+     * Crea y almacena un nuevo mensaje de chat (texto, archivo o enlace de Google Drive).
+     *
+     * Soporta archivos locales (almacenados en storage/app/public/chat_attachments)
+     * y archivos de Google Drive (referenciados por webViewLink).
+     * Envía una notificación al receptor si está offline.
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe contener receiver_id, message (opcional), file o drive_file, parent_id (opcional), call_room (opcional)
+     * @return \Illuminate\Http\JsonResponse Respuesta con el mensaje creado en formato normalizado
+     */
     public function store(Request $request): JsonResponse
     {
         $request->validate([
@@ -203,6 +227,15 @@ class ChatMessageController extends Controller
     }
 
 
+    /**
+     * Elimina todos los mensajes de una conversación individual o grupo.
+     *
+     * También borra los archivos adjuntos locales del almacenamiento.
+     * Para grupos, verifica que el usuario sea miembro antes de proceder.
+     *
+     * @param  string  $identifier  ID del usuario o 'group_{id}' del chat a limpiar
+     * @return \Illuminate\Http\JsonResponse Respuesta con success=true, o error 403/500
+     */
     public function clear($identifier): JsonResponse
     {
         $userId = auth()->id();
@@ -242,6 +275,16 @@ class ChatMessageController extends Controller
     }
 
 
+    /**
+     * Elimina un mensaje individual del chat.
+     *
+     * Solo el remitente puede eliminar su propio mensaje. En grupos,
+     * verifica además que el usuario sea miembro del grupo.
+     * Borra el archivo adjunto si existe.
+     *
+     * @param  int  $id  ID del mensaje a eliminar
+     * @return \Illuminate\Http\JsonResponse Respuesta con success=true, o error 403/500
+     */
     public function destroy($id): JsonResponse
     {
         $message = ChatMessage::findOrFail($id);

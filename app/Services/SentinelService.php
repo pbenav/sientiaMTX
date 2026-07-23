@@ -7,12 +7,20 @@ use App\Models\ServiceReport;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Servicio de monitoreo de salud de servicios externos.
+ *
+ * Realiza health checks periódicos a servicios con URL configurada,
+ * registra resultados en ServiceReport y actualiza el estado del servicio.
+ */
 class SentinelService
 {
     /**
-     * Perform a health check on all services with a valid URL.
+     * Realiza health check a todos los servicios con URL válida.
+     *
+     * @return void
      */
-    public function checkAll()
+    public function checkAll(): void
     {
         $services = Service::whereNotNull('url')
             ->where('url', '!=', '')
@@ -24,9 +32,16 @@ class SentinelService
     }
 
     /**
-     * Check a single service.
+     * Realiza health check a un servicio individual.
+     *
+     * Envía petición GET con User-Agent personalizado y timeout de 10s.
+     * Si recibe 401/403 considera el servicio "up" (servidor responde).
+     * Registra el resultado y actualiza el estado si cambió.
+     *
+     * @param  Service  $service
+     * @return void
      */
-    public function checkService(Service $service)
+    public function checkService(Service $service): void
     {
         $url = $service->url;
 
@@ -54,9 +69,17 @@ class SentinelService
     }
 
     /**
-     * Handle the result of a check.
+     * Maneja el resultado de un health check.
+     *
+     * Evita duplicados idénticos si el estado no cambió en los últimos 30 minutos.
+     * Crea un ServiceReport y actualiza el estado del servicio si es necesario.
+     *
+     * @param  Service  $service
+     * @param  string  $type  'up' o 'down'
+     * @param  string  $details
+     * @return void
      */
-    protected function handleResult(Service $service, string $type, string $details)
+    protected function handleResult(Service $service, string $type, string $details): void
     {
         $lastReport = $service->reports()
             ->where('user_id', null)

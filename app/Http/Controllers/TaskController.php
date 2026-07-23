@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (c) 2022-2026 pbenav <info@sientia.com>
 
-
 namespace App\Http\Controllers;
 
 use App\Models\Task;
@@ -20,10 +19,30 @@ use Illuminate\Http\Request;
 
 use App\Traits\HandlesPersistentFilters;
 
+/**
+ * Controlador legacy de Tareas (migrado a Actividades).
+ *
+ * Este controlador actúa como capa de compatibilidad: la mayoría de sus rutas
+ * redirigen al nuevo ActivityController. Solo index(), create(), search() y merge()
+ * conservan lógica propia para tareas legacy.
+ *
+ * @deprecated Usar ActivityController para todas las operaciones de tareas.
+ */
 class TaskController extends Controller
 {
     use HandlesEisenhowerMatrix, AwardsGamification, ManagesTaskDeletion, HandlesPersistentFilters;
 
+    /**
+     * Listado de tareas legacy con filtros persistentes, paginación y ordenamiento.
+     *
+     * Aplica filtros por estado, prioridad, asignado, habilidad, tipo (template/instance/plain),
+     * búsqueda y por_page. Excluye tareas completadas por defecto (session preference).
+     * Redirige a activities.index — la lógica real está en ActivityController.
+     *
+     * @param  Request  $request
+     * @param  Team  $team
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\View\View
+     */
     public function index(Request $request, Team $team)
     {
         return redirect()->route('teams.activities.index', $team);
@@ -142,7 +161,13 @@ class TaskController extends Controller
     }
 
     /**
-     * Show the form for creating a new task
+     * Muestra el formulario de creación de una nueva tarea.
+     *
+     * Carga miembros, grupos, habilidades, servicios, expedientes y tareas existentes
+     * como referencias para el formulario. Guarda el referer en session para retorno posterior.
+     *
+     * @param  Team  $team
+     * @return \Illuminate\View\View
      */
     public function create(Team $team)
     {
@@ -174,7 +199,14 @@ class TaskController extends Controller
     }
 
     /**
-     * Store a newly created task in storage
+     * Almacena una nueva tarea, verificando cuota de almacenamiento del equipo.
+     *
+     * Delegación a TaskService::createTask(). Si los archivos exceden la cuota disponible,
+     * retorna con error.
+     *
+     * @param  \App\Http\Requests\StoreTaskRequest  $request
+     * @param  Team  $team
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function store(\App\Http\Requests\StoreTaskRequest $request, Team $team)
     {
@@ -201,7 +233,14 @@ class TaskController extends Controller
     }
 
     /**
-     * Display the specified task
+     * Muestra el detalle de una tarea (redirige legacy al Activity show).
+     *
+     * Verifica que la tarea pertenece al equipo y que el usuario tiene permiso de visualización.
+     * Redirige a teams.activities.show.
+     *
+     * @param  Team  $team
+     * @param  Activity  $task
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function show(Team $team, Activity $task)
     {
@@ -218,7 +257,13 @@ class TaskController extends Controller
     }
 
     /**
-     * Show the form for editing the task
+     * Muestra el formulario de edición de una tarea (redirige legacy al Activity edit).
+     *
+     * Verifica pertenencia al equipo y permisos. Redirige a teams.activities.edit.
+     *
+     * @param  Team  $team
+     * @param  Activity  $task
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function edit(Team $team, Activity $task)
     {
@@ -235,7 +280,14 @@ class TaskController extends Controller
     }
 
     /**
-     * Update the task in storage
+     * Actualiza una tarea (redirige legacy al Activity update).
+     *
+     * Notifica al usuario que debe usar el nuevo sistema de Actividades.
+     *
+     * @param  \App\Http\Requests\UpdateTaskRequest  $request
+     * @param  Team  $team
+     * @param  Activity  $task
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function update(\App\Http\Requests\UpdateTaskRequest $request, Team $team, Activity $task)
     {
@@ -245,7 +297,11 @@ class TaskController extends Controller
     }
 
     /**
-     * Remove the task from storage
+     * Elimina una tarea (redirige legacy al Activity destroy).
+     *
+     * @param  Team  $team
+     * @param  Activity  $task
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy(Team $team, Activity $task)
     {
@@ -254,7 +310,15 @@ class TaskController extends Controller
     }
 
     /**
-     * Search tasks for autocomplete within the same team context.
+     * Búsqueda de tareas para autocompletado AJAX dentro del contexto del equipo.
+     *
+     * Busca en tareas legacy y, si no encuentra resultados, busca en Activities (subtipo task).
+     * Soporta filtros por nivel jerárquico (top_level_only), exclusión de threads de foro
+     * y exclusión por ID.
+     *
+     * @param  Request  $request
+     * @param  Team  $team
+     * @return \Illuminate\Http\JsonResponse
      */
     public function search(Request $request, Team $team)
     {
@@ -299,7 +363,15 @@ class TaskController extends Controller
     }
 
     /**
-     * Merge this task into another target task, centralizing all relationships.
+     * Fusiona una tarea en otra tarea destino, centralizando todas las relaciones.
+     *
+     * Valida que la tarea destino pertenece al mismo equipo y que el usuario tiene permisos
+     * de borrado sobre la origen y actualización sobre el destino. Delegación a TaskService::mergeTasks().
+     *
+     * @param  Request  $request
+     * @param  Team  $team
+     * @param  Activity  $task
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function merge(Request $request, Team $team, Activity $task)
     {
@@ -329,7 +401,11 @@ class TaskController extends Controller
     }
 
     /**
-     * Get tasks by status (API endpoint for AJAX)
+     * Obtiene tareas por estado (endpoint API para AJAX).
+     *
+     * @param  Team  $team
+     * @param  string  $status
+     * @return \Illuminate\Http\JsonResponse
      */
     public function byStatus(Team $team, string $status)
     {
@@ -344,7 +420,13 @@ class TaskController extends Controller
     }
 
     /**
-     * Get tasks by quadrant (Eisenhower Matrix)
+     * Obtiene tareas organizadas por cuadrante de la Matriz de Eisenhower.
+     *
+     * Calcula el cuadrante para cada tarea usando el trait HandlesEisenhowerMatrix::getQuadrant().
+     * Aplica filtro de hide_completed_tasks de sesión.
+     *
+     * @param  Team  $team
+     * @return \Illuminate\Http\JsonResponse
      */
     public function byQuadrant(Team $team)
     {
@@ -373,7 +455,9 @@ class TaskController extends Controller
     }
 
     /**
-     * Toggle hide completed tasks preference (session-based)
+     * Alterna la preferencia de ocultar tareas completadas (basada en sesión).
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function toggleHideCompleted()
     {
@@ -383,6 +467,15 @@ class TaskController extends Controller
         return response()->json(['success' => true, 'hide_completed' => !$current]);
     }
 
+    /**
+     * Alterna la visibilidad de subtareas (basada en sesión).
+     *
+     * Si se proporciona el parámetro 'show', establece el valor absoluto.
+     * De lo contrario, invierte el valor actual.
+     *
+     * @param  Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function toggleSubtasksVisibility(Request $request)
     {
         // If 'show' is provided, we use it (absolute set). Otherwise, toggle.
@@ -398,7 +491,15 @@ class TaskController extends Controller
 
 
     /**
-     * Manual Sync (Scenario B): Push master template changes to all assigned instances.
+     * Sincronización manual: empuja cambios del template maestro a todas las instancias hijas.
+     *
+     * Actualiza título, descripción, fecha de vencimiento y prioridad de todas las instancias
+     * generadas a partir de este template. Solo ejecutable por quien tenga permiso de actualización.
+     *
+     * @param  Request  $request
+     * @param  Team  $team
+     * @param  Activity  $task
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function syncToChildren(Request $request, Team $team, Activity $task)
     {
@@ -420,7 +521,9 @@ class TaskController extends Controller
 
 
     /**
-     * Unified task creation from structured data (used by reproduction and JSON import).
+     * Creación unificada de tareas a partir de datos estructurados.
+     *
+     * Usada por reproducción de datos e importación JSON.
+     * Método reservado para futuras implementaciones.
      */
-
 }

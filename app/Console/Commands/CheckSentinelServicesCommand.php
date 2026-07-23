@@ -9,11 +9,45 @@ use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
 use Exception;
 
+/**
+ * Comando de verificación automática del estado y latencia de servicios configurados en Sentinel.
+ *
+ * Evalúa periódicamente la disponibilidad de cada servicio mediante peticiones HTTP,
+ * calcula la latencia de respuesta, valida palabras clave opcionales en el contenido
+ * y aplica un sistema de veto humano que prioriza reportes manuales recientes.
+ *
+ * # Ejecución
+ * ```bash
+ * php artisan app:check-sentinel
+ * php artisan app:check-sentinel --force
+ * ```
+ *
+ * @author  SientiaMTX Team
+ * @version 1.0.0
+ */
 class CheckSentinelServicesCommand extends Command
 {
+    /**
+     * Firma del comando con soporte para ejecución forzada.
+     *
+     * --force : Ejecuta todas las verificaciones ignorando los intervalos inteligentes.
+     */
     protected $signature = 'app:check-sentinel {--force : Run all checks bypassing intervals}';
+
+    /**
+     * Descripción del comando.
+     */
     protected $description = 'Automatically verify status and latency of all Sentinel configured services.';
 
+    /**
+     * Punto de entrada principal del comando.
+     *
+     * Itera sobre todos los servicios con URL configurada, determina si necesitan verificación
+     * según su estado actual y el intervalo inteligente (backoff strategy), y ejecuta la
+     * comprobación HTTP correspondiente.
+     *
+     * @return int Código de salida del comando (SUCCESS o FAILURE).
+     */
     public function handle()
     {
         $this->info("--- Starting Sentinel Automated Guard ---");
@@ -51,6 +85,17 @@ class CheckSentinelServicesCommand extends Command
         return Command::SUCCESS;
     }
 
+    /**
+     * Ejecuta la verificación HTTP completa para un servicio y actualiza su estado.
+     *
+     * Realiza una petición HTTP GET con timeout configurado, calcula la latencia,
+     * valida palabras clave opcionales en el cuerpo de respuesta, verifica el límite
+     * de latencia máxima y aplica la lógica de veto humano. Actualiza el modelo de
+     * servicio y registra un reporte automático en la base de datos.
+     *
+     * @param Service $service El modelo de servicio a verificar.
+     * @throws \Exception Propagado si falla la conexión HTTP.
+     */
     private function performCheck(Service $service)
     {
         $startTime = microtime(true);

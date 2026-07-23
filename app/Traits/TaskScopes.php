@@ -6,12 +6,21 @@ use App\Models\Team;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * Trait TaskScopes
+ *
+ * Define los scopes de consulta para el modelo Task y sus subtipos.
+ * Organiza las consultas por: estado, prioridad, visibilidad, fechas,
+ * y contexto operativo (gestión vs ejecución).
+ *
+ * @mixin \App\Models\Task
+ */
 trait TaskScopes
 {
     /**
-     * Scope a query to only include tasks that are not ephemeral.
+     * Filtra tareas no efímeras (donde metadata->is_ephemeral es null o false).
      */
-    public function scopeNotEphemeral($query)
+    public function scopeNotEphemeral(Builder $query)
     {
         return $query->where(function ($q) {
             $q->whereNull('metadata->is_ephemeral')
@@ -21,40 +30,65 @@ trait TaskScopes
         });
     }
 
-    public function scopeByTeam($query, $teamId)
+    /**
+     * Filtra tareas por equipo.
+     */
+    public function scopeByTeam(Builder $query, $teamId)
     {
         return $query->where('team_id', $teamId);
     }
 
-    public function scopeByStatus($query, $status)
+    /**
+     * Filtra tareas por estado.
+     */
+    public function scopeByStatus(Builder $query, $status)
     {
         return $query->where('status', $status);
     }
 
-    public function scopeByPriority($query, $priority)
+    /**
+     * Filtra tareas por prioridad.
+     */
+    public function scopeByPriority(Builder $query, $priority)
     {
         return $query->where('priority', $priority);
     }
 
-    public function scopeOverdue($query)
+    /**
+     * Filtra tareas vencidas (fecha de vencimiento pasada y sin completar/cancelar).
+     */
+    public function scopeOverdue(Builder $query)
     {
         return $query->where('due_date', '<', now())
             ->whereNotIn('status->value', ['completed', 'cancelled']);
     }
 
-    public function scopeDueToday($query)
+    /**
+     * Filtra tareas con vencimiento hoy y estado no completado.
+     */
+    public function scopeDueToday(Builder $query)
     {
         return $query->whereDate('due_date', today())
             ->where('status', '!=', 'completed');
     }
 
-    public function scopeDueThisWeek($query)
+    /**
+     * Filtra tareas con vencimiento esta semana y estado no completado.
+     */
+    public function scopeDueThisWeek(Builder $query)
     {
         return $query->whereBetween('due_date', [now()->startOfWeek(), now()->endOfWeek()])
             ->where('status', '!=', 'completed');
     }
 
-    public function scopeVisibleTo($query, $user, $isManager = false)
+    /**
+     * Filtra tareas visibles para un usuario según su rol y la visibilidad de cada tarea.
+     *
+     * Para managers: incluye todas las tareas excepto las estrictamente privadas de otros usuarios.
+     * Para miembros: incluye tareas públicas sin asignar, creadas por el usuario, asignadas al usuario,
+     * o asignadas a grupos del usuario.
+     */
+    public function scopeVisibleTo(Builder $query, $user, $isManager = false)
     {
         // Safety check: If no user is provided, the task is invisible by default.
         if (!$user) {
@@ -96,17 +130,20 @@ trait TaskScopes
     }
 
     /**
-     * Scope for "What I should be working on or managing right now".
-     * This handles the hierarchy to avoid showing both master and instance.
+     * Filtra tareas operativas para un usuario en un equipo.
+     *
+     * Para managers: prioriza el Plan Maestro y evita duplicación con instancias propias.
+     * Para miembros: muestra trabajo asignado y tareas puras sin asignar,
+     * con deduplicación para ocultar padres si se ven hijas asignadas.
      */
-    public function scopeOperationalFor($query, $user, Team $team, $includeFuture = false)
+    public function scopeOperationalFor(Builder $query, $user, Team $team, $includeFuture = false)
     {
         $isManager = $team->isManager($user);
 
         $query->where(function ($main) use ($user, $isManager) {
             if ($isManager) {
-                // DEDUPLICACIÓN EN GESTIÓN: Si el manager tiene una instancia propia, 
-                // priorizamos ver el Plan Maestro (donde puede gestionar todo) y evitamos 
+                // DEDUPLICACIÓN EN GESTIÓN: Si el manager tiene una instancia propia,
+                // priorizamos ver el Plan Maestro (donde puede gestionar todo) y evitamos
                 // ver la instancia suelta arriba para no triplicar.
                 $main->where(function($q) use ($user) {
                     $q->where('is_template', true)
@@ -158,10 +195,11 @@ trait TaskScopes
     }
 
     /**
-     * Specialized scope for focused views (Kanban/Matrix).
-     * Filters for actionable items and applies deduplication for managers.
+     * Filtra tareas enfocadas para vistas especializadas (Kanban/Matriz).
+     * Solo muestra tareas finales (hojas), no plantillas maestras ni contenedores con hijos.
+     * Enfoque siempre en ejecución: tareas asignadas, raíces creadas por el usuario, o públicas sin asignar.
      */
-    public function scopeFocusedFor($query, $user, Team $team, $includeFuture = false)
+    public function scopeFocusedFor(Builder $query, $user, Team $team, $includeFuture = false)
     {
         $userId = $user->id;
 
@@ -196,10 +234,10 @@ trait TaskScopes
     }
 
     /**
-     * Specialized scope for the Kanban board.
-     * Legacy wrapper for scopeFocusedFor.
+     * Scope especializado para el tablero Kanban.
+     * Wrapper legacy para scopeFocusedFor. Solo tareas finales (sin hijos) y no plantillas maestras.
      */
-    public function scopeOperationalForKanban($query, $user, $team, $includeFuture = false)
+    public function scopeOperationalForKanban(Builder $query, $user, $team, $includeFuture = false)
     {
         // EL KANBAN ES SAGRADO: Solo tareas finales (sin hijos) y que no sean plantillas maestras.
         // Aplicamos un filtro de "túnel" para ignorar cualquier otro orWhere de scopes anteriores.

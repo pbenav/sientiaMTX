@@ -25,12 +25,26 @@ use App\Traits\UserAiStats;
 use App\Traits\UserProfile;
 use App\Traits\UserStorage;
 use App\Traits\UserNotifications;
+/**
+ * Usuario / User: entidad principal del sistema con autenticación, roles, equipos y preferencias.
+ *
+ * Traits incorporados:
+ * - UserPresence: estado en línea y tiempo activo
+ * - UserTeamContext: contexto de equipo favorito
+ * - UserAiStats: estadísticas de uso de IA
+ * - UserProfile: perfil y preferencias de visualización
+ * - UserStorage: gestión de almacenamiento personal
+ * - UserNotifications: configuración de notificaciones
+ */
 class User extends Authenticatable implements HasLocalePreference, PasskeyUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasPushSubscriptions, PasskeyAuthenticatable, HasDemoMasking,
         UserPresence, UserTeamContext, UserAiStats, UserProfile, UserStorage, UserNotifications;
 
+    /**
+     * Al eliminar un usuario no admin, también elimina los equipos que creó.
+     */
     protected static function booted()
     {
         static::deleting(function ($user) {
@@ -43,8 +57,9 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
     }
 
     /**
-     * Sensitive attributes to mask when Demo Mode is active.
-     * @var array<string, string>
+     * Atributos sensibles que se enmascaran en modo Demo.
+     *
+     * @var array<string, string> Clave => tipo de máscara
      */
     protected array $demoSensitiveAttributes = [
         'name'               => 'name',
@@ -56,14 +71,14 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
     ];
 
     /**
-     * The attributes that are not mass assignable.
+     * Atributos protegidos (no asignables masivamente).
      *
      * @var list<string>
      */
     protected $guarded = ['id', 'is_admin'];
 
     /**
-     * The attributes that are mass assignable.
+     * Atributos asignables masivamente.
      *
      * @var list<string>
      */
@@ -118,7 +133,7 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Atributos ocultos para serialización (nunca exponer en API).
      *
      * @var list<string>
      */
@@ -132,7 +147,7 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * Casting de atributos a tipos nativos.
      *
      * @return array<string, string>
      */
@@ -160,11 +175,19 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
         ];
     }
 
+    /**
+     * Equipo favorito del usuario (contexto por defecto).
+     */
     public function favoriteTeam()
     {
         return $this->belongsTo(Team::class, 'favorite_team_id');
     }
 
+    /**
+     * Equipos a los que pertenece el usuario.
+     *
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, Team> $teams
+     */
     public function teams(): BelongsToMany
     {
         return $this->belongsToMany(Team::class, 'team_user')
@@ -173,17 +196,32 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
             ->withTimestamps();
     }
 
+    /**
+     * Grupos a los que pertenece el usuario.
+     *
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, Group> $groups
+     */
     public function groups(): BelongsToMany
     {
         return $this->belongsToMany(Group::class, 'group_user')
             ->withTimestamps();
     }
 
+    /**
+     * Equipos creados por este usuario.
+     *
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, Team> $createdTeams
+     */
     public function createdTeams(): HasMany
     {
         return $this->hasMany(Team::class, 'created_by_id');
     }
 
+    /**
+     * Grupos de chat privados del usuario.
+     *
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, ChatGroup> $chatGroups
+     */
     public function chatGroups(): BelongsToMany
     {
         return $this->belongsToMany(ChatGroup::class, 'chat_group_user')
@@ -191,32 +229,57 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
             ->withTimestamps();
     }
 
+    /**
+     * Configuraciones de citas del usuario.
+     */
     public function appointmentSettings(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(AppointmentSettings::class);
     }
 
+    /**
+     * Obtiene la configuración de citas del usuario para un equipo específico.
+     *
+     * @param  Team|int  $team  Equipo o su ID
+     * @return AppointmentSettings|null
+     */
     public function appointmentSettingsForTeam($team)
     {
         $teamId = $team instanceof Team ? $team->id : $team;
         return $this->appointmentSettings()->where('team_id', $teamId)->first();
     }
 
+    /**
+     * Servicios configurados para citas del usuario.
+     */
     public function appointmentServices(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(AppointmentService::class);
     }
 
+    /**
+     * Citas del usuario.
+     *
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, Appointment> $appointments
+     */
     public function appointments(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Appointment::class);
     }
 
+    /**
+     * Bloques de citas del usuario.
+     */
     public function appointmentBlocks(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(AppointmentBlock::class);
     }
 
+    /**
+     * Tareas asignadas al usuario.
+     *
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, Task> $assignedTasks
+     */
     public function assignedTasks(): BelongsToMany
     {
         return $this->belongsToMany(Task::class, 'task_assignments')
@@ -224,128 +287,190 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
             ->withTimestamps();
     }
 
+    /**
+     * Tareas creadas por este usuario.
+     *
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, Task> $createdTasks
+     */
     public function createdTasks(): HasMany
     {
         return $this->hasMany(Task::class, 'created_by_id');
     }
 
+    /**
+     * Historial de cambios de tareas del usuario.
+     */
     public function taskHistories(): HasMany
     {
         return $this->hasMany(TaskHistory::class);
     }
 
+    /**
+     * Asignaciones de tareas del usuario.
+     */
     public function taskAssignments(): HasMany
     {
         return $this->hasMany(TaskAssignment::class);
     }
 
     /**
-     * Get pending invitations for this user based on email.
+     * Invitaciones pendientes para este usuario (por email).
      */
     public function invitations(): HasMany
     {
         return $this->hasMany(TeamInvitation::class, 'email', 'email');
     }
 
+    /**
+     * Sesiones activas del usuario.
+     */
     public function sessions(): HasMany
     {
         return $this->hasMany(Session::class);
     }
 
     /**
-     * Get the user's preferred locale.
+     * Locale preferido para localización.
      */
     public function preferredLocale(): string
     {
         return $this->locale ?? config('app.locale');
     }
 
+    /**
+     * Adjuntos subidos por el usuario.
+     */
     public function attachments(): HasMany
     {
         return $this->hasMany(TaskAttachment::class);
     }
 
+    /**
+     * Hilos de foro creados por el usuario.
+     */
     public function forumThreads(): HasMany
     {
         return $this->hasMany(ForumThread::class);
     }
 
+    /**
+     * Mensajes de foro del usuario.
+     */
     public function forumMessages(): HasMany
     {
         return $this->hasMany(ForumMessage::class);
     }
 
+    /**
+     * Registros de tiempo del usuario.
+     */
     public function timeLogs(): HasMany
     {
         return $this->hasMany(TimeLog::class);
     }
 
+    /**
+     * Notas rápidas del usuario.
+     */
     public function quickNotes(): HasMany
     {
         return $this->hasMany(QuickNote::class);
     }
 
-    // Gamification Relationships
+    /**
+     * Habilidades del usuario (gamificación).
+     *
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, Skill> $skills
+     */
     public function skills(): BelongsToMany
     {
         return $this->belongsToMany(Skill::class, 'user_skills')->withPivot('level', 'total_xp')->withTimestamps();
     }
 
+    /**
+     * Kudos recibidos por el usuario.
+     */
     public function receivedKudos(): HasMany
     {
         return $this->hasMany(Kudo::class, 'to_user_id');
     }
 
+    /**
+     * Kudos otorgados por el usuario.
+     */
     public function givenKudos(): HasMany
     {
         return $this->hasMany(Kudo::class, 'from_user_id');
     }
 
+    /**
+     * Registros de gamificación del usuario.
+     */
     public function gamificationLogs(): HasMany
     {
         return $this->hasMany(GamificationLog::class);
     }
 
-    // AI & Wellness Relationships
+    /**
+     * Preferencias de IA del usuario.
+     */
     public function aiPreferences(): HasMany
     {
         return $this->hasMany(UserAiPreference::class);
     }
 
+    /**
+     * Preferencia global de IA (sin equipo).
+     */
     public function aiPreference()
     {
         // Fallback global (team_id null)
         return $this->hasOne(UserAiPreference::class)->whereNull('team_id');
     }
 
+    /**
+     * Registros de estado de ánimo del usuario.
+     */
     public function moodLogs(): HasMany
     {
         return $this->hasMany(UserMoodLog::class);
     }
 
-    // Chat & Communication Relationships
+    /**
+     * Mensajes de chat IA del usuario.
+     */
     public function aiChatMessages(): HasMany
     {
         return $this->hasMany(AiChatMessage::class);
     }
 
-    // Notes & Ratings Relationships
+    /**
+     * Notas privadas de tareas del usuario.
+     */
     public function taskPrivateNotes(): HasMany
     {
         return $this->hasMany(TaskPrivateNote::class);
     }
 
+    /**
+     * Calificaciones de tareas del usuario.
+     */
     public function taskRatings(): HasMany
     {
         return $this->hasMany(TaskRating::class);
     }
 
-    // Security & Audit Relationships
+    /**
+     * Registros de seguridad del usuario.
+     */
     public function securityLogs(): HasMany
     {
         return $this->hasMany(SecurityLog::class);
     }
 
+    /**
+     * Registros de adjuntos del usuario.
+     */
     public function attachmentLogs(): HasMany
     {
         return $this->hasMany(AttachmentLog::class);

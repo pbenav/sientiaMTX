@@ -4,6 +4,9 @@ namespace App\Traits;
 
 trait TaskVisibility
 {
+    /**
+     * Determina si la tarea es efectivamente privada según sus asignaciones y visibilidad.
+     */
     public function getIsEffectivelyPrivateAttribute(): bool
     {
         $hasAssignees = $this->assigned_user_id !== null || 
@@ -13,6 +16,9 @@ trait TaskVisibility
         return $hasAssignees || $this->visibility === 'private' || is_null($this->visibility);
     }
 
+    /**
+     * Retorna el nivel de privacidad de la tarea: 'public', 'semi-private' o 'private'.
+     */
     public function getPrivacyLevelAttribute(): string
     {
         if (!$this->is_effectively_private) {

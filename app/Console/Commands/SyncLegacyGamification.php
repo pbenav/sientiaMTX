@@ -8,9 +8,22 @@ use App\Models\Task;
 use App\Models\Skill;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Sincroniza la experiencia (XP) y los niveles de habilidades de los usuarios
+ * a partir de las tareas completadas y los registros de tiempo históricos.
+ */
 class SyncLegacyGamification extends Command
 {
+    /**
+     * La firma del comando y sus argumentos/opciones.
+     *
+     * Ejemplo de uso: php artisan gamification:sync-legacy --force
+     */
     protected $signature = 'gamification:sync-legacy {--force : Sobrescribir XP actual si ya existe}';
+
+    /**
+     * La descripción corta del comando que se muestra con "artisan list".
+     */
     protected $description = 'Sincroniza el sistema de gamificación con el histórico de tareas completadas.';
 
     // Mapeo de palabras clave a NOMBRES de habilidades
@@ -26,6 +39,15 @@ class SyncLegacyGamification extends Command
         'Jurídico General' => ['jurídico', 'ley', 'contrato', 'legal', 'abogado'],
     ];
 
+    /**
+     * Ejecuta el comando de sincronización de gamificación.
+     *
+     * Realiza dos operaciones principales:
+     *   1. Mapea tareas sin habilidad asignada a habilidades mediante palabras clave.
+     *   2. Recalcula el XP retroactivo por usuario y habilidad basado en registros de tiempo.
+     *
+     * @return int Código de salida (0 = éxito).
+     */
     public function handle()
     {
         $this->info('Iniciando sincronización de gamificación retroactiva... 🚀');
@@ -125,6 +147,15 @@ class SyncLegacyGamification extends Command
         return 0;
     }
 
+    /**
+     * Calcula el nivel de habilidad basado en la cantidad de XP acumulada.
+     *
+     * Umbrales: nivel 1 = 0 XP, nivel 2 = 50 XP, nivel 3 = 150 XP,
+     * nivel 4 = 350 XP, nivel 5 = 750 XP.
+     *
+     * @param int $xp Cantidad de experiencia acumulada.
+     * @return int Nivel calculado (1-5).
+     */
     protected function calculateLevel($xp)
     {
         $thresholds = [1 => 0, 2 => 50, 3 => 150, 4 => 350, 5 => 750];

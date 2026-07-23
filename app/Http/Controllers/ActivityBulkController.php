@@ -9,6 +9,9 @@ use App\Services\ActivityService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Controlador para operaciones masivas de actividades (actualización, eliminación, fusión).
+ */
 class ActivityBulkController extends Controller
 {
     protected ActivityService $activityService;
@@ -18,6 +21,16 @@ class ActivityBulkController extends Controller
         $this->activityService = $activityService;
     }
 
+    /**
+     * Actualiza masivamente un campo específico de múltiples actividades.
+     *
+     * Valida que el usuario tenga permisos de actualización sobre cada actividad seleccionada.
+     * Los campos soportados son: status (vía ActivityService::changeStatus), priority, assigned_user_id.
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe contener task_ids (array), field (status|priority|assigned_user_id), value
+     * @param  \App\Models\Team  $team  Equipo al que pertenecen las actividades
+     * @return \Illuminate\Http\RedirectResponse Redirección con mensaje de éxito o advertencia
+     */
     public function bulkUpdate(Request $request, Team $team)
     {
         $request->validate([
@@ -67,6 +80,16 @@ class ActivityBulkController extends Controller
         return back()->with('success', "Se han actualizado {$count} actividades correctamente.");
     }
 
+    /**
+     * Elimina masivamente actividades verificando los permisos del usuario.
+     *
+     * Usa ActivityService::delete() para garantizar una eliminación limpia
+     * con registro en historial y limpieza de dependencias.
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe contener task_ids (array)
+     * @param  \App\Models\Team  $team  Equipo al que pertenecen las actividades
+     * @return \Illuminate\Http\RedirectResponse Redirección con mensaje de éxito
+     */
     public function bulkDelete(Request $request, Team $team)
     {
         $request->validate([
@@ -91,6 +114,18 @@ class ActivityBulkController extends Controller
             ->with('success', "$deletedCount actividades eliminadas correctamente.");
     }
 
+    /**
+     * Fusiona múltiples actividades fuente en una actividad destino.
+     *
+     * Combina aditivamente descripciones y observaciones (evitando duplicados),
+     * reasigna subtareas, time logs, attachments, notes, kudos, history, tags y
+     * assignments a la tarea destino. Registra un historial de fusión y elimina
+     * las actividades fuente.
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe contener task_ids (array >= 2), target_task_id
+     * @param  \App\Models\Team  $team  Equipo al que pertenecen las actividades
+     * @return \Illuminate\Http\RedirectResponse Redirección con mensaje de éxito/advertencia
+     */
     public function bulkMerge(Request $request, Team $team)
     {
         $request->validate([

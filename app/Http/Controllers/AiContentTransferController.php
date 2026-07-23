@@ -5,8 +5,26 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Controlador para transferir contenido generado por IA (Ax.ia) hacia tareas, documentos, foros y notas.
+ *
+ * Soporta la inyección de texto en descripciones, observaciones, capítulos de documentos,
+ * notas privadas, hilos de foro, y la creación global de actividades desde contenido de IA.
+ */
 class AiContentTransferController extends Controller
 {
+    /**
+     * Transfiere contenido de IA a un objetivo específico dentro de una actividad o tarea.
+     *
+     * Soporta múltiples destinos: chapter (inyecta capítulo en documento), description,
+     * observations (crea nota de equipo), private_note, comment (publica en foro).
+     * Registra cada cambio en el historial de la actividad.
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe contener content (texto o JSON), target (chapter|description|observations|observations_append|private_note|private-notes|comment)
+     * @param  \App\Models\Team  $team  Equipo del cual forma parte la actividad
+     * @param  int  $taskId  ID de la actividad o tarea destino
+     * @return \Illuminate\Http\JsonResponse Respuesta con success, message, y opcionalmente history_id
+     */
     public function transferContent(Request $request, \App\Models\Team $team, $taskId)
     {
         $task = \App\Models\Activity::find($taskId) ?? \App\Models\Task::find($taskId);
@@ -153,6 +171,17 @@ class AiContentTransferController extends Controller
         return response()->json(['success' => false, 'message' => 'Destino no válido.']);
     }
 
+    /**
+     * Transfiere contenido de IA a un hilo de foro específico.
+     *
+     * Soporta 'reply'/'comment' (publica respuesta) y 'draft' (devuelve contenido listo).
+     * Si el hilo está asociado a una tarea, redirige automáticamente a transferContent.
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe contener content y target
+     * @param  \App\Models\Team  $team  Equipo del hilo
+     * @param  \App\Models\ForumThread  $thread  Hilo de foro destino
+     * @return \Illuminate\Http\JsonResponse Respuesta con success y message
+     */
     public function transferForumContent(Request $request, \App\Models\Team $team, \App\Models\ForumThread $thread)
     {
         if ($thread->team_id !== $team->id) {
@@ -187,6 +216,18 @@ class AiContentTransferController extends Controller
         return $this->transferGlobalContent($request, $team->id);
     }
 
+    /**
+     * Transfiere contenido de IA de forma global: crea actividades, notas rápidas o publica en foro general.
+     *
+     * Determina el equipo por ID de ruta, request, o primer equipo del usuario.
+     * Soporta targets: task, private_note, observations, description, quick-note.
+     * Para quick-note crea una nota flotante; para los demás crea una nueva actividad
+     * con el tipo y campos configurables (activity_type, target_field).
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe contener content, target, title (opcional)
+     * @param  int|null  $teamId  ID del equipo destino (opcional, se infiere si no se proporciona)
+     * @return \Illuminate\Http\JsonResponse Respuesta con success, message, y opcionalmente task_id
+     */
     public function transferGlobalContent(Request $request, $teamId = null)
     {
         Log::info("transferGlobalContent INICIO", [
@@ -368,6 +409,16 @@ class AiContentTransferController extends Controller
         return response()->json(['success' => true, 'message' => 'Respuesta publicada en el hilo general del equipo.']);
     }
 
+    /**
+     * Deshace la última transferencia de contenido realizada por la IA.
+     *
+     * Busca el registro más reciente de historial con action='ai_transfer'
+     * (ya sea de ActivityHistory o TaskHistory), restaura los valores old_values
+     * a la actividad/tarea, y elimina el registro de historial para evitar deshacer dos veces.
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe estar autenticado
+     * @return \Illuminate\Http\JsonResponse Respuesta con success y message
+     */
     public function undoLastTransfer(Request $request)
     {
         $lastTaskHistory = \App\Models\TaskHistory::where('user_id', auth()->id())
@@ -412,6 +463,17 @@ class AiContentTransferController extends Controller
         ]);
     }
 
+    /**
+     * Extrae el mejor texto de un payload de IA según el tipo de contenido deseado.
+     *
+     * Maneja payloads con intent explícito (simple_text, full_task) y fallback
+     * buscando claves específicas en el orden: target, description/content, content/text/message/body.
+     * Si no encuentra nada, retorna la representación JSON del payload.
+     *
+     * @param  array|string  $payload  Payload de la IA (array decodificado o string)
+     * @param  string  $target  Tipo de contenido deseado (observations, description, chapter, private_note)
+     * @return string El texto extraído más apropiado
+     */
     private function getBestTextFromPayload($payload, $target = 'observations')
     {
         if (!is_array($payload)) {
@@ -451,6 +513,15 @@ class AiContentTransferController extends Controller
         return json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     }
 
+    /**
+     * Extrae y decodifica un payload JSON del contenido crudo de la IA.
+     *
+     * Busca el contenido entre etiquetas [PAYLOAD]...[/PAYLOAD] o [INJECT]...[/INJECT],
+     * limpia marcadores de código Markdown (```json ... ```), e intenta decodificar JSON.
+     *
+     * @param  array|string|null  $content  Contenido crudo de la respuesta de IA
+     * @return array|string El payload decodificado o el contenido original si no es JSON
+     */
     private function extractPayload($content)
     {
         if (is_array($content)) {

@@ -18,11 +18,18 @@ class SignatureRequestedNotification extends Notification implements ShouldQueue
 {
     use Queueable, DeterminesNotificationChannels;
 
+    /**
+     * @param  Activity  $activity  Actividad que requiere firma
+     * @param  User  $requestedBy  Usuario que solicita la firma
+     */
     public function __construct(
         protected Activity $activity,
         protected User $requestedBy
     ) {}
 
+    /**
+     * Formatea la notificación push web para la solicitud de firma.
+     */
     public function toWebPush(object $notifiable, $notification): WebPushMessage
     {
         return (new WebPushMessage)
@@ -33,6 +40,9 @@ class SignatureRequestedNotification extends Notification implements ShouldQueue
             ->options(['TTL' => 1000]);
     }
 
+    /**
+     * Formatea la notificación de Telegram para la solicitud de firma.
+     */
     public function toTelegram(object $notifiable): array
     {
         $url = route('teams.activities.show', [$this->activity->team_id, $this->activity]);
@@ -45,6 +55,9 @@ class SignatureRequestedNotification extends Notification implements ShouldQueue
         ];
     }
 
+    /**
+     * Formatea el correo electrónico para la solicitud de firma.
+     */
     public function toMail(object $notifiable): MailMessage
     {
         $url = route('teams.activities.show', [$this->activity->team_id, $this->activity]);
@@ -57,6 +70,9 @@ class SignatureRequestedNotification extends Notification implements ShouldQueue
             ->line('Accede a la plataforma y firma directamente desde la vista del acuerdo.');
     }
 
+    /**
+     * Convierte la notificación en un array para almacenamiento en base de datos.
+     */
     public function toArray(object $notifiable): array
     {
         return [

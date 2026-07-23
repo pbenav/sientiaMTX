@@ -7,17 +7,35 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
+/**
+ * Configuración de la aplicación con helpers get/set.
+ *
+ * Almacena configuraciones clave-valor de la aplicación, con
+ * métodos estáticos para obtener y establecer valores de forma
+ * segura, incluyendo soporte para valores por defecto y
+ * validación de valores vacíos.
+ *
+ * Campos clave:
+ * - key: Clave única de la configuración
+ * - value: Valor de la configuración
+ *
+ * @property-read string $key
+ * @property-read string|null $value
+ *
+ * @mixin Builder
+ */
 class Setting extends Model
 {
     protected $fillable = ['key', 'value'];
 
     /**
-     * Get a setting value by key.
+     * Obtiene el valor de una configuración por clave.
      *
-     * @param string $key
-     * @param mixed $default
-     * @param bool $ignoreEmpty If true, returns default if value is null or empty string
+     * @param string $key Clave de la configuración
+     * @param mixed $default Valor por defecto si no se encuentra
+     * @param bool $ignoreEmpty Si true, devuelve el default si el valor es null o vacío
      * @return mixed
      */
     public static function get(string $key, $default = null, bool $ignoreEmpty = false)
@@ -27,7 +45,7 @@ class Setting extends Model
         } catch (\Illuminate\Database\QueryException $e) {
             return $default;
         }
-        
+
         if (!$setting) {
             return $default;
         }
@@ -40,10 +58,10 @@ class Setting extends Model
     }
 
     /**
-     * Set a setting value by key.
+     * Establece el valor de una configuración por clave.
      *
-     * @param string $key
-     * @param mixed $value
+     * @param string $key Clave de la configuración
+     * @param mixed $value Valor a establecer
      * @return void
      */
     public static function set(string $key, $value)

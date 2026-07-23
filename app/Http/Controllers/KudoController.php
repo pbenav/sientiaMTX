@@ -12,8 +12,27 @@ use App\Models\User;
 use App\Models\GamificationLog;
 use Illuminate\Http\Request;
 
+/**
+ * Controlador para gestionar los Kudos (reconocimientos entre compañeros) dentro de un equipo.
+ *
+ * Permite a los usuarios enviar Kudos con tipos personalizables, mensajes y vinculación a tareas.
+ * Al enviar un Kudo se otorgan puntos de experiencia y resiliencia, se registra un log de gamificación
+ * y se envía una notificación al receptor.
+ *
+ * Ruta asociada: POST /teams/{team}/kudos
+ */
 class KudoController extends Controller
 {
+    /**
+     * Registra un nuevo Kudo enviado por el usuario autenticado a otro usuario del equipo.
+     *
+     * Otorga puntos de experiencia y resiliencia al receptor, crea un registro de gamificación
+     * y envía una notificación al usuario recibido.
+     *
+     * @param Request $request
+     * @param Team $team
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function store(Request $request, Team $team)
     {
         $validated = $request->validate([

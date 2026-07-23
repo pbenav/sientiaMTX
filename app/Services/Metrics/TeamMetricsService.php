@@ -5,8 +5,25 @@ namespace App\Services\Metrics;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Servicio de métricas de rendimiento y dinámica de equipos.
+ *
+ * Proporciona indicadores de velocidad (velocidad de trabajo), distribución
+ * de carga, cuellos de botella, tasa de finalización por miembro, índice
+ * de colaboración y engagement general del equipo.
+ */
 class TeamMetricsService
 {
+    /**
+     * Obtiene la velocidad del equipo a lo largo del tiempo.
+     *
+     * Mide la sumatoria de progreso completado por semana, útil para
+     * visualizar la capacidad productiva del equipo en el tiempo.
+     *
+     * @param int $teamId Identificador del equipo.
+     * @param int|null $weeks Número de semanas hacia atrás para analizar (por defecto 8).
+     * @return array Labels con etiquetas de semana y datos con valores de progreso.
+     */
     public function getTeamVelocity(int $teamId, ?int $weeks = 8): array
     {
         $startDate = Carbon::now()->copy()->subWeeks($weeks);
@@ -31,6 +48,16 @@ class TeamMetricsService
         return ['labels' => $labels, 'data' => $data];
     }
 
+    /**
+     * Obtiene la distribución de carga de trabajo entre miembros del equipo.
+     *
+     * Calcula tareas completadas, en progreso y vencidas por miembro,
+     * junto con estadísticas descriptivas (promedio, desviación estándar,
+     * coeficiente de variación) para identificar miembros sobrecargados o subcargados.
+     *
+     * @param int $teamId Identificador del equipo.
+     * @return array Miembros con cargas, promedio, desviación estándar y conteos de sobrecarga.
+     */
     public function getLoadDistribution(int $teamId): array
     {
         $members = DB::table('users')
@@ -84,6 +111,16 @@ class TeamMetricsService
         ];
     }
 
+    /**
+     * Obtiene los cuellos de botella del equipo (actividades estancadas).
+     *
+     * Identifica actividades en progreso que no se actualizan desde hace
+     * el número de días especificado, ordenadas por antigüedad y prioridad.
+     *
+     * @param int $teamId Identificador del equipo.
+     * @param int|null $days Número de días de inactividad para considerar un cuello de botella (por defecto 5).
+     * @return array Array de actividades estancadas con asignatario y días estancados.
+     */
     public function getBottlenecks(int $teamId, ?int $days = 5): array
     {
         return DB::table('activities')
@@ -108,6 +145,13 @@ class TeamMetricsService
             ->toArray();
     }
 
+    /**
+     * Obtiene la tasa de finalización por miembro del equipo.
+     *
+     * @param int $teamId Identificador del equipo.
+     * @param int|null $days Número de días hacia atrás para analizar (por defecto 7).
+     * @return array Array de miembros con total de actividades, completadas y tasa.
+     */
     public function getCompletionByMember(int $teamId, ?int $days = 7): array
     {
         $startDate = Carbon::now()->copy()->subDays($days);
@@ -138,6 +182,17 @@ class TeamMetricsService
         })->toArray();
     }
 
+    /**
+     * Calcula el índice de colaboración del equipo.
+     *
+     * Combina asignaciones cruzadas, actividad de foros, mensajes, kudos
+     * y mensajes de chat con ponderaciones específicas para generar
+     * una puntuación de 0 a 100.
+     *
+     * @param int $teamId Identificador del equipo.
+     * @param int|null $days Número de días hacia atrás para analizar (por defecto 30).
+     * @return array Puntuación de colaboración y desglose por fuente.
+     */
     public function getCollaborationIndex(int $teamId, ?int $days = 30): array
     {
         $crossAssignments = DB::table('activity_assignments')
@@ -186,6 +241,16 @@ class TeamMetricsService
         ];
     }
 
+    /**
+     * Obtiene la puntuación de engagement general del equipo.
+     *
+     * Combina bienestar promedio, tasa de productividad, kudos y
+     * factores base con ponderaciones específicas.
+     *
+     * @param int $teamId Identificador del equipo.
+     * @param int|null $days Número de días hacia atrás para analizar (por defecto 7).
+     * @return array Puntuación de engagement, bienestar, productividad y tamaño del equipo.
+     */
     public function getTeamEngagement(int $teamId, ?int $days = 7): array
     {
         $wellnessService = app(WellnessMetricsService::class);

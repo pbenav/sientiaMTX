@@ -10,11 +10,46 @@ use App\Models\Activity;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Migra todas las tareas existentes al nuevo modelo unificado de actividades.
+ *
+ * Transforma registros de la tabla 'tasks' a la tabla unificada 'activities' manteniendo
+ * los mapeos de asignaciones y etiquetas en una tabla intermedia. Soporta migración
+ * de tareas eliminadas lógicamente y permite sobrescribir mapeos existentes con --force.
+ *
+ * # Ejecución
+ * ```bash
+ * php artisan mtx:migrate-tasks-to-activities
+ * php artisan mtx:migrate-tasks-to-activities --force
+ * ```
+ *
+ * @author  pbenav <info@sientia.com>
+ * @version 1.0.0
+ */
 class MigrateTasksToActivities extends Command
 {
+    /**
+     * Firma del comando con opción de sobrescritura forzada.
+     *
+     * --force : Limpia actividades de tipo task existentes y la tabla de mapeo antes de migrar.
+     */
     protected $signature = 'mtx:migrate-tasks-to-activities {--force : Sobrescribir mapeos existentes}';
+
+    /**
+     * Descripción del comando.
+     */
     protected $description = 'Migra todas las tareas (tasks) existentes a la nueva tabla unificada de actividades (activities)';
 
+    /**
+     * Punto de entrada principal del comando.
+     *
+     * Ejecuta una migración en dos pasadas: primero crea actividades y registra el mapeo
+     * en activity_task_mapping copiando asignaciones y etiquetas; luego rellena las
+     * relaciones jerárquicas (parent_id) traduciendo los IDs de tarea a actividad.
+     * Procesa los registros en chunks de 100 para optimizar el uso de memoria.
+     *
+     * @return int Código de salida del comando (SUCCESS o FAILURE).
+     */
     public function handle(): int
     {
         $this->info('Iniciando migración de Tasks a Activities...');

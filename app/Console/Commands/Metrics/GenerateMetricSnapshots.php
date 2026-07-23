@@ -19,16 +19,58 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Genera snapshots consolidados de métricas para usuarios y equipos.
+ *
+ * Calcula y persiste capturas de estado de métricas de bienestar, productividad,
+ * tiempo y gamificación a nivel individual, agregación por equipo y agregación
+ * mensual organizacional. Soporta filtrado por usuario o equipo específico.
+ *
+ * # Ejecución
+ * ```bash
+ * php artisan metrics:snapshots
+ * php artisan metrics:snapshots --daily
+ * php artisan metrics:snapshots --weekly
+ * php artisan metrics:snapshots --monthly
+ * php artisan metrics:snapshots --user=5
+ * php artisan metrics:snapshots --team=3
+ * ```
+ *
+ * @author  SientiaMTX Team
+ * @version 1.0.0
+ */
 class GenerateMetricSnapshots extends Command
 {
+    /**
+     * Firma del comando con opciones de frecuencia y filtrado.
+     *
+     * --daily  : Genera solo snapshots diarios (comportamiento por defecto).
+     * --weekly : Genera snapshots semanales adicionales.
+     * --monthly : Genera snapshots mensuales adicionales.
+     * --user=  : Genera snapshots solo para el ID de usuario especificado.
+     * --team=  : Genera snapshots solo para el ID de equipo especificado.
+     */
     protected $signature = 'metrics:snapshots {--daily : Generate daily snapshots only}
                            {--weekly : Generate weekly snapshots}
                            {--monthly : Generate monthly snapshots}
                            {--user= : Generate for specific user ID}
                            {--team= : Generate for specific team ID}';
 
+    /**
+     * Descripción del comando.
+     */
     protected $description = 'Generate consolidated metric snapshots for all users and teams';
 
+    /**
+     * Punto de entrada principal del comando.
+     *
+     * Ejecuta tres fases de generación de snapshots: individual (bienestar, productividad,
+     * tiempo y gamificación por usuario), equipo (métricas agregadas por equipo) y
+     * agregaciones semanales/mensuales. Procesa los usuarios en lotes y maneja errores
+     * por registro sin detener la ejecución completa.
+     *
+     * @return int Código de salida del comando (SUCCESS o FAILURE).
+     */
     public function handle(): int
     {
         $this->info('Iniciando generación de snapshots de métricas...');

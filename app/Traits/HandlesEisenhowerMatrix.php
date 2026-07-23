@@ -5,13 +5,31 @@ namespace App\Traits;
 use App\Models\Task;
 use App\Models\Activity;
 
+/**
+ * Trait HandlesEisenhowerMatrix
+ *
+ * Determina el cuadrante de la Matriz de Eisenhower para tareas/actividades
+ * basado en su prioridad y urgencia, y proporciona metadatos de UI por cuadrante.
+ *
+ * Cuadrantes:
+ * - 1 (Do First): Importante + Urgente → rojo
+ * - 2 (Schedule): Importante + No Urgente → azul
+ * - 3 (Delegate): No Importante + Urgente → ámbar
+ * - 4 (Eliminate): No Importante + No Urgente → gris
+ *
+ * @mixin \App\Models\Task|\App\Models\Activity
+ */
 trait HandlesEisenhowerMatrix
 {
     /**
-     * Determine which quadrant a task belongs to based on priority and urgency.
-     * 
-     * @param Task|Activity $task
-     * @return int
+     * Determina a qué cuadrante pertenece una tarea/actividad según prioridad y urgencia.
+     *
+     * Reglas:
+     * - priority high/critical = Importante
+     * - urgency high/critical = Urgente
+     *
+     * @param Task|Activity $task La tarea o actividad a evaluar
+     * @return int El cuadrante (1, 2, 3, o 4)
      */
     public function getQuadrant(Task|Activity $task): int
     {
@@ -44,10 +62,11 @@ trait HandlesEisenhowerMatrix
     }
 
     /**
-     * Get the quadrant metadata (label, description, color, etc.)
-     * 
-     * @param int $quadrant
-     * @return array
+     * Obtiene los metadatos del cuadrante (etiqueta, descripción, color, etc.).
+     * Las etiquetas y descripciones se cargan desde archivos de traducción.
+     *
+     * @param int $quadrant El cuadrante (1-4)
+     * @return array ['label', 'description', 'tip', 'color']
      */
     public function getQuadrantMetadata(int $quadrant): array
     {

@@ -13,8 +13,14 @@ class AppointmentModifiedMail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    /**
+     * @param  Appointment  $appointment  Cita modificada
+     */
     public function __construct(public Appointment $appointment) {}
 
+    /**
+     * Obtener el sobre del correo.
+     */
     public function envelope(): Envelope
     {
         return new Envelope(
@@ -22,6 +28,9 @@ class AppointmentModifiedMail extends Mailable
         );
     }
 
+    /**
+     * Obtener el contenido del correo.
+     */
     public function content(): Content
     {
         return new Content(markdown: 'mail.appointments.modified');

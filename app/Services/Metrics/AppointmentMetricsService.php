@@ -5,8 +5,22 @@ namespace App\Services\Metrics;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Servicio de métricas relacionadas con citas médicas.
+ *
+ * Proporciona indicadores de volumen, tasas de confirmación, cancelación,
+ * no-show, tendencias de reserva, distribución por servicio, horas y días
+ * pico, y tasas de retorno de pacientes. También incluye métricas específicas
+ * por equipo.
+ */
 class AppointmentMetricsService
 {
+    /**
+     * Obtiene un resumen general de las citas en el periodo indicado.
+     *
+     * @param int $days Número de días hacia atrás para analizar (por defecto 30).
+     * @return array Resumen con total, conteos por estado, y tasas de confirmación, cancelación, no-show y completado.
+     */
     public function getOverview(int $days = 30): array
     {
         $startDate = Carbon::now()->copy()->subDays($days);
@@ -39,6 +53,12 @@ class AppointmentMetricsService
         ];
     }
 
+    /**
+     * Obtiene las tendencias de creación de citas por día.
+     *
+     * @param int $days Número de días hacia atrás para analizar (por defecto 30).
+     * @return array Array de días con etiqueta y conteo de citas creadas.
+     */
     public function getBookingTrends(int $days = 30): array
     {
         $startDate = Carbon::now()->copy()->subDays($days);
@@ -65,6 +85,12 @@ class AppointmentMetricsService
         return $result;
     }
 
+    /**
+     * Obtiene la distribución de citas por servicio.
+     *
+     * @param int $days Número de días hacia atrás para analizar (por defecto 30).
+     * @return array Array de servicios con nombre, cantidad total de citas y citas completadas.
+     */
     public function getDistributionByService(int $days = 30): array
     {
         $startDate = Carbon::now()->copy()->subDays($days);
@@ -86,6 +112,12 @@ class AppointmentMetricsService
         })->toArray();
     }
 
+    /**
+     * Obtiene las horas pico de creación de citas en un día.
+     *
+     * @param int $days Número de días hacia atrás para analizar (por defecto 7).
+     * @return array Array de 24 horas con conteo de citas creadas.
+     */
     public function getPeakHours(int $days = 7): array
     {
         $hours = [];
@@ -100,6 +132,12 @@ class AppointmentMetricsService
         return $hours;
     }
 
+    /**
+     * Obtiene los días de la semana con mayor cantidad de citas.
+     *
+     * @param int $days Número de días hacia atrás para analizar (por defecto 30).
+     * @return array Array de días con nombre en español, índice numérico y conteo.
+     */
     public function getPeakDays(int $days = 30): array
     {
         $dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -123,6 +161,12 @@ class AppointmentMetricsService
         return $result;
     }
 
+    /**
+     * Obtiene la tendencia de cancelaciones por semana.
+     *
+     * @param int $weeks Número de semanas hacia atrás para analizar (por defecto 8).
+     * @return array Array semanal con total de citas, cancelaciones y tasa de cancelación.
+     */
     public function getCancellationTrend(int $weeks = 8): array
     {
         $startDate = Carbon::now()->copy()->subWeeks($weeks);
@@ -147,6 +191,12 @@ class AppointmentMetricsService
         return $result;
     }
 
+    /**
+     * Obtiene la tendencia de no-show por semana.
+     *
+     * @param int $weeks Número de semanas hacia atrás para analizar (por defecto 8).
+     * @return array Array semanal con total de citas, no-shows y tasa de no-show.
+     */
     public function getNoShowTrend(int $weeks = 8): array
     {
         $startDate = Carbon::now()->copy()->subWeeks($weeks);
@@ -171,6 +221,14 @@ class AppointmentMetricsService
         return $result;
     }
 
+    /**
+     * Obtiene la tasa de retorno de visitantes.
+     *
+     * Calcula cuántos visitantes han vuelto a agendar citas dentro del periodo.
+     *
+     * @param int $days Número de días hacia atrás para analizar (por defecto 90).
+     * @return array Total de visitantes, visitantes recurrentes y tasa de retorno.
+     */
     public function getReturnRate(int $days = 90): array
     {
         $startDate = Carbon::now()->copy()->subDays($days);
@@ -194,6 +252,13 @@ class AppointmentMetricsService
         ];
     }
 
+    /**
+     * Obtiene estadísticas de citas filtradas por equipo.
+     *
+     * @param int $teamId Identificador del equipo.
+     * @param int $days Número de días hacia atrás para analizar (por defecto 30).
+     * @return array Total, conteos por estado y tasas de no-show y cancelación por equipo.
+     */
     public function getAppointmentStats(int $teamId, int $days = 30): array
     {
         $startDate = Carbon::now()->copy()->subDays($days);

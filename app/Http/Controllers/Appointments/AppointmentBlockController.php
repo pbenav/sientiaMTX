@@ -9,8 +9,30 @@ use App\Models\Appointment;
 use App\Models\Team;
 use Illuminate\Http\Request;
 
+/**
+ * Controlador para la gestión de tramos bloqueados (horarios no disponibles) en el sistema de citas.
+ *
+ * Permite a los usuarios crear bloques de tiempo en los que no estarán disponibles para citas,
+ * y eliminarlos. Al crear un bloqueo con la opción 'notify_affected', se cancelan automáticamente
+ * las citas programadas dentro de ese rango, se eliminan los eventos de Google Calendar asociados
+ * y se envía un correo de cancelación a los visitantes afectados.
+ *
+ * Rutas asociadas:
+ *   - GET /teams/{team}/appointments/blocks
+ *   - POST /teams/{team}/appointments/blocks
+ *   - DELETE /teams/{team}/appointments/blocks/{block}
+ */
 class AppointmentBlockController extends Controller
 {
+    /**
+     * Muestra la lista de tramos bloqueados del usuario dentro de un equipo.
+     *
+     * Incluye los bloques generales y los asociados a servicios del equipo, junto con
+     * los servicios activos del usuario en ese equipo.
+     *
+     * @param Team $team
+     * @return \Illuminate\View\View
+     */
     public function index(Team $team)
     {
         $blocks = auth()->user()->appointmentBlocks()
@@ -30,6 +52,16 @@ class AppointmentBlockController extends Controller
         return view('appointments.blocks.index', compact('blocks', 'services', 'team'));
     }
 
+    /**
+     * Crea un nuevo tramo bloqueado para el usuario autenticado.
+     *
+     * Verifica que el servicio asociado (si existe) pertenezca al usuario y al equipo.
+     * Opcionalmente cancela las citas afectadas dentro del rango del bloqueo.
+     *
+     * @param Team $team
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function store(Team $team, Request $request)
     {
         $data = $request->validate([
@@ -58,6 +90,15 @@ class AppointmentBlockController extends Controller
         return back()->with('success', 'Tramo bloqueado correctamente.');
     }
 
+    /**
+     * Elimina un tramo bloqueado.
+     *
+     * Solo el propietario del bloqueo puede eliminarlo.
+     *
+     * @param Team $team
+     * @param AppointmentBlock $block
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function destroy(Team $team, AppointmentBlock $block)
     {
         if ($block->user_id !== auth()->id()) {
@@ -71,6 +112,16 @@ class AppointmentBlockController extends Controller
         return back()->with('success', 'Bloqueo eliminado.');
     }
 
+    /**
+     * Notifica y cancela las citas que se ven afectadas por un bloqueo de horario.
+     *
+     * Busca las citas del usuario dentro del rango del bloqueo, las marca como 'blocked',
+     * elimina el evento de Google Calendar asociado y envía un correo de cancelación
+     * al visitante si tiene consentimiento.
+     *
+     * @param AppointmentBlock $block
+     * @param Team $team
+     */
     private function notifyAffectedAppointments(AppointmentBlock $block, Team $team): void
     {
         $query = Appointment::where('user_id', auth()->id())
@@ -107,6 +158,11 @@ class AppointmentBlockController extends Controller
         }
     }
 
+    /**
+     * Elimina el evento asociado de Google Calendar para una cita.
+     *
+     * @param Appointment $appointment
+     */
     private function deleteGoogleEvent(Appointment $appointment): void
     {
         if ($appointment->google_event_id) {

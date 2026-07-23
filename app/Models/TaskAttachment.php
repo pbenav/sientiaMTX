@@ -10,8 +10,19 @@ use App\Models\Task;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Adjunto / Attachment: archivo adjunto a entidades polimórficas (Task, ForumMessage, Expediente).
+ *
+ * Soporta almacenamiento local y Google Drive. Genera copias públicas para micrositios
+ * y tokens de incrustación para embeds.
+ */
 class TaskAttachment extends Model
 {
+    /**
+     * Atributos asignables masivamente.
+     *
+     * @var list<string>
+     */
     protected $fillable = [
         'attachable_id',
         'attachable_type',
@@ -26,13 +37,26 @@ class TaskAttachment extends Model
         'embed_token',
     ];
 
+    /**
+     * Atributos adicionales a incluir en la serialización.
+     *
+     * @var list<string>
+     */
     protected $appends = ['embed_token'];
 
+    /**
+     * Entidad polimórfica a la que pertenece este adjunto.
+     */
     public function attachable()
     {
         return $this->morphTo();
     }
 
+    /**
+     * Obtiene el equipo al que pertenece este adjunto.
+     *
+     * @return Team|null
+     */
     public function getTeam(): ?Team
     {
         $attachable = $this->attachable;
@@ -54,18 +78,24 @@ class TaskAttachment extends Model
     }
 
     /**
-     * Helper relation for when the attachment belongs to a Task.
+     * Relación auxiliar cuando el adjunto pertenece a una Task.
      */
     public function task(): BelongsTo
     {
         return $this->belongsTo(Task::class, 'attachable_id');
     }
 
+    /**
+     * Usuario que subió el adjunto.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Registros de log de acceso a este adjunto.
+     */
     public function logs()
     {
         return $this->hasMany(AttachmentLog::class, 'attachment_id');
@@ -73,6 +103,8 @@ class TaskAttachment extends Model
 
     /**
      * Token permanente para enlaces públicos de incrustación (micrositios).
+     *
+     * Genera un token aleatorio de 64 hex caracteres si no existe.
      */
     public function getEmbedToken(): string
     {
@@ -92,7 +124,9 @@ class TaskAttachment extends Model
     }
 
     /**
-     * Ruta de la copia pública para micrositios (no sustituye al original).
+     * Ruta de la copia pública para micrositios.
+     *
+     * Formato: microsite_public/attachment_{id}/{basename}
      */
     public function getPublicCopyPath(): string
     {
@@ -102,7 +136,9 @@ class TaskAttachment extends Model
     }
 
     /**
-     * Crea una copia en microsite_public/ si no existe. Nunca modifica ni elimina el original.
+     * Crea una copia en microsite_public/ si no existe.
+     *
+     * Nunca modifica ni elimina el original. Retorna null si el proveedor es Google o no hay ruta.
      */
     public function ensurePublicCopy(): ?string
     {
@@ -128,6 +164,8 @@ class TaskAttachment extends Model
 
     /**
      * URL pública permanente para incrustar o enlazar el adjunto en micrositios.
+     *
+     * Para Google Drive usa el enlace de preview. Para almacenamiento local usa la ruta con token.
      */
     public function getPublicEmbedUrl(): ?string
     {
@@ -148,17 +186,27 @@ class TaskAttachment extends Model
     }
 
     /**
-     * Check if the physical file exists in storage.
+     * Verifica si el archivo físico existe en el almacenamiento.
+     *
+     * Para Google Drive siempre retorna true (asume que los archivos existen).
      */
     public function getExistsAttribute(): bool
     {
-        if ($this->storage_provider === 'google') return true; // Assume Drive files exist for now
+        if ($this->storage_provider === 'google') return true;
         if (!$this->file_path) return false;
         return \Illuminate\Support\Facades\Storage::disk('public')->exists($this->file_path);
     }
 
     /**
-     * Determine if the user can access this attachment within a specific team context.
+     * Verifica si un usuario puede acceder a este adjunto en un equipo específico.
+     *
+     * Para tareas: verifica visibilidad y permisos de asignación.
+     * Para mensajes de foro: verifica membresía del equipo y restricciones de privacidad.
+     * Para expedientes: verifica membresía del equipo.
+     *
+     * @param  User  $user  Usuario que solicita acceso
+     * @param  Team  $team  Equipo de contexto
+     * @return bool true si el usuario puede acceder
      */
     public function canBeAccessedBy(User $user, Team $team): bool
     {
@@ -210,7 +258,9 @@ class TaskAttachment extends Model
     }
 
     /**
-     * Check if attachment is compatible with OnlyOffice editor.
+     * Verifica si el adjunto es compatible con el editor OnlyOffice.
+     *
+     * Compara la extensión del archivo con las configuradas en config('onlyoffice.extensions').
      */
     public function getIsOfficeCompatibleAttribute(): bool
     {

@@ -7,8 +7,30 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Controlador API para la integración de sincronización de control horario (S2S) con CTH.
+ *
+ * Permite que el sistema externo de control horario (CTH) inicie, detenga y sincronice
+ * registros de jornada laboral de los usuarios. Soporta sincronización en tiempo real
+ * mediante el endpoint syncWorkday y sincronización masiva de historial mediante syncHistory.
+ * Incluye autenticación por token global o por usuario.
+ *
+ * Rutas asociadas (prefix: api/s2s):
+ *   - POST /api/s2s/sync-workday
+ *   - POST /api/s2s/sync-history
+ */
 class S2SIntegrationController extends Controller
 {
+    /**
+     * Sincroniza en tiempo real el inicio, detención o eliminación de un registro de jornada.
+     *
+     * Recibe un evento (start, stop, delete_active) y actualiza los registros de tiempo
+     * del usuario. Valida la autenticación mediante token global o token por usuario.
+     * Invalida la caché del estado CTH del usuario al procesar el evento.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function syncWorkday(Request $request)
     {
         $email = $request->input('email');
@@ -87,6 +109,16 @@ class S2SIntegrationController extends Controller
         }
     }
 
+    /**
+     * Sincroniza masivamente el historial de jornadas laborales de varios usuarios.
+     *
+     * Recibe un conjunto de eventos agrupados por email y una fecha de inicio.
+     * Elimina los registros existentes del usuario desde esa fecha y los reemplaza
+     * con los datos recibidos. Opera dentro de una transacción de base de datos.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function syncHistory(Request $request)
     {
         $secret = config('services.cth.secret');

@@ -14,11 +14,47 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Verifica umbrales de métricas y genera alertas proactivas para el equipo.
+ *
+ * Evalúa riesgos de burnout, estrés prolongado, horas extra excesivas, desbalance
+ * de carga en equipos, cuellos de botella en actividades y tasas elevadas de
+ * no-show de citas. Crea registros de alerta en la base de datos solo si no
+ * existe una alerta activa similar para el mismo contexto.
+ *
+ * # Ejecución
+ * ```bash
+ * php artisan metrics:check-alerts
+ * php artisan metrics:check-alerts --force
+ * ```
+ *
+ * @author  SientiaMTX Team
+ * @version 1.0.0
+ */
 class CheckMetricAlerts extends Command
 {
+    /**
+     * Firma del comando con opción de verificación forzada.
+     *
+     * --force : Obliga la verificación de alertas incluso si se ejecutó recientemente.
+     */
     protected $signature = 'metrics:check-alerts {--force : Force alert checking even if recently run}';
+
+    /**
+     * Descripción del comando.
+     */
     protected $description = 'Check for metric thresholds and generate proactive alerts';
 
+    /**
+     * Punto de entrada principal del comando.
+     *
+     * Ejecuta seis verificaciones independientes usando los servicios especializados:
+     * WellnessMetricsService (burnout, estrés, horas extra), TeamMetricsService
+     * (desbalance de carga, cuellos de botella) y AppointmentMetricsService (no-show).
+     * Cada verificación crea alertas solo si no existe una alerta activa similar.
+     *
+     * @return int Código de salida del comando (SUCCESS o FAILURE).
+     */
     public function handle(): int
     {
         $this->info('Verificando alertas de métricas...');

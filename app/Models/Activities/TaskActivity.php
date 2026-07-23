@@ -10,11 +10,12 @@ use App\Traits\HandlesEisenhowerMatrix;
 use App\Contracts\ExportableActivityInterface;
 
 /**
- * Subtipo: Tarea
+ * Subtipo: Tarea / TaskActivity.
  *
- * Hereda toda la infraestructura de Activity.
- * Es el subtipo más completo — con ciclo de vida, autoprogramación,
- * gamificación y Google Sync, igual que las Tasks actuales.
+ * Hereda toda la infraestructura de Activity. Es el subtipo más completo
+ * con ciclo de vida, autoprogramación, gamificación y Google Sync.
+ *
+ * Implementa ExportableActivityInterface para exportación de specs.
  *
  * metadata esperado:
  * {
@@ -32,6 +33,9 @@ class TaskActivity extends Activity implements ExportableActivityInterface
 {
     use HandlesEisenhowerMatrix;
 
+    /**
+     * Boot: asigna automáticamente type='task' al crear.
+     */
     protected static function booted(): void
     {
         static::creating(function (self $model) {
@@ -39,24 +43,38 @@ class TaskActivity extends Activity implements ExportableActivityInterface
         });
     }
 
-    // Estados válidos para tareas
+    /**
+     * Estados válidos para tareas.
+     */
     public const STATUSES = ['pending', 'in_progress', 'completed', 'cancelled', 'blocked'];
 
+    /**
+     * Verifica si la tarea está bloqueada.
+     */
     public function isBlocked(): bool
     {
         return $this->status_value === 'blocked';
     }
 
+    /**
+     * Verifica si la tarea está completada.
+     */
     public function isCompleted(): bool
     {
         return $this->status_value === 'completed';
     }
 
+    /**
+     * Verifica si la tarea está cancelada.
+     */
     public function isCancelled(): bool
     {
         return $this->status_value === 'cancelled';
     }
 
+    /**
+     * Porcentaje de progreso. Retorna 100 si completada o cancelada.
+     */
     public function getProgressPercentageAttribute(): int
     {
         if ($this->isCompleted() || $this->isCancelled()) return 100;
@@ -65,6 +83,8 @@ class TaskActivity extends Activity implements ExportableActivityInterface
 
     /**
      * Sincroniza la columna de Kanban según el progreso actual.
+     *
+     * Progreso 100 → columna "done", 0 → "todo", otro valor → "in_progress" o "custom".
      */
     public function syncKanbanColumn(): void
     {
@@ -79,10 +99,10 @@ class TaskActivity extends Activity implements ExportableActivityInterface
         };
 
         $currentColumn = \App\Models\KanbanColumn::find($this->kanban_column_id);
-        
+
         if (!$currentColumn || !in_array($currentColumn->type, $expectedTypes)) {
             $typeToAssign = $progress === 100 ? 'done' : ($progress === 0 ? 'todo' : 'in_progress');
-            
+
             $column = $team->kanbanColumns()->where('type', $typeToAssign)->orderBy('order_index')->first();
             if ($column && $this->kanban_column_id !== $column->id) {
                 $this->kanban_column_id = $column->id;
@@ -94,6 +114,11 @@ class TaskActivity extends Activity implements ExportableActivityInterface
     // ─── Implementación de ExportableActivityInterface ────────────────────────
     use \App\Traits\HandlesActivitySpecs;
 
+    /**
+     * Esquema de validación para los campos de specs de tareas.
+     *
+     * @return array<string, string> Mapa campo → regla de validación
+     */
     public static function getSpecsSchema(): array
     {
         return [
@@ -107,6 +132,11 @@ class TaskActivity extends Activity implements ExportableActivityInterface
         ];
     }
 
+    /**
+     * Exporta los specs de la tarea como array plano.
+     *
+     * @return array<string, mixed>
+     */
     public function exportSpecs(): array
     {
         $meta = $this->metadata ?? [];

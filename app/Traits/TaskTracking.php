@@ -2,10 +2,21 @@
 
 namespace App\Traits;
 
+/**
+ * Trait TaskTracking
+ *
+ * Proporciona métodos para calcular el tiempo rastreado en tareas
+ * y sus hijos, tanto en segundos como en formato legible humano.
+ *
+ * Incluye tracking global (todos los usuarios) y por usuario actual.
+ *
+ * @mixin \App\Models\Task
+ */
 trait TaskTracking
 {
     /**
-     * Get total time spent on this task and its children in seconds.
+     * Obtiene el tiempo total gastado en esta tarea y sus hijos en segundos.
+     * Suma los time_logs propios (con end_at definido) más los de los hijos.
      */
     public function totalTrackedSeconds(): int
     {
@@ -26,7 +37,7 @@ trait TaskTracking
     }
 
     /**
-     * Get human-readable total time (e.g. 2h 30m).
+     * Obtiene el tiempo total en formato legible (ej: "2h 30m").
      */
     public function totalTrackedTimeHuman(): string
     {
@@ -43,7 +54,7 @@ trait TaskTracking
     }
 
     /**
-     * Get time tracked by the CURRENT USER today on this task in seconds.
+     * Obtiene el tiempo rastreado HOY POR EL USUARIO ACTUAL en esta tarea en segundos.
      */
     public function trackedTimeTodaySeconds(): int
     {
@@ -56,7 +67,8 @@ trait TaskTracking
     }
 
     /**
-     * Get human-readable time tracked by CURRENT USER today.
+     * Obtiene el tiempo rastreado HOY POR EL USUARIO ACTUAL en formato legible.
+     * Incluye segundos si el tiempo total es menor a 1 minuto.
      */
     public function trackedTimeTodayHuman(): string
     {
@@ -76,7 +88,8 @@ trait TaskTracking
     }
 
     /**
-     * Get aggregate time tracked today by ALL USERS on this task and its children.
+     * Obtiene el tiempo agregado rastreado HOY POR TODOS LOS USUARIOS
+     * en esta tarea y sus hijos en segundos.
      */
     public function totalTrackedTimeTodaySeconds(): int
     {
@@ -98,7 +111,7 @@ trait TaskTracking
     }
 
     /**
-     * Get human-readable aggregate time tracked today.
+     * Obtiene el tiempo agregado rastreado HOY en formato legible.
      */
     public function totalTrackedTimeTodayHuman(): string
     {

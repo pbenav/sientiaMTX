@@ -7,8 +7,29 @@ use App\Models\AppointmentService;
 use App\Models\Team;
 use Illuminate\Http\Request;
 
+/**
+ * Controlador para la gestión de servicios de citas dentro de un equipo.
+ *
+ * Permite crear, editar, listar y eliminar servicios de citas (consultas, reuniones, etc.)
+ * con configuración de modalidades (presencial, Jitsi, Meet), horarios de disponibilidad,
+ * campos personalizados y cumplimiento de protección de datos (RGPD).
+ *
+ * Rutas asociadas:
+ *   - GET /teams/{team}/appointments/services
+ *   - GET /teams/{team}/appointments/services/create
+ *   - POST /teams/{team}/appointments/services
+ *   - GET /teams/{team}/appointments/services/{service}/edit
+ *   - PUT/PATCH /teams/{team}/appointments/services/{service}
+ *   - DELETE /teams/{team}/appointments/services/{service}
+ */
 class AppointmentServiceController extends Controller
 {
+    /**
+     * Muestra la lista de servicios de citas del usuario dentro de un equipo.
+     *
+     * @param Team $team
+     * @return \Illuminate\View\View
+     */
     public function index(Team $team)
     {
         $services = auth()->user()->appointmentServices()
@@ -18,11 +39,27 @@ class AppointmentServiceController extends Controller
         return view('appointments.services.index', compact('services', 'team'));
     }
 
+    /**
+     * Muestra el formulario de creación de un nuevo servicio de citas.
+     *
+     * @param Team $team
+     * @return \Illuminate\View\View
+     */
     public function create(Team $team)
     {
         return view('appointments.services.create', compact('team'));
     }
 
+    /**
+     * Crea un nuevo servicio de citas para el usuario autenticado.
+     *
+     * Valida todos los campos del formulario, procesa los campos personalizados
+     * y de protección de datos, y guarda los horarios de disponibilidad del servicio.
+     *
+     * @param Team $team
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function store(Team $team, Request $request)
     {
         $data = $request->validate([
@@ -112,12 +149,32 @@ class AppointmentServiceController extends Controller
             ->with('success', 'Servicio creado correctamente.');
     }
 
+    /**
+     * Muestra el formulario de edición de un servicio de citas existente.
+     *
+     * Verifica que el servicio pertenezca al usuario autenticado y al equipo.
+     *
+     * @param Team $team
+     * @param AppointmentService $service
+     * @return \Illuminate\View\View
+     */
     public function edit(Team $team, AppointmentService $service)
     {
         $this->authorizeService($service, $team);
         return view('appointments.services.edit', compact('service', 'team'));
     }
 
+    /**
+     * Actualiza un servicio de citas existente.
+     *
+     * Reemplaza los horarios de disponibilidad anteriores con los nuevos proporcionados.
+     * Verifica la autorización del usuario sobre el servicio.
+     *
+     * @param Team $team
+     * @param Request $request
+     * @param AppointmentService $service
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function update(Team $team, Request $request, AppointmentService $service)
     {
         $this->authorizeService($service, $team);
@@ -212,6 +269,15 @@ class AppointmentServiceController extends Controller
             ->with('success', 'Servicio actualizado correctamente.');
     }
 
+    /**
+     * Elimina un servicio de citas.
+     *
+     * No permite eliminar servicios que tengan citas activas (diferentes de canceladas).
+     *
+     * @param Team $team
+     * @param AppointmentService $service
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function destroy(Team $team, AppointmentService $service)
     {
         $this->authorizeService($service, $team);
@@ -226,6 +292,14 @@ class AppointmentServiceController extends Controller
             ->with('success', 'Servicio eliminado.');
     }
 
+    /**
+     * Verifica que el servicio pertenezca al usuario autenticado y al equipo especificado.
+     *
+     * @param AppointmentService $service
+     * @param Team $team
+     * @return void
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     */
     private function authorizeService(AppointmentService $service, Team $team): void
     {
         if ($service->user_id !== auth()->id() || $service->team_id !== $team->id) {

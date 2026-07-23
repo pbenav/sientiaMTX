@@ -5,12 +5,21 @@
 
 namespace App\Services;
 
+/**
+ * Servicio de generación y verificación de códigos TOTP (RFC 6238).
+ *
+ * Implementa generación de secretos base32, códigos TOTP de 6 dígitos
+ * con ventana de discrepancia configurable, y URIs de provisioning para QR.
+ */
 class TotpService
 {
-    private static $base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    private static string $base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 
     /**
-     * Generate a random base32 secret.
+     * Genera un secreto aleatorio en formato base32.
+     *
+     * @param  int  $length  Longitud del secreto (por defecto 16 caracteres).
+     * @return string
      */
     public function generateSecret(int $length = 16): string
     {
@@ -22,7 +31,14 @@ class TotpService
     }
 
     /**
-     * Get the 6-digit TOTP code for a secret at a specific time slice.
+     * Obtiene el código TOTP de 6 dígitos para un secreto en un slice de tiempo dado.
+     *
+     * Usa HMAC-SHA1 con truncamiento dinámico según RFC 6238.
+     * Si timeSlice es null, usa el slice actual (floor(time/30)).
+     *
+     * @param  string  $secret  Secreto base32.
+     * @param  int|null  $timeSlice  Slice de tiempo (default: time actual dividido entre 30).
+     * @return string
      */
     public function getCode(string $secret, int $timeSlice = null): string
     {
@@ -54,7 +70,16 @@ class TotpService
     }
 
     /**
-     * Verify a TOTP code within a specific time window discrepancy.
+     * Verifica un código TOTP dentro de una ventana de discrepancia de tiempo.
+     *
+     * Compara el código proporcionado con los códigos calculados para el slice actual
+     * más/minus la discrepancia (por defecto 1, es decir 3 ventanas de 30s = 90s totales).
+     * Usa hash_equals para prevenir timing attacks.
+     *
+     * @param  string  $secret  Secreto base32.
+     * @param  string  $code  Código de 6 dígitos a verificar.
+     * @param  int  $discrepancy  Ventanas de tiempo a verificar por lado (default 1).
+     * @return bool
      */
     public function verifyCode(string $secret, string $code, int $discrepancy = 1): bool
     {
@@ -71,7 +96,13 @@ class TotpService
     }
 
     /**
-     * Get the provisioning URI for QR code configuration.
+     * Obtiene la URI de provisioning para configuración de código QR.
+     *
+     * Formato: otpauth://totp/{issuer}:{label}?secret={secret}&issuer={issuer}
+     *
+     * @param  string  $email  Email/identificador del usuario (label).
+     * @param  string  $secret  Secreto base32.
+     * @return string
      */
     public function getQrCodeUri(string $email, string $secret): string
     {
@@ -80,7 +111,14 @@ class TotpService
     }
 
     /**
-     * Helper to decode a base32 string to binary.
+     * Decodifica una cadena base32 a binario.
+     *
+     * Valida el formato con regex /^[A-Z2-7]+$/ antes de procesar.
+     * Implementa decodificación bit a bit con buffer de 5 bits por carácter.
+     *
+     * @param  string  $base32  Cadena base32 a decodificar.
+     * @return string
+     * @throws \InvalidArgumentException
      */
     private function base32Decode(string $base32): string
     {

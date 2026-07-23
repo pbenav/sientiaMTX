@@ -12,14 +12,34 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Controlador para la gestión de notas rápidas del usuario (crear, editar, eliminar, adjuntos, transcripción).
+ *
+ * Soporta transcripción de audio mediante IA (Ax.ia), gestión de adjuntos con almacenamiento local,
+ * y operaciones masivas (ocultar múltiples notas).
+ */
 class QuickNoteController extends Controller
 {
+    /**
+     * Instancia del servicio de IA para transcripción.
+     *
+     * @var \App\Contracts\AiAssistantInterface
+     */
     protected $ai;
 
     public function __construct(AiAssistantInterface $ai)
     {
         $this->ai = $ai;
     }
+
+    /**
+     * Obtiene todas las notas rápidas del usuario autenticado.
+     *
+     * Corrige notas antiguas que carecen de 'id' en sus adjuntos asignando
+     * un ID único generado con uniqid().
+     *
+     * @return \Illuminate\Http\JsonResponse Respuesta con array de notas del usuario
+     */
     public function index()
     {
         $notes = auth()->user()->quickNotes;
@@ -45,6 +65,12 @@ class QuickNoteController extends Controller
         return response()->json($notes);
     }
 
+    /**
+     * Crea una nueva nota rápida para el usuario autenticado.
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe contener content (opcional), position_x, position_y, width, height, color, is_pinned, is_minimized, is_hidden (todos opcionales)
+     * @return \Illuminate\Http\JsonResponse Respuesta con la nota creada
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -64,6 +90,15 @@ class QuickNoteController extends Controller
         return response()->json($note);
     }
 
+    /**
+     * Actualiza una nota rápida existente.
+     *
+     * Verifica que el usuario sea el propietario de la nota mediante el policy 'update'.
+     *
+     * @param  \Illuminate\Http\Request  $request  Campos a actualizar (content, posición, color, estado)
+     * @param  \App\Models\QuickNote  $quick_note  Nota a actualizar
+     * @return \Illuminate\Http\JsonResponse Respuesta con la nota actualizada
+     */
     public function update(Request $request, QuickNote $quick_note)
     {
         $this->authorize('update', $quick_note);
@@ -85,6 +120,15 @@ class QuickNoteController extends Controller
         return response()->json($quick_note);
     }
 
+    /**
+     * Elimina una nota rápida y sus archivos adjuntos del almacenamiento.
+     *
+     * Verifica que el usuario sea el propietario mediante el policy 'delete'.
+     * Borra todos los archivos adjuntos del disco 'public' antes de eliminar el registro.
+     *
+     * @param  \App\Models\QuickNote  $quick_note  Nota a eliminar
+     * @return \Illuminate\Http\JsonResponse Respuesta con success=true
+     */
     public function destroy(QuickNote $quick_note)
     {
         $this->authorize('delete', $quick_note);
@@ -103,6 +147,16 @@ class QuickNoteController extends Controller
         return response()->json(['success' => true]);
     }
 
+    /**
+     * Sube un archivo adjunto a una nota rápida.
+     *
+     * Almacena el archivo en storage/app/public/quick-notes/{user_id}/.
+     * Detecta automáticamente si es una grabación de audio y ajusta el MIME type.
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe contener file (máx 10MB)
+     * @param  \App\Models\QuickNote  $quick_note  Nota a la que adjuntar el archivo
+     * @return \Illuminate\Http\JsonResponse Respuesta con la nota actualizada incluyendo el nuevo adjunto
+     */
     public function uploadAttachment(Request $request, QuickNote $quick_note)
     {
         $this->authorize('update', $quick_note);
@@ -135,6 +189,16 @@ class QuickNoteController extends Controller
         return response()->json($quick_note);
     }
 
+    /**
+     * Elimina un adjunto específico de una nota rápida.
+     *
+     * Borra el archivo del disco 'public' y lo remueve del array de attachments.
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe estar autenticado
+     * @param  \App\Models\QuickNote  $quick_note  Nota que contiene el adjunto
+     * @param  string  $attachmentId  ID del adjunto a eliminar (uniqid)
+     * @return \Illuminate\Http\JsonResponse Respuesta con la nota actualizada
+     */
     public function deleteAttachment(Request $request, QuickNote $quick_note, $attachmentId)
     {
         $this->authorize('update', $quick_note);
@@ -155,6 +219,18 @@ class QuickNoteController extends Controller
         return response()->json($quick_note);
     }
 
+    /**
+     * Transcribe un archivo de audio adjunto a una nota rápida usando IA (Ax.ia).
+     *
+     * Lee el archivo del disco público, lo envía al servicio de IA con una instrucción
+     * de transcripción, limpia etiquetas de respuesta ([PAYLOAD], JSON wrappers),
+     * y retorna el texto transcrito.
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe estar autenticado
+     * @param  \App\Models\QuickNote  $quick_note  Nota que contiene el audio
+     * @param  string  $attachmentId  ID del adjunto de audio a transcribir
+     * @return \Illuminate\Http\JsonResponse Respuesta con transcription y attachment_id, o error 404/422/500
+     */
     public function transcribeAttachment(Request $request, QuickNote $quick_note, $attachmentId)
     {
         \Log::info("Transcripción solicitada", ['note_id' => $quick_note->id, 'att_id' => $attachmentId]);
@@ -216,6 +292,12 @@ class QuickNoteController extends Controller
         }
     }
 
+    /**
+     * Actualización masiva de notas rápidas (ocultar).
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe contener ids (array de IDs válidos), is_hidden (boolean)
+     * @return \Illuminate\Http\JsonResponse Respuesta con success=true
+     */
     public function bulkUpdate(Request $request)
     {
         $validated = $request->validate([

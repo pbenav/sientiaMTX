@@ -13,9 +13,22 @@ use App\Traits\AwardsGamification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Controlador para la gestión de servicios y monitoreo de estado (reportes de incidencias).
+ *
+ * Permite a coordinadores crear, actualizar y eliminar servicios de un equipo.
+ * Los miembros pueden reportar estados (up/down) con un sistema de cooldown y gamificación.
+ */
 class ServiceController extends Controller
 {
     use AwardsGamification;
+    /**
+     * Crea un nuevo servicio para el equipo (solo coordinadores).
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe contener name (obligatorio), url, icon, description (opcionales)
+     * @param  \App\Models\Team  $team  Equipo al que pertenece el servicio
+     * @return \Illuminate\Http\RedirectResponse Redirección con mensaje de éxito
+     */
     public function store(Request $request, Team $team)
     {
         if (!$team->isCoordinator(auth()->user())) {
@@ -34,6 +47,18 @@ class ServiceController extends Controller
         return back()->with('success', __('Servicio añadido correctamente.'));
     }
 
+    /**
+     * Registra un reporte de estado (up/down) para un servicio.
+     *
+     * Implementa un cooldown de 5 minutos por usuario/servicio/tipo para evitar spam.
+     * Si se reciben reportes de caída (down) → estado inmediato. Si hay reportes de
+     * recuperación (up) → estado inmediato. Otorga puntos de gamificación 'Bono Centinela'.
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe contener type (up|down), details (opcional)
+     * @param  \App\Models\Team  $team  Equipo del servicio
+     * @param  \App\Models\Service  $service  Servicio a reportar
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse Respuesta JSON o redirección con resultado
+     */
     public function report(Request $request, Team $team, Service $service)
     {
         $validated = $request->validate([
@@ -114,6 +139,13 @@ class ServiceController extends Controller
         return back()->with('success', __('Estado reportado.¡Gracias por colaborar!'));
     }
 
+    /**
+     * Actualiza el orden de visualización de los servicios del equipo (solo coordinadores).
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe contener ids (array de IDs válidos)
+     * @param  \App\Models\Team  $team  Equipo cuyos servicios se reordenan
+     * @return \Illuminate\Http\JsonResponse Respuesta con success=true
+     */
     public function reorder(Request $request, Team $team)
     {
         if (!$team->isCoordinator(auth()->user())) {
@@ -132,6 +164,14 @@ class ServiceController extends Controller
         return response()->json(['success' => true]);
     }
 
+    /**
+     * Actualiza los datos de un servicio del equipo (solo coordinadores).
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe contener name (obligatorio), url, icon, description (opcionales)
+     * @param  \App\Models\Team  $team  Equipo del servicio
+     * @param  \App\Models\Service  $service  Servicio a actualizar
+     * @return \Illuminate\Http\RedirectResponse Redirección con mensaje de éxito
+     */
     public function update(Request $request, Team $team, Service $service)
     {
         if (!$team->isCoordinator(auth()->user()) || $service->team_id !== $team->id) {
@@ -150,6 +190,13 @@ class ServiceController extends Controller
         return back()->with('success', __('Servicio actualizado correctamente.'));
     }
 
+    /**
+     * Elimina un servicio del equipo (solo coordinadores).
+     *
+     * @param  \App\Models\Team  $team  Equipo del servicio
+     * @param  \App\Models\Service  $service  Servicio a eliminar
+     * @return \Illuminate\Http\RedirectResponse Redirección con mensaje de éxito
+     */
     public function destroy(Team $team, Service $service)
     {
         if (!$team->isCoordinator(auth()->user())) {
@@ -161,6 +208,16 @@ class ServiceController extends Controller
         return back()->with('success', __('Servicio eliminado.'));
     }
 
+    /**
+     * Obtiene los últimos incidentes reportados para un servicio (API JSON).
+     *
+     * Formatea los datos para consumo frontend con etiquetas de tipo (activo/incidencia),
+     * colores, nombre del reportero (humano o sistema), timestamps y formato humano.
+     *
+     * @param  \App\Models\Team  $team  Equipo del servicio
+     * @param  \App\Models\Service  $service  Servicio a consultar
+     * @return \Illuminate\Http\JsonResponse Respuesta con success=true y array de incidentes formateados
+     */
     public function incidents(Team $team, Service $service)
     {
         if ($service->team_id !== $team->id) {

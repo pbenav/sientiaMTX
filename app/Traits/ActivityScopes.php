@@ -8,9 +8,22 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Trait ActivityScopes
+ *
+ * Define los scopes de consulta para el modelo Activity y sus subtipos.
+ * Organiza las consultas por: tipos, vistas (Kanban/Matrix/Gantt),
+ * visibilidad, y contexto operativo (gestión vs ejecución).
+ *
+ * @mixin \App\Models\Activity
+ */
 trait ActivityScopes
 {
     // ─── Scopes básicos ───────────────────────────────────────────────────────
+
+    /**
+     * Filtra actividades por tipo exacto.
+     */
     public function scopeOfType(Builder $query, string $type)
     {
         return $query->where('type', $type);
@@ -64,26 +77,41 @@ trait ActivityScopes
         });
     }
 
+    /**
+     * Filtra actividades por un array de tipos.
+     */
     public function scopeOfTypes(Builder $query, array $types)
     {
         return $query->whereIn('type', $types);
     }
 
+    /**
+     * Filtra actividades por equipo.
+     */
     public function scopeByTeam(Builder $query, int $teamId)
     {
         return $query->where('team_id', $teamId);
     }
 
+    /**
+     * Filtra actividades activas (no archivadas).
+     */
     public function scopeActive(Builder $query)
     {
         return $query->where('is_archived', false);
     }
 
+    /**
+     * Filtra actividades archivadas.
+     */
     public function scopeArchived(Builder $query)
     {
         return $query->where('is_archived', true);
     }
 
+    /**
+     * Filtra actividades vencidas (fecha de vencimiento pasada y sin completar/cancelar).
+     */
     public function scopeOverdue(Builder $query)
     {
         return $query->where('due_date', '<', now())
@@ -91,31 +119,53 @@ trait ActivityScopes
             ->whereJsonDoesntContain('status->value', 'cancelled');
     }
 
+    /**
+     * Filtra actividades con fecha de vencimiento hoy.
+     */
     public function scopeDueToday(Builder $query)
     {
         return $query->whereDate('due_date', today());
     }
 
     // ─── Scopes por vista (Kanban, Matriz, Gantt) ─────────────────────────────
+
+    /**
+     * Filtra actividades para mostrar en vista Kanban según los tipos definidos.
+     */
     public function scopeForKanban(Builder $query)
     {
         return $query->whereIn('type', $this->getScopesKanbanTypes());
     }
 
+    /**
+     * Filtra actividades para mostrar en vista Matriz de Eisenhower.
+     */
     public function scopeForMatrix(Builder $query)
     {
         return $query->whereIn('type', $this->getScopesMatrixTypes())
-                     ->where('is_archived', false);
+                      ->where('is_archived', false);
     }
 
+    /**
+     * Filtra actividades para mostrar en vista Gantt (con fecha y no archivadas).
+     */
     public function scopeForGantt(Builder $query)
     {
         return $query->whereIn('type', $this->getScopesGanttTypes())
-                     ->whereNotNull('due_date')
-                     ->where('is_archived', false);
+                      ->whereNotNull('due_date')
+                      ->where('is_archived', false);
     }
 
     // ─── Scopes de visibilidad ────────────────────────────────────────────────
+
+    /**
+     * Filtra actividades visibles para un usuario según su rol y la visibilidad de cada actividad.
+     *
+     * Para managers: incluye públicas, plantillas públicas, creadas por el usuario,
+     * y semi-privadas asignadas al usuario.
+     * Para miembros normales: incluye públicas sin asignar, creadas por el usuario,
+     * semi-privadas asignadas, asignadas directamente, o asignadas a grupos del usuario.
+     */
     public function scopeVisibleTo(Builder $query, User $user, bool $isManager = false)
     {
         if (!$user) return $query->whereRaw('1 = 0');
@@ -167,6 +217,9 @@ trait ActivityScopes
         });
     }
 
+    /**
+     * Filtra actividades no efímeras (don metadata->is_ephemeral es null o false).
+     */
     public function scopeNotEphemeral(Builder $query)
     {
         return $query->where(function ($q) {
@@ -178,6 +231,15 @@ trait ActivityScopes
     }
 
     // ─── Scopes de contexto operativo ─────────────────────────────────────────
+
+    /**
+     * Filtra actividades enfocadas para un usuario en un equipo.
+     *
+     * Para managers: incluye plantillas maestras, tareas raíz creadas por el manager,
+     * e instancias asignadas al manager.
+     * Para miembros normales: solo tareas hoja (sin hijos) asignadas al usuario,
+     * creadas por el usuario, públicas sin asignar, o mapeadas a través de task_assignments.
+     */
     public function scopeFocusedFor(Builder $query, $user, Team $team, $includeFuture = false)
     {
         $userId = $user->id;
@@ -268,6 +330,14 @@ trait ActivityScopes
         return $query;
     }
 
+    /**
+     * Filtra actividades operativas para un usuario en un equipo.
+     *
+     * Para managers: muestra el esqueleto (plantillas y raíces) con deduplicación
+     * para priorizar el Plan Maestro.
+     * Para miembros: muestra trabajo asignado y tareas puras sin asignar,
+     * con deduplicación para ocultar padres si se ven hijas asignadas.
+     */
     public function scopeOperationalFor(Builder $query, $user, Team $team, $includeFuture = false)
     {
         $isManager = $team->isManager($user);
@@ -281,8 +351,8 @@ trait ActivityScopes
                       ->orWhere('is_template', true);
                 });
 
-                // DEDUPLICACIÓN EN GESTIÓN: Si el manager tiene una instancia propia, 
-                // priorizamos ver el Plan Maestro (donde puede gestionar todo) y evitamos 
+                // DEDUPLICACIÓN EN GESTIÓN: Si el manager tiene una instancia propia,
+                // priorizamos ver el Plan Maestro (donde puede gestionar todo) y evitamos
                 // ver la instancia suelta arriba para no triplicar.
                 $main->where(function($q) use ($userId) {
                     $q->where('is_template', true)
@@ -328,6 +398,9 @@ trait ActivityScopes
         return $query;
     }
 
+    /**
+     * Filtra actividades para vista operativa Kanban (hojas no plantillas, enfocadas para el usuario).
+     */
     public function scopeOperationalForKanban(Builder $query, $user, $team, $includeFuture = false)
     {
         return $query->where(function($q) {
@@ -340,18 +413,28 @@ trait ActivityScopes
     }
 
     // ─── Helpers para scopes ─────────────────────────────────────────────────
+
+    /**
+     * Obtiene los tipos de actividad válidos para vista Kanban.
+     */
     protected function getScopesKanbanTypes(): array
     {
         $const = \App\Models\Activity::class . '::KANBAN_TYPES';
         return constant($const);
     }
 
+    /**
+     * Obtiene los tipos de actividad válidos para vista Matriz de Eisenhower.
+     */
     protected function getScopesMatrixTypes(): array
     {
         $const = \App\Models\Activity::class . '::MATRIX_TYPES';
         return constant($const);
     }
 
+    /**
+     * Obtiene los tipos de actividad válidos para vista Gantt.
+     */
     protected function getScopesGanttTypes(): array
     {
         $const = \App\Models\Activity::class . '::GANTT_TYPES';

@@ -11,6 +11,13 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Controlador para exportar, importar, clonar y copiar actividades entre equipos.
+ *
+ * Soporta clonación local, copiado entre equipos (usando ActivityFactory para
+ * un puente 100% fiel), importación/exportación JSON, y mantenimiento de
+ * todas las relaciones (skills, tags, assignments, attachments, history).
+ */
 class TaskExportController extends Controller
 {
     protected ActivityFactory $activityFactory;
@@ -20,6 +27,18 @@ class TaskExportController extends Controller
         $this->activityFactory = $activityFactory;
     }
 
+    /**
+     * Copia una actividad completa a otro equipo usando la ActivityFactory.
+     *
+     * Exporta la actividad mediante exportToJson (esquema v2: Core + Specs),
+     * fuerza is_template=false, e importa en el equipo destino con makeFromJson.
+     * Reasigna asignaciones al usuario actual y registra historial de clonación.
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe contener target_team_id (obligatorio, debe ser accesible)
+     * @param  \App\Models\Team  $team  Equipo origen de la actividad
+     * @param  int  $taskId  ID de la actividad a copiar
+     * @return \Illuminate\Http\JsonResponse Respuesta con success, message, y URL de la actividad clonada
+     */
     public function copyToTeam(Request $request, Team $team, $taskId)
     {
         $task = Activity::find($taskId) ?? Task::find($taskId);
@@ -80,6 +99,17 @@ class TaskExportController extends Controller
         }
     }
 
+    /**
+     * Clona una actividad dentro del mismo equipo (redirección con mensaje).
+     *
+     * Copia todos los campos, skills, tags, y asignaciones de usuario/grupo.
+     * Sincroniza la columna Kanban y registra historial de clonación.
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe estar autenticado
+     * @param  \App\Models\Team  $team  Equipo de la actividad
+     * @param  int  $taskId  ID de la actividad a clonar
+     * @return \Illuminate\Http\RedirectResponse Redirección a la edición de la tarea clonada con mensaje de éxito
+     */
     public function cloneTask(Request $request, Team $team, $taskId)
     {
         $task = Activity::find($taskId) ?? Task::find($taskId);
@@ -190,6 +220,16 @@ class TaskExportController extends Controller
         return redirect()->route('teams.activities.edit', [$team, $clonedTask])->with('success', 'Tarea clonada con éxito: "' . $clonedTask->title . '"');
     }
 
+    /**
+     * Importa una actividad desde un archivo JSON o contenido JSON directo.
+     *
+     * Usa ActivityFactory::makeFromJson para crear la actividad con todas sus
+     * relaciones (specs, skills, tags, assignments, attachments).
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe contener file (JSON, máx 2MB) o json_content
+     * @param  \App\Models\Team  $team  Equipo destino de la importación
+     * @return \Illuminate\Http\JsonResponse Respuesta con success, message, y URL de la actividad creada
+     */
     public function importJson(Request $request, Team $team)
     {
         if (auth()->user()->cannot('create', [Activity::class, $team]) && auth()->user()->cannot('create', [Task::class, $team])) {
@@ -221,6 +261,17 @@ class TaskExportController extends Controller
         }
     }
 
+    /**
+     * Exporta una actividad a formato JSON (API o descarga de archivo).
+     *
+     * Usa ActivityFactory::exportToJson para generar un esquema v2 completo
+     * con Core + Specs de la actividad y todas sus relaciones.
+     *
+     * @param  \Illuminate\Http\Request  $request  Debe estar autenticado
+     * @param  \App\Models\Team  $team  Equipo de la actividad
+     * @param  int  $taskId  ID de la actividad a exportar
+     * @return \Illuminate\Http\JsonResponse|\Symfony\Component\HttpFoundation\StreamedResponse Respuesta JSON o descarga de archivo
+     */
     public function exportJson(Request $request, Team $team, $taskId)
     {
         $task = Activity::find($taskId) ?? Task::find($taskId);

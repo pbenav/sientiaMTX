@@ -9,10 +9,24 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+/**
+ * Expediente: documento o carpeta de trabajo dentro de un equipo.
+ *
+ * Campos clave:
+ * - code: código único generado automáticamente (EXP-YYYY-NNNN)
+ * - visibility: 'public' o 'private'
+ * - status: estado del expediente (activos, cerrados, archivados)
+ * - metadata: array de campos personalizados
+ */
 class Expediente extends Model
 {
     use SoftDeletes;
 
+    /**
+     * Atributos asignables masivamente.
+     *
+     * @var list<string>
+     */
     protected $fillable = [
         'team_id',
         'created_by_id',
@@ -28,32 +42,54 @@ class Expediente extends Model
         'metadata',
     ];
 
+    /**
+     * Casting de atributos.
+     *
+     * @return array<string, string>
+     */
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
         'metadata' => 'array',
     ];
 
+    /**
+     * Equipo propietario del expediente.
+     */
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class);
     }
 
+    /**
+     * Usuario creador del expediente.
+     */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_id');
     }
 
+    /**
+     * Usuario responsable principal del expediente.
+     */
     public function assignedUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_user_id');
     }
 
+    /**
+     * Asignaciones detalladas del expediente.
+     */
     public function assignments(): HasMany
     {
         return $this->hasMany(ExpedienteAssignment::class);
     }
 
+    /**
+     * Usuarios asignados al expediente (colaboradores).
+     *
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, User> $assignedTo
+     */
     public function assignedTo(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'expediente_assignments')
@@ -62,6 +98,9 @@ class Expediente extends Model
             ->orderBy('name');
     }
 
+    /**
+     * Grupos asignados al expediente.
+     */
     public function assignedGroups(): BelongsToMany
     {
         return $this->belongsToMany(Group::class, 'expediente_assignments')
@@ -69,38 +108,58 @@ class Expediente extends Model
             ->withTimestamps();
     }
 
+    /**
+     * Tareas vinculadas a este expediente.
+     */
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
     }
 
     /**
-     * Get only the root tasks (parents) linked to this expediente.
-     * This avoids duplication in the UI when tasks have children.
+     * Solo las tareas raíz (padres) vinculadas a este expediente.
+     * Evita duplicación en la UI cuando las tareas tienen hijos.
      */
     public function rootTasks(): HasMany
     {
         return $this->hasMany(Task::class)->whereNull('parent_id');
     }
 
+    /**
+     * Actividades vinculadas a este expediente.
+     */
     public function activities(): HasMany
     {
         return $this->hasMany(Activity::class);
     }
 
     /**
-     * Get only the root activities (parents) linked to this expediente.
+     * Solo las actividades raíz (padres) vinculadas a este expediente.
      */
     public function rootActivities(): HasMany
     {
         return $this->hasMany(Activity::class)->whereNull('parent_id');
     }
 
+    /**
+     * Adjuntos asociados a este expediente (polimórfico).
+     */
     public function attachments(): MorphMany
     {
         return $this->morphMany(TaskAttachment::class, 'attachable');
     }
 
+    /**
+     * Scope: filtra expedientes visibles para un usuario dado.
+     *
+     * Los coordinadores ven todo. Los miembros regulares ven solo los públicos
+     * o los privados en los que están asignados o son creadores.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  User|null  $user  Usuario que consulta
+     * @param  bool  $isCoordinator  Si el usuario es coordinador
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
     public function scopeVisibleTo($query, $user, $isCoordinator = false)
     {
         if (!$user) {
@@ -131,18 +190,20 @@ class Expediente extends Model
         });
     }
 
-    // --- Relational Engine ---
-    
     /**
-     * Linked dossiers (Expedientes Relacionados)
+     * Expedientes relacionados entre sí (relación muchos a muchos auto-referencial).
      */
     public function relatedExpedientes(): BelongsToMany
     {
         return $this->belongsToMany(Expediente::class, 'expediente_related', 'expediente_id', 'related_id')->withTimestamps();
     }
-    
+
     /**
-     * Automatic unique code generation (could be hooked in booted method later)
+     * Genera un código único para el expediente.
+     *
+     * Formato: EXP-YYYY-NNNN (ej: EXP-2026-0001)
+     *
+     * @return string Código único generado
      */
     public static function generateUniqueCode(): string
     {
@@ -157,6 +218,9 @@ class Expediente extends Model
         return $code;
     }
 
+    /**
+     * Notas del expediente.
+     */
     public function notes(): HasMany
     {
         return $this->hasMany(ExpedienteNote::class)->latest();
@@ -164,6 +228,12 @@ class Expediente extends Model
 
     /**
      * Obtiene todos los usuarios que tienen acceso a este expediente.
+     *
+     * Para expedientes públicos, todos los miembros del equipo tienen acceso.
+     * Para privados, se construye la lista de usuarios con acceso explícito
+     * (creador, responsable, asignados, grupos, y miembros de tareas vinculadas).
+     *
+     * @return \Illuminate\Support\Collection<int, User>
      */
     public function getUsersWithAccess()
     {

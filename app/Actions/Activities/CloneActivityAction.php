@@ -8,6 +8,13 @@ use Illuminate\Support\Str;
 
 class CloneActivityAction
 {
+    /**
+     * Clona una actividad con sus asignaciones, etiquetas e historial.
+     *
+     * @param  Activity  $activity  Actividad a clonar
+     * @param  int  $userId  ID del usuario que realiza la clonación
+     * @return Activity La actividad clonada
+     */
     public function execute(Activity $activity, int $userId): Activity
     {
         $newUuid = Str::uuid()->toString();

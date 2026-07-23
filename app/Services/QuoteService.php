@@ -7,12 +7,21 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 
+/**
+ * Servicio de citas motivacionales y saludos.
+ *
+ * Obtiene saludos y citas aleatorios de la base de datos local, con 20% de probabilidad
+ * de intentar obtener una cita de la API externa ZenQuotes.
+ */
 class QuoteService
 {
     /**
-     * Get a random greeting and quote.
-     * 
-     * @return array
+     * Obtiene un saludo y una cita motivacional aleatorios.
+     *
+     * 20% de probabilidad de intentar obtener la cita desde la API externa ZenQuotes.
+     * Si la API falla o no se eligió, hace fallback a la base de datos local.
+     *
+     * @return array{'greeting': ?MotivationalQuote, 'quote': ?MotivationalQuote}
      */
     public function getWelcomeMessage(): array
     {
@@ -36,8 +45,11 @@ class QuoteService
     }
 
     /**
-     * Fetch a quote from an external API (ZenQuotes).
-     * 
+     * Obtiene una cita desde la API externa ZenQuotes.
+     *
+     * Usa caché de 30 segundos para evitar saturar la API. Si la respuesta es válida,
+     * guarda la cita en la base de datos local con firstOrCreate y la retorna.
+     *
      * @return MotivationalQuote|null
      */
     private function fetchExternalQuote(): ?MotivationalQuote

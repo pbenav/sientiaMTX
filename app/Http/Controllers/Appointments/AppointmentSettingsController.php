@@ -9,8 +9,25 @@ use App\Models\Team;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
+/**
+ * Controlador para la configuración del portal de citas de un usuario dentro de un equipo.
+ *
+ * Permite editar la configuración pública de citas: slug personalizado, nombre visible,
+ * duración de turnos, capacidad máxima, integración con Google Calendar, ubicación,
+ * dominio Jitsi, expedientes predeterminados y opciones de confirmación por correo.
+ *
+ * Rutas asociadas:
+ *   - GET /teams/{team}/appointments/settings
+ *   - PUT/PATCH /teams/{team}/appointments/settings
+ */
 class AppointmentSettingsController extends Controller
 {
+    /**
+     * Muestra el formulario de edición de la configuración del portal de citas.
+     *
+     * @param Team $team
+     * @return \Illuminate\View\View
+     */
     public function edit(Team $team)
     {
         $user     = auth()->user();
@@ -22,6 +39,17 @@ class AppointmentSettingsController extends Controller
         return view('appointments.settings', compact('settings', 'expedientes', 'team'));
     }
 
+    /**
+     * Actualiza la configuración del portal de citas del usuario para un equipo.
+     *
+     * Valida y persiste el slug, nombre público, duración de turnos, capacidad máxima,
+     * opciones de Google Calendar, coordenadas de ubicación, dominio Jitsi y expedientes.
+     * Autogenera el slug si no se proporciona uno válido.
+     *
+     * @param Team $team
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function update(Team $team, Request $request)
     {
         $user = auth()->user();

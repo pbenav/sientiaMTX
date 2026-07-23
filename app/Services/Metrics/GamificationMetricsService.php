@@ -5,8 +5,24 @@ namespace App\Services\Metrics;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Servicio de métricas de gamificación para usuarios y equipos.
+ *
+ * Proporciona datos de puntos, niveles, insignias, rachas, kudos,
+ * tablas de clasificación y puntuaciones de engagement. Integra
+ * datos de la tabla de gamificación, kudos y actividades.
+ */
 class GamificationMetricsService
 {
+    /**
+     * Obtiene el perfil de gamificación completo de un usuario.
+     *
+     * Incluye puntos totales, nivel, insignias, rachas, kudos recibidos
+     * y enviados, y la relación entre ambos.
+     *
+     * @param int $userId Identificador del usuario.
+     * @return array Perfil completo con puntos, nivel, insignias, rachas y kudos.
+     */
     public function getUserGamification(int $userId): array
     {
         $totalPoints = DB::table('gamification_logs')
@@ -50,6 +66,13 @@ class GamificationMetricsService
         ];
     }
 
+    /**
+     * Obtiene la tabla de clasificación de puntos para un equipo.
+     *
+     * @param int $teamId Identificador del equipo.
+     * @param string $periodo Periodo de cálculo: 'weekly', 'monthly' o 'quarterly'.
+     * @return array Array de usuarios ordenados por puntos con posición, datos, insignias y nivel.
+     */
     public function getLeaderboard(int $teamId, ?string $period = 'weekly'): array
     {
         $now = Carbon::now();
@@ -98,6 +121,13 @@ class GamificationMetricsService
         return $leaderboard;
     }
 
+    /**
+     * Obtiene la distribución de insignias otorgadas en un equipo.
+     *
+     * @param int $teamId Identificador del equipo.
+     * @param int|null $days Número de días hacia atrás para analizar (por defecto 30).
+     * @return array Array de tipos de insignia con conteo.
+     */
     public function getBadgeDistribution(int $teamId, ?int $days = 30): array
     {
         $startDate = Carbon::now()->copy()->subDays($days);
@@ -116,6 +146,13 @@ class GamificationMetricsService
         return $rows->toArray();
     }
 
+    /**
+     * Obtiene la tabla de clasificación de rachas activas de un equipo.
+     *
+     * @param int $teamId Identificador del equipo.
+     * @param int|null $limit Número máximo de resultados (por defecto 10).
+     * @return array Array de usuarios con su racha máxima ordenada descendentemente.
+     */
     public function getStreakLeaderboard(int $teamId, ?int $limit = 10): array
     {
         return DB::table('gamification_logs')
@@ -130,6 +167,13 @@ class GamificationMetricsService
             ->toArray();
     }
 
+    /**
+     * Obtiene la distribución de kudos enviados y recibidos en un equipo.
+     *
+     * @param int $teamId Identificador del equipo.
+     * @param int|null $days Número de días hacia atrás para analizar (por defecto 30).
+     * @return array Array combinado con kudos enviados y recibidos por usuario.
+     */
     public function getKudosDistribution(int $teamId, ?int $days = 30): array
     {
         $startDate = Carbon::now()->copy()->subDays($days);
@@ -161,6 +205,16 @@ class GamificationMetricsService
         return array_merge($sent, $received);
     }
 
+    /**
+     * Calcula la puntuación de engagement de un usuario.
+     *
+     * Combina puntos de gamificación, kudos recibidos, actividades completadas
+     * y puntuación de bienestar con ponderaciones específicas.
+     *
+     * @param int $userId Identificador del usuario.
+     * @param int|null $days Número de días hacia atrás para analizar (por defecto 7).
+     * @return array Puntuación de engagement y sus componentes normalizados.
+     */
     public function getEngagementScore(int $userId, ?int $days = 7): array
     {
         $totalPoints = DB::table('gamification_logs')
@@ -207,6 +261,13 @@ class GamificationMetricsService
         ];
     }
 
+    /**
+     * Obtiene los logros recientes de un usuario.
+     *
+     * @param int $userId Identificador del usuario.
+     * @param int|null $limit Número máximo de resultados (por defecto 10).
+     * @return array Array de logros con tipo, fuente, puntos y descripción.
+     */
     public function getRecentAchievements(int $userId, ?int $limit = 10): array
     {
         return DB::table('gamification_logs')
@@ -219,6 +280,15 @@ class GamificationMetricsService
             ->toArray();
     }
 
+    /**
+     * Obtiene la puntuación de engagement de un equipo.
+     *
+     * Combina kudos y actividades completadas con ponderaciones 50/50.
+     *
+     * @param int $teamId Identificador del equipo.
+     * @param int|null $days Número de días hacia atrás para analizar (por defecto 7).
+     * @return array Puntuación de engagement, conteos y tamaño del equipo.
+     */
     public function getTeamEngagement(int $teamId, ?int $days = 7): array
     {
         $kudosCount = DB::table('kudos')
@@ -247,6 +317,12 @@ class GamificationMetricsService
         ];
     }
 
+    /**
+     * Calcula el nivel de gamificación basado en la cantidad de puntos acumulados.
+     *
+     * @param int $points Puntos totales del usuario.
+     * @return int Nivel calculado (rango de 1 a 50).
+     */
     private function calculateLevel(int $points): int
     {
         if ($points >= 5000) return 50;
@@ -261,6 +337,12 @@ class GamificationMetricsService
         return 1;
     }
 
+    /**
+     * Obtiene los puntos necesarios para alcanzar el siguiente nivel.
+     *
+     * @param int $currentLevel Nivel actual del usuario.
+     * @return int Puntos necesarios para el siguiente nivel.
+     */
     private function getNextLevelPoints(int $currentLevel): int
     {
         $levels = [1 => 20, 3 => 50, 5 => 100, 7 => 200, 10 => 500, 15 => 1000, 20 => 2000, 30 => 3000, 40 => 5000];

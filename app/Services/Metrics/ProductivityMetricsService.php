@@ -5,8 +5,26 @@ namespace App\Services\Metrics;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Servicio de métricas de productividad individual y de equipo.
+ *
+ * Proporciona puntuaciones de productividad basadas en tasa de
+ * completado, entrega a tiempo, rachas de productividad, tendencias,
+ * actividades bloqueadas, precisión de estimaciones y horarios
+ * pico de productividad.
+ */
 class ProductivityMetricsService
 {
+    /**
+     * Obtiene la puntuación general de productividad de un usuario.
+     *
+     * Combina tasa de completado, entrega a tiempo, racha, tendencia
+     * y penalización por actividades bloqueadas con ponderaciones específicas.
+     *
+     * @param int $userId Identificador del usuario.
+     * @param int|null $days Número de días hacia atrás para analizar (por defecto 7).
+     * @return array Puntuación de productividad y sus componentes desglosados.
+     */
     public function getProductivityScore(int $userId, ?int $days = 7): array
     {
         $endDate = Carbon::now();
@@ -41,6 +59,13 @@ class ProductivityMetricsService
         ];
     }
 
+    /**
+     * Obtiene la tasa de finalización de actividades de un usuario.
+     *
+     * @param int $userId Identificador del usuario.
+     * @param int|null $days Número de días hacia atrás para analizar (por defecto 7).
+     * @return float Tasa de completado en porcentaje (0-100).
+     */
     public function getCompletionRate(int $userId, ?int $days = 7): float
     {
         $startDate = Carbon::now()->copy()->subDays($days);
@@ -61,6 +86,13 @@ class ProductivityMetricsService
         return round(($stats->completed / $total) * 100, 2);
     }
 
+    /**
+     * Obtiene la tasa de finalización desglosada por prioridad.
+     *
+     * @param int $userId Identificador del usuario.
+     * @param int|null $days Número de días hacia atrás para analizar (por defecto 7).
+     * @return array Array de prioridades con total, completadas y tasa.
+     */
     public function getCompletionRateByPriority(int $userId, ?int $days = 7): array
     {
         $startDate = Carbon::now()->copy()->subDays($days);
@@ -88,6 +120,15 @@ class ProductivityMetricsService
         })->toArray();
     }
 
+    /**
+     * Obtiene la tasa de entrega a tiempo de un usuario.
+     *
+     * Calcula el porcentaje de actividades completadas antes o en la fecha límite.
+     *
+     * @param int $userId Identificador del usuario.
+     * @param int|null $days Número de días hacia atrás para analizar (por defecto 7).
+     * @return float Tasa de entrega a tiempo en porcentaje (0-100).
+     */
     public function getOnTimeDelivery(int $userId, ?int $days = 7): float
     {
         $startDate = Carbon::now()->copy()->subDays($days);
@@ -109,6 +150,15 @@ class ProductivityMetricsService
         return round(($stats->on_time / $total) * 100, 2);
     }
 
+    /**
+     * Obtiene las actividades vencidas de un usuario.
+     *
+     * Incluye actividades pendientes o en progreso cuya fecha límite ya pasó,
+     * con cálculo de días de retraso. Limitado a 20 resultados.
+     *
+     * @param int $userId Identificador del usuario.
+     * @return array Array de actividades vencidas con días de retraso calculados.
+     */
     public function getOverdueActivities(int $userId): array
     {
         return DB::table('activities')
@@ -128,6 +178,16 @@ class ProductivityMetricsService
             })->toArray();
     }
 
+    /**
+     * Obtiene la precisión de las estimaciones de un usuario.
+     *
+     * Se basa en el promedio de progreso de actividades completadas con fecha límite
+     * como proxy de la capacidad de estimación.
+     *
+     * @param int $userId Identificador del usuario.
+     * @param int|null $days Número de días hacia atrás para analizar (por defecto 14).
+     * @return float Puntuación de precisión de estimación (0-100).
+     */
     public function getEstimationAccuracy(int $userId, ?int $days = 14): float
     {
         $startDate = Carbon::now()->copy()->subDays($days);
@@ -149,6 +209,15 @@ class ProductivityMetricsService
         return round(min(100, ($stats->avg_progress ?? 0) * 1.5), 2);
     }
 
+    /**
+     * Obtiene la racha actual de productividad de un usuario.
+     *
+     * Cuenta días consecutivos con al menos una actividad completada,
+     * desde hoy hacia atrás, hasta un máximo de 90 días.
+     *
+     * @param int $userId Identificador del usuario.
+     * @return int Número de días consecutivos con actividad completada.
+     */
     public function getProductivityStreak(int $userId): int
     {
         $startDate = Carbon::now()->copy()->subDays(90);
@@ -180,6 +249,16 @@ class ProductivityMetricsService
         return $streak;
     }
 
+    /**
+     * Determina la tendencia de productividad de un usuario.
+     *
+     * Compara la cantidad de actividades completadas en la segunda mitad
+     * del periodo con la primera mitad. Devuelve 'improving', 'stable' o 'declining'.
+     *
+     * @param int $userId Identificador del usuario.
+     * @param int|null $days Número de días hacia atrás para analizar (por defecto 7).
+     * @return string Tendencia: 'improving', 'stable' o 'declining'.
+     */
     public function getProductivityTrend(int $userId, ?int $days = 7): string
     {
         $half = (int) ($days / 2);
@@ -206,6 +285,15 @@ class ProductivityMetricsService
         return 'stable';
     }
 
+    /**
+     * Obtiene las actividades bloqueadas de un usuario.
+     *
+     * Incluye actividades con estado 'blocked' o en progreso vencidas.
+     *
+     * @param int $userId Identificador del usuario.
+     * @param int|null $days Número de días hacia atrás para analizar (por defecto 7).
+     * @return array Array de actividades bloqueadas con días de bloqueo calculados.
+     */
     public function getBlockedActivities(int $userId, ?int $days = 7): array
     {
         $startDate = Carbon::now()->copy()->subDays($days);
@@ -230,6 +318,16 @@ class ProductivityMetricsService
             })->toArray();
     }
 
+    /**
+     * Obtiene la capacidad de respuesta de un usuario ante nudges.
+     *
+     * Calcula el porcentaje de actividades creadas que fueron completadas
+     * dentro del periodo, como indicador de proactividad.
+     *
+     * @param int $userId Identificador del usuario.
+     * @param int|null $days Número de días hacia atrás para analizar (por defecto 14).
+     * @return float Porcentaje de actividades creadas que fueron completadas.
+     */
     public function getNudgeResponsiveness(int $userId, ?int $days = 14): float
     {
         $startDate = Carbon::now()->copy()->subDays($days);
@@ -250,6 +348,13 @@ class ProductivityMetricsService
         return round(min(100, ($recentCompleted / $recentCreated) * 100), 2);
     }
 
+    /**
+     * Obtiene la distribución de actividades por tipo de un usuario.
+     *
+     * @param int $userId Identificador del usuario.
+     * @param int|null $days Número de días hacia atrás para analizar (por defecto 7).
+     * @return array Array de tipos de actividad con conteo.
+     */
     public function getActivityDistribution(int $userId, ?int $days = 7): array
     {
         $startDate = Carbon::now()->copy()->subDays($days);
@@ -265,6 +370,16 @@ class ProductivityMetricsService
             ->toArray();
     }
 
+    /**
+     * Obtiene las horas pico de productividad de un usuario.
+     *
+     * Basado en registros de tiempo, identifica las 5 horas con mayor
+     * cantidad de actividades completadas.
+     *
+     * @param int $userId Identificador del usuario.
+     * @param int|null $days Número de días hacia atrás para analizar (por defecto 14).
+     * @return array Array de horas con conteo de completados.
+     */
     public function getPeakProductivityHours(int $userId, ?int $days = 14): array
     {
         return DB::table('time_logs')
@@ -278,6 +393,16 @@ class ProductivityMetricsService
             ->toArray();
     }
 
+    /**
+     * Obtiene la puntuación de productividad de un equipo.
+     *
+     * Calcula la tasa de completado global del equipo filtrando por equipo favorito
+     * de los usuarios.
+     *
+     * @param int $teamId Identificador del equipo.
+     * @param int|null $days Número de días hacia atrás para analizar (por defecto 7).
+     * @return array Tasa de completado, total de actividades y actividades completadas.
+     */
     public function getTeamProductivity(int $teamId, ?int $days = 7): array
     {
         $startDate = Carbon::now()->copy()->subDays($days);

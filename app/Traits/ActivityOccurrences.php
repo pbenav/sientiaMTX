@@ -6,11 +6,25 @@ use App\Models\Activity;
 use App\Models\Group;
 use Carbon\Carbon;
 
+/**
+ * Trait ActivityOccurrences
+ *
+ * Maneja la generación automática de ocurrencias (instancias) para actividades
+ * autoprogramables (recurring tasks, meetings, reminders, etc.).
+ *
+ * Incluye:
+ * - autoWakeup: sincroniza las ocurrencias hasta la fecha actual
+ * - generateOccurrences: crea una nueva ocurrencia basada en settings
+ * - calculateNextOccurrenceDate: calcula la próxima fecha según frecuencia
+ * - spawnInstancesForOccurrence: crea instancias distribuidas para templates
+ *
+ * @mixin \App\Models\Activity
+ */
 trait ActivityOccurrences
 {
     /**
-     * Iteratively generate occurrences until the next one falls outside the wakeup threshold.
-     * This brings the task up to date with the current time and lead settings.
+     * Iterativamente genera ocurrencias hasta que la próxima cae fuera del umbral de wakeup.
+     * Sincroniza las ocurrencias con la fecha/hora actual y la configuración de lead time.
      */
     public function autoWakeup(): void
     {
@@ -56,7 +70,9 @@ trait ActivityOccurrences
     }
 
     /**
-     * Generate a single occurrence based on autoprogramming settings.
+     * Genera una única ocurrencia basada en la configuración de autoprogramación.
+     * Crea un hijo con la fecha calculada, hereda asignaciones, y si es template,
+     * genera instancias distribuidas para cada usuario asignado.
      */
     public function generateOccurrences(): void
     {
@@ -123,6 +139,15 @@ trait ActivityOccurrences
         $this->updateNextOccurrenceAt($targetDate, $settings);
     }
 
+    /**
+     * Calcula la fecha de la próxima ocurrencia basada en la frecuencia, intervalo y configuración mensual.
+     * Soporta: daily, weekly, monthly (date/ordinal), y expresión cron.
+     *
+     * @param Carbon $baseDate Fecha base para el cálculo
+     * @param array $settings Configuración de autoprogramación
+     * @param bool $isFirst Si es la primera ocurrencia del ciclo
+     * @return Carbon La fecha calculada
+     */
     protected function calculateNextOccurrenceDate($baseDate, $settings, $isFirst = false)
     {
         // If it's the very first one, we use the base date itself (the start of the cycle)
@@ -179,6 +204,10 @@ trait ActivityOccurrences
         return $nextDate;
     }
 
+    /**
+     * Actualiza el puntero next_occurrence_at en metadata con la siguiente fecha válida.
+     * Se usa para avanzar el ciclo de autoprogramación después de generar una ocurrencia.
+     */
     protected function updateNextOccurrenceAt($currentOccurrenceDate, $settings)
     {
         $nextValidDate = $this->calculateNextOccurrenceDate($currentOccurrenceDate, $settings, false);
@@ -191,7 +220,9 @@ trait ActivityOccurrences
     }
 
     /**
-     * Helper to spawn individual instances for a specific occurrence if the master is a template.
+     * Genera instancias individuales para cada usuario asignado cuando una ocurrencia
+     * proviene de una plantilla maestra (Distributed Mode).
+     * Distribuye la ocurrencia a todos los usuarios del equipo asignados.
      */
     protected function spawnInstancesForOccurrence(Activity $occurrence): void
     {

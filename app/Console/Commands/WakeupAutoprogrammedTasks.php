@@ -6,11 +6,47 @@ use Illuminate\Console\Command;
 use App\Models\Task;
 use Carbon\Carbon;
 
+/**
+ * Genera ocurrencias futuras para tareas autoprogramables cuando se alcanza el umbral de preaviso.
+ *
+ * Recorre todas las tareas marcadas como autoprogramables, evalúa si la próxima ocurrencia
+ * está dentro del período de anticipación configurado y las "despierta" para generar
+ * las instancias correspondientes. Opcionalmente permite limpiar ocurrencias futuras
+ * redundantes del modelo anterior.
+ *
+ * # Ejecución
+ * ```bash
+ * php artisan app:tasks-autoprogram-wakeup
+ * php artisan app:tasks-autoprogram-wakeup --cleanup
+ * ```
+ *
+ * @author  SientiaMTX Team
+ * @version 1.0.0
+ */
 class WakeupAutoprogrammedTasks extends Command
 {
+    /**
+     * Firma del comando con opción opcional de limpieza.
+     *
+     * --cleanup : Elimina ocurrencias futuras redundantes de tareas maestras autoprogramables.
+     */
     protected $signature = 'app:tasks-autoprogram-wakeup {--cleanup : Realizar limpieza de ejecuciones futuras previas}';
+
+    /**
+     * Descripción del comando.
+     */
     protected $description = 'Procesa las tareas autoprogramables para generar la siguiente ocurrencia si está dentro del preaviso definido.';
 
+    /**
+     * Punto de entrada principal del comando.
+     *
+     * Si se proporciona la bandera --cleanup, ejecuta la limpieza de ocurrencias futuras.
+     * Luego itera sobre las tareas autoprogramables y genera sus próximas ocurrencias
+     * cuando se cumple el umbral de anticipación definido en los ajustes de autoprogramación.
+     * Incluye una salvaguarda de 5 iteraciones máximas para evitar bucles infinitos.
+     *
+     * @return int Código de salida del comando (SUCCESS).
+     */
     public function handle()
     {
         if ($this->option('cleanup')) {
@@ -61,6 +97,15 @@ class WakeupAutoprogrammedTasks extends Command
         return Command::SUCCESS;
     }
 
+    /**
+     * Elimina ocurrencias futuras de tareas autoprogramables maestras.
+     *
+     * Busca tareas maestras que tengan hijos generados y elimina aquellos cuya
+     * fecha de ejecución esté programada para después del día actual y cuyo estado
+     * sea pendiente. Esto permite resetear el sistema al nuevo modelo JIT.
+     *
+     * @return void
+     */
     protected function cleanupFutureOccurrences()
     {
         // Buscamos tareas que tienen hijos generados pero que son autoprogramables (maestras)

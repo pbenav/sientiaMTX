@@ -2,14 +2,29 @@
 
 namespace App\Traits;
 
-use App\Models\Group;
-use App\Models\Task;
-use App\Models\Team;
-
+/**
+ * Trait TaskOperations
+ *
+ * Define las operaciones de negocio para el modelo Task:
+ * - Actualización automática de prioridad según tiempo restante (auto-priority)
+ * - Cálculo de progreso (agregado para templates, manual para tareas individuales)
+ * - Sincronización automática de columna Kanban según progreso
+ * - Generación de ocurrencias (autoprogramación) para tareas recurrentes
+ * - Helpers: detección de servicio caído, color Gantt por cuadrante, caché de calidad
+ *
+ * @mixin \App\Models\Task
+ */
 trait TaskOperations
 {
     /**
-     * Update task priority automatically based on remaining time
+     * Actualiza automáticamente la prioridad de la tarea según el tiempo restante.
+     * Solo se ejecuta si auto_priority está habilitado, hay due_date y la tarea no está completada.
+     *
+     * Reglas:
+     * - Vencida: priority = 'critical'
+     * - <10% del tiempo restante: 'critical'
+     * - <25% del tiempo restante: 'high'
+     * - <50% del tiempo restante: 'medium'
      */
     public function updateAutoPriority()
     {
@@ -56,7 +71,11 @@ trait TaskOperations
     }
 
     /**
-     * Get the progress percentage for template tasks
+     * Calcula el porcentaje de progreso de la tarea.
+     *
+     * Para templates: promedia el progreso de los hijos.
+     * Para tareas individuales: retorna progress_percentage de la columna.
+     * Si status es 'completed' o 'cancelled', retorna 100.
      */
     public function getProgressAttribute(): int
     {
@@ -77,7 +96,14 @@ trait TaskOperations
     }
 
     /**
-     * Synchronize the Kanban column based on current progress and status.
+     * Sincroniza automáticamente la columna Kanban de la tarea según su progreso.
+     *
+     * Mapeo:
+     * - 100% → columna tipo 'done'
+     * - 0% → columna tipo 'todo'
+     * - Intermedio → columna tipo 'in_progress' o 'custom'
+     *
+     * Asigna la primera columna por defecto del equipo que coincida con el tipo esperado.
      */
     public function syncKanbanColumn(): void
     {
@@ -121,8 +147,8 @@ trait TaskOperations
     }
 
     /**
-     * Iteratively generate occurrences until the next one falls outside the wakeup threshold.
-     * This brings the task up to date with the current time and lead settings.
+     * Iterativamente genera ocurrencias hasta que la próxima cae fuera del umbral de wakeup.
+     * Sincroniza las ocurrencias con la fecha/hora actual y la configuración de lead time.
      */
     public function autoWakeup(): void
     {
@@ -167,7 +193,9 @@ trait TaskOperations
     }
 
     /**
-     * Generate a single occurrence based on autoprogramming settings.
+     * Genera una única ocurrencia basada en la configuración de autoprogramación.
+     * Crea un hijo con la fecha calculada, hereda asignaciones, y si es template,
+     * genera instancias distribuidas para cada usuario asignado.
      */
     public function generateOccurrences(): void
     {
@@ -240,6 +268,15 @@ trait TaskOperations
         $this->updateNextOccurrenceAt($targetDate, $settings);
     }
 
+    /**
+     * Calcula la fecha de la próxima ocurrencia basada en la frecuencia, intervalo y configuración mensual.
+     * Soporta: daily, weekly, monthly (date/ordinal), y expresión cron.
+     *
+     * @param \Carbon\Carbon $baseDate Fecha base para el cálculo
+     * @param array $settings Configuración de autoprogramación
+     * @param bool $isFirst Si es la primera ocurrencia del ciclo
+     * @return \Carbon\Carbon La fecha calculada
+     */
     protected function calculateNextOccurrenceDate($baseDate, $settings, $isFirst = false)
     {
         // If it's the very first one, we use the base date itself (the start of the cycle)
@@ -296,6 +333,10 @@ trait TaskOperations
         return $nextDate;
     }
 
+    /**
+     * Actualiza el puntero next_occurrence_at en autoprogram_settings con la siguiente fecha válida.
+     * Se usa para avanzar el ciclo de autoprogramación después de generar una ocurrencia.
+     */
     protected function updateNextOccurrenceAt($currentOccurrenceDate, $settings)
     {
         $nextValidDate = $this->calculateNextOccurrenceDate($currentOccurrenceDate, $settings, false);
@@ -304,7 +345,12 @@ trait TaskOperations
     }
 
     /**
-     * Helper to spawn individual instances for a specific occurrence.
+     * Genera instancias individuales para cada usuario asignado cuando una ocurrencia
+     * proviene de una plantilla maestra (Distributed Mode).
+     *
+     * Si la tarea no es template, simplemente hereda las asignaciones del padre.
+     * Si es template, crea un hijo por cada usuario único (incluyendo creador)
+     * con visibilidad private.
      */
     protected function spawnInstancesForOccurrence(Task $occurrence): void
     {
@@ -359,7 +405,7 @@ trait TaskOperations
     }
 
     /**
-     * Check if task is blocked because its associated service is down
+     * Determina si la tarea está bloqueada porque el servicio asociado está caído.
      */
     public function isBlockedByService(): bool
     {
@@ -367,7 +413,8 @@ trait TaskOperations
     }
 
     /**
-     * Get the CSS class for Frappe Gantt based on Eisenhower quadrant
+     * Devuelve la clase CSS para Frappe Gantt basada en el cuadrante de Eisenhower.
+     * Retorna "gantt-q{1-4}" donde el número corresponde al cuadrante.
      */
     public function getGanttColorClass(): string
     {
@@ -376,7 +423,7 @@ trait TaskOperations
     }
 
     /**
-     * Recompute and cache the average quality score based on votes.
+     * Recalcula y almacena en caché el puntaje promedio de calidad basado en los votos (ratings).
      */
     public function updateQualityCache(): void
     {

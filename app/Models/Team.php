@@ -18,10 +18,23 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Traits\HasUuid;
 
+/**
+ * Equipo / Team: unidad organizativa que contiene actividades, usuarios, habilidades, servicios, etc.
+ *
+ * Campos de configuración:
+ * - quadrant_colors: array con colores para cada cuadrante de Eisenhower
+ * - settings: array con configuraciones del equipo (soft_disk_quota, etc.)
+ * - disk_quota / disk_used: cuota de almacenamiento en bytes
+ */
 class Team extends Model
 {
     use HasFactory, SoftDeletes, HasUuid;
 
+    /**
+     * Atributos asignables masivamente.
+     *
+     * @var list<string>
+     */
     protected $fillable = [
         'name',
         'slug',
@@ -35,6 +48,11 @@ class Team extends Model
         'disk_used',
     ];
 
+    /**
+     * Casting de atributos a tipos nativos.
+     *
+     * @return array<string, string>
+     */
     protected $casts = [
         'quadrant_colors' => 'array',
         'settings' => 'array',
@@ -42,19 +60,26 @@ class Team extends Model
         'disk_used' => 'integer',
     ];
 
-    // Relationship: A team has many tasks
+    /**
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task> $tasks
+     */
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
     }
 
-    // Relationship: A team has many activities (unified polymorphic architecture)
+    /**
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Activity> $activities
+     */
     public function activities(): HasMany
     {
         return $this->hasMany(Activity::class);
     }
 
-    // Relationship: A team has many users (members)
+    /**
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $members
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $coordinators
+     */
     public function members(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'team_user')
@@ -63,66 +88,96 @@ class Team extends Model
             ->orderBy('name');
     }
 
-    // Relationship: A team has many groups
+    /**
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Group> $groups
+     */
     public function groups(): HasMany
     {
         return $this->hasMany(Group::class);
     }
 
-    // Relationship: A team has many calendar events
+    /**
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CalendarEvent> $calendarEvents
+     */
     public function calendarEvents(): HasMany
     {
         return $this->hasMany(CalendarEvent::class);
     }
 
+    /**
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\TeamInvitation> $invitations
+     */
     public function invitations(): HasMany
     {
         return $this->hasMany(TeamInvitation::class);
     }
 
+    /**
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ForumThread> $forumThreads
+     */
     public function forumThreads(): HasMany
     {
         return $this->hasMany(ForumThread::class);
     }
 
+    /**
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\KanbanColumn> $kanbanColumns
+     */
     public function kanbanColumns(): HasMany
     {
         return $this->hasMany(KanbanColumn::class)->orderBy('order_index');
     }
 
+    /**
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Skill> $skills
+     */
     public function skills(): HasMany
     {
         return $this->hasMany(Skill::class);
     }
 
+    /**
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Service> $services
+     */
     public function services(): HasMany
     {
         return $this->hasMany(Service::class);
     }
 
+    /**
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Expediente> $expedientes
+     */
     public function expedientes(): HasMany
     {
         return $this->hasMany(Expediente::class);
     }
 
+    /**
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\TelegramGroupMember> $telegramGroupMembers
+     */
     public function telegramGroupMembers(): HasMany
     {
         return $this->hasMany(TelegramGroupMember::class);
     }
 
+    /**
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Survey> $surveys
+     */
     public function surveys(): HasMany
     {
         return $this->hasMany(Survey::class);
     }
 
-    // Get creator of the team
+    /**
+     * Usuario creador del equipo.
+     */
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by_id');
     }
 
     /**
-     * Get all coordinators for this team
+     * Miembros con rol de coordinador (equivalente a Admin en la jerarquía del equipo).
      */
     public function coordinators(): BelongsToMany
     {
@@ -134,7 +189,7 @@ class Team extends Model
     }
 
     /**
-     * Check if a user is a coordinator for this team (Admin)
+     * Verifica si el usuario tiene rol de coordinador en este equipo.
      */
     public function isCoordinator(User $user): bool
     {
@@ -142,7 +197,7 @@ class Team extends Model
     }
 
     /**
-     * Check if a user is a manager for this team (Coordinator)
+     * Verifica si el usuario es manager (coordinador o moderador).
      */
     public function isManager(User $user): bool
     {
@@ -150,7 +205,7 @@ class Team extends Model
     }
 
     /**
-     * Check if a user is a moderator for this team
+     * Verifica si el usuario tiene rol de moderador en este equipo.
      */
     public function isModerator(User $user): bool
     {
@@ -164,14 +219,18 @@ class Team extends Model
     }
 
     /**
-     * Check if a user is the owner of the team
+     * Verifica si el usuario es el owner (creador) del equipo.
      */
     public function isOwner(User $user): bool
     {
         return $this->created_by_id === $user->id;
     }
     /**
-     * Get the quadrant color configuration for this team.
+     * Configuración de colores para los cuadrantes de Eisenhower.
+     *
+     * Devuelve el array de colores personalizadas del equipo o los valores por defecto.
+     *
+     * @return array<int, array{color: string, bg: string, dot: string}>
      */
     public function getQuadrantConfig(): array
     {
@@ -198,7 +257,10 @@ class Team extends Model
     }
 
     /**
-     * Convert hex color to rgba string
+     * Convierte un color hexadecimal a cadena rgba.
+     *
+     * @param  string  $hex  Color hex (con o sin #)
+     * @param  float  $alpha  Alpha (0-1)
      */
     public function hexToRgba($hex, $alpha = 1): string
     {
@@ -216,7 +278,12 @@ class Team extends Model
     }
 
     /**
-     * Check if team has enough quota for a new file.
+     * Verifica si el equipo tiene cuota de disco suficiente para un archivo.
+     *
+     * Sincroniza el uso actual antes de evaluar.
+     *
+     * @param  int  $bytes  Tamaño del archivo en bytes
+     * @return bool true si hay suficiente cuota
      */
     public function hasAvailableQuota(int $bytes): bool
     {
@@ -233,7 +300,9 @@ class Team extends Model
     }
 
     /**
-     * Get disk usage as percentage (0-100)
+     * Porcentaje de uso de disco (0-100).
+     *
+     * @return int Porcentaje calculado
      */
     public function getDiskUsagePercentageAttribute(): int
     {
@@ -247,7 +316,10 @@ class Team extends Model
     }
 
     /**
-     * Sync the disk_used field based on actual attachments.
+     * Sincroniza el campo disk_used con el tamaño real de los adjuntos.
+     *
+     * Calcula el tamaño total de adjuntos de tareas, foros, expedientes y mensajes de Telegram,
+     * excluyendo Google Drive. Luego verifica alertas de almacenamiento.
      */
     public function syncDiskUsed(): void
     {
@@ -297,7 +369,7 @@ class Team extends Model
     }
 
     /**
-     * Check usage and notify coordinators if threshold is reached.
+     * Envía notificación a coordinadores si el uso de disco supera el 90%.
      */
     public function checkStorageAlerts(): void
     {
@@ -314,8 +386,13 @@ class Team extends Model
             }
         }
     }
+
     /**
-     * Get all members of the team with their current activity status info.
+     * Obtiene todos los miembros del equipo con su estado de actividad actual.
+     *
+     * Incluye el timeLog activo del día (sin end_at y con start_at hoy).
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, User>
      */
     public function getActiveMembers()
     {

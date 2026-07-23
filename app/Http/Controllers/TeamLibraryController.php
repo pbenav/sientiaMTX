@@ -7,8 +7,26 @@ use App\Models\Activity;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
+/**
+ * Controlador para la biblioteca de documentos del equipo.
+ *
+ * Permite navegar y filtrar documentos del equipo por título, descripción,
+ * metadatos, notas, estado y rango de fechas. Muestra el primer documento
+ * seleccionado o uno específico por ID.
+ */
 class TeamLibraryController extends Controller
 {
+    /**
+     * Muestra la lista de documentos del equipo con filtros aplicados.
+     *
+     * Filtra por texto de búsqueda (título, descripción, metadata, notas),
+     * estado, y rango de fechas. Ordena documentos activos primero y
+     * selecciona el documento activo por parámetro 'doc' o el primero de la lista.
+     *
+     * @param  \App\Models\Team  $team  Equipo cuya biblioteca se consulta
+     * @param  \Illuminate\Http\Request  $request  Filtros: q (búsqueda), status, date_from, date_to, doc
+     * @return \Illuminate\View\View Vista 'teams.library.index' con documentos y filtros
+     */
     public function index(Team $team, Request $request)
     {
         $this->authorize('view', $team);

@@ -12,11 +12,24 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * Servicio de generación de PDFs para acuerdos.
+ *
+ * Genera un PDF a partir de la vista pdf.agreement, fusiona adjuntos PDF existentes
+ * usando pdftk, y lo registra como ActivityAttachment.
+ */
 class AgreementPdfService
 {
     /**
-     * Genera un documento PDF a partir de una actividad de tipo 'agreement'
-     * y lo adjunta como ActivityAttachment.
+     * Genera un documento PDF a partir de una actividad de tipo 'agreement' y lo adjunta como ActivityAttachment.
+     *
+     * Convierte términos y observaciones de Markdown a HTML, enriquece firmas con nombres de usuarios,
+     * genera el PDF base, lo fusiona con adjuntos PDF existentes (si los hay) mediante pdftk,
+     * actualiza metadata con la página de firmas y registra el archivo como attachment.
+     *
+     * @param  Activity  $activity
+     * @param  Team  $team
+     * @return ActivityAttachment|null
      */
     public function generateAndAttach(Activity $activity, Team $team): ?ActivityAttachment
     {

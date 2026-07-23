@@ -10,11 +10,24 @@ use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonInterval;
 
+/**
+ * Servicio de gestión de disponibilidad para turnos de citas.
+ *
+ * Calcula tramos disponibles considerando horarios del miembro, bloqueos activos,
+ * citas ya reservadas y duración del servicio.
+ */
 class AppointmentAvailabilityService
 {
     /**
      * Devuelve los tramos disponibles para un servicio y fecha concretos.
-     * Formato: array de ['time' => '09:00', 'available' => 3, 'booked' => 1]
+     *
+     * Formato: array de ['time' => '09:00', 'available' => 3, 'booked' => 1, 'full' => false].
+     * Considera horarios específicos del servicio o generales del miembro, priorizando los específicos.
+     * Excluye tramos pasados y bloqueos activos.
+     *
+     * @param  AppointmentService  $service
+     * @param  Carbon  $date
+     * @return array
      */
     public function getSlotsForDate(AppointmentService $service, Carbon $date): array
     {
@@ -105,6 +118,11 @@ class AppointmentAvailabilityService
 
     /**
      * Devuelve los días disponibles (con al menos un tramo libre) para un mes/año.
+     *
+     * @param  AppointmentService  $service
+     * @param  int  $year
+     * @param  int  $month
+     * @return array
      */
     public function getAvailableDaysInMonth(AppointmentService $service, int $year, int $month): array
     {
@@ -131,6 +149,11 @@ class AppointmentAvailabilityService
 
     /**
      * Comprueba si un tramo concreto está disponible (para validar antes de guardar).
+     *
+     * @param  AppointmentService  $service
+     * @param  Carbon  $date
+     * @param  string  $time
+     * @return bool
      */
     public function isSlotAvailable(AppointmentService $service, Carbon $date, string $time): bool
     {

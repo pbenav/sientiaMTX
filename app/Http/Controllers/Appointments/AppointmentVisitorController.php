@@ -7,8 +7,31 @@ use App\Models\AppointmentVisitor;
 use App\Models\Team;
 use Illuminate\Http\Request;
 
+/**
+ * Controlador para la gestión de visitantes (personas que agendan citas) dentro de un equipo.
+ *
+ * Permite listar, editar y eliminar visitantes con búsqueda, filtros y ordenación.
+ * Solo se muestran visitantes que tienen citas asociadas a servicios del equipo.
+ * Los usuarios no administradores no pueden ver o editar visitantes ajenos a sus citas.
+ *
+ * Rutas asociadas:
+ *   - GET /teams/{team}/appointments/visitors
+ *   - GET /teams/{team}/appointments/visitors/{visitor}/edit
+ *   - PUT/PATCH /teams/{team}/appointments/visitors/{visitor}
+ *   - DELETE /teams/{team}/appointments/visitors/{visitor}
+ */
 class AppointmentVisitorController extends Controller
 {
+    /**
+     * Muestra la lista de visitantes con filtros, búsqueda y ordenación.
+     *
+     * Soporta filtrado por nombre, DNI, ciudad y número mínimo de citas.
+     * Ordenación configurable por múltiples campos.
+     *
+     * @param Request $request
+     * @param Team $team
+     * @return \Illuminate\View\View
+     */
     public function index(Request $request, Team $team)
     {
         $search = $request->input('search');
@@ -79,6 +102,15 @@ class AppointmentVisitorController extends Controller
         return view('appointments.visitors.index', compact('team', 'visitors', 'sortBy', 'sortDir', 'filterName', 'filterDni', 'filterCity', 'filterMinAppointments'));
     }
 
+    /**
+     * Muestra el formulario de edición de un visitante.
+     *
+     * Verifica que el visitante tenga citas asociadas al equipo o que el usuario sea administrador.
+     *
+     * @param Team $team
+     * @param AppointmentVisitor $visitor
+     * @return \Illuminate\View\View
+     */
     public function edit(Team $team, AppointmentVisitor $visitor)
     {
         // Validar que el visitante tiene citas con el equipo (seguridad)
@@ -93,6 +125,16 @@ class AppointmentVisitorController extends Controller
         return view('appointments.visitors.edit', compact('team', 'visitor'));
     }
 
+    /**
+     * Actualiza los datos de un visitante.
+     *
+     * Valida nombre, apellidos, email (único), teléfono, DNI, ciudad, código postal y observaciones.
+     *
+     * @param Request $request
+     * @param Team $team
+     * @param AppointmentVisitor $visitor
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function update(Request $request, Team $team, AppointmentVisitor $visitor)
     {
         $hasAppointments = $visitor->appointments()->whereHas('service', function ($q) use ($team) {
@@ -120,6 +162,15 @@ class AppointmentVisitorController extends Controller
             ->with('success', 'Datos de la persona actualizados correctamente.');
     }
 
+    /**
+     * Elimina un visitante.
+     *
+     * No permite la eliminación si el visitante tiene citas asociadas.
+     *
+     * @param Team $team
+     * @param AppointmentVisitor $visitor
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function destroy(Team $team, AppointmentVisitor $visitor)
     {
         $hasAppointments = $visitor->appointments()->whereHas('service', function ($q) use ($team) {

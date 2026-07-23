@@ -15,19 +15,43 @@ use App\Traits\HandlesPersistentFilters;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
+/**
+ * Controlador principal de Actividades.
+ *
+ * Maneja el ciclo de vida completo de actividades:
+ *   - Listado con filtros persistentes y paginación
+ *   - Creación, edición, eliminación
+ *   - Cambio de estado rápido
+ *   - Archivo/Desarchivo
+ *   - Conversión entre tipos (task→document→note, etc.)
+ *   - Fusión de actividades deprecadas
+ *   - Restauración de metadatos de versiones convertidas
+ *
+ * Delegación: toda la lógica de negocio va a ActivityService.
+ */
 class ActivityController extends Controller
 {
     use HandlesPersistentFilters;
 
+    /**
+     * Servicio de actividades para delegar lógica de negocio.
+     */
     protected ActivityService $activityService;
 
+    /**
+     * Inyecta el servicio de actividades.
+     */
     public function __construct(ActivityService $activityService)
     {
         $this->activityService = $activityService;
     }
 
     /**
-     * Listado unificado de actividades.
+     * Listado unificado de actividades con filtros persistentes, paginación y datos para formularios.
+     *
+     * @param  Request  $request
+     * @param  Team  $team
+     * @return \Illuminate\View\View
      */
     public function index(Request $request, Team $team)
     {
@@ -59,7 +83,14 @@ class ActivityController extends Controller
     }
 
     /**
-     * Search activities of subtype 'task' for autocomplete (AJAX).
+     * Búsqueda de actividades de tipo 'task' para autocompletado AJAX.
+     *
+     * Devuelve JSON con id, texto descriptivo y estado.
+     * Soporta filtrado por nivel jerárquico, exclusión de threads de foro y término de búsqueda.
+     *
+     * @param  Request  $request
+     * @param  Team  $team
+     * @return \Illuminate\Http\JsonResponse
      */
     public function search(Request $request, Team $team)
     {
@@ -101,7 +132,15 @@ class ActivityController extends Controller
     }
 
     /**
-     * Muestra el selector de tipos o el formulario de creación.
+     * Muestra el selector de tipos de actividad o el formulario de creación según el tipo seleccionado.
+     *
+     * Si no se especifica tipo, muestra la vista de selección. Si se especifica, carga todos los
+     * datos necesarios para el formulario: miembros, grupos, expedientes, actividades padre,
+     * habilidades, servicios y opciones de prioridad.
+     *
+     * @param  Request  $request
+     * @param  Team  $team
+     * @return \Illuminate\View\View
      */
     public function create(Request $request, Team $team)
     {
@@ -142,7 +181,11 @@ class ActivityController extends Controller
     }
 
     /**
-     * Almacena una nueva actividad.
+     * Almacena una nueva actividad, verificando cuota de almacenamiento del equipo.
+     *
+     * @param  StoreActivityRequest  $request
+     * @param  Team  $team
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function store(StoreActivityRequest $request, Team $team)
     {
@@ -169,7 +212,11 @@ class ActivityController extends Controller
     }
 
     /**
-     * Muestra el detalle de una actividad.
+     * Muestra el detalle completo de una actividad con notas e historial de cambios.
+     *
+     * @param  Team  $team
+     * @param  Activity  $activity
+     * @return \Illuminate\View\View
      */
     public function show(Team $team, Activity $activity)
     {
@@ -189,7 +236,13 @@ class ActivityController extends Controller
     }
 
     /**
-     * Muestra el formulario de edición de una actividad.
+     * Muestra el formulario de edición de una actividad con todos los datos para dropdowns y plantillas.
+     *
+     * Carga la plantilla correspondiente al tipo de actividad para determinar estados permitidos.
+     *
+     * @param  Team  $team
+     * @param  Activity  $activity
+     * @return \Illuminate\View\View
      */
     public function edit(Team $team, Activity $activity)
     {
@@ -269,7 +322,15 @@ class ActivityController extends Controller
     }
 
     /**
-     * Actualiza la actividad.
+     * Actualiza una actividad, verificando cuota de almacenamiento y protegiendo integridad de acuerdos firmados.
+     *
+     * Si la actividad es un acuerdo con firmas vigentes, descarta el campo 'terms' del payload
+     * para evitar modificar términos ya firmados.
+     *
+     * @param  StoreActivityRequest  $request
+     * @param  Team  $team
+     * @param  Activity  $activity
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function update(StoreActivityRequest $request, Team $team, Activity $activity)
     {
@@ -313,6 +374,10 @@ class ActivityController extends Controller
 
     /**
      * Elimina (soft-delete) una actividad.
+     *
+     * @param  Team  $team
+     * @param  Activity  $activity
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy(Team $team, Activity $activity)
     {
@@ -332,6 +397,10 @@ class ActivityController extends Controller
 
     /**
      * Archiva una actividad.
+     *
+     * @param  Team  $team
+     * @param  Activity  $activity
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function archive(Team $team, Activity $activity)
     {
@@ -346,6 +415,10 @@ class ActivityController extends Controller
 
     /**
      * Desarchiva una actividad.
+     *
+     * @param  Team  $team
+     * @param  Activity  $activity
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function unarchive(Team $team, Activity $activity)
     {
@@ -359,7 +432,12 @@ class ActivityController extends Controller
     }
 
     /**
-     * Modifica el estado rápidamente.
+     * Modifica el estado de una actividad de forma rápida.
+     *
+     * @param  Request  $request
+     * @param  Team  $team
+     * @param  Activity  $activity
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function changeStatus(Request $request, Team $team, Activity $activity)
     {
@@ -374,7 +452,13 @@ class ActivityController extends Controller
     }
 
     /**
-     * Añade una nota/comentario.
+     * Convierte una actividad a otro tipo (task→document→note, etc.), deprecando la versión anterior.
+     *
+     * @param  Request  $request
+     * @param  Team  $team
+     * @param  Activity  $activity
+     * @param  \App\Actions\Activities\ConvertActivityAction  $action
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function convert(Request $request, Team $team, Activity $activity, \App\Actions\Activities\ConvertActivityAction $action)
     {
@@ -398,7 +482,14 @@ class ActivityController extends Controller
     }
 
     /**
-     * Restaura una actividad que fue deprecada por conversión.
+     * Restaura una actividad que fue deprecada por conversión a otro tipo.
+     *
+     * Restablece el estado a 'pending', limpia metadatos de conversión y registra
+     * el evento en el historial.
+     *
+     * @param  Team  $team
+     * @param  Activity  $activity
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function restoreDeprecated(Team $team, Activity $activity)
     {
@@ -434,6 +525,11 @@ class ActivityController extends Controller
 
     /**
      * Clona una actividad deprecada para crear un registro independiente limpio.
+     *
+     * @param  Team  $team
+     * @param  Activity  $activity
+     * @param  \App\Actions\Activities\CloneActivityAction  $action
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function cloneDeprecated(Team $team, Activity $activity, \App\Actions\Activities\CloneActivityAction $action)
     {
@@ -453,6 +549,12 @@ class ActivityController extends Controller
 
     /**
      * Fusiona (Merge) notas y archivos de una actividad deprecada hacia otra actividad activa.
+     *
+     * @param  Request  $request
+     * @param  Team  $team
+     * @param  Activity  $activity
+     * @param  \App\Actions\Activities\MergeActivityAction  $action
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function mergeDeprecated(Request $request, Team $team, Activity $activity, \App\Actions\Activities\MergeActivityAction $action)
     {
@@ -477,7 +579,15 @@ class ActivityController extends Controller
     }
 
     /**
-     * Añade un nuevo capítulo a una actividad de tipo documento.
+     * Restaura metadatos y configuraciones de la versión original de una actividad convertida.
+     *
+     * Recupera campos genéricos y metadatos del ancestro, conservando los enlaces de conversión
+     * para mantener la trazabilidad de "vidas pasadas". Registra el evento en el historial.
+     *
+     * @param  Request  $request
+     * @param  Team  $team
+     * @param  Activity  $activity
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function restoreMetadata(Request $request, Team $team, Activity $activity)
     {

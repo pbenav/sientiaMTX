@@ -6,6 +6,13 @@ use App\Models\Activity;
 
 class MergeActivityAction
 {
+    /**
+     * Fusiona las notas y adjuntos de una actividad fuente en una actividad objetivo.
+     *
+     * @param  Activity  $sourceActivity  Actividad fuente (se fusionarán sus datos)
+     * @param  Activity  $targetActivity  Actividad objetivo (recibirá los datos)
+     * @param  int  $userId  ID del usuario que realiza la fusión
+     */
     public function execute(Activity $sourceActivity, Activity $targetActivity, int $userId): void
     {
         // Fusionar notas
