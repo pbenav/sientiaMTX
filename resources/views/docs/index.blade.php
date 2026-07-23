@@ -128,7 +128,7 @@
                         prose-blockquote:border-l-violet-500 prose-blockquote:bg-violet-50 dark:prose-blockquote:bg-violet-900/20 prose-blockquote:rounded-r-xl prose-blockquote:py-1 prose-blockquote:not-italic
                         prose-a:text-violet-600 dark:prose-a:text-violet-400
                         prose-img:rounded-xl">
-                        <div class="hidden print:block print:mb-8 print:border-b print:border-gray-200 print:pb-4">
+                        <div class="hidden print:block print:mb-8 print:border-b print:border-gray-200 print:pb-4 print-clean-hide">
                             <h1 class="text-3xl font-black text-gray-900" style="font-family:'Space Grotesk',sans-serif">sientia<span class="text-violet-600">MTX</span></h1>
                             <p class="text-sm text-gray-500 uppercase tracking-widest font-bold mt-1">Centro de Documentación y Soporte Operativo</p>
                         </div>
@@ -173,6 +173,8 @@
         @media print {
             #docs-sidebar, #docs-mobile-toggle, nav, footer, button { display: none !important; }
             .prose { max-width: 100% !important; }
+            .prose svg { max-width: 1.5em !important; height: auto !important; display: inline-block !important; vertical-align: middle !important; }
+            body.print-clean-mode .print-clean-hide { display: none !important; }
         }
     </style>
     @endpush
