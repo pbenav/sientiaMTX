@@ -979,7 +979,7 @@
                                 <div class="meta">Generado el ${dateStr}</div>
                             </div>
                         </div>
-                    ` : `<h1 style="font-size: 22px; font-weight: 800; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 30px; letter-spacing: -0.02em;">${taskTitle}</h1>`;
+                    ` : '';
 
                     const printWin = window.open('', '_blank', 'width=850,height=900');
                     printWin.document.write(`
@@ -1059,6 +1059,12 @@
                                     .content img {
                                         max-width: 100%;
                                         border-radius: 8px;
+                                    }
+                                    .content svg {
+                                        max-width: 1.5em;
+                                        height: auto;
+                                        display: inline-block;
+                                        vertical-align: middle;
                                     }
                                     .content table {
                                         border-collapse: collapse;
@@ -1162,7 +1168,7 @@
                                 <div class="meta">Generado el ${dateStr}</div>
                             </div>
                         </div>
-                    ` : `<h1 style="font-size: 22px; font-weight: 800; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 30px; letter-spacing: -0.02em;">${taskTitle}</h1>`;
+                    ` : '';
 
                     const printWin = window.open('', '_blank', 'width=850,height=900');
                     printWin.document.write(`
@@ -1242,6 +1248,12 @@
                                     .content img {
                                         max-width: 100%;
                                         border-radius: 8px;
+                                    }
+                                    .content svg {
+                                        max-width: 1.5em;
+                                        height: auto;
+                                        display: inline-block;
+                                        vertical-align: middle;
                                     }
                                     .content table {
                                         border-collapse: collapse;
@@ -1368,6 +1380,7 @@
                             '      .section-title::after { content: \'\'; flex: 1; height: 1px; background: #fef2f2; }',
                             '      .section-body { font-size: 11.5px; color: #334155; line-height: 1.4; }',
                             '      .section-body img { max-width: 100%; border-radius: 4px; margin: 4px 0; }',
+                        '      .section-body svg { max-width: 1.5em; height: auto; display: inline-block; vertical-align: middle; }',
                             '      .sidebar-box { background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #f1f5f9; }',
                             '      .sidebar-item { margin-bottom: 8px; }',
                             '      .sidebar-label { font-size: 6.5px; font-weight: 800; text-transform: uppercase; color: #94a3b8; margin-bottom: 2px; display: block; }',

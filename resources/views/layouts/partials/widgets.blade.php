@@ -787,7 +787,7 @@
                             <div class="meta">Generado el ${new Date().toLocaleDateString()} a las ${new Date().toLocaleTimeString()}</div>
                         </div>
                     </div>
-                ` : `<h1 style="font-size: 22px; font-weight: 800; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 30px; letter-spacing: -0.02em;">${title}</h1>`;
+                ` : '';
 
                 const watermarkHtml = withHeaders ? `<div class="logo-watermark">Sientia.</div>` : '';
 
@@ -846,6 +846,12 @@
                                     font-weight: 700;
                                     text-transform: uppercase;
                                     margin-top: 10px;
+                                }
+                                .content svg {
+                                    max-width: 1.5em;
+                                    height: auto;
+                                    display: inline-block;
+                                    vertical-align: middle;
                                 }
                                 .logo-watermark {
                                     position: fixed;
