@@ -191,6 +191,13 @@ class ActivityController extends Controller
     {
         $validated = $request->validated();
         $type = $validated['type'];
+        
+        // Inject top-level toggle into metadata
+        if ($request->has('is_timeline_locked')) {
+            $validated['metadata']['is_timeline_locked'] = $request->boolean('is_timeline_locked');
+        } else {
+            $validated['metadata']['is_timeline_locked'] = false;
+        }
 
         // Quota check de archivos
         if ($request->hasFile('attachments')) {
@@ -343,6 +350,13 @@ class ActivityController extends Controller
         }
 
         $validated = $request->validated();
+        
+        // Inject top-level toggle into metadata
+        if ($request->has('is_timeline_locked')) {
+            $validated['metadata']['is_timeline_locked'] = $request->boolean('is_timeline_locked');
+        } else {
+            $validated['metadata']['is_timeline_locked'] = false;
+        }
 
         if ($request->hasFile('attachments')) {
             $totalUploadSize = collect($request->file('attachments'))->sum(fn($file) => $file->getSize());

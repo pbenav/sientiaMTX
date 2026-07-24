@@ -188,6 +188,14 @@ class Activity extends Model
         'progress_percentage'  => 'integer',
     ];
 
+    /**
+     * Accessor para el bloqueo del Gantt, almacenado en metadata.
+     */
+    public function getIsTimelineLockedAttribute(): bool
+    {
+        return (bool) data_get($this->metadata, 'is_timeline_locked', false);
+    }
+
     // ─── Relaciones principales ───────────────────────────────────────────────
 
     /**

@@ -58,6 +58,7 @@ class StoreActivityRequest extends FormRequest
                 'nullable',
                 Rule::exists('activities', 'id')->where('team_id', $team->id),
             ],
+            'is_timeline_locked' => 'nullable|boolean',
             'expediente_id' => [
                 'nullable',
                 Rule::exists('expedientes', 'id')->where('team_id', $team->id),
