@@ -563,10 +563,18 @@
                 const blockReadonlyDrag = (e) => {
                     const wrapper = e.target.closest('.bar-wrapper');
                     if (wrapper && wrapper.classList.contains('gantt-readonly')) {
-                        e.stopImmediatePropagation();
-                        e.stopPropagation();
+                        // Temporarily remove the class so Frappe Gantt's internal closest('.bar-wrapper') fails
+                        wrapper.classList.remove('bar-wrapper');
+                        wrapper.classList.add('bar-wrapper-disabled');
+                        
+                        // Restore it in the next tick
+                        setTimeout(() => {
+                            wrapper.classList.remove('bar-wrapper-disabled');
+                            wrapper.classList.add('bar-wrapper');
+                        }, 0);
                     }
                 };
+                // Capture phase to run before Frappe Gantt's internal event delegation
                 gantt.$svg.addEventListener('mousedown', blockReadonlyDrag, true);
                 gantt.$svg.addEventListener('touchstart', blockReadonlyDrag, { capture: true, passive: false });
             }
