@@ -56,6 +56,7 @@ trait UserProfile
                 try {
                     return decrypt($value, true); // Intenta descifrar
                 } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+                    \Illuminate\Support\Facades\Log::warning("Fallo al descifrar google_token del usuario {$this->id}: " . $e->getMessage());
                     return null; // Si falla (viejo/corrupto), ignorar
                 }
             },
@@ -74,6 +75,7 @@ trait UserProfile
                 try {
                     return decrypt($value);
                 } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+                    \Illuminate\Support\Facades\Log::warning("Fallo al descifrar google_refresh_token del usuario {$this->id}: " . $e->getMessage());
                     return null;
                 }
             },

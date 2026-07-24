@@ -30,3 +30,9 @@ Thumbs.db
 /site
 mkdocs.yml
 /storage/codigo_firma.html
+# Archivos y backups ignorados (M-08, M-10)
+*.sql
+*.bak
+
+# WWebJS (L-03)
+.wwebjs_auth/

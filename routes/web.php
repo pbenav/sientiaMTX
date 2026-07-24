@@ -22,12 +22,13 @@ use App\Http\Controllers\Microsite\MicrositeController;
 use App\Http\Controllers\Microsite\PublicMicrositeController;
 use Illuminate\Support\Facades\Route;
 
-// Telegram Webhook (Public)
-Route::post('/telegram/webhook', [\App\Http\Controllers\TelegramWebhookController::class, 'handle'])->name('telegram.webhook');
-Route::get('/telegram/webhook', fn() => response()->json(['status' => 'ok', 'info' => 'Telegram webhook endpoint (POST only)'], 200));
+// Telegram Webhook (Public) - Rate Limited
+Route::post('/telegram/webhook', [\App\Http\Controllers\TelegramWebhookController::class, 'handle'])->middleware('throttle:60,1')->name('telegram.webhook');
+Route::get('/telegram/webhook', fn() => response()->json(['status' => 'ok', 'info' => 'Telegram webhook endpoint (POST only)'], 200))->middleware('throttle:60,1');
 
-// WhatsApp Webhook (Public)
-Route::post('/whatsapp/webhook', [\App\Http\Controllers\WhatsappWebhookController::class, 'webhook'])->name('whatsapp.webhook');
+// WhatsApp Webhook (Public) - Rate Limited
+Route::post('/whatsapp/webhook', [\App\Http\Controllers\WhatsappWebhookController::class, 'webhook'])->middleware('throttle:60,1')->name('whatsapp.webhook');
+Route::get('/whatsapp/webhook', fn() => response()->json(['status' => 'ok', 'info' => 'WhatsApp webhook endpoint (POST only)'], 200))->middleware('throttle:60,1');
 Route::get('/whatsapp/webhook', fn() => response()->json(['status' => 'ok', 'info' => 'WhatsApp webhook endpoint (POST only)'], 200));
 
 // S2S Integration (CTH -> MTX)
@@ -35,7 +36,7 @@ Route::post('/api/s2s/sync-workday', [\App\Http\Controllers\Api\S2SIntegrationCo
 Route::post('/api/s2s/sync-history', [\App\Http\Controllers\Api\S2SIntegrationController::class, 'syncHistory'])->name('api.s2s.sync-history');
 
 // --- Citas Previas — Portal Público (sin autenticación) ---
-Route::prefix('citas')->name('public.appointments.')->group(function () {
+Route::prefix('citas')->name('public.appointments.')->middleware('throttle:60,1')->group(function () {
     Route::get('/', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'map'])->name('map');
     Route::get('/{slug}', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'member'])->name('member');
     Route::get('/service/{service}/slots/{date}', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'slots'])->name('slots');
