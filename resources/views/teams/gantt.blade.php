@@ -320,7 +320,7 @@
 
         // Sync view mode with the selected time_range
         const timeRange = '{{ request("time_range", "3") }}';
-        let currentMode = (timeRange === '1' || timeRange === 'all') ? 'Day' : (timeRange === '6' || timeRange === '12' ? 'Month' : 'Week');
+        let currentMode = (timeRange === '6' || timeRange === '12') ? 'Month' : 'Day';
         
         // Manual override from button clicks is possible
         function changeView(m) { 

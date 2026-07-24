@@ -21,7 +21,7 @@ class TeamTrashController extends Controller
         // Fetch trashed activities
         $activities = Activity::onlyTrashed()
             ->where('team_id', $team->id)
-            ->with(['creator', 'deleter'])
+            ->with(['creator'])
             ->orderBy('deleted_at', 'desc')
             ->get();
 
