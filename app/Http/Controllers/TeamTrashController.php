@@ -108,14 +108,20 @@ class TeamTrashController extends Controller
      */
     public function empty(Request $request, Team $team)
     {
-        $this->authorize('update', $team); // Only team managers/admins
+        $this->authorize('view', $team); // Change to view so users can empty their own trash
 
-        DB::transaction(function () use ($team) {
-            // Force delete all trashed activities
-            Activity::onlyTrashed()->where('team_id', $team->id)->forceDelete();
-            
-            // Force delete all trashed expedientes
-            Expediente::onlyTrashed()->where('team_id', $team->id)->forceDelete();
+        DB::transaction(function () use ($request, $team) {
+            $activitiesQuery = Activity::onlyTrashed()->where('team_id', $team->id);
+            $expedientesQuery = Expediente::onlyTrashed()->where('team_id', $team->id);
+
+            // Si el usuario no es admin/coordinador, solo puede vaciar sus propios elementos
+            if ($request->user()->cannot('update', $team)) {
+                $activitiesQuery->where('created_by_id', $request->user()->id);
+                $expedientesQuery->where('created_by_id', $request->user()->id);
+            }
+
+            $activitiesQuery->forceDelete();
+            $expedientesQuery->forceDelete();
         });
 
         return redirect()->route('teams.trash.index', $team)->with('success', 'La papelera ha sido vaciada de forma permanente.');
