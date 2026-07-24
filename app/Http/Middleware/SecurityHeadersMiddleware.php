@@ -34,11 +34,12 @@ class SecurityHeadersMiddleware
 
             // Content-Security-Policy (H-24 / L-05): Restricción de fuentes adaptada a Alpine/Tailwind/Sientia
             $csp = "default-src 'self' http://localhost:* ws://localhost:*; " .
-                   "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://meet.jit.si https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; " .
-                   "style-src 'self' 'unsafe-inline' https://fonts.bunny.net https://fonts.googleapis.com; " .
-                   "img-src 'self' data: blob: https://ui-avatars.com; " .
+                   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://meet.jit.si https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://scaleflex.cloudimg.io; " .
+                   "style-src 'self' 'unsafe-inline' https://fonts.bunny.net https://fonts.googleapis.com https://cdnjs.cloudflare.com; " .
+                   "img-src 'self' data: blob: https://ui-avatars.com https://*.tile.openstreetmap.org; " .
                    "font-src 'self' data: https://fonts.bunny.net https://fonts.gstatic.com; " .
-                   "media-src 'self' data: blob:; " .
+                   "media-src 'self' data: blob: https://assets.mixkit.co; " .
+                   "worker-src 'self' blob:; " .
                    "connect-src 'self' data: ws://* wss://* ws://127.0.0.1:* wss://127.0.0.1:* https://meet.jit.si; " .
                    "frame-src 'self' https://meet.jit.si afirma:;";
             $response->headers->set('Content-Security-Policy', $csp);

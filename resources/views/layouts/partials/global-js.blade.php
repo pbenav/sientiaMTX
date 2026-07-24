@@ -163,6 +163,7 @@
             }));
         });
     </script>
+
     <!-- Letrero Flotante de Celebración (Tipo Banner de Feria/Fiesta) -->
     <div x-data="{
             showCelebration: false,
@@ -178,7 +179,7 @@
             }
          "
          x-show="showCelebration"
-         x-cloak
+         style="display: none;"
          class="fixed inset-0 z-[999999] flex items-center justify-center pointer-events-none px-4"
          x-transition:enter="transition ease-out duration-700"
          x-transition:enter-start="opacity-0 scale-75 rotate-3"
@@ -216,7 +217,7 @@
                 </h3>
 
                 <h2 class="text-5xl md:text-7xl font-bold mb-6 drop-shadow-sm" style="font-family: 'Georgia', serif; color: #453c38;">
-                    SientiaMTX <span style="color: #7c3aed;">v1.1.0</span>
+                    SientiaMTX <span style="color: #7c3aed;">v{{ config('app.version', '1.2.0') }}</span>
                 </h2>
 
                 <div class="inline-block border-y-2 py-3 mb-6 px-8" style="border-color: #d1c8b4;">
@@ -252,8 +253,8 @@
                 var duration = 4 * 1000;
                 var end = Date.now() + duration;
                 (function frame() {
-                    confetti({ particleCount: 7, angle: 60, spread: 55, origin: { x: 0 }, zIndex: 999999, colors: ['#8b5cf6', '#c4b5fd', '#f59e0b', '#10b981'] });
-                    confetti({ particleCount: 7, angle: 120, spread: 55, origin: { x: 1 }, zIndex: 999999, colors: ['#8b5cf6', '#c4b5fd', '#f59e0b', '#10b981'] });
+                    confetti({ particleCount: 7, angle: 60, spread: 55, origin: { x: 0 }, zIndex: 9999999, colors: ['#8b5cf6', '#c4b5fd', '#f59e0b', '#10b981'] });
+                    confetti({ particleCount: 7, angle: 120, spread: 55, origin: { x: 1 }, zIndex: 9999999, colors: ['#8b5cf6', '#c4b5fd', '#f59e0b', '#10b981'] });
                     if (Date.now() < end) requestAnimationFrame(frame);
                 }());
 
