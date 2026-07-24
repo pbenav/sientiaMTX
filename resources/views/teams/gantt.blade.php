@@ -827,7 +827,12 @@
         }
 
 
-        function centerToday() { const c = document.getElementById('gantt-container'), h = c.querySelector('.today-highlight'); if(h) c.scrollLeft = parseFloat(h.getAttribute('x')) - (c.offsetWidth/2); }
+        function centerToday() { 
+            const c = document.getElementById('gantt-container');
+            const h = c.querySelector('.today-highlight'); 
+            const scroller = c.querySelector('.gantt-container') || c;
+            if(h) scroller.scrollLeft = parseFloat(h.getAttribute('x')) - (scroller.offsetWidth/2); 
+        }
         function drawTodayLine() {
             const c = document.getElementById('gantt-container'), s = c.querySelector('svg'), h = c.querySelector('.today-highlight');
             if(!s || !h) return;
