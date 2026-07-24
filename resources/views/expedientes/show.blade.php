@@ -940,7 +940,7 @@
                                     </div>
                                 </div>
                                 <div x-show="!editing" class="text-sm text-gray-700 dark:text-gray-300 pl-8 prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-a:text-violet-600 dark:prose-a:text-violet-400">
-                                    {!! Str::markdown($note->content) !!}
+                                    {!! Str::markdown($note->content, ['html_input' => 'strip']) !!}
                                 </div>
                                 @if($canEdit)
                                     <div x-show="editing" x-cloak class="mt-2 pl-8">

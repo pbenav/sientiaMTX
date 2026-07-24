@@ -45,7 +45,7 @@
 
         @if($settings->welcome_text)
             <div class="mt-8 pt-6 border-t border-gray-100 dark:border-gray-850 text-sm text-gray-600 dark:text-gray-400 leading-relaxed font-medium markdown-body">
-                {!! Str::markdown($settings->welcome_text) !!}
+                {!! Str::markdown($settings->welcome_text, ['html_input' => 'strip']) !!}
             </div>
         @endif
     </div>
@@ -84,7 +84,7 @@
 
                         @if($service->description)
                             <div class="text-xs text-gray-500 dark:text-gray-400 mt-2 leading-relaxed">
-                                {!! Str::markdown($service->description) !!}
+                                {!! Str::markdown($service->description, ['html_input' => 'strip']) !!}
                             </div>
                         @endif
                     </div>

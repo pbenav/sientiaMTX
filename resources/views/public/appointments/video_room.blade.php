@@ -67,9 +67,9 @@
     <script src="https://{{ $jitsiDomain }}/external_api.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const domain = "{{ $jitsiDomain }}";
+            const domain = @json($jitsiDomain);
             const options = {
-                roomName: "SientiaMTX-{{ $appointment->localizador }}",
+                roomName: @json("SientiaMTX-" . $appointment->localizador),
                 width: "100%",
                 height: "100%",
                 parentNode: document.getElementById('jitsi-container'),

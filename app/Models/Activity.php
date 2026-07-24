@@ -146,8 +146,6 @@ class Activity extends Model
      */
     protected $fillable = [
         'uuid',
-        'team_id',
-        'created_by_id',
         'parent_id',
         'expediente_id',
         'type',

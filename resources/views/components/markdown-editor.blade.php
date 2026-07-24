@@ -27,7 +27,7 @@
     get preview() {
         if (typeof marked === 'undefined') return '{{ __("Cargando...") }}';
         marked.use({ breaks: true, gfm: true });
-        return marked.parse(this.content || '');
+        return typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(marked.parse(this.content || '')) : marked.parse(this.content || '').replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').replace(/on[a-z]+=/gi, '');
     },
 
     async fetchMentions() {

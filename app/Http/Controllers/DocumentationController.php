@@ -35,7 +35,7 @@ class DocumentationController extends Controller
         $contentMd = File::get($path);
         
         // Convert Markdown to HTML using Laravel's built-in Str::markdown (powered by CommonMark)
-        $contentHtml = Str::markdown($contentMd);
+        $contentHtml = Str::markdown($contentMd, ['html_input' => 'strip']);
 
         // Define the menu structure
         $menu = [
@@ -95,7 +95,7 @@ class DocumentationController extends Controller
             abort(404, "Documentation file not found: {$slug}");
         }
 
-        $contentHtml = Str::markdown(File::get($path));
+        $contentHtml = Str::markdown(File::get($path), ['html_input' => 'strip']);
 
         $titles = [
             'es' => [

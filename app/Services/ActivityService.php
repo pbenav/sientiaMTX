@@ -51,9 +51,7 @@ class ActivityService
         }
 
         return DB::transaction(function () use ($team, $type, $data, $files) {
-            $activity = Activity::create([
-                'team_id'             => $team->id,
-                'created_by_id'       => auth()->id(),
+            $activity = new Activity([
                 'type'                => $type,
                 'title'               => $data['title'],
                 'description'         => $data['description'] ?? null,
@@ -73,6 +71,9 @@ class ActivityService
                 'kanban_order'        => $data['kanban_order'] ?? null,
                 'matrix_order'        => $data['matrix_order'] ?? null,
             ]);
+            $activity->team_id = $team->id;
+            $activity->created_by_id = auth()->id();
+            $activity->save();
 
             // Determinar si es Plan Maestro a partir de properties dinámicas o datos directos
             $assignmentMode = $data['assignment_mode'] ?? data_get($activity->metadata, 'assignment_mode', 'shared');
@@ -445,9 +446,7 @@ class ActivityService
                 'distributed_user_id' => $userId
             ]);
 
-            $instance = Activity::create([
-                'team_id' => $parent->team_id,
-                'created_by_id' => $parent->created_by_id,
+            $instance = new Activity([
                 'type' => $parent->type,
                 'title' => $childData['title'],
                 'description' => $childData['description'] ?? null,
@@ -462,6 +461,9 @@ class ActivityService
                 'expediente_id' => $parent->expediente_id,
                 'is_template' => false,
             ]);
+            $instance->team_id = $parent->team_id;
+            $instance->created_by_id = auth()->id() ?? $parent->created_by_id;
+            $instance->save();
 
             ActivityAssignment::create([
                 'activity_id' => $instance->id,
