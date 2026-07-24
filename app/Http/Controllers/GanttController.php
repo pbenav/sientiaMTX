@@ -114,6 +114,7 @@ class GanttController extends Controller
                     'progress'     => $progress,
                     'dependencies' => '',
                     'custom_class' => "{$typeClass} {$colorClass} {$readonlyClass}",
+                    'readonly'     => $isReadonly,
                     'status'       => $task->status_value,
                     'status_label' => __("tasks.statuses.{$task->status_value}"),
                     'priority'     => $task->priority,

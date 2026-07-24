@@ -690,14 +690,16 @@
                 const wrapper = e.target.closest('.bar-wrapper');
                 const handle = e.target.closest('.handle');
                 if (wrapper) {
+                    if (wrapper.classList.contains('gantt-readonly')) {
+                        // For readonly, we stop propagation so Frappe doesn't initiate a drag, but we allow clicks
+                        isDragging = false;
+                        if(e.stopPropagation) e.stopPropagation();
+                        return;
+                    }
+
                     isDragging = true;
                     wasDragging = false;
                     dragPart = handle ? (handle.classList.contains('left') ? 'start' : 'end') : 'range';
-                    
-                    if (wrapper.classList.contains('gantt-readonly')) {
-                        // For readonly, we don't start a drag
-                        isDragging = false;
-                    }
                 }
             }
 
