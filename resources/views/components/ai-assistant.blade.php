@@ -1293,7 +1293,7 @@
                 // 3. Renderizado de Markdown del texto restante
                 let rendered;
                 try {
-                    rendered = marked.parse(textWithPlaceholders);
+                    rendered = typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(marked.parse(textWithPlaceholders)) : marked.parse(textWithPlaceholders);
                 } catch (e) {
                     rendered = textWithPlaceholders.replace(/\n/g, '<br>');
                 }
@@ -1521,7 +1521,7 @@
                                     <span class="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-300">Smart Payload</span>
                                 </div>
                             </div>
-                            <div class="prose prose-sm dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 text-[13px] leading-relaxed font-medium">${marked.parse(payloadContent)}</div>
+                            <div class="prose prose-sm dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 text-[13px] leading-relaxed font-medium">${typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(marked.parse(payloadContent)) : marked.parse(payloadContent)}</div>
                             <div class="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-indigo-100/50 dark:border-slate-800">
                                 <span class="text-[9px] font-bold text-indigo-400/80 mr-auto uppercase tracking-tighter italic">Listo para inyectar</span>
                                 <button onclick="window.dispatchEvent(new CustomEvent('ai:smart-inject', { detail: { content: ${JSON.stringify(sanitizedContent).replace(/"/g, '&quot;')} } }))" 
@@ -1555,14 +1555,14 @@
                     try {
                         const obj = JSON.parse(this.cleanJson(content));
                         if (obj.content && obj.intent) {
-                            return highlightPatterns(marked.parse(obj.content));
+                            return highlightPatterns(typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(marked.parse(obj.content)) : marked.parse(obj.content));
                         }
                         if (obj.title || obj.name) {
                             const desc = (obj.description || obj.content || '').substring(0, 150);
                             return `<div class="flex flex-col gap-1">
                                 <span class="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-tighter">Entidad Detectada</span>
                                 <h4 class="text-base font-bold m-0 p-0 text-gray-900 dark:text-white leading-tight">${obj.title || obj.name}</h4>
-                                <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">${highlightPatterns(marked.parse(desc))}...</div>
+                                <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">${highlightPatterns(typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(marked.parse(desc)) : marked.parse(desc))}...</div>
                             </div>`;
                         }
                         return `<pre class="bg-gray-900/95 text-violet-400 p-4 rounded-2xl text-[10px] overflow-x-auto shadow-inner border border-gray-800 font-mono">${JSON.stringify(obj, null, 4)}</pre>`;
@@ -1570,7 +1570,7 @@
                 }
 
                 try {
-                    return highlightPatterns(marked.parse(content));
+                    return highlightPatterns(typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(marked.parse(content)) : marked.parse(content));
                 } catch (e) {
                     return highlightPatterns(content.substring(0, 250)) + '...';
                 }
@@ -1752,7 +1752,7 @@
                         const isSientiaEditor = targetComponent && (typeof targetComponent.insertAtCursor === 'function' || targetComponent.content !== undefined);
 
                         if (isQuill && actualEditor) {
-                            actualEditor.innerHTML += marked.parse(textToInject);
+                            actualEditor.innerHTML += typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(marked.parse(textToInject)) : marked.parse(textToInject);
                             actualEditor.dispatchEvent(new Event('input', { bubbles: true }));
                         } else if (isSientiaEditor) {
                             // If it's our custom editor, we use its native insertion method or direct content update

@@ -23,7 +23,7 @@
     <!-- CSS del Micrositio (con scaffold premium y variables por defecto) -->
     @if(!empty($cssContent) || $microsite->css_content)
     <style>
-        {!! $cssContent ?? $microsite->css_content !!}
+        {!! strip_tags($cssContent ?? $microsite->css_content) !!}
     </style>
     @endif
 

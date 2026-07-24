@@ -95,7 +95,7 @@
                     DEFAULT_BACKGROUND: '#111827'
                 },
                 userInfo: {
-                    displayName: "{{ $appointment->visitor->full_name }}"
+                    displayName: @json($appointment->visitor->full_name)
                 }
             };
             const api = new JitsiMeetExternalAPI(domain, options);

@@ -92,9 +92,13 @@
 
     <!-- Marked.js (Markdown Rendering) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
     <script>
         if (typeof marked === 'undefined') {
             document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"><\/script>');
+        }
+        if (typeof DOMPurify === 'undefined') {
+            document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"><\/script>');
         }
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof marked !== 'undefined') {
