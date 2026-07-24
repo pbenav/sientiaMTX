@@ -107,6 +107,29 @@
                                 <x-input-error :messages="$errors->get('description')" class="mt-2" />
                             </div>
 
+                            <div class="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-4">
+                                    Gestión de Datos y Papelera
+                               </h3>
+                                <div>
+                                    <x-input-label for="trash_retention_days" value="Vaciar Papelera Automáticamente"
+                                        class="text-xs font-bold text-gray-600 dark:text-gray-400 mb-2" />
+                                    <select id="trash_retention_days" name="settings[trash_retention_days]"
+                                        class="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all cursor-pointer">
+                                        @php
+                                            $currentRetention = $team->settings['trash_retention_days'] ?? 30;
+                                        @endphp
+                                        <option value="15" {{ $currentRetention == 15 ? 'selected' : '' }}>A los 15 días</option>
+                                        <option value="30" {{ $currentRetention == 30 ? 'selected' : '' }}>A los 30 días (Recomendado)</option>
+                                        <option value="90" {{ $currentRetention == 90 ? 'selected' : '' }}>A los 90 días</option>
+                                        <option value="0" {{ $currentRetention == 0 ? 'selected' : '' }}>Nunca (Vaciar manualmente)</option>
+                                    </select>
+                                    <p class="mt-2 text-[10px] text-gray-500">
+                                        Las actividades y expedientes eliminados se purgarán definitivamente cuando superen este límite de tiempo.
+                                    </p>
+                                </div>
+                            </div>
+
                             <div class="bg-gray-50/50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/50 rounded-2xl p-5">
                                 <div class="flex items-center gap-2 mb-5">
                                     <span class="p-1.5 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-lg">

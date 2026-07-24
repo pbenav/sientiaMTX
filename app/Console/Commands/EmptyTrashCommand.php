@@ -28,17 +28,38 @@ class EmptyTrashCommand extends Command
      */
     public function handle()
     {
-        $days = (int) $this->option('days');
-        $threshold = Carbon::now()->subDays($days);
+        $defaultDays = (int) $this->option('days');
+        $teams = \App\Models\Team::all();
 
-        $activitiesCount = Activity::onlyTrashed()
-            ->where('deleted_at', '<=', $threshold)
-            ->forceDelete();
+        $totalActivities = 0;
+        $totalExpedientes = 0;
 
-        $expedientesCount = Expediente::onlyTrashed()
-            ->where('deleted_at', '<=', $threshold)
-            ->forceDelete();
+        foreach ($teams as $team) {
+            // Read settings, default to global defaultDays if not set
+            $settings = $team->settings ?? [];
+            $days = isset($settings['trash_retention_days']) ? (int) $settings['trash_retention_days'] : $defaultDays;
 
-        $this->info("Successfully emptied trash. Deleted {$activitiesCount} activities and {$expedientesCount} expedientes older than {$days} days.");
+            if ($days === 0) {
+                // 0 means never auto-empty
+                continue;
+            }
+
+            $threshold = Carbon::now()->subDays($days);
+
+            $activitiesCount = Activity::onlyTrashed()
+                ->where('team_id', $team->id)
+                ->where('deleted_at', '<=', $threshold)
+                ->forceDelete();
+
+            $expedientesCount = Expediente::onlyTrashed()
+                ->where('team_id', $team->id)
+                ->where('deleted_at', '<=', $threshold)
+                ->forceDelete();
+
+            $totalActivities += $activitiesCount;
+            $totalExpedientes += $expedientesCount;
+        }
+
+        $this->info("Successfully emptied trash. Deleted {$totalActivities} activities and {$totalExpedientes} expedientes.");
     }
 }
