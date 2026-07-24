@@ -558,6 +558,19 @@
             let lastUpdate = 0;
             const richTooltip = document.getElementById('drag-date-indicator');
 
+            // Forcefully block Frappe Gantt from initiating drags for readonly tasks
+            if (gantt && gantt.$svg) {
+                const blockReadonlyDrag = (e) => {
+                    const wrapper = e.target.closest('.bar-wrapper');
+                    if (wrapper && wrapper.classList.contains('gantt-readonly')) {
+                        e.stopImmediatePropagation();
+                        e.stopPropagation();
+                    }
+                };
+                gantt.$svg.addEventListener('mousedown', blockReadonlyDrag, true);
+                gantt.$svg.addEventListener('touchstart', blockReadonlyDrag, { capture: true, passive: false });
+            }
+
             function updateRichPanel(task, x, width, type = 'Detalles') {
                 if (!task) return;
                 
@@ -691,9 +704,7 @@
                 const handle = e.target.closest('.handle');
                 if (wrapper) {
                     if (wrapper.classList.contains('gantt-readonly')) {
-                        // For readonly, we stop propagation so Frappe doesn't initiate a drag, but we allow clicks
                         isDragging = false;
-                        if(e.stopPropagation) e.stopPropagation();
                         return;
                     }
 
