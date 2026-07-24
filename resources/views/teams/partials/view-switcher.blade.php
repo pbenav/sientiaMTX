@@ -138,11 +138,12 @@
                         @include('teams.partials.subtasks-visibility-toggle')
                     @endif
                     <a href="{{ route('teams.trash.index', $team) }}" 
-                       class="ml-2 flex items-center justify-center p-1.5 rounded-lg transition-colors bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-100 shadow-sm"
+                       class="flex flex-col items-center justify-center gap-0.5 px-1.5 md:px-2 py-2 rounded-xl transition-all shrink-0 min-w-max text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60"
                        title="Papelera de Reciclaje">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 lg:h-5 lg:w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
+                        <span class="hidden lg:block text-[9px] font-bold uppercase tracking-tight leading-none whitespace-nowrap">Papelera</span>
                     </a>
                 </div>
             @endif
