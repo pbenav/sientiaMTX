@@ -47,6 +47,9 @@ Schedule::command('sentinel:check')->everyFifteenMinutes();
 // Purga automática de mensajes de chat antiguos según preferencias de equipo — Cada día a las 04:00
 Schedule::command('chat:purge-old-messages --force')->dailyAt('04:00');
 
+// Vaciado automático de papelera de reciclaje (> 30 días) — Cada día a las 05:00
+Schedule::command('trash:empty --days=30')->dailyAt('05:00');
+
 // --- Métricas y Analytics Scheduled Jobs ---
 
 // Generar snapshots de métricas cada 15 minutos
