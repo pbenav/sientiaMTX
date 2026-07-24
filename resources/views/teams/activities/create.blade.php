@@ -1070,8 +1070,11 @@
             box-shadow: none !important;
             line-height: 1 !important;
             height: auto !important;
+            min-width: 200px !important;
+            max-width: 100% !important;
         }
         .ts-control input::placeholder { color: #9ca3af !important; font-weight: 500 !important; }
+        .ts-control.has-items input::placeholder { color: transparent !important; }
         
         .dark .ts-control {
             background-color: #1f2937 !important;
