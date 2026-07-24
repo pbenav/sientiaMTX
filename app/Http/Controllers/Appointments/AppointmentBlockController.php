@@ -113,6 +113,67 @@ class AppointmentBlockController extends Controller
     }
 
     /**
+     * Muestra el formulario para editar un tramo bloqueado.
+     *
+     * @param Team $team
+     * @param AppointmentBlock $block
+     * @return \Illuminate\View\View
+     */
+    public function edit(Team $team, AppointmentBlock $block)
+    {
+        if ($block->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $services = auth()->user()->appointmentServices()
+            ->where('team_id', $team->id)
+            ->active()
+            ->get();
+
+        return view('appointments.blocks.edit', compact('block', 'services', 'team'));
+    }
+
+    /**
+     * Actualiza un tramo bloqueado existente.
+     *
+     * @param Request $request
+     * @param Team $team
+     * @param AppointmentBlock $block
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function update(Request $request, Team $team, AppointmentBlock $block)
+    {
+        if ($block->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $data = $request->validate([
+            'service_id'       => 'nullable|exists:appointment_services,id',
+            'start_datetime'   => 'required|date',
+            'end_datetime'     => 'required|date|after:start_datetime',
+            'reason'           => 'nullable|string|max:500',
+            'notify_affected'  => 'boolean',
+        ]);
+
+        if (!empty($data['service_id'])) {
+            $service = AppointmentService::find($data['service_id']);
+            if ($service->user_id !== auth()->id() || $service->team_id !== $team->id) {
+                abort(403);
+            }
+        }
+
+        $block->update($data);
+
+        // Optionally handle notifications again if needed when dates change
+        if ($block->notify_affected) {
+            $this->notifyAffectedAppointments($block, $team);
+        }
+
+        return redirect()->route('appointments.blocks.index', $team)
+            ->with('success', 'Bloqueo actualizado correctamente.');
+    }
+
+    /**
      * Notifica y cancela las citas que se ven afectadas por un bloqueo de horario.
      *
      * Busca las citas del usuario dentro del rango del bloqueo, las marca como 'blocked',

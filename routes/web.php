@@ -653,6 +653,8 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureAppointmentsAreEnabled::cl
     Route::prefix('bloqueos')->name('blocks.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Appointments\AppointmentBlockController::class, 'index'])->name('index');
         Route::post('/', [\App\Http\Controllers\Appointments\AppointmentBlockController::class, 'store'])->name('store');
+        Route::get('/{block}/editar', [\App\Http\Controllers\Appointments\AppointmentBlockController::class, 'edit'])->name('edit');
+        Route::patch('/{block}', [\App\Http\Controllers\Appointments\AppointmentBlockController::class, 'update'])->name('update');
         Route::delete('/{block}', [\App\Http\Controllers\Appointments\AppointmentBlockController::class, 'destroy'])->name('destroy');
     });
 
