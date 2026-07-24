@@ -14,21 +14,25 @@ class TeamTrashController extends Controller
     /**
      * Display a listing of the trashed resources.
      */
-    public function index(Team $team)
+    public function index(Request $request, Team $team)
     {
         $this->authorize('view', $team);
 
         // Fetch trashed activities
-        $activities = Activity::onlyTrashed()
-            ->where('team_id', $team->id)
-            ->with(['creator'])
+        $activitiesQuery = Activity::onlyTrashed()->where('team_id', $team->id);
+        if ($request->user()->cannot('update', $team)) {
+            $activitiesQuery->where('created_by_id', $request->user()->id);
+        }
+        $activities = $activitiesQuery->with(['creator'])
             ->orderBy('deleted_at', 'desc')
             ->get();
 
         // Fetch trashed expedientes
-        $expedientes = Expediente::onlyTrashed()
-            ->where('team_id', $team->id)
-            ->with('creator')
+        $expedientesQuery = Expediente::onlyTrashed()->where('team_id', $team->id);
+        if ($request->user()->cannot('update', $team)) {
+            $expedientesQuery->where('created_by_id', $request->user()->id);
+        }
+        $expedientes = $expedientesQuery->with('creator')
             ->orderBy('deleted_at', 'desc')
             ->get();
 
