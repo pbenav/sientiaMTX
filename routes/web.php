@@ -486,6 +486,7 @@ Route::middleware('auth')->group(function () {
 
     // Documentación y Manuales
     Route::get('/docs/{slug?}', [\App\Http\Controllers\DocumentationController::class, 'index'])->name('docs');
+    Route::get('/docs/{slug}/print', [\App\Http\Controllers\DocumentationController::class, 'print'])->name('docs.print');
 
     // Créditos
     Route::get('/credits', [\App\Http\Controllers\CreditsController::class, 'index'])->name('credits');

@@ -16,7 +16,7 @@
             </div>
             
             <div class="flex items-center">
-                <button type="button" onclick="typeof SientiaPrint !== 'undefined' ? SientiaPrint.printPage() : window.print()" class="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm font-medium text-gray-700 dark:text-gray-300">
+                <button type="button" onclick="choosePrintMode()" class="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm font-medium text-gray-700 dark:text-gray-300">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-600 dark:text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                     </svg>
@@ -128,11 +128,9 @@
                         prose-blockquote:border-l-violet-500 prose-blockquote:bg-violet-50 dark:prose-blockquote:bg-violet-900/20 prose-blockquote:rounded-r-xl prose-blockquote:py-1 prose-blockquote:not-italic
                         prose-a:text-violet-600 dark:prose-a:text-violet-400
                         prose-img:rounded-xl">
-                        <div class="hidden print:mb-8 print:border-b print:border-gray-200 print:pb-4 docs-print-header">
-                            <h1 class="text-3xl font-black text-gray-900" style="font-family:'Space Grotesk',sans-serif">sientia<span class="text-violet-600">MTX</span></h1>
-                            <p class="text-sm text-gray-500 uppercase tracking-widest font-bold mt-1">Centro de Documentación y Soporte Operativo</p>
+                        <div id="docs-content-container">
+                            {!! $content !!}
                         </div>
-                        {!! $content !!}
                     </div>
 
                     {{-- Footer --}}
@@ -140,8 +138,7 @@
                         <span class="text-xs text-gray-400 dark:text-gray-500">
                             © {{ date('Y') }} Sientia Open Source Lab Documentation
                         </span>
-                        <button onclick="SientiaPrint.printPage()"
-                            class="text-xs font-medium text-violet-600 dark:text-violet-400 hover:underline flex items-center gap-1.5">
+                        <button onclick="choosePrintMode()" class="text-xs font-medium text-violet-600 dark:text-violet-400 hover:underline flex items-center gap-1.5">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                             </svg>
@@ -156,32 +153,64 @@
 
     @push('scripts')
     <style>
-        /* Responsive sidebar */
         @media (max-width: 767px) {
             #docs-sidebar { display: none !important; }
             #docs-mobile-toggle { display: block !important; }
         }
-        /* Fix table overflow on small screens */
-        .prose table {
-            display: block;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        .prose pre {
-            overflow-x: auto;
-        }
-        @media print {
-            * {
-                font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
-            }
-            #docs-sidebar, #docs-mobile-toggle, nav, footer, button { display: none !important; }
-            .prose { 
-                max-width: 100% !important; 
-            }
-            .prose svg { max-width: 1.5em !important; height: auto !important; display: inline-block !important; vertical-align: middle !important; }
-            body:not(.print-clean-mode) .docs-print-header { display: block !important; }
-            body.print-clean-mode .docs-print-header { display: none !important; }
-        }
+        .prose table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .prose pre { overflow-x: auto; }
     </style>
-    @endpush
+    <script>
+        function choosePrintMode() {
+            const slug = @json($slug);
+            const baseUrl = @json(route('docs.print', ['slug' => '__SLUG__']));
+            const printUrl = baseUrl.replace('__SLUG__', slug);
+
+            const isDark = document.documentElement.classList.contains('dark');
+            Swal.fire({
+                title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Formato de Impresión</span>',
+                background: isDark ? '#0f172a' : '#ffffff',
+                color: isDark ? '#f3f4f6' : '#1f2937',
+                showConfirmButton: false,
+                showCloseButton: true,
+                customClass: {
+                    popup: 'rounded-[2.5rem] shadow-2xl border border-gray-200 dark:border-gray-800 p-6',
+                },
+                html: `
+                    <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-6 text-center px-4">
+                        ¿Deseas incluir las cabeceras corporativas y la marca de agua de MTX?
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-2">
+                        <button type="button" id="swal-btn-header" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-indigo-100 dark:border-indigo-950 bg-indigo-50/50 dark:bg-indigo-950/30 hover:border-indigo-600 transition-all text-center group">
+                            <div class="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform shadow-sm">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            </div>
+                            <div class="font-black text-[10px] uppercase tracking-widest text-indigo-700 dark:text-indigo-300">Con Cabeceras</div>
+                            <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Estilo oficial MTX</div>
+                        </button>
+                        <button type="button" id="swal-btn-noheader" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-slate-900 hover:border-gray-600 transition-all text-center group">
+                            <div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 group-hover:scale-110 transition-transform shadow-sm">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                            </div>
+                            <div class="font-black text-[10px] uppercase tracking-widest text-gray-700 dark:text-gray-300">Sin Cabeceras</div>
+                            <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Contenido limpio</div>
+                        </button>
+                    </div>
+                `,
+                didOpen: () => {
+                    document.getElementById('swal-btn-header').addEventListener('click', () => {
+                        Swal.close();
+                        window.open(printUrl + '?header=1', '_blank');
+                    });
+                    document.getElementById('swal-btn-noheader').addEventListener('click', () => {
+                        Swal.close();
+                        window.open(printUrl + '?header=0', '_blank');
+                    });
+                }
+            });
+        }
+    </script>
+@endpush
 </x-app-layout>
+
+

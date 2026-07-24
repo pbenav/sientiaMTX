@@ -42,6 +42,14 @@ class ActivityService
      */
     public function create(Team $team, string $type, array $data, array $files = []): Activity
     {
+        // Fallback: Asegurar que los campos del primer capítulo no se pierdan 
+        if (request()->has('metadata.chapter_title') && empty($data['metadata']['chapter_title'])) {
+            $data['metadata']['chapter_title'] = request()->input('metadata.chapter_title');
+        }
+        if (request()->has('metadata.chapter_content') && empty($data['metadata']['chapter_content'])) {
+            $data['metadata']['chapter_content'] = request()->input('metadata.chapter_content');
+        }
+
         return DB::transaction(function () use ($team, $type, $data, $files) {
             $activity = Activity::create([
                 'team_id'             => $team->id,
