@@ -40,7 +40,7 @@
                 @method('PATCH')
                 <div class="flex items-center p-1 bg-gray-100 dark:bg-gray-800 rounded-xl w-full sm:w-auto sm:inline-flex overflow-x-auto no-scrollbar shadow-inner">
                     @php
-                        $docStatuses = ['draft', 'under_review', 'approved', 'completed', 'archived'];
+                        $docStatuses = ['draft', 'review', 'approved', 'rejected', 'archived'];
                     @endphp
                     @foreach($docStatuses as $val)
                         <label class="relative cursor-pointer shrink-0 px-3 sm:px-5 py-2 text-[10px] sm:text-xs font-bold uppercase tracking-wider rounded-lg transition-all text-center flex-1 sm:flex-none {{ $activity->status_value == $val ? 'bg-white dark:bg-gray-700 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-200/50 dark:border-gray-600/50' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-700/50' }}">

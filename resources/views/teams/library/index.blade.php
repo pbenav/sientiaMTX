@@ -59,13 +59,14 @@
                         <div class="flex gap-2">
                             <select name="status" class="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 px-2.5 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all">
                                 <option value="">Todos los estados</option>
-                                <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Borrador</option>
-                                <option value="uploaded" {{ request('status') == 'uploaded' ? 'selected' : '' }}>Subido</option>
-                                <option value="editing" {{ request('status') == 'editing' ? 'selected' : '' }}>En edición</option>
-                                <option value="reviewed" {{ request('status') == 'reviewed' ? 'selected' : '' }}>Revisado</option>
-                                <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Aprobado</option>
-                                <option value="published" {{ request('status') == 'published' ? 'selected' : '' }}>Publicado</option>
-                                <option value="archived" {{ request('status') == 'archived' ? 'selected' : '' }}>Archivado</option>
+                                @php
+                                    $docStatuses = \App\Models\Activities\DocumentActivity::STATUSES;
+                                @endphp
+                                @foreach($docStatuses as $val)
+                                    <option value="{{ $val }}" {{ request('status') == $val ? 'selected' : '' }}>
+                                        {{ __("activities.statuses.{$val}") }}
+                                    </option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="flex gap-2">

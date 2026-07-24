@@ -127,6 +127,7 @@
                                                 if (result.isConfirmed) {
                                                     this.toggle();
                                                 } else {
+                                                    this.fetchStatus();
                                                     triggerMood();
                                                 }
                                             });

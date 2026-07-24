@@ -51,7 +51,7 @@
 
                 <!-- Tipo Filter -->
                 <div class="w-44">
-                    <select name="type" onchange="this.form.submit()"
+                    <select name="type" onchange="if(this.form.status) this.form.status.value=''; this.form.submit()"
                         class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold uppercase tracking-wider py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
                         <option value="">Tipo de Actividad</option>
                         <option value="task" {{ ($filters['type'] ?? '') === 'task' ? 'selected' : '' }}>📋 Tarea</option>
@@ -69,11 +69,22 @@
                     <select name="status" onchange="this.form.submit()"
                         class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold uppercase tracking-wider py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
                         <option value="">Estado</option>
-                        <option value="pending" {{ ($filters['status'] ?? '') === 'pending' ? 'selected' : '' }}>Pendiente</option>
-                        <option value="in_progress" {{ ($filters['status'] ?? '') === 'in_progress' ? 'selected' : '' }}>En Progreso</option>
-                        <option value="completed" {{ ($filters['status'] ?? '') === 'completed' ? 'selected' : '' }}>Completada</option>
-                        <option value="cancelled" {{ ($filters['status'] ?? '') === 'cancelled' ? 'selected' : '' }}>Cancelada</option>
-                        <option value="blocked" {{ ($filters['status'] ?? '') === 'blocked' ? 'selected' : '' }}>Bloqueada</option>
+                        @php
+                            $selectedType = $filters['type'] ?? '';
+                            $statuses = [];
+                            if ($selectedType === 'document') {
+                                $statuses = \App\Models\Activities\DocumentActivity::STATUSES;
+                            } elseif ($selectedType === 'task') {
+                                $statuses = \App\Models\Activities\TaskActivity::STATUSES;
+                            } else {
+                                $statuses = array_unique(array_merge(\App\Models\Activities\TaskActivity::STATUSES, \App\Models\Activities\DocumentActivity::STATUSES));
+                            }
+                        @endphp
+                        @foreach($statuses as $statusKey)
+                            <option value="{{ $statusKey }}" {{ ($filters['status'] ?? '') === $statusKey ? 'selected' : '' }}>
+                                {{ __("activities.statuses.{$statusKey}") }}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
 
