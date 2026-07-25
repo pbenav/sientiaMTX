@@ -47,6 +47,7 @@ class ExpedientePolicy
     {
         return $user->isCoordinator($expediente->team) 
             || $expediente->created_by_id === $user->id 
+            || $expediente->assigned_user_id === $user->id
             || $expediente->team->owner?->id === $user->id;
     }
 }
