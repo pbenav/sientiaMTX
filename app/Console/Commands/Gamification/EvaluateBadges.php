@@ -47,9 +47,7 @@ class EvaluateBadges extends Command
 
         foreach ($users as $user) {
             $team = $user->teams()->first();
-            if ($team) {
-                $badgeService->evaluate($user, $team->id);
-            }
+            $badgeService->evaluate($user, $team ? $team->id : null);
             $bar->advance();
         }
 
