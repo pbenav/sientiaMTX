@@ -283,7 +283,7 @@ class ExpedienteController extends Controller
             'description' => $validated['description'] ?? null,
             'priority' => $validated['priority'],
             'visibility' => $validated['visibility'],
-            'status' => json_encode(['value' => 'pending']),
+            'status' => ['value' => 'pending'],
             'expediente_id' => $expediente->id,
             'created_by_id' => auth()->id(),
             'due_date' => $validated['due_date'] ?? null,
