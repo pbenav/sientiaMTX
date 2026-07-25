@@ -48,6 +48,22 @@ return Application::configure(basePath: dirname(__DIR__))
         // Redirección elegante para rutas legacy /tasks/{id} que ya no existen
         // Las tareas han sido migradas al modelo unificado Activity
         $exceptions->render(function (\Illuminate\Database\Eloquent\ModelNotFoundException $e, \Illuminate\Http\Request $request) {
+            $model = $e->getModel();
+
+            if ($model === \App\Models\Expediente::class) {
+                preg_match('#teams/(\d+)#', $request->path(), $matches);
+                $teamId = $matches[1] ?? null;
+                return redirect($teamId ? route('teams.expedientes.index', $teamId) : route('dashboard'))
+                    ->with('error', __('El expediente al que intentabas acceder ya no existe o ha sido eliminado por otro usuario.'));
+            }
+
+            if ($model === \App\Models\Activity::class) {
+                preg_match('#teams/(\d+)#', $request->path(), $matches);
+                $teamId = $matches[1] ?? null;
+                return redirect($teamId ? route('teams.activities.index', $teamId) : route('dashboard'))
+                    ->with('error', __('La actividad a la que intentabas acceder ya no existe o ha sido eliminada por otro usuario.'));
+            }
+
             if (str_contains($request->path(), '/tasks/')) {
                 // Intentar encontrar el equipo en la URL para redirigir correctamente
                 preg_match('#teams/(\d+)#', $request->path(), $matches);
