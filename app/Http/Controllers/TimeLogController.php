@@ -353,7 +353,7 @@ class TimeLogController extends Controller
             ->take($presenceLimit);
         $team->load(['members.timeLogs' => function($q) {
             $q->whereNull('end_at');
-        }]);
+        }, 'members.badges']);
         $teamMembers = $team->members;
         
         $heatmapData = $team->members->whereNotNull('location_lat')->map(function($u) {

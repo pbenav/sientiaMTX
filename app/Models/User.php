@@ -388,6 +388,14 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
     }
 
     /**
+     * Medallas obtenidas por el usuario.
+     */
+    public function badges(): BelongsToMany
+    {
+        return $this->belongsToMany(Badge::class)->withPivot('awarded_at', 'team_id')->withTimestamps();
+    }
+
+    /**
      * Kudos recibidos por el usuario.
      */
     public function receivedKudos(): HasMany

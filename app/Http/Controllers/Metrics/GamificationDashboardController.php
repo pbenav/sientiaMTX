@@ -163,12 +163,26 @@ class GamificationDashboardController extends Controller
         ];
 
         $engagementData = $engagementTrend;
+        $allBadges = \App\Models\Badge::all();
+        
+        $recentTeamBadges = [];
+        if ($teamId) {
+            $recentTeamBadges = \DB::table('badge_user')
+                ->join('badges', 'badge_user.badge_id', '=', 'badges.id')
+                ->join('users', 'badge_user.user_id', '=', 'users.id')
+                ->select('badges.name as badge_name', 'badges.icon', 'users.name as user_name', 'users.email', 'badge_user.awarded_at')
+                ->where('badge_user.team_id', $teamId)
+                ->orWhereNull('badge_user.team_id') // Fallback si las medallas son globales
+                ->orderByDesc('badge_user.awarded_at')
+                ->limit(8)
+                ->get();
+        }
 
         return view('metrics.gamification.dashboard', compact(
             'user', 'team', 'points', 'teamLeaderboard', 'badges', 'streak',
             'engagement', 'popularBadgesData', 'kudosSent', 'kudosReceived',
             'streakLeaderboard', 'engagementData', 'recentAchievements', 'period',
-            'userPosition', 'userProgress', 'pointsData', 'hasDummyData'
+            'userPosition', 'userProgress', 'pointsData', 'hasDummyData', 'allBadges', 'recentTeamBadges'
         ));
     }
 }

@@ -152,6 +152,9 @@ trait AwardsGamification
         ]);
 
         Log::info("Gamificación: Otorgados {$xp} XP y {$resilience} Resilience a {$user->name} por tarea #{$task->id}.");
+
+        // Evaluar medallas tras esta acción
+        app(\App\Services\Gamification\BadgeService::class)->evaluate($user, $task->team_id);
     }
 
     /**
@@ -179,6 +182,9 @@ trait AwardsGamification
         ]);
 
         Log::info("Gamificación: Otorgados {$xp} XP a {$user->name} por reporte de servicio verificado.");
+        
+        // Evaluar medallas
+        app(\App\Services\Gamification\BadgeService::class)->evaluate($user, $teamId);
     }
 
     /**

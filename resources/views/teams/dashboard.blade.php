@@ -37,7 +37,25 @@
 
     @php
         $quadrantConfig = $team->getQuadrantConfig();
+        $latestBadge = auth()->user()->badges()->latest('badge_user.awarded_at')->first();
     @endphp
+
+    @if($latestBadge)
+        <div class="w-full mx-auto px-4 sm:px-6 lg:px-8 mb-4">
+            <div class="flex items-center gap-3 bg-gradient-to-r from-emerald-50 to-emerald-100/50 dark:from-emerald-900/20 dark:to-emerald-800/10 border border-emerald-100 dark:border-emerald-800/30 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+                <div class="absolute right-0 top-0 text-emerald-500/10 text-6xl -mt-2 -mr-2">
+                    <i class="fas {{ $latestBadge->icon }}"></i>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 z-10 shadow-sm border border-emerald-200 dark:border-emerald-700/50">
+                    <i class="fas {{ $latestBadge->icon }} text-xl"></i>
+                </div>
+                <div class="flex-1 z-10">
+                    <p class="text-xs font-black text-emerald-600/70 dark:text-emerald-400/70 uppercase tracking-widest mb-0.5">{{ __('Última Medalla Obtenida') }}</p>
+                    <p class="text-sm font-bold text-gray-900 dark:text-white">{{ $latestBadge->name }}</p>
+                </div>
+            </div>
+        </div>
+    @endif
 
     <!-- Matrix Labels & Grid -->
     <div class="w-full mx-auto px-4 sm:px-6 lg:px-8">

@@ -323,6 +323,40 @@
                                             {{ $member->working_area_name }}
                                         </div>
                                     @endif
+
+                                    @php
+                                        // Obtener las últimas 4 medallas del usuario (ya cargadas vía eager loading)
+                                        $memberBadges = clone $member->badges;
+                                        $latestBadges = $memberBadges->sortByDesc('pivot.awarded_at')->take(4);
+                                    @endphp
+                                    @if($latestBadges->count() > 0)
+                                        <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800/50 relative z-10">
+                                            <p class="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                                                </svg>
+                                                Últimas Medallas
+                                            </p>
+                                            <div class="flex flex-wrap gap-2">
+                                                @foreach($latestBadges as $badge)
+                                                    <div class="flex items-center gap-1.5 px-2 py-1 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-700/50 group/badge relative cursor-help" title="{{ $badge->name }} - {{ $badge->description }}">
+                                                        <span class="text-xs">{!! $badge->icon !!}</span>
+                                                        <span class="text-[9px] font-black text-gray-700 dark:text-gray-300 truncate max-w-[60px]">{{ $badge->name }}</span>
+                                                        
+                                                        <!-- Tooltip personalizado con z-index altísimo para que no se oculte -->
+                                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-[10px] rounded-xl opacity-0 group-hover/badge:opacity-100 transition-opacity pointer-events-none z-[11000] shadow-xl text-center font-medium border border-gray-700 dark:border-gray-300">
+                                                            <div class="font-black mb-1 uppercase tracking-wider text-emerald-400 dark:text-emerald-600 flex items-center justify-center gap-1">
+                                                                <span>{!! $badge->icon !!}</span>
+                                                                {{ $badge->name }}
+                                                            </div>
+                                                            {{ $badge->description }}
+                                                            <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-gray-900 dark:border-t-gray-100"></div>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>
@@ -335,10 +369,12 @@
                 </div>
             </div>
 
-            <div x-data="{ activeSkillModal: null }" class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-100 dark:border-gray-800 flex flex-col mb-6">
-                <div class="p-4 border-b border-gray-50 dark:border-gray-800 flex items-center justify-between bg-violet-50/10 dark:bg-violet-950/10">
-                    <h4 class="font-black text-gray-900 dark:text-gray-100 flex items-center gap-2 uppercase tracking-widest text-xs">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="grid grid-cols-1 xl:grid-cols-4 gap-6 mb-6">
+                <div class="xl:col-span-3 flex flex-col">
+                    <div x-data="{ activeSkillModal: null }" class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-100 dark:border-gray-800 flex flex-col h-full">
+                        <div class="p-4 border-b border-gray-50 dark:border-gray-800 flex items-center justify-between bg-violet-50/10 dark:bg-violet-950/10">
+                            <h4 class="font-black text-gray-900 dark:text-gray-100 flex items-center gap-2 uppercase tracking-widest text-xs">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                         </svg>
                         Capacidad del Equipo (Especialización Colectiva)
@@ -579,6 +615,54 @@
                         @endforeach
                     </div>
                 </div>
+            </div>
+            </div>
+            
+            <!-- Mis Medallas (Compact Widget) -->
+            <div class="xl:col-span-1 flex flex-col">
+                <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-100 dark:border-gray-800 flex flex-col h-full relative group">
+                    <div class="p-4 border-b border-gray-50 dark:border-gray-800 flex items-center justify-between bg-emerald-50/10 dark:bg-emerald-950/10">
+                        <h4 class="font-black text-gray-900 dark:text-gray-100 flex items-center gap-2 uppercase tracking-widest text-[10px]">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                            </svg>
+                            Mis Medallas
+                        </h4>
+                        <a href="{{ route('metrics.gamification.index') }}" class="text-[9px] font-bold text-emerald-500 uppercase hover:underline">Ver todas</a>
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col overflow-y-auto custom-scrollbar max-h-[400px]">
+                        @php
+                            $myBadges = auth()->user()->badges()->orderByPivot('awarded_at', 'desc')->get();
+                        @endphp
+                        @if($myBadges->isEmpty())
+                            <div class="flex flex-col items-center justify-center h-full text-center p-4">
+                                <div class="w-12 h-12 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                </div>
+                                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Aún no tienes medallas</p>
+                                <p class="text-[9px] text-gray-500 mt-1">Completa retos para desbloquearlas</p>
+                            </div>
+                        @else
+                            <div class="grid grid-cols-2 gap-3">
+                                @foreach($myBadges as $badge)
+                                    <div class="flex flex-col items-center justify-center p-3 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-900/20 dark:to-emerald-800/10 border border-emerald-100 dark:border-emerald-800/30 relative group/b cursor-help shadow-sm hover:scale-105 transition-transform">
+                                        <span class="text-2xl mb-1">{!! $badge->icon !!}</span>
+                                        <span class="text-[8px] font-black text-gray-900 dark:text-white uppercase tracking-tighter text-center leading-tight line-clamp-2 w-full">{{ $badge->name }}</span>
+                                        
+                                        <!-- Tooltip -->
+                                        <div class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-40 p-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-[10px] rounded-xl opacity-0 group-hover/b:opacity-100 transition-opacity pointer-events-none z-[60] shadow-xl text-center font-medium border border-gray-700 dark:border-gray-300">
+                                            <div class="font-black mb-1 uppercase tracking-wider text-emerald-400 dark:text-emerald-600">{{ $badge->name }}</div>
+                                            {{ $badge->description }}
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">

@@ -116,6 +116,9 @@
             </div>
         </div>
     </div>
+    
+    {{-- Medallas (Badges Panel) --}}
+    <x-gamification.badges-panel :user="$user" :allBadges="$allBadges" />
 
     {{-- Row 2: Team Leaderboard --}}
     <div class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm overflow-hidden">
@@ -440,44 +443,85 @@
         </style>
     </div>
 
-    {{-- Row 9: Achievement History Timeline --}}
-    <div class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
-        <div class="flex items-center gap-2 mb-6">
-            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300">{{ __('Your Achievement History') }}</h2>
-            <div x-data="{ tooltip: false }" class="relative flex items-center z-20" @mouseenter="tooltip = true" @mouseleave="tooltip = false">
-    <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" ><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-    <div x-cloak x-show="tooltip" x-transition.opacity.duration.200ms class="absolute bottom-full right-0 mb-2 w-max max-w-xs px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-[11px] font-medium rounded-lg shadow-xl pointer-events-none z-50 whitespace-normal text-left">
-        {{ __('Historial cronológico de todos los logros y puntos que has obtenido.') }}
-        <div class="absolute top-full right-2 w-2 h-2 bg-gray-900 dark:bg-gray-700 transform rotate-45 -mt-1"></div>
+    {{-- Row 9: Achievement History and Recent Team Badges --}}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
+            <div class="flex items-center gap-2 mb-6">
+                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300">{{ __('Your Achievement History') }}</h2>
+                <div x-data="{ tooltip: false }" class="relative flex items-center z-20" @mouseenter="tooltip = true" @mouseleave="tooltip = false">
+        <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" ><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <div x-cloak x-show="tooltip" x-transition.opacity.duration.200ms class="absolute bottom-full right-0 mb-2 w-max max-w-xs px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-[11px] font-medium rounded-lg shadow-xl pointer-events-none z-50 whitespace-normal text-left">
+            {{ __('Historial cronológico de todos los logros y puntos que has obtenido.') }}
+            <div class="absolute top-full right-2 w-2 h-2 bg-gray-900 dark:bg-gray-700 transform rotate-45 -mt-1"></div>
+        </div>
     </div>
-</div>
+            </div>
+
+            <div class="relative">
+                <div class="absolute left-3.5 top-2 bottom-2 w-0.5 bg-gray-200 dark:bg-gray-700"></div>
+                <div class="space-y-4">
+                    @php
+                        $userAchievements = collect($recentAchievements ?? []);
+                    @endphp
+
+                    @forelse($userAchievements->take(10) as $achievement)
+                    <div class="relative flex items-start gap-4 pl-10">
+                        <div class="absolute left-1.5 top-1.5 w-4 h-4 rounded-full bg-violet-500 border-2 border-white dark:border-gray-900 z-10"></div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                                <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">{{ is_array($achievement) ? ($achievement['description'] ?? __('Achievement')) : ($achievement->description ?? __('Achievement')) }}</p>
+                                <span class="text-xs text-gray-400 whitespace-nowrap">{{ \Carbon\Carbon::parse(is_array($achievement) ? $achievement['created_at'] : $achievement->created_at)->format('M d, Y H:i') }}</span>
+                            </div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                {{ __('+') }}{{ is_array($achievement) ? ($achievement['points_earned'] ?? 0) : ($achievement->points_earned ?? 0) }} {{ __('points') }}
+                                — {{ is_array($achievement) ? ($achievement['type'] ?? '') : ($achievement->type ?? '') }}
+                            </p>
+                        </div>
+                    </div>
+                    @empty
+                    <p class="text-sm text-gray-400 text-center py-8">{{ __('No achievements recorded yet.') }}</p>
+                    @endforelse
+                </div>
+            </div>
         </div>
 
-        <div class="relative">
-            <div class="absolute left-3.5 top-2 bottom-2 w-0.5 bg-gray-200 dark:bg-gray-700"></div>
-            <div class="space-y-4">
-                @php
-                    $userAchievements = collect($recentAchievements ?? []);
-                @endphp
+        <div class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
+            <div class="flex items-center gap-2 mb-6">
+                <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300">{{ __('Medallas Recientes (Equipo)') }}</h2>
+                <div x-data="{ tooltip: false }" class="relative flex items-center z-20" @mouseenter="tooltip = true" @mouseleave="tooltip = false">
+        <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" ><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <div x-cloak x-show="tooltip" x-transition.opacity.duration.200ms class="absolute bottom-full right-0 mb-2 w-max max-w-xs px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-[11px] font-medium rounded-lg shadow-xl pointer-events-none z-50 whitespace-normal text-left">
+            {{ __('Últimas medallas desbloqueadas por los miembros del equipo.') }}
+            <div class="absolute top-full right-2 w-2 h-2 bg-gray-900 dark:bg-gray-700 transform rotate-45 -mt-1"></div>
+        </div>
+    </div>
+            </div>
 
-                @forelse($userAchievements->take(10) as $achievement)
-                <div class="relative flex items-start gap-4 pl-10">
-                    <div class="absolute left-1.5 top-1.5 w-4 h-4 rounded-full bg-violet-500 border-2 border-white dark:border-gray-900 z-10"></div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">{{ is_array($achievement) ? ($achievement['description'] ?? __('Achievement')) : ($achievement->description ?? __('Achievement')) }}</p>
-                            <span class="text-xs text-gray-400 whitespace-nowrap">{{ \Carbon\Carbon::parse(is_array($achievement) ? $achievement['created_at'] : $achievement->created_at)->format('M d, Y H:i') }}</span>
+            <div class="relative">
+                <div class="absolute left-3.5 top-2 bottom-2 w-0.5 bg-gray-200 dark:bg-gray-700"></div>
+                <div class="space-y-4">
+                    @forelse($recentTeamBadges ?? [] as $recentBadge)
+                    <div class="relative flex items-start gap-4 pl-10">
+                        <div class="absolute left-1.5 top-1.5 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white dark:border-gray-900 z-10"></div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                                <p class="text-sm font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                                    <i class="fas {{ $recentBadge->icon }} text-emerald-500"></i>
+                                    {{ $recentBadge->badge_name }}
+                                </p>
+                                <span class="text-xs text-gray-400 whitespace-nowrap">{{ \Carbon\Carbon::parse($recentBadge->awarded_at)->diffForHumans() }}</span>
+                            </div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                {{ __('Awarded to') }} <span class="font-bold text-gray-700 dark:text-gray-300">{{ $recentBadge->user_name }}</span>
+                            </p>
                         </div>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            {{ __('+') }}{{ is_array($achievement) ? ($achievement['points_earned'] ?? 0) : ($achievement->points_earned ?? 0) }} {{ __('points') }}
-                            — {{ is_array($achievement) ? ($achievement['type'] ?? '') : ($achievement->type ?? '') }}
-                        </p>
                     </div>
+                    @empty
+                    <p class="text-sm text-gray-400 text-center py-8">{{ __('Nadie ha desbloqueado una medalla todavía.') }}</p>
+                    @endforelse
                 </div>
-                @empty
-                <p class="text-sm text-gray-400 text-center py-8">{{ __('No achievements recorded yet.') }}</p>
-                @endforelse
             </div>
         </div>
     </div>
