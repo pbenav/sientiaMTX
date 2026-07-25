@@ -47,34 +47,58 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions) {
         // Redirección elegante para rutas legacy /tasks/{id} que ya no existen
         // Las tareas han sido migradas al modelo unificado Activity
-        $exceptions->render(function (\Illuminate\Database\Eloquent\ModelNotFoundException $e, \Illuminate\Http\Request $request) {
-            $model = $e->getModel();
-
-            if ($model === \App\Models\Expediente::class) {
-                preg_match('#teams/(\d+)#', $request->path(), $matches);
-                $teamId = $matches[1] ?? null;
-                return redirect($teamId ? route('teams.expedientes.index', $teamId) : route('dashboard'))
-                    ->with('error', __('El expediente al que intentabas acceder ya no existe o ha sido eliminado por otro usuario.'));
+        $exceptions->render(function (\Throwable $e, \Illuminate\Http\Request $request) {
+            $modelException = $e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException ? $e : null;
+            
+            if (!$modelException && $e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+                $previous = $e->getPrevious();
+                if ($previous instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+                    $modelException = $previous;
+                }
             }
 
-            if ($model === \App\Models\Activity::class) {
-                preg_match('#teams/(\d+)#', $request->path(), $matches);
-                $teamId = $matches[1] ?? null;
-                return redirect($teamId ? route('teams.activities.index', $teamId) : route('dashboard'))
-                    ->with('error', __('La actividad a la que intentabas acceder ya no existe o ha sido eliminada por otro usuario.'));
+            if ($modelException) {
+                $model = $modelException->getModel();
+
+                if ($model === \App\Models\Expediente::class) {
+                    preg_match('#teams/(\d+)#', $request->path(), $matches);
+                    $teamId = $matches[1] ?? null;
+                    return redirect($teamId ? route('teams.expedientes.index', $teamId) : route('dashboard'))
+                        ->with('error', __('El expediente al que intentabas acceder ya no existe o ha sido eliminado por otro usuario.'));
+                }
+
+                if ($model === \App\Models\Activity::class) {
+                    preg_match('#teams/(\d+)#', $request->path(), $matches);
+                    $teamId = $matches[1] ?? null;
+                    return redirect($teamId ? route('teams.activities.index', $teamId) : route('dashboard'))
+                        ->with('error', __('La actividad a la que intentabas acceder ya no existe o ha sido eliminada por otro usuario.'));
+                }
             }
 
-            if (str_contains($request->path(), '/tasks/')) {
-                // Intentar encontrar el equipo en la URL para redirigir correctamente
-                preg_match('#teams/(\d+)#', $request->path(), $matches);
-                $teamId = $matches[1] ?? null;
+            // Fallback robusto analizando la URL para errores 404 genéricos
+            if ($e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException || $e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+                if (preg_match('#^teams/(\d+)/expedientes/\d+#', $request->path(), $matches)) {
+                    return redirect(route('teams.expedientes.index', $matches[1]))
+                        ->with('error', __('El expediente al que intentabas acceder ya no existe o ha sido eliminado por otro usuario.'));
+                }
 
-                $redirectUrl = $teamId
-                    ? route('teams.activities.index', $teamId)
-                    : route('dashboard');
+                if (preg_match('#^teams/(\d+)/activities/\d+#', $request->path(), $matches)) {
+                    return redirect(route('teams.activities.index', $matches[1]))
+                        ->with('error', __('La actividad a la que intentabas acceder ya no existe o ha sido eliminada por otro usuario.'));
+                }
 
-                return redirect($redirectUrl)
-                    ->with('warning', __('Esta tarea ha sido migrada o eliminada. Usa el listado de actividades para encontrarla.'));
+                if (str_contains($request->path(), '/tasks/')) {
+                    // Intentar encontrar el equipo en la URL para redirigir correctamente
+                    preg_match('#teams/(\d+)#', $request->path(), $matches);
+                    $teamId = $matches[1] ?? null;
+
+                    $redirectUrl = $teamId
+                        ? route('teams.activities.index', $teamId)
+                        : route('dashboard');
+
+                    return redirect($redirectUrl)
+                        ->with('warning', __('Esta tarea ha sido migrada o eliminada. Usa el listado de actividades para encontrarla.'));
+                }
             }
         });
 
