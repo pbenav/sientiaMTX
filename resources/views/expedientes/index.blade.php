@@ -109,9 +109,21 @@
                                 ];
                                 $currentStatusColor = $statusColors[$expediente->status] ?? 'bg-gray-100 text-gray-600';
                             @endphp
-                            <span class="text-xs font-bold px-2.5 py-1 rounded-lg {{ $currentStatusColor }}">
-                                {{ ucfirst($expediente->status) }}
-                            </span>
+                            <div class="flex items-center gap-2 relative z-10">
+                                <span class="text-xs font-bold px-2.5 py-1 rounded-lg {{ $currentStatusColor }}">
+                                    {{ ucfirst($expediente->status) }}
+                                </span>
+                                @can('delete', $expediente)
+                                    <form id="delete-exp-{{ $expediente->id }}" action="{{ route('teams.expedientes.destroy', [$team, $expediente]) }}" method="POST" class="shrink-0" onclick="event.preventDefault(); event.stopPropagation();">
+                                        @csrf
+                                        @method('DELETE')
+                                        <input type="hidden" name="cascade_delete" id="cascade_delete_{{ $expediente->id }}" value="0">
+                                        <button type="button" onclick="confirmDeleteExpediente({{ $expediente->id }})" class="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Eliminar Expediente">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                        </button>
+                                    </form>
+                                @endcan
+                            </div>
                         </div>
 
                         <!-- Title -->
@@ -150,3 +162,47 @@
 
     </div>
 </x-app-layout>
+
+@push('scripts')
+    <script>
+        window.confirmDeleteExpediente = function(id) {
+            Swal.fire({
+                title: '¿{{ __('Eliminar Expediente') }}?',
+                html: `
+                    <div class="text-left text-sm text-gray-600 dark:text-gray-300 space-y-4">
+                        <p>{{ __('Esta acción moverá el expediente a la papelera.') }}</p>
+                        <div class="p-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-900/30">
+                            <label class="flex items-start gap-3 cursor-pointer group">
+                                <input type="checkbox" id="swal-cascade-delete" class="mt-1 w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-red-600 focus:ring-red-500 bg-white dark:bg-gray-800 transition-colors">
+                                <div class="flex-1">
+                                    <span class="block text-sm font-bold text-red-700 dark:text-red-400">{{ __('Eliminación en cascada (Profilaxis)') }}</span>
+                                    <span class="block text-xs text-red-600/70 dark:text-red-400/70 mt-0.5">{{ __('Eliminará también física y permanentemente TODAS las tareas, notas y archivos adjuntos vinculados. ¡Esta acción física es irreversible y liberará espacio en el servidor!') }}</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: '{{ __('Sí, Eliminar') }}',
+                cancelButtonText: '{{ __('Cancelar') }}',
+                customClass: {
+                    popup: 'rounded-[2rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white p-4',
+                    title: 'text-xl font-black text-gray-900 dark:text-white pt-4',
+                    confirmButton: 'rounded-xl px-6 py-2.5 font-bold text-xs uppercase tracking-widest shadow-lg shadow-red-500/30 transition-all',
+                    cancelButton: 'rounded-xl px-6 py-2.5 font-bold text-xs uppercase tracking-widest transition-all'
+                },
+                preConfirm: () => {
+                    return document.getElementById('swal-cascade-delete').checked;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('cascade_delete_' + id).value = result.value ? '1' : '0';
+                    document.getElementById('delete-exp-' + id).submit();
+                }
+            });
+        }
+    </script>
+@endpush
