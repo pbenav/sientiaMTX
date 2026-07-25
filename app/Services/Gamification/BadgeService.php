@@ -60,11 +60,8 @@ class BadgeService
                 return $count >= $threshold;
             
             case 'shared_tasks':
-                // Participación en tareas con múltiples usuarios
-                $count = \DB::table('activity_user')
-                            ->where('user_id', $user->id)
-                            ->count();
-                return $count >= $threshold;
+                // Temporarily disabled due to missing activity_user table
+                return false;
 
             case 'night_tasks':
             case 'early_tasks':
