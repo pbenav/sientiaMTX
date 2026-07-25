@@ -7,7 +7,7 @@
 @endpush
 
 @section('content')
-<div class="max-w-7xl mx-auto space-y-6 pb-12">
+<div class="space-y-6 pb-12">
 
             <!-- Hero System Status -->
             <div class="relative overflow-hidden rounded-[2rem] bg-gray-900 p-8 shadow-lg border border-gray-800">

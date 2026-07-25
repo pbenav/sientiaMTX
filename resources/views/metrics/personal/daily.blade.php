@@ -5,7 +5,7 @@
 
 @section('content')
 
-<div class="max-w-7xl mx-auto space-y-8 pb-12" x-data="{ moodSelected: null, noteText: '' }">
+<div class="space-y-8 pb-12" x-data="{ moodSelected: null, noteText: '' }">
 
     {{-- Hero Section with Greeting + Quote --}}
     <div class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-violet-600 via-indigo-700 to-purple-800 p-8 text-white shadow-2xl shadow-indigo-500/20 border border-white/10">

@@ -29,6 +29,38 @@ return [
         'recommendations' => 'Recomendaciones',
         'no_recommendations' => 'No hay recomendaciones en este momento.',
         
+        // Individual
+        'individual_title' => 'Bienestar Individual',
+        'individual_breadcrumb' => 'Bienestar Individual',
+        'individual_heading' => 'Bienestar Individual',
+        'individual_description' => 'Análisis detallado de las métricas de bienestar del usuario.',
+        'back_to_dashboard' => '← Volver al Dashboard',
+        'wellness_index' => 'Índice de Bienestar',
+        'trend' => 'Tendencia',
+        'score_label' => 'Puntuación',
+        'overtime_label' => 'Horas extra',
+        'mood_index' => 'Índice de Ánimo',
+        'energy_label' => 'Energía',
+        'risk_factors_details' => 'Detalles de Riesgo y Factores',
+        'no_risk_factors' => 'No se han detectado factores de riesgo significativos.',
+        'risk_factors' => 'Factores de Riesgo',
+
+        // Risk Levels
+        'risk_levels' => [
+            'low' => 'Bajo',
+            'medium' => 'Medio',
+            'high' => 'Alto',
+        ],
+
+        // Risk Factors
+        'risk_factors_list' => [
+            'mood_very_low' => 'Ánimo muy bajo',
+            'mood_low' => 'Ánimo bajo',
+            'energy_low' => 'Energía baja',
+            'overtime_excessive' => 'Horas extra excesivas',
+            'overtime_moderate' => 'Horas extra moderadas',
+        ],
+        
         // Charts
         'average' => 'Promedio',
         'stress' => 'Estrés',
