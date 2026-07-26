@@ -212,10 +212,12 @@ class TeamController extends Controller
             if (!auth()->user()->is_admin) {
                 $validated['settings']['has_whatsapp'] = $team->settings['has_whatsapp'] ?? false;
                 $validated['settings']['has_appointments'] = $team->settings['has_appointments'] ?? false;
+                $validated['settings']['surveys_enabled'] = $team->settings['surveys_enabled'] ?? false;
             } else {
                 $validated['settings']['has_whatsapp'] = filter_var($validated['settings']['has_whatsapp'] ?? false, FILTER_VALIDATE_BOOLEAN);
                 $validated['settings']['has_appointments'] = filter_var($validated['settings']['has_appointments'] ?? false, FILTER_VALIDATE_BOOLEAN);
                 $validated['settings']['microsites_enabled'] = filter_var($validated['settings']['microsites_enabled'] ?? false, FILTER_VALIDATE_BOOLEAN);
+                $validated['settings']['surveys_enabled'] = filter_var($validated['settings']['surveys_enabled'] ?? false, FILTER_VALIDATE_BOOLEAN);
             }
         }
 
@@ -574,7 +576,7 @@ class TeamController extends Controller
         $this->authorize('admin');
 
         $validated = $request->validate([
-            'setting' => 'required|string|in:has_appointments,has_whatsapp,microsites_enabled',
+            'setting' => 'required|string|in:has_appointments,has_whatsapp,microsites_enabled,surveys_enabled',
         ]);
 
         $setting = $validated['setting'];
@@ -584,7 +586,12 @@ class TeamController extends Controller
         $settings[$setting] = !$currentValue;
         $team->update(['settings' => $settings]);
 
-        $label = $setting === 'has_appointments' ? 'Citas Previas' : ($setting === 'microsites_enabled' ? 'Micrositios' : 'WhatsApp');
+        $label = match($setting) {
+            'has_appointments' => 'Citas Previas',
+            'microsites_enabled' => 'Micrositios',
+            'surveys_enabled' => 'Encuestas',
+            default => 'WhatsApp'
+        };
         $statusText = $settings[$setting] ? 'habilitada' : 'deshabilitada';
 
         return back()->with('success', "Funcionalidad de {$label} {$statusText} para el equipo {$team->name}.");
@@ -603,7 +610,7 @@ class TeamController extends Controller
         $this->authorize('admin');
 
         $validated = $request->validate([
-            'setting' => 'required|string|in:has_appointments,has_whatsapp,microsites_enabled',
+            'setting' => 'required|string|in:has_appointments,has_whatsapp,microsites_enabled,surveys_enabled',
             'value' => 'required|boolean',
         ]);
 
@@ -617,7 +624,12 @@ class TeamController extends Controller
             $team->update(['settings' => $settings]);
         }
 
-        $label = $setting === 'has_appointments' ? 'Citas Previas' : ($setting === 'microsites_enabled' ? 'Micrositios' : 'WhatsApp');
+        $label = match($setting) {
+            'has_appointments' => 'Citas Previas',
+            'microsites_enabled' => 'Micrositios',
+            'surveys_enabled' => 'Encuestas',
+            default => 'WhatsApp'
+        };
         $statusText = $value ? 'habilitado' : 'deshabilitado';
 
         return back()->with('success', "Se ha {$statusText} el Portal de {$label} para todos los equipos del sistema.");

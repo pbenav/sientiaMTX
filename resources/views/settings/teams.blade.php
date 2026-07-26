@@ -27,308 +27,407 @@
         </div>
     </x-slot>
 
-    <div class="py-12 px-4">
+    <div class="py-12 px-4" x-data="{ 
+        tab: '{{ request('tab', 'list') }}',
+        saveTab() {
+            sessionStorage.setItem('settingsTeamsTab', this.tab);
+        },
+        init() {
+            const savedTab = sessionStorage.getItem('settingsTeamsTab');
+            if (savedTab) {
+                this.tab = savedTab;
+            }
+        }
+    }">
         <div class="max-w-7xl mx-auto">
             @include('settings.partials.tabs')
 
-            <!-- Bulk Actions -->
-            <div class="mb-8">
-                <div class="flex items-center gap-2 mb-4">
-                    <span class="p-1.5 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-xl">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                        </svg>
-                    </span>
-                    <h2 class="text-xs font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest">Acciones Masivas Globales</h2>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <!-- Citas Previas -->
-                    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-5 shadow-sm flex flex-col justify-between gap-4">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full bg-violet-500"></span>
-                                <span class="text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">Citas Previas</span>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2 mt-auto">
-                            <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
-                                @csrf
-                                <input type="hidden" name="setting" value="has_appointments">
-                                <input type="hidden" name="value" value="1">
-                                <button type="submit" class="w-full px-2 py-2.5 bg-violet-50 hover:bg-violet-100 dark:bg-violet-950/30 border border-violet-150 dark:border-violet-800/80 rounded-xl text-[9px] font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 transition-all shadow-sm">
-                                    Habilitar Todos
-                                </button>
-                            </form>
-                            <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
-                                @csrf
-                                <input type="hidden" name="setting" value="has_appointments">
-                                <input type="hidden" name="value" value="0">
-                                <button type="submit" class="w-full px-2 py-2.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[9px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all shadow-sm">
-                                    Deshabilitar
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- Micrositios -->
-                    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-5 shadow-sm flex flex-col justify-between gap-4">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full bg-pink-500"></span>
-                                <span class="text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">Micrositios</span>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2 mt-auto">
-                            <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
-                                @csrf
-                                <input type="hidden" name="setting" value="microsites_enabled">
-                                <input type="hidden" name="value" value="1">
-                                <button type="submit" class="w-full px-2 py-2.5 bg-pink-50 hover:bg-pink-100 dark:bg-pink-950/30 border border-pink-150 dark:border-pink-800/80 rounded-xl text-[9px] font-black uppercase tracking-wider text-pink-600 dark:text-pink-400 transition-all shadow-sm">
-                                    Habilitar Todos
-                                </button>
-                            </form>
-                            <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
-                                @csrf
-                                <input type="hidden" name="setting" value="microsites_enabled">
-                                <input type="hidden" name="value" value="0">
-                                <button type="submit" class="w-full px-2 py-2.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[9px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all shadow-sm">
-                                    Deshabilitar
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- WhatsApp -->
-                    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-5 shadow-sm flex flex-col justify-between gap-4">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                                <span class="text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">WhatsApp Premium</span>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2 mt-auto">
-                            <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
-                                @csrf
-                                <input type="hidden" name="setting" value="has_whatsapp">
-                                <input type="hidden" name="value" value="1">
-                                <button type="submit" class="w-full px-2 py-2.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/30 border border-emerald-150 dark:border-emerald-800/80 rounded-xl text-[9px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 transition-all shadow-sm">
-                                    Habilitar Todos
-                                </button>
-                            </form>
-                            <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
-                                @csrf
-                                <input type="hidden" name="setting" value="has_whatsapp">
-                                <input type="hidden" name="value" value="0">
-                                <button type="submit" class="w-full px-2 py-2.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[9px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all shadow-sm">
-                                    Deshabilitar
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
+            <!-- Pestañas Internas -->
+            <div class="flex items-center gap-2 mb-8 bg-gray-100/50 dark:bg-gray-800/50 p-1.5 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 w-fit">
+                <button @click="tab = 'list'; saveTab()" 
+                    :class="tab === 'list' ? 'bg-white dark:bg-gray-900 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-800' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
+                    class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
+                    Directorio de Equipos
+                </button>
+                <button @click="tab = 'authorizations'; saveTab()" 
+                    :class="tab === 'authorizations' ? 'bg-white dark:bg-gray-900 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-800' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
+                    class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
+                    Autorizaciones y Módulos
+                </button>
             </div>
 
-            <div class="mb-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-4 shadow-sm">
-                <form action="{{ route('settings.teams') }}" method="GET" class="flex flex-wrap items-center gap-3">
-                    <div class="relative flex-1 min-w-[250px]">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
+            <!-- TAB: DIRECTORIO -->
+            <div x-show="tab === 'list'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
+                <div class="mb-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-4 shadow-sm">
+                    <form action="{{ route('settings.teams') }}" method="GET" class="flex flex-wrap items-center gap-3">
+                        <div class="relative flex-1 min-w-[250px]">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </div>
+                            <input type="text" name="search" value="{{ request('search') }}" 
+                                class="block w-full pl-9 pr-3 py-2 text-sm border border-gray-100 dark:border-gray-800 rounded-xl bg-gray-50/50 dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all"
+                                placeholder="Buscar por nombre o descripción del equipo...">
                         </div>
-                        <input type="text" name="search" value="{{ request('search') }}" 
-                            class="block w-full pl-9 pr-3 py-2 text-sm border border-gray-100 dark:border-gray-800 rounded-xl bg-gray-50/50 dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all"
-                            placeholder="Buscar por nombre o descripción del equipo...">
-                    </div>
-                    
-                    <select name="per_page" onchange="this.form.submit()"
-                        class="text-sm bg-gray-50/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 rounded-xl px-3 pr-12 py-2 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none text-gray-700 dark:text-gray-300 cursor-pointer">
-                        <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10</option>
-                        <option value="25" {{ request('per_page', 25) == 25 || request('per_page') == 25 ? 'selected' : '' }}>25</option>
-                        <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
-                        <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
-                    </select>
+                        
+                        <select name="per_page" onchange="this.form.submit()"
+                            class="text-sm bg-gray-50/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 rounded-xl px-3 pr-12 py-2 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none text-gray-700 dark:text-gray-300 cursor-pointer">
+                            <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10</option>
+                            <option value="25" {{ request('per_page', 25) == 25 || request('per_page') == 25 ? 'selected' : '' }}>25</option>
+                            <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
+                            <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
+                        </select>
 
-                    <div class="flex items-center gap-2">
-                        <button type="submit" class="px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-violet-500/20">
-                            Filtrar
-                        </button>
-                        @if(request()->anyFilled(['search', 'per_page']))
-                            <a href="{{ route('settings.teams') }}" class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-red-500 transition-colors uppercase tracking-widest">
-                                Limpiar
-                            </a>
-                        @endif
-                    </div>
-                </form>
-            </div>
+                        <div class="flex items-center gap-2">
+                            <button type="submit" class="px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-violet-500/20">
+                                Filtrar
+                            </button>
+                            @if(request()->anyFilled(['search', 'per_page']))
+                                <a href="{{ route('settings.teams') }}" class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-red-500 transition-colors uppercase tracking-widest">
+                                    Limpiar
+                                </a>
+                            @endif
+                        </div>
+                    </form>
+                </div>
 
-            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl overflow-hidden shadow-sm">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
-                                @foreach([
-                                    'name' => 'Equipo',
-                                    'created_at' => 'Creado'
-                                ] as $field => $label)
+                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl overflow-hidden shadow-sm">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
+                                    @foreach([
+                                        'name' => 'Equipo',
+                                        'created_at' => 'Creado'
+                                    ] as $field => $label)
+                                        <th class="px-6 py-4">
+                                            <a href="{{ request()->fullUrlWithQuery(['sort' => $field, 'direction' => $sort === $field && $direction === 'asc' ? 'desc' : 'asc']) }}" 
+                                            class="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest leading-none {{ $sort === $field ? 'text-violet-600 dark:text-violet-400' : 'text-gray-500 dark:text-gray-400' }} hover:text-violet-500 transition-colors group">
+                                                {{ $label }}
+                                                <div class="flex flex-col {{ $sort === $field ? 'opacity-100' : 'opacity-0 group-hover:opacity-50' }} transition-opacity">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2 {{ $sort === $field && $direction === 'asc' ? 'text-violet-600' : 'text-gray-300' }}" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
+                                                    </svg>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2 -mt-1 {{ $sort === $field && $direction === 'desc' ? 'text-violet-600' : 'text-gray-300' }}" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                                    </svg>
+                                                </div>
+                                            </a>
+                                        </th>
+                                    @endforeach
+                                    <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Creador</th>
                                     <th class="px-6 py-4">
-                                        <a href="{{ request()->fullUrlWithQuery(['sort' => $field, 'direction' => $sort === $field && $direction === 'asc' ? 'desc' : 'asc']) }}" 
-                                           class="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest leading-none {{ $sort === $field ? 'text-violet-600 dark:text-violet-400' : 'text-gray-500 dark:text-gray-400' }} hover:text-violet-500 transition-colors group">
-                                            {{ $label }}
-                                            <div class="flex flex-col {{ $sort === $field ? 'opacity-100' : 'opacity-0 group-hover:opacity-50' }} transition-opacity">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2 {{ $sort === $field && $direction === 'asc' ? 'text-violet-600' : 'text-gray-300' }}" viewBox="0 0 20 20" fill="currentColor">
+                                        <a href="{{ request()->fullUrlWithQuery(['sort' => 'members_count', 'direction' => $sort === 'members_count' && $direction === 'asc' ? 'desc' : 'asc']) }}" 
+                                        class="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest leading-none {{ $sort === 'members_count' ? 'text-violet-600 dark:text-violet-400' : 'text-gray-500 dark:text-gray-400' }} hover:text-violet-500 transition-colors group">
+                                            Miembros
+                                            <div class="flex flex-col {{ $sort === 'members_count' ? 'opacity-100' : 'opacity-0 group-hover:opacity-50' }} transition-opacity">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2 {{ $sort === 'members_count' && $direction === 'asc' ? 'text-violet-600' : 'text-gray-300' }}" viewBox="0 0 20 20" fill="currentColor">
                                                     <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
                                                 </svg>
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2 -mt-1 {{ $sort === $field && $direction === 'desc' ? 'text-violet-600' : 'text-gray-300' }}" viewBox="0 0 20 20" fill="currentColor">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2 -mt-1 {{ $sort === 'members_count' && $direction === 'desc' ? 'text-violet-600' : 'text-gray-300' }}" viewBox="0 0 20 20" fill="currentColor">
                                                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                                                 </svg>
                                             </div>
                                         </a>
                                     </th>
-                                @endforeach
-                                <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Creador</th>
-                                <th class="px-6 py-4">
-                                    <a href="{{ request()->fullUrlWithQuery(['sort' => 'members_count', 'direction' => $sort === 'members_count' && $direction === 'asc' ? 'desc' : 'asc']) }}" 
-                                       class="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest leading-none {{ $sort === 'members_count' ? 'text-violet-600 dark:text-violet-400' : 'text-gray-500 dark:text-gray-400' }} hover:text-violet-500 transition-colors group">
-                                        Miembros
-                                        <div class="flex flex-col {{ $sort === 'members_count' ? 'opacity-100' : 'opacity-0 group-hover:opacity-50' }} transition-opacity">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2 {{ $sort === 'members_count' && $direction === 'asc' ? 'text-violet-600' : 'text-gray-300' }}" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
-                                            </svg>
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2 -mt-1 {{ $sort === 'members_count' && $direction === 'desc' ? 'text-violet-600' : 'text-gray-300' }}" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                            </svg>
-                                        </div>
-                                    </a>
-                                </th>
-                                <th class="px-6 py-4">
-                                    <a href="{{ request()->fullUrlWithQuery(['sort' => 'tasks_count', 'direction' => $sort === 'tasks_count' && $direction === 'asc' ? 'desc' : 'asc']) }}" 
-                                       class="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest leading-none {{ $sort === 'tasks_count' ? 'text-violet-600 dark:text-violet-400' : 'text-gray-500 dark:text-gray-400' }} hover:text-violet-500 transition-colors group">
-                                        Tareas
-                                        <div class="flex flex-col {{ $sort === 'tasks_count' ? 'opacity-100' : 'opacity-0 group-hover:opacity-50' }} transition-opacity">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2 {{ $sort === 'tasks_count' && $direction === 'asc' ? 'text-violet-600' : 'text-gray-300' }}" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
-                                            </svg>
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2 -mt-1 {{ $sort === 'tasks_count' && $direction === 'desc' ? 'text-violet-600' : 'text-gray-300' }}" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                            </svg>
-                                        </div>
-                                    </a>
-                                </th>
-                                <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">Micrositios</th>
-                                <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">Cita Previa</th>
-                                <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">WhatsApp</th>
-                                <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                            @foreach ($teams as $team)
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-10 h-10 rounded-2xl bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 flex items-center justify-center font-black text-xs uppercase shadow-sm">
-                                                {{ substr($team->name, 0, 2) }}
+                                    <th class="px-6 py-4">
+                                        <a href="{{ request()->fullUrlWithQuery(['sort' => 'tasks_count', 'direction' => $sort === 'tasks_count' && $direction === 'asc' ? 'desc' : 'asc']) }}" 
+                                        class="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest leading-none {{ $sort === 'tasks_count' ? 'text-violet-600 dark:text-violet-400' : 'text-gray-500 dark:text-gray-400' }} hover:text-violet-500 transition-colors group">
+                                            Tareas
+                                            <div class="flex flex-col {{ $sort === 'tasks_count' ? 'opacity-100' : 'opacity-0 group-hover:opacity-50' }} transition-opacity">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2 {{ $sort === 'tasks_count' && $direction === 'asc' ? 'text-violet-600' : 'text-gray-300' }}" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
+                                                </svg>
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2 -mt-1 {{ $sort === 'tasks_count' && $direction === 'desc' ? 'text-violet-600' : 'text-gray-300' }}" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                                </svg>
                                             </div>
-                                            <div>
-                                                <a href="{{ auth()->user()->can('view', $team) ? route('teams.show', $team) : route('teams.edit', $team) }}" class="text-sm font-bold text-gray-900 dark:text-white hover:text-violet-600 transition-colors inline-flex items-center gap-2">
-                                                    <span>{{ $team->name }}</span>
-                                                    @if($team->settings['has_whatsapp'] ?? false)
-                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shadow-sm animate-bounce-subtle">
-                                                            <svg class="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
-                                                                <path d="M19.057 20.464c-1.42 1.42-3.845 2.536-6.107 2.536-5.411 0-9.816-4.404-9.816-9.816 0-1.745.457-3.418 1.32-4.896L3 3l5.523 1.45c1.4-.801 3.012-1.25 4.718-1.25 5.412 0 9.816 4.404 9.816 9.816 0 2.63-1.02 5.101-2.88 6.966l-.12.482zM12.24 4.81c-4.63 0-8.4 3.77-8.4 8.4 0 1.57.435 3.1 1.254 4.44l.117.195-.824 3.013 3.08-.808.19.113c1.3.774 2.784 1.182 4.3 1.182 4.631 0 8.4-3.77 8.4-8.4 0-2.244-.873-4.354-2.458-5.939A8.345 8.345 0 0012.24 4.81zm4.846 7.258c-.3-.149-1.771-.864-2.044-.962-.273-.099-.472-.149-.671.149-.198.297-.768.962-.94 1.16-.173.199-.347.223-.647.074-.3-.149-1.265-.462-2.41-1.474-.89-.787-1.49-1.758-1.664-2.056-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.521.15-.173.199-.297.298-.495.099-.198.05-.371-.025-.52-.075-.149-.672-1.62-.92-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.771-.717 2.018-1.412.247-.694.247-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
-                                                            </svg>
-                                                            <span>WhatsApp Premium</span>
-                                                        </span>
-                                                    @endif
-                                                </a>
-                                                <div class="text-[10px] text-gray-400 uppercase font-black tracking-tight mt-0.5">
-                                                    {{ $team->slug }}
+                                        </a>
+                                    </th>
+                                    <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                                @foreach ($teams as $team)
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 rounded-2xl bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 flex items-center justify-center font-black text-xs uppercase shadow-sm">
+                                                    {{ substr($team->name, 0, 2) }}
+                                                </div>
+                                                <div>
+                                                    <a href="{{ auth()->user()->can('view', $team) ? route('teams.show', $team) : route('teams.edit', $team) }}" class="text-sm font-bold text-gray-900 dark:text-white hover:text-violet-600 transition-colors inline-flex items-center gap-2">
+                                                        <span>{{ $team->name }}</span>
+                                                    </a>
+                                                    <div class="text-[10px] text-gray-400 uppercase font-black tracking-tight mt-0.5">
+                                                        {{ $team->slug }}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                        {{ $team->created_at->format('d/m/Y H:i') }}
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                        {{ $team->creator->name ?? 'Sistema' }}
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                                            {{ $team->members_count }} miembros
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400 border border-violet-200 dark:border-violet-800">
-                                            {{ $team->tasks_count }} tareas
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 text-center">
-                                        <form method="POST" action="{{ route('settings.teams.toggle-setting', $team) }}" class="inline-block">
-                                            @csrf
-                                            @method('PATCH')
-                                            <input type="hidden" name="setting" value="microsites_enabled">
-                                            <label class="relative inline-flex items-center cursor-pointer" title="Habilitar/Deshabilitar Micrositios para {{ $team->name }}">
-                                                <input type="checkbox" onchange="this.form.submit()" class="sr-only peer" {{ ($team->settings['microsites_enabled'] ?? false) ? 'checked' : '' }}>
-                                                <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-pink-500"></div>
-                                            </label>
-                                        </form>
-                                    </td>
-                                    <td class="px-6 py-4 text-center">
-                                        <form method="POST" action="{{ route('settings.teams.toggle-setting', $team) }}" class="inline-block">
-                                            @csrf
-                                            @method('PATCH')
-                                            <input type="hidden" name="setting" value="has_appointments">
-                                            <label class="relative inline-flex items-center cursor-pointer" title="Habilitar/Deshabilitar Citas Previas para {{ $team->name }}">
-                                                <input type="checkbox" onchange="this.form.submit()" class="sr-only peer" {{ ($team->settings['has_appointments'] ?? false) ? 'checked' : '' }}>
-                                                <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-violet-500"></div>
-                                            </label>
-                                        </form>
-                                    </td>
-                                    <td class="px-6 py-4 text-center">
-                                        <form method="POST" action="{{ route('settings.teams.toggle-setting', $team) }}" class="inline-block">
-                                            @csrf
-                                            @method('PATCH')
-                                            <input type="hidden" name="setting" value="has_whatsapp">
-                                            <label class="relative inline-flex items-center cursor-pointer" title="Habilitar/Deshabilitar WhatsApp para {{ $team->name }}">
-                                                <input type="checkbox" onchange="this.form.submit()" class="sr-only peer" {{ ($team->settings['has_whatsapp'] ?? false) ? 'checked' : '' }}>
-                                                <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-500"></div>
-                                            </label>
-                                        </form>
-                                    </td>
-                                    <td class="px-6 py-4 text-right whitespace-nowrap">
-                                        <div class="inline-flex items-center justify-end gap-1">
-                                            <a href="{{ route('teams.edit', $team) }}" class="inline-flex items-center p-2 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-all">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                </svg>
-                                            </a>
-                                            
-                                            <form action="{{ route('teams.destroy', $team) }}" method="POST" class="inline" id="delete-team-{{ $team->id }}">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="button" 
-                                                    onclick="confirmDelete({{ $team->id }}, '{{ $team->name }}')"
-                                                    class="inline-flex items-center p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-all">
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                            {{ $team->created_at->format('d/m/Y H:i') }}
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                            {{ $team->creator->name ?? 'Sistema' }}
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                                                {{ $team->members_count }} miembros
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400 border border-violet-200 dark:border-violet-800">
+                                                {{ $team->tasks_count }} tareas
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                                            <div class="inline-flex items-center justify-end gap-1">
+                                                <a href="{{ route('teams.edit', $team) }}" class="inline-flex items-center p-2 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-all">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                     </svg>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-                @if($teams->hasPages())
-                    <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
-                        {{ $teams->links() }}
+                                                </a>
+                                                
+                                                <form action="{{ route('teams.destroy', $team) }}" method="POST" class="inline" id="delete-team-{{ $team->id }}">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="button" 
+                                                        onclick="confirmDelete({{ $team->id }}, '{{ addslashes($team->name) }}')"
+                                                        class="inline-flex items-center p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-all">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
-                @endif
+                    @if($teams->hasPages())
+                        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+                            {{ $teams->appends(['tab' => 'list'])->links() }}
+                        </div>
+                    @endif
+                </div>
             </div>
+
+            <!-- TAB: AUTORIZACIONES Y MODULOS -->
+            <div x-show="tab === 'authorizations'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
+                <!-- Bulk Actions -->
+                <div class="mb-8">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="p-1.5 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                            </svg>
+                        </span>
+                        <h2 class="text-xs font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest">Acciones Masivas Globales</h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- WhatsApp -->
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-5 shadow-sm flex flex-col justify-between gap-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                    <span class="text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">WhatsApp Premium</span>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 mt-auto">
+                                <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
+                                    @csrf
+                                    <input type="hidden" name="setting" value="has_whatsapp">
+                                    <input type="hidden" name="value" value="1">
+                                    <button type="submit" class="w-full px-2 py-2.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/30 border border-emerald-150 dark:border-emerald-800/80 rounded-xl text-[9px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 transition-all shadow-sm">
+                                        Habilitar Todos
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
+                                    @csrf
+                                    <input type="hidden" name="setting" value="has_whatsapp">
+                                    <input type="hidden" name="value" value="0">
+                                    <button type="submit" class="w-full px-2 py-2.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[9px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all shadow-sm">
+                                        Deshabilitar
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Citas Previas -->
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-5 shadow-sm flex flex-col justify-between gap-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-violet-500"></span>
+                                    <span class="text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">Citas Previas</span>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 mt-auto">
+                                <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
+                                    @csrf
+                                    <input type="hidden" name="setting" value="has_appointments">
+                                    <input type="hidden" name="value" value="1">
+                                    <button type="submit" class="w-full px-2 py-2.5 bg-violet-50 hover:bg-violet-100 dark:bg-violet-950/30 border border-violet-150 dark:border-violet-800/80 rounded-xl text-[9px] font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 transition-all shadow-sm">
+                                        Habilitar Todos
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
+                                    @csrf
+                                    <input type="hidden" name="setting" value="has_appointments">
+                                    <input type="hidden" name="value" value="0">
+                                    <button type="submit" class="w-full px-2 py-2.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[9px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all shadow-sm">
+                                        Deshabilitar
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Micrositios -->
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-5 shadow-sm flex flex-col justify-between gap-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-pink-500"></span>
+                                    <span class="text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">Micrositios</span>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 mt-auto">
+                                <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
+                                    @csrf
+                                    <input type="hidden" name="setting" value="microsites_enabled">
+                                    <input type="hidden" name="value" value="1">
+                                    <button type="submit" class="w-full px-2 py-2.5 bg-pink-50 hover:bg-pink-100 dark:bg-pink-950/30 border border-pink-150 dark:border-pink-800/80 rounded-xl text-[9px] font-black uppercase tracking-wider text-pink-600 dark:text-pink-400 transition-all shadow-sm">
+                                        Habilitar Todos
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
+                                    @csrf
+                                    <input type="hidden" name="setting" value="microsites_enabled">
+                                    <input type="hidden" name="value" value="0">
+                                    <button type="submit" class="w-full px-2 py-2.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[9px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all shadow-sm">
+                                        Deshabilitar
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- Encuestas -->
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-5 shadow-sm flex flex-col justify-between gap-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                                    <span class="text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">Encuestas</span>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 mt-auto">
+                                <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
+                                    @csrf
+                                    <input type="hidden" name="setting" value="surveys_enabled">
+                                    <input type="hidden" name="value" value="1">
+                                    <button type="submit" class="w-full px-2 py-2.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/30 border border-blue-150 dark:border-blue-800/80 rounded-xl text-[9px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 transition-all shadow-sm">
+                                        Habilitar Todos
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
+                                    @csrf
+                                    <input type="hidden" name="setting" value="surveys_enabled">
+                                    <input type="hidden" name="value" value="0">
+                                    <button type="submit" class="w-full px-2 py-2.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[9px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all shadow-sm">
+                                        Deshabilitar
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Toggles individuales por equipo -->
+                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl overflow-hidden shadow-sm mt-8">
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-transparent">
+                        <h3 class="text-sm font-black text-gray-800 dark:text-gray-200">Autorizaciones Individuales</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50/50 dark:bg-gray-800/20 border-b border-gray-200 dark:border-gray-800">
+                                    <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Equipo</th>
+                                    <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">WhatsApp</th>
+                                    <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">Cita Previa</th>
+                                    <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">Micrositios</th>
+                                    <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">Encuestas</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                                @foreach ($teams as $team)
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 flex items-center justify-center font-black text-[10px] uppercase shadow-sm">
+                                                    {{ substr($team->name, 0, 2) }}
+                                                </div>
+                                                <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $team->name }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <form method="POST" action="{{ route('settings.teams.toggle-setting', $team) }}" class="inline-block">
+                                                @csrf
+                                                @method('PATCH')
+                                                <input type="hidden" name="setting" value="has_whatsapp">
+                                                <label class="relative inline-flex items-center cursor-pointer" title="Habilitar/Deshabilitar WhatsApp">
+                                                    <input type="checkbox" onchange="this.form.submit()" class="sr-only peer" {{ ($team->settings['has_whatsapp'] ?? false) ? 'checked' : '' }}>
+                                                    <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-500"></div>
+                                                </label>
+                                            </form>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <form method="POST" action="{{ route('settings.teams.toggle-setting', $team) }}" class="inline-block">
+                                                @csrf
+                                                @method('PATCH')
+                                                <input type="hidden" name="setting" value="has_appointments">
+                                                <label class="relative inline-flex items-center cursor-pointer" title="Habilitar/Deshabilitar Citas Previas">
+                                                    <input type="checkbox" onchange="this.form.submit()" class="sr-only peer" {{ ($team->settings['has_appointments'] ?? false) ? 'checked' : '' }}>
+                                                    <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-violet-500"></div>
+                                                </label>
+                                            </form>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <form method="POST" action="{{ route('settings.teams.toggle-setting', $team) }}" class="inline-block">
+                                                @csrf
+                                                @method('PATCH')
+                                                <input type="hidden" name="setting" value="microsites_enabled">
+                                                <label class="relative inline-flex items-center cursor-pointer" title="Habilitar/Deshabilitar Micrositios">
+                                                    <input type="checkbox" onchange="this.form.submit()" class="sr-only peer" {{ ($team->settings['microsites_enabled'] ?? false) ? 'checked' : '' }}>
+                                                    <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-pink-500"></div>
+                                                </label>
+                                            </form>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <form method="POST" action="{{ route('settings.teams.toggle-setting', $team) }}" class="inline-block">
+                                                @csrf
+                                                @method('PATCH')
+                                                <input type="hidden" name="setting" value="surveys_enabled">
+                                                <label class="relative inline-flex items-center cursor-pointer" title="Habilitar/Deshabilitar Encuestas">
+                                                    <input type="checkbox" onchange="this.form.submit()" class="sr-only peer" {{ ($team->settings['surveys_enabled'] ?? false) ? 'checked' : '' }}>
+                                                    <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-500"></div>
+                                                </label>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    @if($teams->hasPages())
+                        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+                            {{ $teams->appends(['tab' => 'authorizations'])->links() }}
+                        </div>
+                    @endif
+                </div>
+            </div>
+
         </div>
     </div>
 

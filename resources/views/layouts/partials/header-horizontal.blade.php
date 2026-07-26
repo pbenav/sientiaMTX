@@ -540,9 +540,11 @@
                             ['name' => __('teams.eisenhower_matrix'), 'route' => route('teams.eisenhower', $drawerTeamId), 'active' => request()->routeIs('teams.eisenhower')],
                             ['name' => __('navigation.gantt'), 'route' => route('teams.gantt', $drawerTeamId), 'active' => request()->routeIs('teams.gantt')],
                             ['name' => __('navigation.kanban'), 'route' => route('teams.kanban', $drawerTeamId), 'active' => request()->routeIs('teams.kanban')],
-                            ['divider' => true],
-                            ['name' => __('Encuestas del Equipo'), 'route' => route('teams.surveys.index', $drawerTeamId), 'active' => request()->routeIs('teams.surveys.*')],
                         ];
+                        if (auth()->user()->hasSurveysEnabledForTeam($drawerTeamId)) {
+                            $drawerViews[] = ['divider' => true];
+                            $drawerViews[] = ['name' => __('Encuestas del Equipo'), 'route' => route('teams.surveys.index', $drawerTeamId), 'active' => request()->routeIs('teams.surveys.*')];
+                        }
                         if (auth()->user()->hasAppointmentsEnabledForTeam($drawerTeamId)) {
                             $drawerViews[] = [
                                 'name' => 'Citas Previas',

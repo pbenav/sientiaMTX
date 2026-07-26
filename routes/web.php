@@ -183,8 +183,10 @@ Route::middleware('auth')->group(function () {
     Route::patch('/teams/{team}/members/{user}/info', [TeamMemberController::class, 'updateInfo'])->name('teams.updateMemberInfo');
     Route::patch('/teams/{team}/members/{user}/appointments', [TeamMemberController::class, 'updateAppointments'])->name('teams.updateMemberAppointments');
     Route::patch('/teams/{team}/members/{user}/microsites', [TeamMemberController::class, 'updateMicrosites'])->name('teams.updateMemberMicrosites');
+    Route::patch('/teams/{team}/members/{user}/surveys', [TeamMemberController::class, 'updateSurveys'])->name('teams.updateMemberSurveys');
     Route::patch('/teams/{team}/members-appointments-bulk', [TeamMemberController::class, 'updateAllAppointments'])->name('teams.updateAllMembersAppointments');
     Route::patch('/teams/{team}/members-microsites-bulk', [TeamMemberController::class, 'updateAllMicrosites'])->name('teams.updateAllMembersMicrosites');
+    Route::patch('/teams/{team}/members-surveys-bulk', [TeamMemberController::class, 'updateAllSurveys'])->name('teams.updateAllMembersSurveys');
     Route::patch('/teams/{team}/members-revoke-all-bulk', [TeamMemberController::class, 'revokeAllPermissions'])->name('teams.revokeAllMembersPermissions');
     Route::delete('/teams/{team}/members/{user}', [TeamMemberController::class, 'destroy'])->name('teams.removeMember');
     Route::delete('/teams/{team}/invitations/{invitation}', [TeamMemberController::class, 'destroyInvitation'])->name('teams.invitations.destroy');

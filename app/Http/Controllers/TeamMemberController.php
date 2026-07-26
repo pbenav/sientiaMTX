@@ -251,6 +251,20 @@ class TeamMemberController extends Controller
     }
 
     /**
+     * Update member's surveys permissions
+     */
+    public function updateSurveys(Request $request, Team $team, User $user)
+    {
+        $this->authorize('manageMembers', $team);
+
+        $team->members()->updateExistingPivot($user->id, [
+            'allow_surveys' => $request->boolean('allow_surveys')
+        ]);
+
+        return back()->with('success', 'Permisos de Encuestas actualizados para el miembro.');
+    }
+
+    /**
      * Habilitar o deshabilitar cita previa para TODOS los miembros del equipo masivamente
      */
     public function updateAllAppointments(Request $request, Team $team)
@@ -295,7 +309,29 @@ class TeamMemberController extends Controller
     }
 
     /**
-     * Deshabilitar todos los módulos (citas y micrositios) para TODOS los miembros del equipo masivamente
+     * Habilitar o deshabilitar encuestas para TODOS los miembros del equipo masivamente
+     */
+    public function updateAllSurveys(Request $request, Team $team)
+    {
+        $this->authorize('manageMembers', $team);
+
+        $allow = $request->boolean('allow');
+        $memberIds = $team->members()->pluck('users.id')->toArray();
+
+        if (!empty($memberIds)) {
+            foreach ($memberIds as $id) {
+                $team->members()->updateExistingPivot($id, [
+                    'allow_surveys' => $allow
+                ]);
+            }
+        }
+
+        $statusText = $allow ? 'habilitado' : 'deshabilitado';
+        return back()->with('success', "Se ha {$statusText} el acceso a las encuestas para todos los miembros del equipo.");
+    }
+
+    /**
+     * Deshabilitar todos los módulos (citas, micrositios, encuestas) para TODOS los miembros del equipo masivamente
      */
     public function revokeAllPermissions(Request $request, Team $team)
     {
@@ -307,12 +343,13 @@ class TeamMemberController extends Controller
             foreach ($memberIds as $id) {
                 $team->members()->updateExistingPivot($id, [
                     'allow_appointments' => false,
-                    'allow_microsites' => false
+                    'allow_microsites' => false,
+                    'allow_surveys' => false
                 ]);
             }
         }
 
-        return back()->with('success', "Se han revocado todos los accesos (Citas Previas y Micrositios) para todos los miembros del equipo.");
+        return back()->with('success', "Se han revocado todos los accesos (Citas Previas, Micrositios y Encuestas) para todos los miembros del equipo.");
     }
 
     /**

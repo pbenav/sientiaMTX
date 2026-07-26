@@ -97,4 +97,38 @@ trait UserTeamContext
             ->wherePivot('allow_microsites', true)
             ->first();
     }
+
+    /**
+     * Comprobar si el miembro tiene la funcionalidad de Encuestas permitida en al menos un equipo.
+     */
+    public function hasSurveysEnabled(): bool
+    {
+        return $this->teams()
+            ->whereJsonContains('settings->surveys_enabled', true)
+            ->wherePivot('allow_surveys', true)
+            ->exists();
+    }
+
+    /**
+     * Comprobar si el miembro tiene la funcionalidad de Encuestas permitida en un equipo específico.
+     */
+    public function hasSurveysEnabledForTeam(int $teamId): bool
+    {
+        return $this->teams()
+            ->where('teams.id', $teamId)
+            ->whereJsonContains('settings->surveys_enabled', true)
+            ->wherePivot('allow_surveys', true)
+            ->exists();
+    }
+
+    /**
+     * Obtener el primer equipo que tiene encuestas habilitadas para este usuario.
+     */
+    public function firstTeamWithSurveys(): ?Team
+    {
+        return $this->teams()
+            ->whereJsonContains('settings->surveys_enabled', true)
+            ->wherePivot('allow_surveys', true)
+            ->first();
+    }
 }

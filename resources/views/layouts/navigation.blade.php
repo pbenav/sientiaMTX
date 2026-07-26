@@ -185,10 +185,12 @@
                                         <x-dropdown-link :href="route('teams.activities.index', $currentTeamId)" :active="request()->routeIs('teams.activities.*') || request()->routeIs('teams.tasks.*')">
                                             Actividades
                                         </x-dropdown-link>
-                                        <div class="border-t border-gray-100 dark:border-gray-800"></div>
-                                        <x-dropdown-link :href="route('teams.surveys.index', $currentTeamId)">
-                                            Encuestas del Equipo
-                                        </x-dropdown-link>
+                                        @if (auth()->user()->hasSurveysEnabledForTeam($currentTeamId))
+                                            <div class="border-t border-gray-100 dark:border-gray-800"></div>
+                                            <x-dropdown-link :href="route('teams.surveys.index', $currentTeamId)">
+                                                Encuestas del Equipo
+                                            </x-dropdown-link>
+                                        @endif
                                         @if(auth()->user()->hasAppointmentsEnabledForTeam($currentTeamId))
                                             <x-dropdown-link :href="route('appointments.index', $currentTeamId)">
                                                 Citas Previas
@@ -451,10 +453,12 @@
                         <x-responsive-nav-link :href="route('teams.kanban', $currentTeamId)" :active="request()->routeIs('teams.kanban')" class="text-sm">
                             {{ __('navigation.kanban') ?? 'Tablero Kanban' }}
                         </x-responsive-nav-link>
-                        <div class="border-t border-violet-200 dark:border-violet-800/50 my-1 mx-4"></div>
-                        <x-responsive-nav-link :href="route('teams.surveys.index', $currentTeamId)" :active="request()->routeIs('teams.surveys.*')" class="text-sm">
-                            Encuestas del Equipo
-                        </x-responsive-nav-link>
+                        @if (auth()->user()->hasSurveysEnabledForTeam($currentTeamId))
+                            <div class="border-t border-violet-200 dark:border-violet-800/50 my-1 mx-4"></div>
+                            <x-responsive-nav-link :href="route('teams.surveys.index', $currentTeamId)" :active="request()->routeIs('teams.surveys.*')" class="text-sm">
+                                Encuestas del Equipo
+                            </x-responsive-nav-link>
+                        @endif
                         @if(auth()->user()->hasAppointmentsEnabledForTeam($currentTeamId))
                             <x-responsive-nav-link :href="route('appointments.index', $currentTeamId)" :active="request()->routeIs('appointments.*')" class="text-sm">
                                 Citas Previas

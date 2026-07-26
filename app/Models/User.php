@@ -192,7 +192,7 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
     {
         return $this->belongsToMany(Team::class, 'team_user')
             ->using(TeamUser::class)
-            ->withPivot('role_id', 'sort_order', 'google_id', 'google_email', 'google_token', 'google_refresh_token', 'allow_appointments', 'allow_microsites')
+            ->withPivot('role_id', 'sort_order', 'google_id', 'google_email', 'google_token', 'google_refresh_token', 'allow_appointments', 'allow_microsites', 'allow_surveys')
             ->withTimestamps();
     }
 

@@ -647,7 +647,7 @@
                         @else
                             <div class="grid grid-cols-2 gap-3">
                                 @foreach($myBadges as $badge)
-                                    <div class="flex flex-col items-center justify-center p-3 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-900/20 dark:to-emerald-800/10 border border-emerald-100 dark:border-emerald-800/30 relative group/b cursor-help shadow-sm hover:scale-105 transition-transform">
+                                    <div class="flex flex-col items-center justify-center p-3 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-900/20 dark:to-emerald-800/10 border border-emerald-100 dark:border-emerald-800/30 relative group/b cursor-help shadow-sm hover:scale-105 hover:z-[70] transition-transform">
                                         <span class="text-2xl mb-1">{!! $badge->icon !!}</span>
                                         <span class="text-[8px] font-black text-gray-900 dark:text-white uppercase tracking-tighter text-center leading-tight line-clamp-2 w-full">{{ $badge->name }}</span>
                                         

@@ -17,7 +17,7 @@
             @php
                 $unlocked = in_array($badge->id, $userBadgeIds);
             @endphp
-            <div class="relative group flex flex-col items-center justify-center p-4 rounded-2xl transition-all duration-300 {{ $unlocked ? 'bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-900/20 dark:to-emerald-800/10 shadow-sm border border-emerald-100 dark:border-emerald-800/30 transform hover:-translate-y-1' : 'bg-gray-50/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 grayscale opacity-70 hover:opacity-100 hover:grayscale-0' }}">
+            <div class="relative group flex flex-col items-center justify-center p-4 rounded-2xl transition-all duration-300 {{ $unlocked ? 'bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-900/20 dark:to-emerald-800/10 shadow-sm border border-emerald-100 dark:border-emerald-800/30 transform hover:-translate-y-1' : 'bg-gray-50/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 grayscale opacity-70 hover:opacity-100 hover:grayscale-0' }} hover:z-50">
                 
                 @if($unlocked)
                     <div class="absolute top-2 right-2 text-emerald-500 text-xs">
@@ -34,7 +34,7 @@
                 </h4>
                 
                 <!-- Tooltip on hover -->
-                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10 text-center pointer-events-none">
+                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 text-center pointer-events-none">
                     <p class="font-bold mb-1">{{ $badge->name }}</p>
                     <p class="text-gray-300">{{ $badge->description }}</p>
                     @if(!$unlocked)
