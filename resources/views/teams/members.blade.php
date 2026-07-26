@@ -65,6 +65,16 @@
                     
                     @can('manageMembers', $team)
                         <div class="flex items-center gap-2">
+                            <!-- Encuestas Bulk Actions -->
+                            @if($team->settings['surveys_enabled'] ?? false)
+                            <form method="POST" action="{{ route('teams.updateAllMembersSurveys', $team) }}">
+                                @csrf @method('PATCH')
+                                <input type="hidden" name="allow" value="1">
+                                <button type="submit" class="px-3 py-1.5 bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-950/30 dark:hover:bg-cyan-900/40 border border-cyan-150 dark:border-cyan-800/80 rounded-xl text-[10px] font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400 transition-all select-none" title="Habilitar Encuestas a todos">
+                                    + Encuestas
+                                </button>
+                            </form>
+                            @endif
                             <!-- Citas Bulk Actions -->
                             @if($team->settings['has_appointments'] ?? false)
                             <form method="POST" action="{{ route('teams.updateAllMembersAppointments', $team) }}">
@@ -82,16 +92,6 @@
                                 <input type="hidden" name="allow" value="1">
                                 <button type="submit" class="px-3 py-1.5 bg-pink-50 hover:bg-pink-100 dark:bg-pink-950/30 dark:hover:bg-pink-900/40 border border-pink-150 dark:border-pink-800/80 rounded-xl text-[10px] font-black uppercase tracking-wider text-pink-600 dark:text-pink-400 transition-all select-none" title="Habilitar Micrositios a todos">
                                     + Micrositios
-                                </button>
-                            </form>
-                            @endif
-                            <!-- Encuestas Bulk Actions -->
-                            @if($team->settings['surveys_enabled'] ?? false)
-                            <form method="POST" action="{{ route('teams.updateAllMembersSurveys', $team) }}">
-                                @csrf @method('PATCH')
-                                <input type="hidden" name="allow" value="1">
-                                <button type="submit" class="px-3 py-1.5 bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-950/30 dark:hover:bg-cyan-900/40 border border-cyan-150 dark:border-cyan-800/80 rounded-xl text-[10px] font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400 transition-all select-none" title="Habilitar Encuestas a todos">
-                                    + Encuestas
                                 </button>
                             </form>
                             @endif
@@ -326,6 +326,18 @@
                         <div class="flex items-center gap-4 justify-end min-w-[200px]">
                             @can('manageMembers', $team)
                                 <div class="flex items-center gap-2 shrink-0">
+                                    @if($team->settings['surveys_enabled'] ?? false)
+                                    <form method="POST" action="{{ route('teams.updateMemberSurveys', [$team, $member]) }}" class="shrink-0">
+                                        @csrf @method('PATCH')
+                                        <label class="relative inline-flex items-center cursor-pointer" title="Permitir gestionar Encuestas">
+                                            <input type="hidden" name="allow_surveys" value="0">
+                                            <input type="checkbox" name="allow_surveys" value="1" onchange="this.form.submit()" class="sr-only peer" {{ ($member->pivot->allow_surveys ?? false) ? 'checked' : '' }}>
+                                            <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-cyan-500"></div>
+                                            <span class="ms-1.5 text-[9px] font-black uppercase text-gray-400 dark:text-gray-500 tracking-tight select-none">Encuestas</span>
+                                        </label>
+                                    </form>
+                                    @endif
+
                                     @if($team->settings['has_appointments'] ?? false)
                                     <form method="POST" action="{{ route('teams.updateMemberAppointments', [$team, $member]) }}" class="shrink-0">
                                         @csrf @method('PATCH')
@@ -349,21 +361,14 @@
                                         </label>
                                     </form>
                                     @endif
-
-                                    @if($team->settings['surveys_enabled'] ?? false)
-                                    <form method="POST" action="{{ route('teams.updateMemberSurveys', [$team, $member]) }}" class="shrink-0">
-                                        @csrf @method('PATCH')
-                                        <label class="relative inline-flex items-center cursor-pointer" title="Permitir gestionar Encuestas">
-                                            <input type="hidden" name="allow_surveys" value="0">
-                                            <input type="checkbox" name="allow_surveys" value="1" onchange="this.form.submit()" class="sr-only peer" {{ ($member->pivot->allow_surveys ?? false) ? 'checked' : '' }}>
-                                            <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-cyan-500"></div>
-                                            <span class="ms-1.5 text-[9px] font-black uppercase text-gray-400 dark:text-gray-500 tracking-tight select-none">Encuestas</span>
-                                        </label>
-                                    </form>
-                                    @endif
                                 </div>
                             @else
                                 <div class="flex items-center gap-1 shrink-0">
+                                    @if(($team->settings['surveys_enabled'] ?? false) && ($member->pivot->allow_surveys ?? false))
+                                        <span class="px-2.5 py-1 bg-cyan-50 dark:bg-cyan-950/40 text-cyan-600 dark:text-cyan-400 text-[9px] font-black uppercase tracking-wider rounded-lg border border-cyan-150 dark:border-cyan-800/80 shadow-sm shrink-0 select-none">
+                                            Encuestas
+                                        </span>
+                                    @endif
                                     @if(($team->settings['has_appointments'] ?? false) && ($member->pivot->allow_appointments ?? false))
                                         <span class="px-2.5 py-1 bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400 text-[9px] font-black uppercase tracking-wider rounded-lg border border-violet-150 dark:border-violet-800/80 shadow-sm shrink-0 select-none">
                                             Cita Previa
@@ -372,11 +377,6 @@
                                     @if(($team->settings['microsites_enabled'] ?? false) && ($member->pivot->allow_microsites ?? false))
                                         <span class="px-2.5 py-1 bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 text-[9px] font-black uppercase tracking-wider rounded-lg border border-pink-150 dark:border-pink-800/80 shadow-sm shrink-0 select-none">
                                             Micrositios
-                                        </span>
-                                    @endif
-                                    @if(($team->settings['surveys_enabled'] ?? false) && ($member->pivot->allow_surveys ?? false))
-                                        <span class="px-2.5 py-1 bg-cyan-50 dark:bg-cyan-950/40 text-cyan-600 dark:text-cyan-400 text-[9px] font-black uppercase tracking-wider rounded-lg border border-cyan-150 dark:border-cyan-800/80 shadow-sm shrink-0 select-none">
-                                            Encuestas
                                         </span>
                                     @endif
                                 </div>
