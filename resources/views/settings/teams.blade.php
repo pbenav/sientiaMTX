@@ -258,6 +258,34 @@
                             </div>
                         </div>
 
+                        <!-- Encuestas -->
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-5 shadow-sm flex flex-col justify-between gap-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                                    <span class="text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">Encuestas</span>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 mt-auto">
+                                <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
+                                    @csrf
+                                    <input type="hidden" name="setting" value="surveys_enabled">
+                                    <input type="hidden" name="value" value="1">
+                                    <button type="submit" class="w-full px-2 py-2.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/30 border border-blue-150 dark:border-blue-800/80 rounded-xl text-[9px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 transition-all shadow-sm">
+                                        Habilitar Todos
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
+                                    @csrf
+                                    <input type="hidden" name="setting" value="surveys_enabled">
+                                    <input type="hidden" name="value" value="0">
+                                    <button type="submit" class="w-full px-2 py-2.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[9px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all shadow-sm">
+                                        Deshabilitar
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
                         <!-- Citas Previas -->
                         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-5 shadow-sm flex flex-col justify-between gap-4">
                             <div class="flex items-center justify-between">
@@ -313,34 +341,6 @@
                                 </form>
                             </div>
                         </div>
-                        
-                        <!-- Encuestas -->
-                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-5 shadow-sm flex flex-col justify-between gap-4">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-                                    <span class="text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">Encuestas</span>
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-2 gap-2 mt-auto">
-                                <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
-                                    @csrf
-                                    <input type="hidden" name="setting" value="surveys_enabled">
-                                    <input type="hidden" name="value" value="1">
-                                    <button type="submit" class="w-full px-2 py-2.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/30 border border-blue-150 dark:border-blue-800/80 rounded-xl text-[9px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 transition-all shadow-sm">
-                                        Habilitar Todos
-                                    </button>
-                                </form>
-                                <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
-                                    @csrf
-                                    <input type="hidden" name="setting" value="surveys_enabled">
-                                    <input type="hidden" name="value" value="0">
-                                    <button type="submit" class="w-full px-2 py-2.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[9px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all shadow-sm">
-                                        Deshabilitar
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -355,9 +355,9 @@
                                 <tr class="bg-gray-50/50 dark:bg-gray-800/20 border-b border-gray-200 dark:border-gray-800">
                                     <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Equipo</th>
                                     <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">WhatsApp</th>
+                                    <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">Encuestas</th>
                                     <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">Cita Previa</th>
                                     <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">Micrositios</th>
-                                    <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">Encuestas</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -386,6 +386,17 @@
                                             <form method="POST" action="{{ route('settings.teams.toggle-setting', $team) }}" class="inline-block">
                                                 @csrf
                                                 @method('PATCH')
+                                                <input type="hidden" name="setting" value="surveys_enabled">
+                                                <label class="relative inline-flex items-center cursor-pointer" title="Habilitar/Deshabilitar Encuestas">
+                                                    <input type="checkbox" onchange="this.form.submit()" class="sr-only peer" {{ ($team->settings['surveys_enabled'] ?? false) ? 'checked' : '' }}>
+                                                    <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-500"></div>
+                                                </label>
+                                            </form>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <form method="POST" action="{{ route('settings.teams.toggle-setting', $team) }}" class="inline-block">
+                                                @csrf
+                                                @method('PATCH')
                                                 <input type="hidden" name="setting" value="has_appointments">
                                                 <label class="relative inline-flex items-center cursor-pointer" title="Habilitar/Deshabilitar Citas Previas">
                                                     <input type="checkbox" onchange="this.form.submit()" class="sr-only peer" {{ ($team->settings['has_appointments'] ?? false) ? 'checked' : '' }}>
@@ -401,17 +412,6 @@
                                                 <label class="relative inline-flex items-center cursor-pointer" title="Habilitar/Deshabilitar Micrositios">
                                                     <input type="checkbox" onchange="this.form.submit()" class="sr-only peer" {{ ($team->settings['microsites_enabled'] ?? false) ? 'checked' : '' }}>
                                                     <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-pink-500"></div>
-                                                </label>
-                                            </form>
-                                        </td>
-                                        <td class="px-6 py-4 text-center">
-                                            <form method="POST" action="{{ route('settings.teams.toggle-setting', $team) }}" class="inline-block">
-                                                @csrf
-                                                @method('PATCH')
-                                                <input type="hidden" name="setting" value="surveys_enabled">
-                                                <label class="relative inline-flex items-center cursor-pointer" title="Habilitar/Deshabilitar Encuestas">
-                                                    <input type="checkbox" onchange="this.form.submit()" class="sr-only peer" {{ ($team->settings['surveys_enabled'] ?? false) ? 'checked' : '' }}>
-                                                    <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-500"></div>
                                                 </label>
                                             </form>
                                         </td>
