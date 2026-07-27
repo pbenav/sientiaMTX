@@ -73,10 +73,12 @@
                                 </form>
                             @endif
 
+                            @if(!$appointment->appointment_datetime->isPast())
                             <button type="button" id="btn-add-capacity-backend-header" class="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-all active:scale-95 shadow-sm flex items-center gap-1">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                                 <span>Autorizar +1 plaza</span>
                             </button>
+                            @endif
                             
                             <button @click="editing = !editing" class="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest bg-cyan-50 dark:bg-cyan-950/20 text-cyan-600 dark:text-cyan-400 border border-cyan-150 dark:border-cyan-900/50 rounded-lg transition-all active:scale-95">
                                 <span x-show="!editing">✏️ Editar Cita</span>
@@ -400,6 +402,7 @@
                         </div>
                         
                         {{-- Ampliar Aforo --}}
+                        @if(!$appointment->appointment_datetime->isPast())
                         <div class="pt-4 border-t border-gray-100 dark:border-gray-800">
                             <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Forzar Aforo Público</label>
                             <button type="button" id="btn-add-capacity-backend" class="w-full py-2.5 text-[10px] sm:text-xs font-black uppercase tracking-widest bg-amber-500 hover:bg-amber-600 text-white rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-2">
@@ -408,6 +411,7 @@
                             </button>
                             <p class="text-[9px] text-gray-400 mt-1.5 leading-tight">Abre un hueco extra en el tramo de las <strong>{{ substr($appointment->appointment_time, 0, 5) }}</strong> para que otro ciudadano pueda reservar ahora mismo.</p>
                         </div>
+                        @endif
 
                         {{-- Google Calendar --}}
                         @php
