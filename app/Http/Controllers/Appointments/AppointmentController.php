@@ -437,6 +437,58 @@ class AppointmentController extends Controller
     }
 
     /**
+     * Inicia la atención de la cita creando una actividad asociada si no existe y arrancando el contador.
+     */
+    public function startAttention(Team $team, Appointment $appointment)
+    {
+        $this->authorize('update', $appointment);
+        if ($appointment->service->team_id !== $team->id) {
+            abort(403);
+        }
+
+        if (!$appointment->activity) {
+            $activity = \App\Models\Activity::create([
+                'team_id'      => $team->id,
+                'title'        => 'Atención Cita: ' . $appointment->visitor->full_name,
+                'description'  => 'Actividad autogenerada para la atención de la cita ' . $appointment->localizador,
+                'status'       => 'in_progress',
+                'priority'     => 'medium',
+                'created_by'   => auth()->id(),
+            ]);
+
+            $activity->assignments()->create([
+                'user_id' => auth()->id(),
+            ]);
+
+            $appointment->update([
+                'activity_id' => $activity->id,
+            ]);
+        }
+
+        // Start time tracker if not already started
+        $taskObj = $appointment->fresh()->activity;
+        
+        $activeLog = \App\Models\TimeLog::where('user_id', auth()->id())
+            ->whereNull('end_at')
+            ->first();
+
+        if ($activeLog && $activeLog->task_id !== $taskObj->id) {
+            $activeLog->update(['end_at' => now()]);
+        }
+
+        if (!$activeLog || $activeLog->task_id !== $taskObj->id) {
+            \App\Models\TimeLog::create([
+                'user_id'  => auth()->id(),
+                'task_id'  => $taskObj->id,
+                'type'     => 'work',
+                'start_at' => now(),
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Tiempo de atención iniciado.');
+    }
+
+    /**
      * Actualiza una cita (mover fecha/hora, notas, expediente).
      */
     public function update(Team $team, Request $request, Appointment $appointment)

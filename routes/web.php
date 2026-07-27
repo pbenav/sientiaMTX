@@ -675,6 +675,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureAppointmentsAreEnabled::cl
     Route::patch('/configuracion', [\App\Http\Controllers\Appointments\AppointmentSettingsController::class, 'update'])->name('settings.update');
 
     // Detalle y acciones de Citas (Wildcard al final para evitar capturar rutas estáticas)
+    Route::post('/{appointment}/start-attention', [\App\Http\Controllers\Appointments\AppointmentController::class, 'startAttention'])->name('start-attention');
     Route::get('/{appointment}', [\App\Http\Controllers\Appointments\AppointmentController::class, 'show'])->name('show');
     Route::patch('/{appointment}', [\App\Http\Controllers\Appointments\AppointmentController::class, 'update'])->name('update');
     Route::delete('/{appointment}', [\App\Http\Controllers\Appointments\AppointmentController::class, 'destroy'])->name('destroy');
