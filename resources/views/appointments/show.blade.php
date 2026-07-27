@@ -66,6 +66,11 @@
                                 </div>
                             @endif
 
+                            <button type="button" id="btn-add-capacity-backend-header" class="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-all active:scale-95 shadow-sm flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                                <span>Autorizar +1 plaza</span>
+                            </button>
+                            
                             <button @click="editing = !editing" class="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest bg-cyan-50 dark:bg-cyan-950/20 text-cyan-600 dark:text-cyan-400 border border-cyan-150 dark:border-cyan-900/50 rounded-lg transition-all active:scale-95">
                                 <span x-show="!editing">✏️ Editar Cita</span>
                                 <span x-show="editing" x-cloak>✕ Cancelar</span>
@@ -550,39 +555,46 @@
         
         // Manejar el botón de autorizar capacidad extra
         const addCapacityBtn = document.getElementById('btn-add-capacity-backend');
-        if (addCapacityBtn) {
-            addCapacityBtn.addEventListener('click', function() {
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        title: '¿Autorizar 1 plaza extra?',
-                        text: 'Se abrirá un nuevo hueco público en el tramo de las {{ substr($appointment->appointment_time, 0, 5) }} de hoy.',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: 'Sí, autorizar',
-                        cancelButtonText: 'Cancelar',
-                        customClass: {
-                            popup: 'rounded-[2rem] dark:bg-gray-900 border border-gray-150 dark:border-gray-800 p-8',
-                            confirmButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-amber-500 hover:bg-amber-600 text-white rounded-xl transition-all shadow-md',
-                            cancelButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all ml-3'
-                        },
-                        buttonsStyling: false
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            ejecutarAddCapacity();
-                        }
-                    });
-                } else {
-                    if (confirm('¿Abrir un hueco extra a las {{ substr($appointment->appointment_time, 0, 5) }}?')) {
+        const addCapacityBtnHeader = document.getElementById('btn-add-capacity-backend-header');
+        
+        function handleAddCapacityClick() {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: '¿Autorizar 1 plaza extra?',
+                    text: 'Se abrirá un nuevo hueco público en el tramo de las {{ substr($appointment->appointment_time, 0, 5) }} de hoy.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, autorizar',
+                    cancelButtonText: 'Cancelar',
+                    customClass: {
+                        popup: 'rounded-[2rem] dark:bg-gray-900 border border-gray-150 dark:border-gray-800 p-8',
+                        confirmButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-amber-500 hover:bg-amber-600 text-white rounded-xl transition-all shadow-md',
+                        cancelButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all ml-3'
+                    },
+                    buttonsStyling: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
                         ejecutarAddCapacity();
                     }
+                });
+            } else {
+                if (confirm('¿Abrir un hueco extra a las {{ substr($appointment->appointment_time, 0, 5) }}?')) {
+                    ejecutarAddCapacity();
                 }
-            });
+            }
         }
+        
+        if (addCapacityBtn) addCapacityBtn.addEventListener('click', handleAddCapacityClick);
+        if (addCapacityBtnHeader) addCapacityBtnHeader.addEventListener('click', handleAddCapacityClick);
 
         function ejecutarAddCapacity() {
             if (addCapacityBtn) {
                 addCapacityBtn.disabled = true;
                 addCapacityBtn.innerHTML = 'Procesando...';
+            }
+            if (addCapacityBtnHeader) {
+                addCapacityBtnHeader.disabled = true;
+                addCapacityBtnHeader.innerHTML = '...';
             }
             
             let formData = new FormData();
@@ -619,6 +631,10 @@
                 if (addCapacityBtn) {
                     addCapacityBtn.disabled = false;
                     addCapacityBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Autorizar +1 plaza aquí';
+                }
+                if (addCapacityBtnHeader) {
+                    addCapacityBtnHeader.disabled = false;
+                    addCapacityBtnHeader.innerHTML = '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg><span>Autorizar +1 plaza</span>';
                 }
             });
         }
