@@ -438,7 +438,7 @@ class PublicAppointmentController extends Controller
                 $description .= "\n\n💻 **Videoconferencia:** [Iniciar Videoconferencia]({$videoUrl}) (Modalidad: " . ucfirst($appointment->modality) . ")";
             }
 
-            $activity = \App\Models\Activity::create([
+            $activity = new \App\Models\Activity([
                 'uuid'           => \Illuminate\Support\Str::uuid()->toString(),
                 'title'          => '[CITA] ' . $appointment->service->name . ' — ' . $appointment->localizador,
                 'description'    => $description,
@@ -450,12 +450,13 @@ class PublicAppointmentController extends Controller
                 'original_due_date' => clone $appointment->end_datetime,
                 'created_by_id'  => $member->id,
                 'expediente_id'  => $expedienteId,
-                'team_id'        => $appointment->service->team_id ?? $member->favorite_team_id,
                 'metadata'       => [
                     'is_ephemeral' => true,
                     'location'     => \App\Models\AppointmentService::MODALITIES[$appointment->modality] ?? $appointment->modality,
                 ],
             ]);
+            $activity->team_id = $appointment->service->team_id ?? $member->favorite_team_id;
+            $activity->save();
 
             // Asignar al miembro
             $activity->assignments()->create([
