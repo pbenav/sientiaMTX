@@ -447,14 +447,16 @@ class AppointmentController extends Controller
         }
 
         if (!$appointment->activity) {
-            $activity = \App\Models\Activity::create([
-                'team_id'      => $team->id,
+            $activity = new \App\Models\Activity([
                 'title'        => 'Atención Cita: ' . $appointment->visitor->full_name,
                 'description'  => 'Actividad autogenerada para la atención de la cita ' . $appointment->localizador,
-                'status'       => 'in_progress',
+                'status'       => ['value' => 'in_progress'],
                 'priority'     => 'medium',
-                'created_by'   => auth()->id(),
+                'created_by_id'=> auth()->id(),
+                'type'         => 'task',
             ]);
+            $activity->team_id = $team->id;
+            $activity->save();
 
             $activity->assignments()->create([
                 'user_id' => auth()->id(),
