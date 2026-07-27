@@ -386,6 +386,16 @@
                                 </button>
                             </form>
                         </div>
+                        
+                        {{-- Ampliar Aforo --}}
+                        <div class="pt-4 border-t border-gray-100 dark:border-gray-800">
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Forzar Aforo Público</label>
+                            <button type="button" id="btn-add-capacity-backend" class="w-full py-2.5 text-[10px] sm:text-xs font-black uppercase tracking-widest bg-amber-500 hover:bg-amber-600 text-white rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                                Autorizar +1 plaza aquí
+                            </button>
+                            <p class="text-[9px] text-gray-400 mt-1.5 leading-tight">Abre un hueco extra en el tramo de las <strong>{{ substr($appointment->appointment_time, 0, 5) }}</strong> para que otro ciudadano pueda reservar ahora mismo.</p>
+                        </div>
 
                         {{-- Google Calendar --}}
                         @php
@@ -535,6 +545,81 @@
                         HTMLFormElement.prototype.submit.call(deleteForm);
                     }
                 });
+            });
+        }
+        
+        // Manejar el botón de autorizar capacidad extra
+        const addCapacityBtn = document.getElementById('btn-add-capacity-backend');
+        if (addCapacityBtn) {
+            addCapacityBtn.addEventListener('click', function() {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: '¿Autorizar 1 plaza extra?',
+                        text: 'Se abrirá un nuevo hueco público en el tramo de las {{ substr($appointment->appointment_time, 0, 5) }} de hoy.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sí, autorizar',
+                        cancelButtonText: 'Cancelar',
+                        customClass: {
+                            popup: 'rounded-[2rem] dark:bg-gray-900 border border-gray-150 dark:border-gray-800 p-8',
+                            confirmButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-amber-500 hover:bg-amber-600 text-white rounded-xl transition-all shadow-md',
+                            cancelButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all ml-3'
+                        },
+                        buttonsStyling: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            ejecutarAddCapacity();
+                        }
+                    });
+                } else {
+                    if (confirm('¿Abrir un hueco extra a las {{ substr($appointment->appointment_time, 0, 5) }}?')) {
+                        ejecutarAddCapacity();
+                    }
+                }
+            });
+        }
+
+        function ejecutarAddCapacity() {
+            if (addCapacityBtn) {
+                addCapacityBtn.disabled = true;
+                addCapacityBtn.innerHTML = 'Procesando...';
+            }
+            
+            let formData = new FormData();
+            formData.append('_token', '{{ csrf_token() }}');
+            formData.append('date', '{{ $appointment->appointment_date->toDateString() }}');
+            formData.append('time', '{{ substr($appointment->appointment_time, 0, 5) }}');
+            formData.append('extra_capacity', '1');
+            
+            fetch("{{ route('add-capacity', $appointment->service_id) }}", {
+                method: 'POST',
+                body: formData,
+                headers: { 'Accept': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Plaza autorizada!',
+                            text: 'Ya hay un hueco libre en este tramo para el público.',
+                            customClass: {
+                                popup: 'rounded-[2rem] dark:bg-gray-900 border border-gray-150 dark:border-gray-800 p-8',
+                                confirmButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl transition-all shadow-md'
+                            },
+                            buttonsStyling: false
+                        });
+                    } else {
+                        alert('Plaza autorizada correctamente.');
+                    }
+                }
+            })
+            .finally(() => {
+                if (addCapacityBtn) {
+                    addCapacityBtn.disabled = false;
+                    addCapacityBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Autorizar +1 plaza aquí';
+                }
             });
         }
     });
