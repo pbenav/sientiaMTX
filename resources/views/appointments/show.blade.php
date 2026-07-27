@@ -64,6 +64,13 @@
                                 <div class="mr-2 border-r border-gray-200 dark:border-gray-700 pr-4">
                                     @include('tasks.partials.task-timer-button', ['task' => $appointment->activity ?? $appointment->task])
                                 </div>
+                            @else
+                                <form action="{{ route('appointments.start-attention', [$team, $appointment]) }}" method="POST" class="mr-2 border-r border-gray-200 dark:border-gray-700 pr-4">
+                                    @csrf
+                                    <button type="submit" class="px-2.5 py-1.5 text-[10px] font-black uppercase tracking-widest bg-violet-50 text-violet-600 rounded-lg hover:bg-violet-100 flex items-center gap-1 transition-all" title="Iniciar tiempo de atención">
+                                        ▶ Iniciar
+                                    </button>
+                                </form>
                             @endif
 
                             <button type="button" id="btn-add-capacity-backend-header" class="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-all active:scale-95 shadow-sm flex items-center gap-1">
