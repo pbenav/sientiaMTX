@@ -591,7 +591,7 @@
             formData.append('time', '{{ substr($appointment->appointment_time, 0, 5) }}');
             formData.append('extra_capacity', '1');
             
-            fetch("{{ route('add-capacity', $appointment->service_id) }}", {
+            fetch("{{ route('public.appointments.add-capacity', $appointment->service_id) }}", {
                 method: 'POST',
                 body: formData,
                 headers: { 'Accept': 'application/json' }
