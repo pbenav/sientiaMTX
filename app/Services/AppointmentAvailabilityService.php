@@ -6,6 +6,7 @@ use App\Models\Appointment;
 use App\Models\AppointmentBlock;
 use App\Models\AppointmentSchedule;
 use App\Models\AppointmentService;
+use App\Models\AppointmentSlotOverride;
 use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonInterval;
@@ -63,6 +64,12 @@ class AppointmentAvailabilityService
             ->get()
             ->groupBy('appointment_time');
 
+        // Overrides manuales para aumentar cupo
+        $overrides = AppointmentSlotOverride::where('service_id', $service->id)
+            ->where('date', $date->toDateString())
+            ->get()
+            ->keyBy('time');
+
         foreach ($schedules as $schedule) {
             $slotMinutes = $schedule->slot_duration_minutes;
             $maxPerSlot  = $schedule->max_per_slot;
@@ -84,6 +91,10 @@ class AppointmentAvailabilityService
                 $timeKey      = $current->format('H:i');
                 $slotEnd      = $current->copy()->addMinutes($slotMinutes);
                 $bookedCount  = $booked->get($timeKey . ':00', collect())->count();
+                
+                // Añadir capacidad extra si hay override
+                $extraCapacity = $overrides->has($timeKey) ? $overrides->get($timeKey)->extra_capacity : 0;
+                $effectiveMaxPerSlot = $maxPerSlot + $extraCapacity;
 
                 // Comprobar si este tramo está bloqueado
                 $isBlocked = $blocks->contains(function ($block) use ($current, $slotEnd) {
@@ -99,9 +110,9 @@ class AppointmentAvailabilityService
                     if (!$exists) {
                         $slots[] = [
                             'time'      => $timeKey,
-                            'available' => max(0, $maxPerSlot - $bookedCount),
+                            'available' => max(0, $effectiveMaxPerSlot - $bookedCount),
                             'booked'    => $bookedCount,
-                            'full'      => ($bookedCount >= $maxPerSlot),
+                            'full'      => ($bookedCount >= $effectiveMaxPerSlot),
                         ];
                     }
                 }
@@ -124,7 +135,7 @@ class AppointmentAvailabilityService
      * @param  int  $month
      * @return array
      */
-    public function getAvailableDaysInMonth(AppointmentService $service, int $year, int $month): array
+    public function getAvailableDaysInMonth(AppointmentService $service, int $year, int $month, bool $overrideCapacity = false): array
     {
         $start     = Carbon::create($year, $month, 1)->startOfDay();
         $end       = $start->copy()->endOfMonth();
@@ -137,7 +148,7 @@ class AppointmentAvailabilityService
 
         while ($start <= $end) {
             $slots = $this->getSlotsForDate($service, $start->copy());
-            $hasFree = collect($slots)->contains(fn($s) => !$s['full']);
+            $hasFree = collect($slots)->contains(fn($s) => !$s['full'] || $overrideCapacity);
             if ($hasFree) {
                 $available[] = $start->toDateString();
             }
@@ -155,10 +166,15 @@ class AppointmentAvailabilityService
      * @param  string  $time
      * @return bool
      */
-    public function isSlotAvailable(AppointmentService $service, Carbon $date, string $time): bool
+    public function isSlotAvailable(AppointmentService $service, Carbon $date, string $time, bool $overrideCapacity = false): bool
     {
         $slots = $this->getSlotsForDate($service, $date);
         $slot  = collect($slots)->firstWhere('time', $time);
+        
+        if ($overrideCapacity && $slot) {
+            return true;
+        }
+        
         return $slot && !$slot['full'];
     }
 }

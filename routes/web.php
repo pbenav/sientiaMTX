@@ -41,6 +41,7 @@ Route::prefix('citas')->name('public.appointments.')->middleware('throttle:60,1'
     Route::get('/{slug}', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'member'])->name('member');
     Route::get('/service/{service}/slots/{date}', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'slots'])->name('slots');
     Route::get('/service/{service}/available-days/{year}/{month}', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'availableDays'])->name('available-days');
+    Route::post('/service/{service}/add-capacity', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'addCapacity'])->name('add-capacity');
     Route::get('/service/{service}/book', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'book'])->name('book');
     Route::post('/service/{service}/book', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'store'])->name('store');
     Route::get('/confirm/{localizador}', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'confirm'])->name('confirm');

@@ -59,6 +59,37 @@
         <!-- Fila 1: Selección de Fecha y Hora (Dos columnas simétricas) -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
+            @if(auth()->check())
+            <div class="lg:col-span-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    <div>
+                        <h4 class="text-sm font-bold text-amber-900 dark:text-amber-100">Modo Administrador Activo</h4>
+                        <p class="text-xs text-amber-700 dark:text-amber-300">Puedes forzar la modificación de citas hacia tramos horarios que ya están llenos <strong>únicamente para el día de hoy</strong>.</p>
+                    </div>
+                </div>
+                <div class="flex flex-col items-end gap-3">
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="override-capacity-toggle" name="override_capacity" value="1" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 dark:peer-focus:ring-amber-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-amber-500"></div>
+                        <span class="ml-3 text-xs font-bold text-gray-900 dark:text-gray-300">Sobrescribir Aforo</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div id="override-action-panel" class="lg:col-span-2 bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/50 rounded-2xl p-4 hidden flex-col sm:flex-row items-center justify-between gap-4 -mt-4">
+                <p class="text-xs text-amber-800 dark:text-amber-200">Tramo seleccionado: <strong id="override-selected-time" class="text-sm font-black text-amber-900 dark:text-amber-100">--:--</strong></p>
+                <div class="flex items-center gap-2">
+                    <label for="override-extra-capacity" class="text-xs font-bold text-amber-700 dark:text-amber-300">Abrir +</label>
+                    <input type="number" id="override-extra-capacity" min="1" max="50" value="1" class="w-16 bg-white dark:bg-gray-800 border border-amber-300 dark:border-amber-700 focus:border-amber-500 rounded-lg px-2 py-1.5 text-sm font-black text-center text-gray-900 dark:text-white outline-none">
+                    <span class="text-xs font-bold text-amber-700 dark:text-amber-300 mr-2">plazas</span>
+                    <button type="button" id="override-add-capacity-btn" class="px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-black rounded-lg transition-all shadow-sm">
+                        Autorizar
+                    </button>
+                </div>
+            </div>
+            @endif
+            
             <!-- Calendario -->
             <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-150 dark:border-gray-800 shadow-sm p-6 overflow-hidden">
                 <div class="flex items-center justify-between mb-6">
@@ -378,7 +409,12 @@
 
         // Cargar días disponibles para el mes
         function loadAvailableDays(year, month) {
-            fetch(`/citas/service/${serviceId}/available-days/${year}/${month + 1}`)
+            let url = `/citas/service/${serviceId}/available-days/${year}/${month + 1}`;
+            const overrideToggle = document.getElementById('override-capacity-toggle');
+            if (overrideToggle && overrideToggle.checked) {
+                url += '?override=1';
+            }
+            fetch(url)
                 .then(res => res.json())
                 .then(data => {
                     availableDays = data.available_days || [];
@@ -459,7 +495,6 @@
             }
         }
 
-        // Selección de Fecha
         function selectDate(dateStr, btn) {
             if (!availableDays.includes(dateStr)) return;
 
@@ -480,6 +515,17 @@
             loadSlots(dateStr);
         }
 
+        // Re-cargar horas y días si cambia el toggle de administrador
+        const overrideToggle = document.getElementById('override-capacity-toggle');
+        if (overrideToggle) {
+            overrideToggle.addEventListener('change', function() {
+                loadAvailableDays(currentYear, currentMonth);
+                if (selectedDateInput.value) {
+                    loadSlots(selectedDateInput.value);
+                }
+            });
+        }
+
         // Cargar slots de hora
         function loadSlots(dateStr) {
             noDateSelected.classList.add('hidden');
@@ -487,7 +533,13 @@
             slotsContainer.classList.add('hidden');
             slotsContainer.innerHTML = '';
 
-            fetch(`/citas/service/${serviceId}/slots/${dateStr}`)
+            let url = `/citas/service/${serviceId}/slots/${dateStr}`;
+            const overrideToggle = document.getElementById('override-capacity-toggle');
+            if (overrideToggle && overrideToggle.checked) {
+                url += '?override=1';
+            }
+
+            fetch(url)
                 .then(res => res.json())
                 .then(data => {
                     slotsLoading.classList.add('hidden');
@@ -508,18 +560,29 @@
                     }
 
                     slotsContainer.classList.remove('hidden');
+                    const isOverrideActive = data.override || false;
+
                     slots.forEach(slot => {
                         const isSelectedSlot = (dateStr === selectedDateInput.value && slot.time === selectedTimeInput.value);
                         const btn = document.createElement('button');
                         btn.type = 'button';
                         btn.textContent = slot.time;
-                        btn.className = (slot.full && !isSelectedSlot)
+                        
+                        const isEffectivelyFull = slot.full && !isOverrideActive;
+
+                        btn.className = (isEffectivelyFull && !isSelectedSlot)
                             ? "py-3 border border-gray-100 dark:border-gray-800 text-gray-300 dark:text-gray-700 bg-gray-50 dark:bg-gray-900 cursor-not-allowed select-none rounded-xl text-xs font-bold"
                             : (isSelectedSlot 
                                 ? "slot-btn py-3 bg-cyan-600 text-white font-black rounded-xl transition-all shadow-md shadow-cyan-500/20 text-xs"
                                 : "slot-btn py-3 border border-gray-200 dark:border-gray-800 hover:border-cyan-500 dark:hover:border-cyan-500 text-gray-800 dark:text-gray-300 font-black rounded-xl transition-all hover:bg-cyan-50/25 dark:hover:bg-cyan-950/10 text-xs");
 
-                        if (!slot.full || isSelectedSlot) {
+                        if (slot.full && isOverrideActive && !isSelectedSlot) {
+                            btn.classList.add('border-amber-400', 'dark:border-amber-600', 'text-amber-700', 'dark:text-amber-400', 'bg-amber-50/30', 'dark:bg-amber-900/10');
+                            btn.title = "Tramo lleno (Forzado por Administrador)";
+                            btn.innerHTML = `<span class="flex items-center justify-center gap-1">${slot.time} <svg class="w-3 h-3 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg></span>`;
+                        }
+
+                        if (!isEffectivelyFull || isSelectedSlot) {
                             btn.addEventListener('click', function () {
                                 selectTime(slot.time, btn);
                             });
@@ -533,12 +596,28 @@
         // Selección de Hora
         function selectTime(timeStr, btn) {
             document.querySelectorAll('.slot-btn').forEach(b => {
-                b.className = "slot-btn py-3 border border-gray-200 dark:border-gray-800 hover:border-cyan-500 dark:hover:border-cyan-500 text-gray-800 dark:text-gray-300 font-black rounded-xl transition-all hover:bg-cyan-50/25 dark:hover:bg-cyan-950/10 text-xs";
+                if (b.classList.contains('border-amber-400')) {
+                    b.className = "slot-btn py-3 border border-amber-400 dark:border-amber-600 hover:border-amber-500 text-amber-700 dark:text-amber-400 bg-amber-50/30 dark:bg-amber-900/10 font-black rounded-xl transition-all hover:bg-amber-100/50 dark:hover:bg-amber-900/30 text-xs";
+                } else {
+                    b.className = "slot-btn py-3 border border-gray-200 dark:border-gray-800 hover:border-cyan-500 dark:hover:border-cyan-500 text-gray-800 dark:text-gray-300 font-black rounded-xl transition-all hover:bg-cyan-50/25 dark:hover:bg-cyan-950/10 text-xs";
+                }
             });
 
             btn.className = "slot-btn py-3 bg-cyan-600 text-white font-black rounded-xl transition-all shadow-md shadow-cyan-500/20 text-xs";
             selectedTimeInput.value = timeStr;
             checkSubmitState();
+
+            const actionPanel = document.getElementById('override-action-panel');
+            if (actionPanel) {
+                if (overrideToggle && overrideToggle.checked) {
+                    actionPanel.classList.remove('hidden');
+                    actionPanel.classList.add('flex');
+                    document.getElementById('override-selected-time').textContent = timeStr;
+                } else {
+                    actionPanel.classList.add('hidden');
+                    actionPanel.classList.remove('flex');
+                }
+            }
         }
 
         // Controlar estado activo del botón de Confirmar
@@ -549,7 +628,74 @@
             } else {
                 submitBtn.disabled = true;
                 submitBtn.className = "w-full py-4 text-xs font-black uppercase tracking-widest text-white bg-gray-300 dark:bg-gray-800 cursor-not-allowed rounded-2xl shadow-lg shadow-gray-400/10 transition-all select-none";
+                
+                const actionPanel = document.getElementById('override-action-panel');
+                if (actionPanel) {
+                    actionPanel.classList.add('hidden');
+                    actionPanel.classList.remove('flex');
+                }
             }
+        }
+        
+        // Manejar el botón de autorizar capacidad extra
+        const addCapacityBtn = document.getElementById('override-add-capacity-btn');
+        if (addCapacityBtn) {
+            addCapacityBtn.addEventListener('click', function() {
+                const date = selectedDateInput.value;
+                const time = selectedTimeInput.value;
+                const extra = document.getElementById('override-extra-capacity').value;
+                
+                if (!date || !time) return;
+                
+                addCapacityBtn.disabled = true;
+                addCapacityBtn.textContent = '...';
+                
+                let formData = new FormData();
+                formData.append('_token', '{{ csrf_token() }}');
+                formData.append('date', date);
+                formData.append('time', time);
+                formData.append('extra_capacity', extra);
+                
+                fetch(`/citas/service/{{ $service->id }}/add-capacity`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'Accept': 'application/json' }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    addCapacityBtn.disabled = false;
+                    addCapacityBtn.textContent = 'Autorizar';
+                    
+                    if (data.success) {
+                        // Recargar slots
+                        loadAvailableDays(currentYear, currentMonth);
+                        loadSlots(date);
+                        
+                        // Ocultar toggle si ya no se necesita, o simplemente resetear panel
+                        const actionPanel = document.getElementById('override-action-panel');
+                        actionPanel.classList.add('hidden');
+                        actionPanel.classList.remove('flex');
+                        selectedTimeInput.value = '';
+                        checkSubmitState();
+                        
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Plazas autorizadas',
+                                text: `Se han abierto ${extra} plazas extra para las ${time}.`,
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 3000
+                            });
+                        }
+                    }
+                })
+                .catch(err => {
+                    addCapacityBtn.disabled = false;
+                    addCapacityBtn.textContent = 'Autorizar';
+                });
+            });
         }
     });
 </script>

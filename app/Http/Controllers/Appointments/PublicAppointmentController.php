@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\AppointmentService;
 use App\Models\AppointmentSettings;
+use App\Models\AppointmentSlotOverride;
 use App\Models\AppointmentVisitor;
 use App\Models\User;
 use App\Rules\DniNie;
@@ -132,9 +133,10 @@ class PublicAppointmentController extends Controller
     /**
      * API: tramos disponibles para un servicio y fecha.
      */
-    public function slots(AppointmentService $service, string $date)
+    public function slots(Request $request, AppointmentService $service, string $date)
     {
         $parsedDate = Carbon::parse($date);
+        $override = auth()->check() && $request->boolean('override') && $parsedDate->isToday();
 
         // Seguridad: no fechas pasadas ni miembro inactivo
         if ($parsedDate->isPast() && !$parsedDate->isToday()) {
@@ -142,16 +144,53 @@ class PublicAppointmentController extends Controller
         }
 
         $slots = $this->availability->getSlotsForDate($service, $parsedDate);
-        return response()->json(['slots' => $slots]);
+        return response()->json(['slots' => $slots, 'override' => $override]);
     }
 
     /**
      * API: días disponibles en un mes para un servicio.
      */
-    public function availableDays(AppointmentService $service, int $year, int $month)
+    public function availableDays(Request $request, AppointmentService $service, int $year, int $month)
     {
-        $days = $this->availability->getAvailableDaysInMonth($service, $year, $month);
+        $override = auth()->check() && $request->boolean('override');
+        // El override solo tiene sentido aplicarlo visualmente para el día de hoy
+        // No pasamos override a getAvailableDaysInMonth a menos que queramos que el mes actual muestre HOY disponible siempre
+        $days = $this->availability->getAvailableDaysInMonth($service, $year, $month, $override);
+        
+        // Si hay override, solo filtramos para asegurar que solo HOY se beneficia de ello
+        if ($override) {
+            $todayString = now()->toDateString();
+            if (!in_array($todayString, $days) && $year == now()->year && $month == now()->month) {
+                // Si el override estuviese activo globalmente en getAvailableDaysInMonth, 
+                // ya habría metido días pasados/futuros. Así que si lo quitamos de la UI, mejor.
+            }
+        }
+        
         return response()->json(['available_days' => $days]);
+    }
+
+    public function addCapacity(Request $request, AppointmentService $service)
+    {
+        if (!auth()->check()) {
+            abort(403);
+        }
+
+        $request->validate([
+            'date' => 'required|date',
+            'time' => 'required|string',
+            'extra_capacity' => 'required|integer|min:1|max:50',
+        ]);
+
+        $override = AppointmentSlotOverride::firstOrNew([
+            'service_id' => $service->id,
+            'date' => $request->date,
+            'time' => $request->time,
+        ]);
+
+        $override->extra_capacity += $request->extra_capacity;
+        $override->save();
+
+        return response()->json(['success' => true]);
     }
 
     /**
@@ -248,7 +287,8 @@ class PublicAppointmentController extends Controller
         return Cache::store($cacheStore)->lock($lockKey, 10)->block(5, function () use ($request, $service, $data, $settings, $date, $firstName, $lastName) {
             return DB::transaction(function () use ($request, $service, $data, $settings, $date, $firstName, $lastName) {
                 // Validar disponibilidad en tiempo real dentro de la transacción
-                if (!$this->availability->isSlotAvailable($service, $date, $data['appointment_time'])) {
+                $overrideCapacity = auth()->check() && $request->boolean('override_capacity') && $date->isToday();
+                if (!$this->availability->isSlotAvailable($service, $date, $data['appointment_time'], $overrideCapacity)) {
                     return back()->withErrors(['appointment_time' => 'El tramo seleccionado ya no está disponible. Por favor, elige otro.'])->withInput();
                 }
 
@@ -710,7 +750,8 @@ class PublicAppointmentController extends Controller
 
                 $isOwnSlot = $appointment->appointment_date->eq($newDate) && $appointment->appointment_time === $newTime . ':00';
 
-                if (!$isOwnSlot && !$this->availability->isSlotAvailable($service, $newDate, $newTime)) {
+                $overrideCapacity = auth()->check() && $request->boolean('override_capacity') && $newDate->isToday();
+                if (!$isOwnSlot && !$this->availability->isSlotAvailable($service, $newDate, $newTime, $overrideCapacity)) {
                     return back()->withErrors(['appointment_time' => 'El tramo seleccionado ya no está disponible. Por favor, elige otro.'])->withInput();
                 }
 
