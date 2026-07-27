@@ -483,7 +483,7 @@ class AppointmentController extends Controller
             \App\Models\TimeLog::create([
                 'user_id'  => auth()->id(),
                 'task_id'  => $taskObj->id,
-                'type'     => 'work',
+                'type'     => 'task',
                 'start_at' => now(),
             ]);
         }
