@@ -101,7 +101,13 @@ class SendMorningSummary extends Command
             })
             ->visibleTo($user, $isManager)
             ->whereIn('type', Activity::KANBAN_TYPES)
-            ->where('progress_percentage', '<', 100)
+            ->where(function ($q) {
+                $q->where('progress_percentage', '<', 100)
+                  ->where(function($subq) {
+                      $subq->whereNull('status->value')
+                           ->orWhereNotIn('status->value', ['completed', 'done', 'approved', 'triggered', 'accepted', 'finished']);
+                  });
+            })
             ->where('is_template', false)
             ->where('is_archived', false)
             ->where(function($q) {

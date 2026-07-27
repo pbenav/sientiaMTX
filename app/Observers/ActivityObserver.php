@@ -11,6 +11,51 @@ class ActivityObserver
     public static bool $isSyncing = false;
 
     /**
+     * Sincroniza el porcentaje de progreso y el estado antes de guardar.
+     */
+    public function saving(Activity $activity): void
+    {
+        if ($activity->isDirty('progress_percentage') || $activity->isDirty('status')) {
+            $statusValue = $activity->status_value;
+            $progress = $activity->progress_percentage;
+            
+            $completedStatuses = ['completed', 'cancelled', 'done', 'approved', 'accepted', 'finished', 'triggered'];
+            $pendingStatuses = ['pending', 'todo', 'draft', 'scheduled', 'proposed'];
+
+            // Si el estado es marcado como completado/cancelado, forzamos progreso 100
+            if (in_array($statusValue, $completedStatuses) && $progress < 100) {
+                $activity->progress_percentage = 100;
+                $progress = 100;
+            }
+            
+            // Si el progreso llega a 100, cambiamos el estado a completado
+            if ($progress == 100 && !in_array($statusValue, $completedStatuses)) {
+                $this->updateStatusValue($activity, 'completed');
+            } elseif ($progress > 0 && $progress < 100 && in_array($statusValue, $pendingStatuses)) {
+                $this->updateStatusValue($activity, 'in_progress');
+            } elseif ($progress == 0 && in_array($statusValue, array_merge(['in_progress'], $completedStatuses))) {
+                $this->updateStatusValue($activity, 'pending');
+            }
+        }
+
+        // Sincronizar estado archivado: si no está completado/cancelado, no debe estar archivado
+        if (!in_array($activity->status_value, ['completed', 'cancelled', 'done', 'approved', 'accepted', 'finished', 'triggered']) && $activity->is_archived) {
+            $activity->is_archived = false;
+        }
+    }
+
+    private function updateStatusValue(Activity $activity, string $newValue): void
+    {
+        $status = $activity->status;
+        if (is_array($status)) {
+            $status['value'] = $newValue;
+            $activity->status = $status;
+        } else {
+            $activity->status = ['value' => $newValue];
+        }
+    }
+
+    /**
      * Sincroniza los cambios de una actividad con su tarea asociada en activity_task_mapping.
      * Actualiza datos, asignaciones y etiquetas de la tarea.
      */
