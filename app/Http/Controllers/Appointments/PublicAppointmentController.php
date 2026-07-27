@@ -264,16 +264,9 @@ class PublicAppointmentController extends Controller
         if (!empty($data['email'])) {
             $existingEmailVisitor = \App\Models\AppointmentVisitor::where('email', $data['email'])->first();
             if ($existingEmailVisitor) {
-                $isDifferentPerson = false;
-                
-                if (!empty($data['dni']) && !empty($existingEmailVisitor->dni) && mb_strtoupper($data['dni']) !== mb_strtoupper($existingEmailVisitor->dni)) {
-                    $isDifferentPerson = true;
-                }
-                // Se elimina la validación estricta de nombre y apellidos para permitir erratas, diminutivos o pequeños cambios.
-                
-                if ($isDifferentPerson) {
-                    return back()->withErrors(['email' => 'Este correo electrónico ya está registrado a nombre de otra persona. No se permite usar el mismo correo para distintas personas.'])->withInput();
-                }
+                // Validación estricta eliminada a petición del usuario.
+                // Permitimos que el sistema actualice el DNI/Nombre del visitante 
+                // en caso de erratas o familiares compartiendo email.
             }
         }
 

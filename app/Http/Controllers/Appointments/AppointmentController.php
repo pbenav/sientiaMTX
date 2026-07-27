@@ -459,7 +459,8 @@ class AppointmentController extends Controller
             $activity->save();
 
             $activity->assignments()->create([
-                'user_id' => auth()->id(),
+                'user_id'        => auth()->id(),
+                'assigned_by_id' => auth()->id(),
             ]);
 
             $appointment->update([
