@@ -15,7 +15,7 @@
         .then(res => res.json())
         .then(data => {
             if (data.status === 'started') {
-                window.dispatchEvent(new CustomEvent('task-started', { detail: { taskId: this.taskId } }));
+                window.dispatchEvent(new CustomEvent('task-started', { detail: { taskId: this.taskId, initialSeconds: data.total_elapsed || 0 } }));
                 if (data.workday_started) {
                     window.dispatchEvent(new CustomEvent('workday-toggled', { detail: { working: true } }));
                 }

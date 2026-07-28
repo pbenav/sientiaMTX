@@ -232,7 +232,8 @@ class TimeLogController extends Controller
             'status' => 'started',
             'workday_started' => $workdayStarted,
             'message' => __('Working on: ') . $task->title,
-            'new_task_status' => $task->status
+            'new_task_status' => $task->status,
+            'total_elapsed' => $task->totalTrackedSeconds()
         ]);
     }
 
@@ -292,7 +293,7 @@ class TimeLogController extends Controller
             'active_task_title' => $taskObj?->title,
             'active_task_team_id' => $taskObj?->team_id,
             'workday_elapsed' => $user->activeWorkdayLog() ? max(0, $user->activeWorkdayLog()->start_at->diffInSeconds(now(), false)) : 0,
-            'task_elapsed' => $activeTaskLog ? max(0, $activeTaskLog->start_at->diffInSeconds(now(), false)) : 0,
+            'task_elapsed' => $activeTaskLog ? (max(0, $activeTaskLog->start_at->diffInSeconds(now(), false)) + ($taskObj ? $taskObj->totalTrackedSeconds() : 0)) : 0,
             'cth' => $user->sync_with_cth ? [
                 'enabled' => true,
                 'server' => parse_url($user->cth_api_url ?: config('services.cth.url'), PHP_URL_HOST),

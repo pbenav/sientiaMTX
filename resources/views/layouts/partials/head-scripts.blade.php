@@ -698,8 +698,8 @@
                     // Listeners Centralized
                     window.addEventListener('task-started', (e) => {
                         this.activeTaskId = e.detail.taskId;
-                        this.elapsed = 0;
-                        this.taskStartTime = Date.now();
+                        this.elapsed = e.detail.initialSeconds || 0;
+                        this.taskStartTime = Date.now() - (this.elapsed * 1000);
                         this.tick();
                     });
 
