@@ -430,6 +430,17 @@ class TimeLogController extends Controller
             return response()->json(['success' => false, 'message' => 'Sincronización CTH desactivada.']);
         }
 
+        // El usuario quiere que MTX refleje la hora REAL (ej. 19:36) en lugar de la hora programada que impondrá CTH (ej. 19:00).
+        // Cerramos los contadores locales de MTX con la hora exacta actual antes de pedirle a CTH que haga el cierre de gracia.
+        $activeLog = $user->activeWorkdayLog();
+        if ($activeLog) {
+            $activeLog->update(['end_at' => now()]);
+        }
+        $activeTaskLog = $user->activeTaskLog();
+        if ($activeTaskLog) {
+            $activeTaskLog->update(['end_at' => now()]);
+        }
+
         $result = \App\Jobs\SyncWorkdayWithCth::syncNow($user, 'grace_closing');
         return response()->json($result, $result['success'] ? 200 : 400);
     }
