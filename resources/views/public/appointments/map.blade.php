@@ -197,14 +197,16 @@
 
         // Tile layer elegante y adaptativo (OpenStreetMap Carto DB)
         const isDark = document.documentElement.classList.contains('dark');
-        const cartoUrl = isDark 
-            ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-            : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+        const cartoUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
         const tiles = L.tileLayer(cartoUrl, {
-            attribution: '© OpenStreetMap contributors, CartoDB',
+            attribution: '© OpenStreetMap contributors',
             maxZoom: 20
         }).addTo(map);
+
+        if (isDark) {
+            document.querySelector('.leaflet-layer').style.filter = 'invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%)';
+        }
 
         // Icono premium de PIN de mapa
         const pinIcon = L.divIcon({
@@ -398,10 +400,12 @@
             mutations.forEach(function(mutation) {
                 if (mutation.attributeName === "class") {
                     const isDark = document.documentElement.classList.contains('dark');
-                    const newCartoUrl = isDark 
-                        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-                        : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-                    tiles.setUrl(newCartoUrl);
+                    const layer = document.querySelector('.leaflet-layer');
+                    if (layer) {
+                        layer.style.filter = isDark 
+                            ? 'invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%)'
+                            : 'none';
+                    }
                 }
             });
         });

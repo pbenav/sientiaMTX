@@ -139,12 +139,12 @@
 
         // Tile layer elegante y adaptativo (OpenStreetMap Carto DB)
         const isDark = document.documentElement.classList.contains('dark');
-        const cartoUrl = isDark 
-            ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-            : 'https://mt1.google.com/vt/lyrs=m&hl=es&x={x}&y={y}&z={z}';
+        const cartoUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'; 
+        
+        
 
         const tiles = L.tileLayer(cartoUrl, {
-            attribution: isDark ? '© OpenStreetMap contributors, CartoDB' : '© Google Maps',
+            attribution: '© OpenStreetMap contributors',
             maxZoom: 20
         }).addTo(map);
 
@@ -165,6 +165,7 @@
 
         // Parse map data injected from controller (only those with coords)
         const mapMicrosites = @json($mapMicrosites);
+if (isDark) { document.querySelector('.leaflet-layer').style.filter = 'invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%)'; } 
         const markersGroup = L.featureGroup();
         const markersMap = new Map();
 
@@ -238,10 +239,12 @@
             mutations.forEach(function(mutation) {
                 if (mutation.attributeName === "class") {
                     const isDark = document.documentElement.classList.contains('dark');
-                    const newCartoUrl = isDark 
-                        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-                        : 'https://mt1.google.com/vt/lyrs=m&hl=es&x={x}&y={y}&z={z}';
-                    tiles.setUrl(newCartoUrl);
+                    const layer = document.querySelector('.leaflet-layer');
+                    if (layer) {
+                        layer.style.filter = isDark 
+                            ? 'invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%)'
+                            : 'none';
+                    }
                 }
             });
         });
