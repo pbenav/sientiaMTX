@@ -87,7 +87,18 @@ class TimeLogController extends Controller
             // Si CTH triunfa, alineamos MTX al nuevo estado de CTH
             if ($actionToSend === 'stop') {
                 if ($activeLog) {
-                    $activeLog->update(['end_at' => now()]);
+                    $cthStartTime = !empty($cthResult['start_time']) ? \Carbon\Carbon::parse($cthResult['start_time'])->setTimezone(date_default_timezone_get()) : null;
+                    $cthEndTime = !empty($cthResult['end_time']) ? \Carbon\Carbon::parse($cthResult['end_time'])->setTimezone(date_default_timezone_get()) : now();
+                    
+                    // Si el inicio coincide (margen de 15 min), sincronizamos exactamente con el registro de CTH
+                    if ($cthStartTime && abs($cthStartTime->diffInMinutes($activeLog->start_at)) < 15) {
+                        $activeLog->update([
+                            'start_at' => $cthStartTime,
+                            'end_at' => max($cthStartTime, $cthEndTime)
+                        ]);
+                    } else {
+                        $activeLog->update(['end_at' => now()]);
+                    }
                 }
                 $activeTaskLog = $user->activeTaskLog();
                 if ($activeTaskLog) {
@@ -260,12 +271,20 @@ class TimeLogController extends Controller
                         ]);
                     }
                 } elseif (!$cthStatus['is_working'] && $activeWorkday) {
-                    // Si en CTH NO está trabajando pero en MTX sí, cerramos el contador local con la hora EXACTA de CTH
+                    // Si en CTH NO está trabajando pero en MTX sí, cerramos el contador local.
+                    $cthStartTime = !empty($cthStatus['start_time']) ? \Carbon\Carbon::parse($cthStatus['start_time'])->setTimezone(date_default_timezone_get()) : null;
                     $endTime = !empty($cthStatus['end_time']) ? \Carbon\Carbon::parse($cthStatus['end_time'])->setTimezone(date_default_timezone_get()) : now();
                     
-                    $workdayEndTime = $endTime->copy();
-                    if ($workdayEndTime->lt($activeWorkday->start_at)) $workdayEndTime = $activeWorkday->start_at;
-                    $activeWorkday->update(['end_at' => $workdayEndTime]);
+                    if ($cthStartTime && abs($cthStartTime->diffInMinutes($activeWorkday->start_at)) < 15) {
+                        // Coinciden en su inicio: sincronizamos ambos valores con CTH
+                        $activeWorkday->update([
+                            'start_at' => $cthStartTime,
+                            'end_at' => max($cthStartTime, $endTime)
+                        ]);
+                    } else {
+                        // Tramo diferente o sin contexto CTH: cerramos el actual limpiamente
+                        $activeWorkday->update(['end_at' => now()]);
+                    }
                     
                     // Asegurar que cualquier tarea activa también se cierre
                     $activeTask = $user->activeTaskLog();
