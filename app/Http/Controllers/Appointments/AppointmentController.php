@@ -654,6 +654,16 @@ class AppointmentController extends Controller
             }
         }
 
+        if (isset($data['status']) && $data['status'] === 'completed') {
+            $taskObj = $appointment->activity ?? $appointment->task;
+            if ($taskObj) {
+                $taskObj->timeLogs()->whereNull('end_at')->update(['end_at' => now()]);
+            }
+            if (!$request->wantsJson()) {
+                return redirect()->route('appointments.list', $team)->with('success', 'Cita completada correctamente.');
+            }
+        }
+
         return back()->with('success', 'Cita actualizada correctamente.');
     }
 
