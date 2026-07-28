@@ -54,11 +54,11 @@
                 $qrCodeSvg = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(300)->margin(1)->color(219, 39, 119)->generate($qrUrl);
                 $qrCodeSmall = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(24)->margin(0)->color(255, 255, 255)->backgroundColor(17, 24, 39)->generate($qrUrl);
             @endphp
-            <a href="data:image/svg+xml;base64,{{ base64_encode($qrCodeSvg) }}" download="qr-micrositio-{{ $microsite->slug }}.svg" 
+            <button type="button" onclick="openQrModal('{{ base64_encode($qrCodeSvg) }}', 'qr-micrositio-{{ $microsite->slug }}.svg')"
                class="p-1 border border-gray-700 hover:border-pink-500 rounded-md flex items-center justify-center transition-all group"
-               title="{{ __('Descargar código QR') }}">
+               title="{{ __('Ver código QR') }}">
                 {!! preg_replace('/<\?xml.*?\?>\n?/', '', $qrCodeSmall) !!}
-            </a>
+            </button>
             
             <a href="{{ route('public.microsites.directory') }}" class="hover:text-pink-400 transition-colors flex items-center gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

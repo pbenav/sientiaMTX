@@ -34,11 +34,11 @@
                     $qrCodeSvg = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(300)->margin(1)->color(8, 145, 178)->generate($qrUrl);
                     $qrCodeSmall = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(48)->margin(0)->color(8, 145, 178)->generate($qrUrl);
                 @endphp
-                <a href="data:image/svg+xml;base64,{{ base64_encode($qrCodeSvg) }}" download="qr-cita-{{ $settings->public_slug }}.svg" 
+                <button type="button" onclick="openQrModal('{{ base64_encode($qrCodeSvg) }}', 'qr-cita-{{ $settings->public_slug }}.svg')"
                    class="block p-1 bg-white border border-gray-200 dark:border-gray-700 hover:border-cyan-500 rounded-xl shadow-sm transition-all hover:scale-105 group/qr"
-                   title="{{ __('Descargar código QR de Cita Previa') }}">
+                   title="{{ __('Ver código QR de Cita Previa') }}">
                     {!! preg_replace('/<\?xml.*?\?>\n?/', '', $qrCodeSmall) !!}
-                </a>
+                </button>
                 <span class="text-[9px] font-black uppercase text-gray-400 dark:text-gray-500 mt-1">{{ __('Escanear') }}</span>
             </div>
         </div>

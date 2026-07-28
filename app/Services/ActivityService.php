@@ -627,8 +627,8 @@ class ActivityService
         }
 
         // Respetar jerarquía en el listado general: solo mostrar las actividades principales (padres)
-        // A MENOS que hayan filtrado explícitamente para ver instancias.
-        if (($filters['template_type'] ?? '') !== 'instance') {
+        // A MENOS que hayan filtrado explícitamente para ver instancias, o estén buscando por texto.
+        if (($filters['template_type'] ?? '') !== 'instance' && empty($filters['search'])) {
             $query->whereNull('parent_id');
         }
 

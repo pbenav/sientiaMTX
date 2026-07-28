@@ -67,12 +67,11 @@
                                         $qrCodeSvg = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(300)->margin(1)->color(219, 39, 119)->generate($qrUrl);
                                         $qrCodeSmall = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(28)->margin(0)->color(219, 39, 119)->generate($qrUrl);
                                     @endphp
-                                    <a href="data:image/svg+xml;base64,{{ base64_encode($qrCodeSvg) }}" download="qr-micrositio-{{ $m->slug }}.svg" 
+                                    <button type="button" onclick="event.stopPropagation(); openQrModal('{{ base64_encode($qrCodeSvg) }}', 'qr-micrositio-{{ $m->slug }}.svg')"
                                        class="p-0.5 bg-white border border-gray-200 dark:border-gray-700 hover:border-pink-500 rounded-lg shadow-sm transition-all hover:scale-110"
-                                       title="{{ __('Descargar código QR') }}"
-                                       onclick="event.stopPropagation();">
+                                       title="{{ __('Ver código QR') }}">
                                         {!! preg_replace('/<\?xml.*?\?>\n?/', '', $qrCodeSmall) !!}
-                                    </a>
+                                    </button>
                                 @if($m->latitude && $m->longitude)
                                         <button type="button" class="locate-map-btn p-1 text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 rounded-lg transition-colors" title="Ver en el mapa" data-lat="{{ $m->latitude }}" data-lng="{{ $m->longitude }}" data-slug="{{ $m->slug }}">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
