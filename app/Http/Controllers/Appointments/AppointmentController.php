@@ -453,7 +453,7 @@ class AppointmentController extends Controller
                 'status'       => ['value' => 'in_progress'],
                 'priority'     => 'medium',
                 'created_by_id'=> auth()->id(),
-                'type'         => 'task',
+                'type'         => 'meeting',
             ]);
             $activity->team_id = $team->id;
             $activity->save();
@@ -568,13 +568,14 @@ class AppointmentController extends Controller
         }
 
         $task = $appointment->task;
-        if (!$task && $appointment->localizador) {
+        if (!$task && !$appointment->activity && $appointment->localizador) {
             $task = \App\Models\Task::where('title', 'like', "% — {$appointment->localizador}")->first();
             if ($task) {
                 $appointment->update(['task_id' => $task->id]);
             }
         }
 
+        // 1. Update Legacy Task (if exists)
         if ($task) {
             $taskData = [];
             if (isset($data['appointment_date']) || isset($data['appointment_time'])) {
@@ -596,6 +597,33 @@ class AppointmentController extends Controller
             }
             if (!empty($taskData)) {
                 $task->update($taskData);
+            }
+        }
+
+        // 2. Update New Activity (if exists)
+        $activity = $appointment->activity;
+        if ($activity) {
+            $activityData = [];
+            if (isset($data['appointment_date']) || isset($data['appointment_time'])) {
+                $activityData['due_date'] = $appointment->end_datetime;
+                $activityData['scheduled_date'] = $appointment->appointment_datetime;
+            }
+            if (array_key_exists('expediente_id', $data)) {
+                $activityData['expediente_id'] = $data['expediente_id'];
+            }
+            if (isset($data['status'])) {
+                if ($data['status'] === 'completed') {
+                    $activityData['status'] = ['value' => 'completed'];
+                    $activityData['progress_percentage'] = 100;
+                } elseif (in_array($data['status'], ['pending', 'confirmed'])) {
+                    if (($activity->status['value'] ?? '') === 'completed') {
+                        $activityData['status'] = ['value' => 'scheduled'];
+                        $activityData['progress_percentage'] = 0;
+                    }
+                }
+            }
+            if (!empty($activityData)) {
+                $activity->update($activityData);
             }
         }
 
