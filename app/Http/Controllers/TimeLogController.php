@@ -159,20 +159,20 @@ class TimeLogController extends Controller
         if ($user->cannot('view', $task)) {
             return response()->json(['success' => false, 'message' => __('No tienes permiso para interactuar con esta tarea.')], 403);
         }
-        $activeLog = $user->activeTaskLog();
+        $activeLogs = $user->timeLogs()->where('type', 'task')->whereNull('end_at')->get();
+        $isSameTask = $activeLogs->contains('task_id', $task->id);
 
-        // If clicking on the ALREADY active task -> Stop it
-        if ($activeLog && $activeLog->task_id === $task->id) {
-            $activeLog->update(['end_at' => now()]);
+        // ALWAYS Stop all previous active task logs for this user to enforce exclusivity
+        if ($activeLogs->isNotEmpty()) {
+            $user->timeLogs()->where('type', 'task')->whereNull('end_at')->update(['end_at' => now()]);
+        }
+
+        // If we were just stopping the active task, we're done
+        if ($isSameTask) {
             return response()->json([
                 'status' => 'stopped',
                 'message' => __('Task tracking stopped.')
             ]);
-        }
-
-        // If clicking on DIFFERENT task -> Stop previous and start new
-        if ($activeLog) {
-            $activeLog->update(['end_at' => now()]);
         }
 
         $workdayStarted = false;

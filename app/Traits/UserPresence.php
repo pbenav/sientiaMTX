@@ -35,33 +35,27 @@ trait UserPresence
 
     public function activeWorkdayLog(): ?TimeLog
     {
-        $today = now()->startOfDay();
         if ($this->relationLoaded('timeLogs')) {
             return $this->timeLogs->where('type', 'workday')
                 ->whereNull('end_at')
-                ->where('start_at', '>=', $today)
                 ->first();
         }
         return $this->timeLogs()
             ->where('type', 'workday')
             ->whereNull('end_at')
-            ->where('start_at', '>=', $today)
             ->first();
     }
 
     public function activeTaskLog(): ?TimeLog
     {
-        $today = now()->startOfDay();
         if ($this->relationLoaded('timeLogs')) {
             return $this->timeLogs->where('type', 'task')
                 ->whereNull('end_at')
-                ->where('start_at', '>=', $today)
                 ->first();
         }
         return $this->timeLogs()
             ->where('type', 'task')
             ->whereNull('end_at')
-            ->where('start_at', '>=', $today)
             ->first();
     }
 
