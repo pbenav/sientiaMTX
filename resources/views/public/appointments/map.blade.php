@@ -199,10 +199,10 @@
         const isDark = document.documentElement.classList.contains('dark');
         const cartoUrl = isDark 
             ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-            : 'https://mt1.google.com/vt/lyrs=m&hl=es&x={x}&y={y}&z={z}';
+            : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
 
         const tiles = L.tileLayer(cartoUrl, {
-            attribution: isDark ? '© OpenStreetMap contributors, CartoDB' : '© Google Maps',
+            attribution: '© OpenStreetMap contributors, CartoDB',
             maxZoom: 20
         }).addTo(map);
 
@@ -250,10 +250,16 @@
 
         markersGroup.addTo(map);
 
-        // Si hay marcadores, ajustar la vista inicial
-        if (members.length > 0) {
-            map.fitBounds(markersGroup.getBounds(), { padding: [50, 50] });
-        }
+        // Asegurar que el layout de Tailwind termine de computarse antes de calcular bounds y redibujar el mapa
+        setTimeout(() => {
+            map.invalidateSize();
+            if (members.length > 0) {
+                const bounds = markersGroup.getBounds();
+                if (bounds.isValid()) {
+                    map.fitBounds(bounds, { padding: [50, 50] });
+                }
+            }
+        }, 250);
 
         // Filtro y Búsqueda Avanzada
         const searchInput = document.getElementById('search-input');
@@ -394,7 +400,7 @@
                     const isDark = document.documentElement.classList.contains('dark');
                     const newCartoUrl = isDark 
                         ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-                        : 'https://mt1.google.com/vt/lyrs=m&hl=es&x={x}&y={y}&z={z}';
+                        : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
                     tiles.setUrl(newCartoUrl);
                 }
             });
