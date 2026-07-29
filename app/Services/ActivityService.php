@@ -627,9 +627,13 @@ class ActivityService
         }
 
         // Respetar jerarquía en el listado general: solo mostrar las actividades principales (padres)
+        // o las instancias directas de una plantilla maestra (que actúan como padres de las subtareas distribuidas).
         // A MENOS que hayan filtrado explícitamente para ver instancias.
         if (($filters['template_type'] ?? '') !== 'instance') {
-            $query->whereNull('parent_id');
+            $query->where(function ($q) {
+                $q->whereNull('parent_id')
+                  ->orWhere('is_template', true);
+            });
         }
 
         // Filtros
