@@ -177,7 +177,10 @@
                 init() {
                     this.originalTitle = document.title;
 
-                    this.pollInterval = setInterval(() => this.checkNewMessages(), 4000);
+                    // Retrasar el polling inicial para evitar que Firefox asuma que la página sigue cargando
+                    setTimeout(() => {
+                        this.pollInterval = setInterval(() => this.checkNewMessages(), 4000);
+                    }, 3000);
 
                     // --- Real Presence System ---
                     // Track genuine user activity (mouse, keyboard, touch, scroll)
