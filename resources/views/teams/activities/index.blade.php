@@ -298,7 +298,7 @@
                                             class="w-2 h-2 rounded-full {{ $activity->status_value === 'completed' ? 'bg-emerald-500' : ($activity->status_value === 'blocked' ? 'bg-red-500' : 'bg-violet-500') }} shrink-0">
                                         </div>
 
-                                        @if ($activity->children->isNotEmpty() && empty($filters['search']))
+                                        @if ($activity->children->isNotEmpty())
                                             <button type="button"
                                                 onclick="event.stopPropagation(); toggleSubtasks({{ $activity->id }}, this)"
                                                 class="toggle-subtasks p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-all mr-1"
@@ -314,16 +314,6 @@
                                             <div class="w-5 mr-1"></div>
                                         @endif
                                         <div class="min-w-0">
-                                            @if ($activity->parent)
-                                                <div class="text-[10px] text-gray-400 dark:text-gray-500 font-bold mb-0.5 flex items-center gap-1">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                                                    </svg>
-                                                    <a href="{{ route('teams.activities.show', [$team, $activity->parent]) }}" class="hover:underline" onclick="event.stopPropagation();">
-                                                        {{ __('Subtarea de:') }} {{ $activity->parent->title }}
-                                                    </a>
-                                                </div>
-                                            @endif
                                             <a href="{{ route('teams.activities.show', [$team, $activity]) }}"
                                                 class="text-sm font-semibold text-gray-900 dark:text-white hover:text-violet-600 dark:hover:text-violet-400 transition-all truncate flex items-center gap-1.5 max-w-[140px] sm:max-w-xs md:max-w-md lg:max-w-lg"
                                                 title="{{ $activity->type_label }}: {{ $activity->title }}">
@@ -498,7 +488,11 @@
                                                      alt="{{ $activity->assignedUser->name }}"
                                                      class="w-5 h-5 rounded-full object-cover shadow-sm border-2 border-white dark:border-gray-800" title="{{ $activity->assignedUser->name }}">
                                              </div>
-                                             <span class="text-xs font-medium text-gray-700 dark:text-gray-300">1 {{ __('tasks.member') ?? 'Miembro' }}</span>
+                                             @if($activity->is_template || !$activity->parent_id)
+                                                 <span class="text-xs font-medium text-gray-700 dark:text-gray-300">1 {{ __('tasks.member') ?? 'Miembro' }}</span>
+                                             @else
+                                                 <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ $activity->assignedUser->name }}</span>
+                                             @endif
                                          </div>
                                      @elseif($activity->assignedTo->count() > 0)
                                          <div class="flex items-center gap-2">
@@ -507,7 +501,11 @@
                                                      <img src="{{ $u->profile_photo_url }}" alt="{{ $u->name }}" class="w-5 h-5 rounded-full object-cover shadow-sm border-2 border-white dark:border-gray-800" title="{{ $u->name }}">
                                                  @endforeach
                                              </div>
-                                             <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ $activity->assignedTo->count() }} {{ $activity->assignedTo->count() == 1 ? (__('tasks.member') ?? 'Miembro') : (__('tasks.members') ?? 'Miembros') }}</span>
+                                             @if($activity->is_template || !$activity->parent_id)
+                                                 <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ $activity->assignedTo->count() }} {{ $activity->assignedTo->count() == 1 ? (__('tasks.member') ?? 'Miembro') : (__('tasks.members') ?? 'Miembros') }}</span>
+                                             @else
+                                                 <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ $activity->assignedTo->first()->name }}</span>
+                                             @endif
                                          </div>
                                      @elseif($activity->assignedGroups->count() > 0)
                                          <div class="flex items-center gap-2">
