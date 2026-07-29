@@ -676,9 +676,15 @@
                                     </td>
                                     <td class="px-4 py-3 text-[10px] text-gray-400 whitespace-nowrap">
                                         @if($subtask->assignedUser)
-                                            1 {{ __('tasks.member') ?? 'Miembro' }}
+                                            <div class="flex items-center gap-1.5">
+                                                <img src="{{ $subtask->assignedUser->profile_photo_url }}" alt="{{ $subtask->assignedUser->name }}" class="w-4 h-4 rounded-full object-cover shadow-sm border border-gray-200 dark:border-gray-700">
+                                                <span class="text-gray-700 dark:text-gray-300">{{ $subtask->assignedUser->name }}</span>
+                                            </div>
                                         @elseif($subtask->assignedTo->count() > 0)
-                                            {{ $subtask->assignedTo->count() }} {{ $subtask->assignedTo->count() == 1 ? (__('tasks.member') ?? 'Miembro') : (__('tasks.members') ?? 'Miembros') }}
+                                            <div class="flex items-center gap-1.5">
+                                                <img src="{{ $subtask->assignedTo->first()->profile_photo_url }}" alt="{{ $subtask->assignedTo->first()->name }}" class="w-4 h-4 rounded-full object-cover shadow-sm border border-gray-200 dark:border-gray-700">
+                                                <span class="text-gray-700 dark:text-gray-300">{{ $subtask->assignedTo->first()->name }}</span>
+                                            </div>
                                         @elseif($subtask->assignedGroups->count() > 0)
                                             {{ $subtask->assignedGroups->count() }} {{ $subtask->assignedGroups->count() == 1 ? (__('tasks.group') ?? 'Grupo') : (__('tasks.groups') ?? 'Grupos') }}
                                         @else
