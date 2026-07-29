@@ -690,11 +690,7 @@ class ActivityService
             $term = '%' . $filters['search'] . '%';
             $query->where(function($q) use ($term) {
                 $q->where('title', 'like', $term)
-                  ->orWhere('description', 'like', $term)
-                  ->orWhereHas('children', function($subq) use ($term) {
-                      $subq->where('title', 'like', $term)
-                           ->orWhere('description', 'like', $term);
-                  });
+                  ->orWhere('description', 'like', $term);
             });
         }
 
