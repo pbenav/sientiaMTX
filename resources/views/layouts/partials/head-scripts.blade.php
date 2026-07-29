@@ -177,10 +177,10 @@
                 init() {
                     this.originalTitle = document.title;
 
-                    // Retrasar el polling inicial para evitar que Firefox asuma que la página sigue cargando
-                    setTimeout(() => {
+                    // Esperar a que la página cargue completamente para evitar bug del spinner infinito en Firefox
+                    window.addEventListener('load', () => {
                         this.pollInterval = setInterval(() => this.checkNewMessages(), 4000);
-                    }, 3000);
+                    });
 
                     // --- Real Presence System ---
                     // Track genuine user activity (mouse, keyboard, touch, scroll)

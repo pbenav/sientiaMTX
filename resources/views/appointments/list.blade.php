@@ -371,7 +371,7 @@
                                     <td class="px-5 py-3.5 text-right">
                                         <div class="flex items-center justify-end gap-3">
                                             @if($cita->status === 'confirmed' && in_array($cita->modality, ['jitsi', 'meet']))
-                                                <a href="{{ route('public.appointments.video.auth', $cita) }}?localizador={{ $cita->localizador }}" target="_blank"
+                                                <a href="{{ route('public.appointments.video.auth', $cita) }}?localizador={{ $cita->localizador }}" target="_blank" rel="noopener"
                                                    class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase rounded-lg border border-indigo-150/40 dark:border-indigo-900/30 transition-all select-none">
                                                     💻 Iniciar
                                                 </a>

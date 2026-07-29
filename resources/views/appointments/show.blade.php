@@ -42,7 +42,7 @@
                         <p class="text-xs text-indigo-600 dark:text-indigo-400 font-medium">Puedes unirte a la sala directamente. El ciudadano necesitará su localizador para acceder.</p>
                     </div>
                 </div>
-                <a href="{{ route('public.appointments.video.auth', $appointment) }}?localizador={{ $appointment->localizador }}" target="_blank"
+                <a href="{{ route('public.appointments.video.auth', $appointment) }}?localizador={{ $appointment->localizador }}" target="_blank" rel="noopener"
                    class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-md shadow-indigo-600/10 shrink-0 active:scale-95">
                     💻 Iniciar Videoconferencia
                 </a>
@@ -421,7 +421,7 @@
                                 . '/' . $appointment->end_datetime->format('Ymd\THis')
                                 . '&details=' . urlencode('Localizador: '.$appointment->localizador."\nCiudadano: ".$appointment->visitor->full_name);
                         @endphp
-                        <a href="{{ $gcalUrl }}" target="_blank"
+                        <a href="{{ $gcalUrl }}" target="_blank" rel="noopener"
                            class="flex items-center justify-center gap-2 w-full py-2.5 text-xs font-black uppercase tracking-widest bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-900 rounded-xl transition-all">
                             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M19.5 3h-2V1.5h-1.5V3h-9V1.5H5.5V3h-2C2.67 3 2 3.67 2 4.5v15C2 20.33 2.67 21 3.5 21h16c.83 0 1.5-.67 1.5-1.5v-15c0-.83-.67-1.5-1.5-1.5zm0 16.5h-16V9h16v10.5zM3.5 7.5h16V4.5h-16V7.5z"/></svg>
                             Añadir a Google Calendar
