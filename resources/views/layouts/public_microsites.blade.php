@@ -118,5 +118,15 @@
 
 
     @yield('scripts')
+    <!-- Registro Global Service Worker para cachés CDN -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').catch(function(err) {
+                    console.log('Service Worker registration failed: ', err);
+                });
+            });
+        }
+    </script>
 </body>
 </html>

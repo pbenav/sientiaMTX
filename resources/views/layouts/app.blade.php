@@ -111,6 +111,17 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     @include('layouts.partials.head-scripts')
+
+    <!-- Registro Global Service Worker para cachés CDN -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').catch(function(err) {
+                    console.log('Service Worker registration failed: ', err);
+                });
+            });
+        }
+    </script>
 </head>
 
 <body class="h-full bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100 antialiased"
