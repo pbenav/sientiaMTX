@@ -197,6 +197,94 @@ class Activity extends Model
         return (bool) data_get($this->metadata, 'is_timeline_locked', false);
     }
 
+    /**
+     * Devuelve la cantidad de instancias hijas (no plantillas).
+     */
+    public function getInstancesCountAttribute(): int
+    {
+        if ($this->relationLoaded('instances')) {
+            return $this->instances->count();
+        }
+        return $this->instances()->where('is_template', false)->count();
+    }
+
+    /**
+     * Determina si la actividad tiene notas privadas.
+     */
+    public function getHasPrivateNotesAttribute(): bool
+    {
+        if ($this->relationLoaded('notes')) {
+            return $this->notes->where('visibility', 'private')->isNotEmpty();
+        }
+        return $this->notes()->where('visibility', 'private')->exists();
+    }
+
+    /**
+     * Determina si la actividad tiene adjuntos.
+     */
+    public function getHasAttachmentsAttribute(): bool
+    {
+        if ($this->relationLoaded('attachments')) {
+            return $this->attachments->isNotEmpty();
+        }
+        return $this->attachments()->exists();
+    }
+
+    /**
+     * Total de minutos de tiempo registrado hoy para esta actividad.
+     */
+    public function getTodayTimeMinutesAttribute(): ?float
+    {
+        if ($this->relationLoaded('timeLogs')) {
+            return $this->timeLogs->sum(function ($log) {
+                return $log->start_at && $log->end_at
+                    ? $log->start_at->diffInMinutes($log->end_at, false)
+                    : 0;
+            });
+        }
+        return $this->timeLogs()
+            ->whereDate('start_at', today())
+            ->get()
+            ->sum(function ($log) {
+                return $log->start_at && $log->end_at
+                    ? $log->start_at->diffInMinutes($log->end_at, false)
+                    : 0;
+            });
+    }
+
+    /**
+     * Devuelve el countdown (días restantes) hasta la fecha de vencimiento.
+     */
+    public function getDaysRemainingAttribute(): ?int
+    {
+        if (!$this->due_date) {
+            return null;
+        }
+        return now()->startOfDay()->diffInDays($this->due_date->startOfDay(), false);
+    }
+
+    /**
+     * Determina si la actividad está bloqueada (status = 'blocked').
+     */
+    public function getIsBlockedAttribute(): bool
+    {
+        return $this->status_value === 'blocked';
+    }
+
+    /**
+     * Devuelve la clase CSS para el nivel de urgencia.
+     */
+    public function getUrgencyColorClassAttribute(): string
+    {
+        return match ($this->urgency) {
+            'critical' => 'text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-900/40',
+            'high'     => 'text-orange-700 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/40',
+            'medium'   => 'text-yellow-700 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/40',
+            'low'      => 'text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/40',
+            default    => 'text-gray-700 dark:text-gray-400 bg-gray-100 dark:bg-gray-900/40',
+        };
+    }
+
     // ─── Relaciones principales ───────────────────────────────────────────────
 
     /**

@@ -127,6 +127,51 @@ trait ActivityScopes
         return $query->whereDate('due_date', today());
     }
 
+    // ─── Scopes de filtrado por urgencia, bloqueo y asignación ────────────────
+
+    /**
+     * Filtra actividades por nivel de urgencia (metadata['urgency']).
+     */
+    public function scopeByUrgency(Builder $query, string $urgency)
+    {
+        return $query->where("metadata->>urgency", $urgency);
+    }
+
+    /**
+     * Filtra actividades por modo de asignación:
+     * - 'unassigned': sin asignar a nadie
+     * - 'assigned': asignada a al menos un usuario/grupo
+     */
+    public function scopeByAssignmentMode(Builder $query, string $mode)
+    {
+        return match ($mode) {
+            'unassigned' => $query->whereDoesntHave('assignedTo')
+                ->whereDoesntHave('assignedGroups'),
+            'assigned' => $query->whereHas('assignedTo')
+                ->orWhereHas('assignedGroups'),
+            default => $query,
+        };
+    }
+
+    /**
+     * Filtra actividades bloqueadas (status_blocked).
+     * Aplica solo a tipos que soportan el estado 'blocked'.
+     */
+    public function scopeBlocked(Builder $query)
+    {
+        return $query->whereJsonContains('status->value', 'blocked');
+    }
+
+    /**
+     * Filtra actividades con fecha de vencimiento hoy (sin incluir completadas/canceladas).
+     */
+    public function scopeToday(Builder $query)
+    {
+        return $query->whereDate('due_date', today())
+            ->whereJsonDoesntContain('status->value', 'completed')
+            ->whereJsonDoesntContain('status->value', 'cancelled');
+    }
+
     // ─── Scopes por vista (Kanban, Matriz, Gantt) ─────────────────────────────
 
     /**

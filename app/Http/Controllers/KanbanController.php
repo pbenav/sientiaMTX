@@ -60,58 +60,92 @@ class KanbanController extends Controller
 
         // --- Filters ---
         $filters = $this->getPersistentFilters($request, 'tasks', [
-            'status', 'priority', 'assigned_to', 'skill_id', 'type', 'search', 'expediente_id'
+            'status', 'priority', 'assigned_to', 'skill_id', 'type', 'search', 'expediente_id',
+            'urgency', 'assignment_mode', 'blocked',
         ]);
 
         $columns = $team->kanbanColumns()
             ->with(['activities' => function ($query) use ($team, $user, $isManager, $filters) {
-                $query->with(['expediente', 'assignedUser', 'assignedTo', 'skills'])
-                      ->forKanban()
-                      ->visibleTo($user, $isManager)
-                      ->operationalForKanban($user, $team)
-                      ->notEphemeral()
-                      ->where('is_archived', false)
-                      ->when($filters['status'] ?? null, fn($q, $s) => $q->whereJsonContains('status->value', $s))
-                      ->when($filters['priority'] ?? null, fn($q, $p) => $q->where('priority', $p))
-                      ->when($filters['assigned_to'] ?? null, function($q, $a) {
-                          $q->where(function ($sq) use ($a) {
-                              $sq->whereHas('assignedTo', fn($sub) => $sub->where('users.id', $a))
-                                 ->orWhereExists(function ($subq) use ($a) {
-                                     $subq->select(\DB::raw(1))
-                                          ->from('activity_task_mapping')
-                                          ->join('task_assignments', 'activity_task_mapping.task_id', '=', 'task_assignments.task_id')
-                                          ->whereColumn('activity_task_mapping.activity_id', 'activities.id')
-                                          ->where('task_assignments.user_id', $a);
-                                 });
-                          });
-                      })
-                      ->when($filters['search'] ?? null, function($q, $s) {
-                          $q->where('title', 'like', "%{$s}%")
-                            ->orWhere('description', 'like', "%{$s}%");
-                      })
-                      ->when($filters['expediente_id'] ?? null, fn($q, $expId) => $q->where('expediente_id', $expId))
-                      ->when($filters['skill_id'] ?? null, function ($q, $skillId) {
-                          $q->where(function ($sq) use ($skillId) {
-                              $sq->where('metadata->skill_id', $skillId)
-                                 ->orWhereHas('skills', fn($sk) => $sk->where('skills.id', $skillId));
-                          });
-                      })
-                      ->when($filters['type'], function ($q, $type) {
-                          if ($type === 'template') {
-                              $q->where('is_template', true);
-                          } elseif ($type === 'instance') {
-                              $q->where('is_template', false)->whereNotNull('parent_id');
-                          } elseif ($type === 'plain') {
-                              $q->where('is_template', false)->whereNull('parent_id');
-                          } else {
-                              $q->where('type', $type);
-                          }
-                      })
-                      ->orderBy('kanban_order', 'asc')
-                      ->orderByRaw("FIELD(priority, 'critical', 'high', 'medium', 'low') ASC")
-                      ->orderBy('progress_percentage', 'desc');
+                $query->with([
+                        'expediente',
+                        'assignedUser',
+                        'assignedTo',
+                        'skills',
+                        'tags',
+                        'instances' => fn($q) => $q->where('is_template', false)->orderBy('title'),
+                        'attachments',
+                        'timeLogs' => fn($q) => $q->whereDate('start_at', today()),
+                    ])
+                    ->forKanban()
+                    ->visibleTo($user, $isManager)
+                    ->operationalForKanban($user, $team)
+                    ->notEphemeral()
+                    ->where('is_archived', false)
+                    ->when($filters['status'] ?? null, fn($q, $s) => $q->whereJsonContains('status->value', $s))
+                    ->when($filters['priority'] ?? null, fn($q, $p) => $q->where('priority', $p))
+                    ->when($filters['assigned_to'] ?? null, function($q, $a) {
+                        $q->where(function ($sq) use ($a) {
+                            $sq->whereHas('assignedTo', fn($sub) => $sub->where('users.id', $a))
+                               ->orWhereExists(function ($subq) use ($a) {
+                                   $subq->select(\DB::raw(1))
+                                        ->from('activity_task_mapping')
+                                        ->join('task_assignments', 'activity_task_mapping.task_id', '=', 'task_assignments.task_id')
+                                        ->whereColumn('activity_task_mapping.activity_id', 'activities.id')
+                                        ->where('task_assignments.user_id', $a);
+                                });
+                        });
+                    })
+                    ->when($filters['search'] ?? null, function($q, $s) {
+                        $q->where('title', 'like', "%{$s}%")
+                          ->orWhere('description', 'like', "%{$s}%");
+                    })
+                    ->when($filters['expediente_id'] ?? null, fn($q, $expId) => $q->where('expediente_id', $expId))
+                    ->when($filters['skill_id'] ?? null, function ($q, $skillId) {
+                        $q->where(function ($sq) use ($skillId) {
+                            $sq->where('metadata->skill_id', $skillId)
+                               ->orWhereHas('skills', fn($sk) => $sk->where('skills.id', $skillId));
+                        });
+                    })
+                    ->when($filters['type'], function ($q, $type) {
+                        if ($type === 'template') {
+                            $q->where('is_template', true);
+                        } elseif ($type === 'instance') {
+                            $q->where('is_template', false)->whereNotNull('parent_id');
+                        } elseif ($type === 'plain') {
+                            $q->where('is_template', false)->whereNull('parent_id');
+                        } else {
+                            $q->where('type', $type);
+                        }
+                    })
+                    ->when($filters['urgency'] ?? null, fn($q, $u) => $q->byUrgency($u))
+                    ->when($filters['assignment_mode'] ?? null, fn($q, $m) => $q->byAssignmentMode($m))
+                    ->when($filters['blocked'] ?? null, fn($q) => $q->blocked())
+                    ->orderBy('kanban_order', 'asc')
+                    ->orderByRaw("FIELD(priority, 'critical', 'high', 'medium', 'low') ASC")
+                    ->orderBy('progress_percentage', 'desc');
             }])
             ->orderBy('order_index', 'asc')
+            ->get();
+
+        // --- Today / Overdue columns (virtual) ---
+        $todayActivities = $team->activities()
+            ->with([
+                'expediente',
+                'assignedUser',
+                'assignedTo',
+                'skills',
+                'tags',
+                'instances' => fn($q) => $q->where('is_template', false)->orderBy('title'),
+                'attachments',
+                'timeLogs' => fn($q) => $q->whereDate('start_at', today()),
+            ])
+            ->forKanban()
+            ->operationalForKanban($user, $team)
+            ->notEphemeral()
+            ->where('is_archived', false)
+            ->today()
+            ->orderBy('kanban_order', 'asc')
+            ->orderByRaw("FIELD(priority, 'critical', 'high', 'medium', 'low') ASC")
             ->get();
 
         // Ensure columns have a default color if null
@@ -142,7 +176,7 @@ class KanbanController extends Controller
         $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->get();
         $expedientes = $team->expedientes()->orderBy('created_at', 'desc')->get();
 
-        return view('tasks.kanban', compact('team', 'columns', 'completedTasks', 'hideCompleted', 'filters', 'members', 'skills', 'expedientes'));
+        return view('tasks.kanban', compact('team', 'columns', 'completedTasks', 'hideCompleted', 'filters', 'members', 'skills', 'expedientes', 'todayActivities'));
     }
 
     /**

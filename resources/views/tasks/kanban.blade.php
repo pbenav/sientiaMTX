@@ -185,6 +185,28 @@
                     <option value="plain" {{ ($filters['type'] ?? null) === 'plain' ? 'selected' : '' }}>{{ __('tasks.task') }}</option>
                 </select>
 
+                <!-- Urgency Filter -->
+                <select name="urgency" onchange="this.form.submit()" class="w-36 {{ ($filters['urgency'] ?? null) ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' }} border rounded-xl text-xs font-bold uppercase py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
+                    <option value="">{{ __('tasks.urgency') }}</option>
+                    @foreach(['very_low','low','medium','high','very_high'] as $u)
+                        <option value="{{ $u }}" {{ ($filters['urgency'] ?? null) === $u ? 'selected' : '' }}>{{ __("tasks.urgencies.{$u}") }}</option>
+                    @endforeach
+                </select>
+
+                <!-- Assignment Mode Filter -->
+                <select name="assignment_mode" onchange="this.form.submit()" class="w-40 {{ ($filters['assignment_mode'] ?? null) ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' }} border rounded-xl text-xs font-bold uppercase py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
+                    <option value="">{{ __('tasks.assignment_mode') }}</option>
+                    <option value="individual" {{ ($filters['assignment_mode'] ?? null) === 'individual' ? 'selected' : '' }}>{{ __('tasks.assignment_individual') }}</option>
+                    <option value="shared" {{ ($filters['assignment_mode'] ?? null) === 'shared' ? 'selected' : '' }}>{{ __('tasks.assignment_collaborative') }}</option>
+                </select>
+
+                <!-- Blocked Filter -->
+                <select name="blocked" onchange="this.form.submit()" class="w-32 {{ ($filters['blocked'] ?? null) ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' }} border rounded-xl text-xs font-bold uppercase py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
+                    <option value="">{{ __('tasks.blocked') }}</option>
+                    <option value="1" {{ ($filters['blocked'] ?? null) === '1' ? 'selected' : '' }}>{{ __('tasks.blocked_yes') }}</option>
+                    <option value="0" {{ ($filters['blocked'] ?? null) === '0' ? 'selected' : '' }}>{{ __('tasks.blocked_no') }}</option>
+                </select>
+
                 @if(collect($filters ?? [])->filter()->isNotEmpty())
                     <a href="{{ route('teams.kanban', [$team, 'reset_filters' => 1]) }}" class="text-xs font-bold text-red-500 uppercase tracking-widest">{{ __('tasks.clear_filters') }}</a>
                 @endif
@@ -344,17 +366,49 @@
                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                                                     </span>
                                                 @endif
-                                                @if ($task->is_autoprogrammable)
-                                                    <span class="px-1.5 py-0.5 rounded-md bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 border border-violet-200/50 dark:border-violet-700/50 shadow-sm" title="Plantilla de Autoprogramación">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                                                    </span>
-                                                @elseif (!$task->is_autoprogrammable && $task->parent && $task->parent->is_autoprogrammable)
-                                                    <a href="{{ route('teams.activities.show', [$team, $task->parent_id]) }}" class="px-1.5 py-0.5 rounded-md bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 border border-violet-200/50 dark:border-violet-700/50 shadow-sm hover:bg-violet-200 dark:hover:bg-violet-900/60 transition-colors" title="Tarea autoprogramada (Ir a plantilla maestra)" onclick="event.stopPropagation();">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                                                    </a>
-                                                @endif
-                                            </div>
-                                        </div>
+                                                 @if ($task->is_autoprogrammable)
+                                                     <span class="px-1.5 py-0.5 rounded-md bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 border border-violet-200/50 dark:border-violet-700/50 shadow-sm" title="Plantilla de Autoprogramación">
+                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                                     </span>
+                                                 @elseif (!$task->is_autoprogrammable && $task->parent && $task->parent->is_autoprogrammable)
+                                                     <a href="{{ route('teams.activities.show', [$team, $task->parent_id]) }}" class="px-1.5 py-0.5 rounded-md bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 border border-violet-200/50 dark:border-violet-700/50 shadow-sm hover:bg-violet-200 dark:hover:bg-violet-900/60 transition-colors" title="Tarea autoprogramada (Ir a plantilla maestra)" onclick="event.stopPropagation();">
+                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                                     </a>
+                                                 @endif
+                                                 @if($task->urgency)
+                                                     <span class="px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-tighter border shadow-sm {{ match($task->urgency) {
+                                                         'very_high' => 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-700/50',
+                                                         'high' => 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700/50',
+                                                         'medium' => 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700/50',
+                                                         'low' => 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700/50',
+                                                         'very_low' => 'bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-700/50',
+                                                         default => 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700'
+                                                     } }}" title="{{ __("tasks.urgencies.{$task->urgency}") }}">
+                                                         ⚡ {{ __("tasks.urgencies.{$task->urgency}") }}
+                                                     </span>
+                                                 @endif
+                                                 @if($task->is_blocked || $task->status_value === 'blocked')
+                                                     <span class="px-1.5 py-0.5 rounded-md bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border border-red-200/50 dark:border-red-700/50 shadow-sm text-[8px] font-black uppercase tracking-tighter" title="Bloqueada">
+                                                         🔒 {{ __('tasks.blocked') }}
+                                                     </span>
+                                                 @endif
+                                                 @if($task->instances_count > 0)
+                                                     <span class="px-1.5 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200/50 dark:border-indigo-700/50 shadow-sm text-[8px] font-black uppercase tracking-tighter" title="{{ $task->instances_count }} instanc{{ $task->instances_count === 1 ? 'ia' : 'ias' }}">
+                                                         📋 {{ $task->instances_count }}
+                                                     </span>
+                                                 @endif
+                                                 @if($task->has_private_notes)
+                                                     <span class="px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-700/50 shadow-sm" title="Notas privadas">
+                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                                     </span>
+                                                 @endif
+                                                 @if($task->has_attachments)
+                                                     <span class="px-1.5 py-0.5 rounded-md bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-300 border border-sky-200/50 dark:border-sky-700/50 shadow-sm" title="{{ $task->attachments->count() }} adjunto{{ $task->attachments->count() !== 1 ? 's' : '' }}">
+                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
+                                                     </span>
+                                                 @endif
+                                             </div>
+                                         </div>
                                         <div class="shrink-0 flex flex-col items-end gap-1.5">
                                             <div class="flex items-center gap-1.5">
                                                 @include('tasks.partials.task-timer-button')
@@ -406,41 +460,185 @@
                                         </div>
                                     </div>
 
-                                    <!-- Card Footer -->
-                                    <div class="mt-4 flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700/50">
-                                        <div class="flex items-center gap-2">
-                                            <div class="flex -space-x-2">
-                                                @if($task->assignedUser)
-                                                    <img src="{{ $task->assignedUser->profile_photo_url }}" alt="{{ $task->assignedUser->name }}" 
-                                                        class="w-6 h-6 rounded-full object-cover border-2 border-white dark:border-gray-800 shadow-sm" title="{{ $task->assignedUser->name }}">
-                                                @elseif($task->assignedTo->count() > 0)
-                                                    @foreach($task->assignedTo->take(3) as $user)
-                                                        <img src="{{ $user->profile_photo_url }}" alt="{{ $user->name }}" 
-                                                            class="w-6 h-6 rounded-full object-cover border-2 border-white dark:border-gray-800 shadow-sm" title="{{ $user->name }}">
-                                                    @endforeach
-                                                @endif
-                                            </div>
-                                            @if($task->assignedUser)
-                                                <span class="text-[9px] font-bold text-gray-500 dark:text-gray-400 truncate max-w-[80px]">
-                                                    {{ $task->assignedUser->id === auth()->id() ? __('Tú') : explode(' ', $task->assignedUser->name)[0] }}
-                                                </span>
-                                            @endif
-                                        </div>
-                                        
-                                        @if($task->due_date)
-                                            <div class="flex items-center gap-1 text-[10px] font-bold {{ $task->due_date->isPast() && !$task->isCompleted() ? 'text-red-500' : 'text-gray-400' }}">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" />
-                                                </svg>
-                                                {{ $task->due_date->format('d M') }}
-                                            </div>
-                                        @endif
-                                    </div>
+                                     <!-- Card Footer -->
+                                     <div class="mt-4 flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700/50">
+                                         <div class="flex items-center gap-2">
+                                             <div class="flex -space-x-2">
+                                                 @if($task->assignedUser)
+                                                     <img src="{{ $task->assignedUser->profile_photo_url }}" alt="{{ $task->assignedUser->name }}" 
+                                                         class="w-6 h-6 rounded-full object-cover border-2 border-white dark:border-gray-800 shadow-sm" title="{{ $task->assignedUser->name }}">
+                                                 @elseif($task->assignedTo->count() > 0)
+                                                     @foreach($task->assignedTo->take(3) as $user)
+                                                         <img src="{{ $user->profile_photo_url }}" alt="{{ $user->name }}" 
+                                                             class="w-6 h-6 rounded-full object-cover border-2 border-white dark:border-gray-800 shadow-sm" title="{{ $user->name }}">
+                                                     @endforeach
+                                                 @endif
+                                             </div>
+                                             @if($task->assignedUser)
+                                                 <span class="text-[9px] font-bold text-gray-500 dark:text-gray-400 truncate max-w-[80px]">
+                                                     {{ $task->assignedUser->id === auth()->id() ? __('Tú') : explode(' ', $task->assignedUser->name)[0] }}
+                                                 </span>
+                                             @endif
+                                         </div>
+                                         
+                                         <div class="flex items-center gap-1.5">
+                                             @if($task->today_time_minutes > 0)
+                                                 <span class="text-[9px] font-bold text-violet-600 dark:text-violet-400 flex items-center gap-0.5" title="Tiempo hoy">
+                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                     {{ floor($task->today_time_minutes / 60) }}h{{ $task->today_time_minutes % 60 }}m
+                                                 </span>
+                                             @endif
+                                             @if($task->avg_quality_score !== null)
+                                                 <span class="text-[9px] font-bold {{ $task->avg_quality_score >= 4 ? 'text-green-600' : ($task->avg_quality_score >= 3 ? 'text-yellow-600' : 'text-red-600') }}" title="Calificación promedio">
+                                                     ⭐ {{ number_format($task->avg_quality_score, 1) }}
+                                                 </span>
+                                             @endif
+                                             @if($task->skills->isNotEmpty())
+                                                 <span class="text-[9px] font-bold text-sky-600 dark:text-sky-400 flex items-center gap-0.5" title="Habilidades">
+                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                                                     {{ $task->skills->count() }}
+                                                 </span>
+                                             @endif
+                                             @if($task->tags->isNotEmpty())
+                                                 <span class="text-[9px] font-bold text-gray-500 dark:text-gray-400 flex items-center gap-0.5" title="Etiquetas">
+                                                     #{{ $task->tags->count() }}
+                                                 </span>
+                                             @endif
+                                             @if($task->days_remaining !== null)
+                                                 <div class="flex items-center gap-1 text-[10px] font-bold {{ $task->due_date->isPast() && !$task->isCompleted() ? 'text-red-500' : ($task->days_remaining === 0 ? 'text-orange-500' : 'text-gray-400') }}">
+                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" />
+                                                     </svg>
+                                                     @if($task->days_remaining < 0)
+                                                         {{ abs($task->days_remaining) }}d atrasada
+                                                     @elseif($task->days_remaining === 0)
+                                                         Hoy
+                                                     @else
+                                                         {{ $task->days_remaining }}d
+                                                     @endif
+                                                 </div>
+                                             @elseif($task->due_date)
+                                                 <div class="flex items-center gap-1 text-[10px] font-bold text-gray-400">
+                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" />
+                                                     </svg>
+                                                     {{ $task->due_date->format('d M') }}
+                                                 </div>
+                                             @endif
+                                         </div>
+                                     </div>
                                 </div>
                             @endforeach
                         </div>
                     </div>
                 @endforeach
+
+                <!-- Today Column -->
+                @if($todayActivities->isNotEmpty())
+                <div class="shrink-0 flex flex-col rounded-[2.5rem] border-2 border-violet-200 dark:border-violet-800 transition-all duration-500 shadow-xl hover:shadow-2xl animate-fade-in group relative overflow-hidden kanban-column" 
+                     style="--col-bg: #f5f3ff; border-color: #8b5cf640;"
+                     data-column-id="today">
+                    <div class="absolute top-0 left-0 right-0 h-2 kanban-column-accent" style="background-color: #8b5cf6;"></div>
+                    
+                    <!-- Column Header -->
+                    <div class="p-3 sm:p-3.5 md:p-4 flex flex-col gap-1.5 sm:gap-2 cursor-grab active:cursor-grabbing column-handle">
+                        <div class="flex items-center justify-between gap-1">
+                            <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
+                                <h3 class="font-black text-gray-900 dark:text-white uppercase tracking-[0.15em] text-[13px] column-title truncate">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-violet-500 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Hoy
+                                </h3>
+                                <span class="px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-lg sm:rounded-xl bg-violet-500/10 text-[10px] sm:text-[11px] font-black text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-700/50 shadow-sm shrink-0">
+                                    {{ $todayActivities->count() }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tasks List -->
+                    <div class="flex-1 overflow-y-auto px-1.5 sm:px-2 pb-2.5 sm:pb-3.5 md:pb-4 space-y-2 sm:space-y-2.5 md:space-y-3 task-list custom-scrollbar" data-column-id="today">
+                        @foreach($todayActivities as $task)
+                            @php
+                                $quadrant = $task->getQuadrant($task);
+                                $qCfg = $quadrantConfig[$quadrant] ?? null;
+                            @endphp
+                            <div x-data="{ 
+                                     taskId: {{ $task->id }},
+                                     get isWorking() { return Alpine.store('timer').activeTaskId == this.taskId }
+                                 }"
+                                 :class="isWorking ? 'ring-2 ring-violet-500 shadow-xl shadow-violet-500/20 bg-violet-50/30 dark:bg-violet-900/10' : 'bg-white dark:bg-gray-900'"
+                                 class="backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-md border-l-[5px] sm:border-l-[6px] p-2.5 sm:p-3.5 md:p-4 cursor-grab active:cursor-grabbing hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 group relative animate-card-appear border-t border-r border-b border-gray-100/50 dark:border-gray-800/50"
+                                 data-task-id="{{ $task->id }}"
+                                 style="border-left-color: {{ $qCfg['color'] ?? '#d1d5db' }}; animation-delay: {{ $loop->index * 50 }}ms; will-change: transform, opacity;">
+                                 
+                                 <!-- Card Content (simplified for Today column) -->
+                                 <div class="flex items-start justify-between gap-2 mb-2">
+                                     <div class="flex flex-col gap-1 flex-1">
+                                         <div class="flex items-center gap-1.5 mb-0.5">
+                                             <span class="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider shadow-sm border flex items-center gap-1"
+                                                   style="background-color: {{ $task->type_badge_color }}15; color: {{ $task->type_badge_color }}; border-color: {{ $task->type_badge_color }}30;">
+                                                 @if($task->type_icon)
+                                                     {!! $task->type_icon !!}
+                                                 @endif
+                                                 {{ $task->type_label }}
+                                             </span>
+                                         </div>
+                                         <a href="{{ route('teams.activities.show', [$team, $task]) }}" class="text-sm font-black text-gray-900 dark:text-gray-50 leading-tight hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
+                                             {{ $task->title }}
+                                         </a>
+                                     </div>
+                                 </div>
+                                 
+                                 @if($task->description)
+                                     <div class="text-[11px] text-gray-600 dark:text-gray-300 line-clamp-2 mb-3 opacity-80 leading-relaxed">
+                                         {{ \Illuminate\Support\Str::limit(html_entity_decode(strip_tags(\Illuminate\Support\Str::markdown($task->description))), 120) }}
+                                     </div>
+                                 @endif
+                                 
+                                 <!-- Card Footer -->
+                                 <div class="mt-4 flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700/50">
+                                     <div class="flex items-center gap-2">
+                                         <div class="flex -space-x-2">
+                                             @if($task->assignedUser)
+                                                 <img src="{{ $task->assignedUser->profile_photo_url }}" alt="{{ $task->assignedUser->name }}" 
+                                                     class="w-6 h-6 rounded-full object-cover border-2 border-white dark:border-gray-800 shadow-sm" title="{{ $task->assignedUser->name }}">
+                                             @elseif($task->assignedTo->count() > 0)
+                                                 @foreach($task->assignedTo->take(3) as $user)
+                                                     <img src="{{ $user->profile_photo_url }}" alt="{{ $user->name }}" 
+                                                         class="w-6 h-6 rounded-full object-cover border-2 border-white dark:border-gray-800 shadow-sm" title="{{ $user->name }}">
+                                                 @endforeach
+                                             @endif
+                                         </div>
+                                     </div>
+                                     
+                                     <div class="flex items-center gap-1.5">
+                                         @if($task->today_time_minutes > 0)
+                                             <span class="text-[9px] font-bold text-violet-600 dark:text-violet-400 flex items-center gap-0.5" title="Tiempo hoy">
+                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                 {{ floor($task->today_time_minutes / 60) }}h{{ $task->today_time_minutes % 60 }}m
+                                             </span>
+                                         @endif
+                                         @if($task->days_remaining !== null)
+                                             <div class="flex items-center gap-1 text-[10px] font-bold {{ $task->days_remaining === 0 ? 'text-orange-500' : 'text-gray-400' }}">
+                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" />
+                                                 </svg>
+                                                 @if($task->days_remaining === 0)
+                                                     Hoy
+                                                 @else
+                                                     {{ $task->days_remaining }}d
+                                                 @endif
+                                             </div>
+                                         @endif
+                                     </div>
+                                 </div>
+                             </div>
+                         @endforeach
+                     </div>
+                 </div>
+                 @endif
 
                 <!-- Add Column Area -->
                 <div class="min-w-[60px] flex items-center justify-center h-full mr-10" id="add-column-area">
