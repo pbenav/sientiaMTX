@@ -360,13 +360,13 @@
                     const link = document.createElement('link');
                     link.id = 'leaflet-css';
                     link.rel = 'stylesheet';
-                    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css';
+                    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
                     document.head.appendChild(link);
                 }
                 if (!document.getElementById('leaflet-js')) {
                     const script = document.createElement('script');
                     script.id = 'leaflet-js';
-                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js';
+                    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
                     script.onload = () => this.initMap();
                     document.head.appendChild(script);
                 } else {
