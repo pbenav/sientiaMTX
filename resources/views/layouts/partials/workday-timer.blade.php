@@ -13,9 +13,7 @@
     compact: {{ isset($compact) && $compact ? 'true' : 'false' }},
     
     init() {
-        window.addEventListener('load', () => {
-            this.fetchStatus(true);
-        });
+        this.fetchStatus(true);
         setInterval(() => {
             if (this.working) this.elapsed++;
         }, 1000);

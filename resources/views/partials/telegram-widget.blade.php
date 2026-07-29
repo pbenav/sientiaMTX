@@ -630,11 +630,9 @@
                     return;
                 }
                 
-                window.addEventListener('load', () => {
-                    this.refreshMessages(true);
-                    this.loadMentions();
-                    setInterval(() => this.refreshMessages(), 12000); // Polling cada 12s
-                });
+                this.refreshMessages(true);
+                this.loadMentions();
+                setInterval(() => this.refreshMessages(), 12000); // Polling cada 12s
             },
 
             async loadMentions() {

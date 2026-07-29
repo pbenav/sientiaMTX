@@ -592,10 +592,8 @@
                     return;
                 }
                 
-                window.addEventListener('load', () => {
-                    this.refreshMessages(true);
-                    setInterval(() => this.refreshMessages(), 12000); // Polling cada 12s
-                });
+                this.refreshMessages(true);
+                setInterval(() => this.refreshMessages(), 12000); // Polling cada 12s
             },
             async refreshMessages(initial = false) {
                 if (document.hidden && !initial) return;
