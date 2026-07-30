@@ -6,6 +6,14 @@
     get elapsed() { return this.isActive ? Alpine.store('timer').elapsed : 0 },
     humanTime: '{{ $task->totalTrackedTimeHuman() }}',
 
+    init() {
+        window.addEventListener('time-updated', (e) => {
+            if (e.detail.taskId == this.taskId && e.detail.humanTime) {
+                this.humanTime = e.detail.humanTime;
+            }
+        });
+    },
+
     toggle() {
         this.loading = true;
         fetch('{{ route('time-logs.toggle-task', $task) }}', {
@@ -26,6 +34,9 @@
                     alert(data.message);
                 }
             } else {
+                if (data.total_human_time) {
+                    this.humanTime = data.total_human_time;
+                }
                 if (Alpine.store('timer')) Alpine.store('timer').stop();
                 window.dispatchEvent(new CustomEvent('task-stopped', { detail: { taskId: this.taskId } }));
             }

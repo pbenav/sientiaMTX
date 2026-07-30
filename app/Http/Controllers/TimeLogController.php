@@ -180,9 +180,11 @@ class TimeLogController extends Controller
 
         // If we were just stopping the active task, we're done
         if ($isSameTask) {
+            $task = $task->fresh();
             return response()->json([
                 'status' => 'stopped',
-                'message' => __('Task tracking stopped.')
+                'message' => __('Task tracking stopped.'),
+                'total_human_time' => method_exists($task, 'totalTrackedTimeHuman') ? $task->totalTrackedTimeHuman() : '0m'
             ]);
         }
 

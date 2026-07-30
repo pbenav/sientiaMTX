@@ -664,6 +664,17 @@ class AppointmentController extends Controller
             }
         }
 
+        if ($request->wantsJson()) {
+            $taskObj = $appointment->activity ?? $appointment->task;
+            $taskObj = $taskObj ? $taskObj->fresh() : null;
+            return response()->json([
+                'success' => true,
+                'timer_stopped' => isset($data['status']) && $data['status'] === 'completed',
+                'task_id' => $taskObj ? $taskObj->id : null,
+                'total_human_time' => $taskObj && method_exists($taskObj, 'totalTrackedTimeHuman') ? $taskObj->totalTrackedTimeHuman() : null,
+            ]);
+        }
+
         return back()->with('success', 'Cita actualizada correctamente.');
     }
 

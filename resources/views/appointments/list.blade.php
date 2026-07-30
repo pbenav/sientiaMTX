@@ -351,13 +351,16 @@
                                                                 formData.append('_token', '{{ csrf_token() }}');
                                                                 formData.append('_method', 'PATCH');
                                                                 formData.append('status', isCompleted ? 'completed' : 'confirmed');
-                                                                
                                                                 fetch('{{ route('appointments.update', [$team, $cita]) }}', {
                                                                     method: 'POST',
                                                                     body: formData,
                                                                     headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
-                                                                }).then(res => {
+                                                                }).then(res => res.json()).then(data => {
                                                                     loading = false;
+                                                                    if (data.timer_stopped && data.task_id) {
+                                                                        window.dispatchEvent(new CustomEvent('time-updated', { detail: { taskId: data.task_id, humanTime: data.total_human_time } }));
+                                                                        window.dispatchEvent(new CustomEvent('task-stopped', { detail: { taskId: data.task_id } }));
+                                                                    }
                                                                 }).catch(() => {
                                                                     loading = false;
                                                                     isCompleted = !isCompleted;
