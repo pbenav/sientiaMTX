@@ -1,5 +1,6 @@
-<div class="mb-8">
-    <nav class="flex items-center gap-2 bg-gray-100/50 dark:bg-gray-800/50 p-1.5 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 w-fit overflow-x-auto" aria-label="Tabs">
+<div class="-mx-4 sm:mx-0 mb-8 overflow-hidden">
+    <div class="overflow-x-auto px-4 sm:px-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <nav class="flex items-center gap-2 bg-gray-100/50 dark:bg-gray-800/50 p-1.5 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 w-max min-w-full sm:min-w-0 sm:w-fit" aria-label="Tabs">
         <a href="{{ route('settings.mail') }}" 
            class="{{ request()->routeIs('settings.mail*') 
                 ? 'bg-white dark:bg-gray-900 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-800' 
@@ -88,4 +89,5 @@
             Seguridad (ENS)
         </a>
     </nav>
+    </div>
 </div>
