@@ -41,8 +41,12 @@ class SyncKanbanColumnAction
 
         // Gamification: Award points if newly completed
         if ($task->isCompleted() && !in_array($oldStatus, ['completed', 'done', 'approved', 'triggered', 'accepted', 'finished'])) {
-            app(GamificationRewardAction::class)->execute($task);
-            $task->notifyCoordinatorsIfCompleted();
+            try {
+                app(GamificationRewardAction::class)->execute($task);
+                $task->notifyCoordinatorsIfCompleted();
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error("Kanban Gamification/Notification error: " . $e->getMessage());
+            }
         }
 
         // Parent sync
