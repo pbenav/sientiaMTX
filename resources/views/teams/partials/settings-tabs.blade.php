@@ -7,4 +7,8 @@
         class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all {{ request()->routeIs('teams.skills.*') ? 'bg-white dark:bg-gray-900 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-800' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300' }}">
         Habilidades / Especialidades
     </a>
+    <a href="{{ route('teams.badges.settings', $team) }}" 
+        class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all {{ request()->routeIs('teams.badges.*') ? 'bg-white dark:bg-gray-900 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-800' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300' }}">
+        Medallas (Gamificación)
+    </a>
 </div>

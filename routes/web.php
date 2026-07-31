@@ -425,6 +425,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/settings/skills', [\App\Http\Controllers\SkillController::class, 'store'])->name('settings.skills.store');
         Route::patch('/settings/skills/{skill}', [\App\Http\Controllers\SkillController::class, 'update'])->name('settings.skills.update');
         Route::delete('/settings/skills/{skill}', [\App\Http\Controllers\SkillController::class, 'destroy'])->name('settings.skills.destroy');
+
+        Route::get('/settings/badges', [\App\Http\Controllers\Gamification\BadgeController::class, 'indexAdmin'])->name('settings.badges.index');
+        Route::post('/settings/badges', [\App\Http\Controllers\Gamification\BadgeController::class, 'store'])->name('settings.badges.store');
+        Route::patch('/settings/badges/{badge}', [\App\Http\Controllers\Gamification\BadgeController::class, 'update'])->name('settings.badges.update');
+        Route::delete('/settings/badges/{badge}', [\App\Http\Controllers\Gamification\BadgeController::class, 'destroy'])->name('settings.badges.destroy');
     });
 
     // Team-specific Skills Management
@@ -435,6 +440,9 @@ Route::middleware('auth')->group(function () {
         Route::delete('/skills/{skill}', [\App\Http\Controllers\SkillController::class, 'destroy'])->name('skills.destroy');
         Route::post('/skills/inherit', [\App\Http\Controllers\SkillController::class, 'inherit'])->name('skills.inherit');
         Route::get('/skills/{skillName}/tasks', [\App\Http\Controllers\SkillController::class, 'tasks'])->name('skills.tasks');
+
+        Route::get('/badges', [\App\Http\Controllers\Gamification\BadgeController::class, 'teamSettings'])->name('badges.settings');
+        Route::post('/badges', [\App\Http\Controllers\Gamification\BadgeController::class, 'updateTeamSettings'])->name('badges.update');
     });
 
     // Surveys routes

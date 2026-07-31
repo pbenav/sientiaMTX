@@ -17,7 +17,20 @@ class BadgeService
         $allBadges = Badge::all();
         $userBadgeIds = $user->badges()->pluck('badges.id')->toArray();
 
+        $enabledBadges = null;
+        if ($teamId) {
+            $team = \App\Models\Team::find($teamId);
+            if ($team && isset($team->settings['enabled_badges'])) {
+                $enabledBadges = $team->settings['enabled_badges'];
+            }
+        }
+
         foreach ($allBadges as $badge) {
+            // Check if badge is enabled for this team (if the setting exists)
+            if ($enabledBadges !== null && !in_array($badge->id, $enabledBadges)) {
+                continue;
+            }
+
             if (in_array($badge->id, $userBadgeIds)) {
                 continue; // Ya tiene esta medalla
             }
