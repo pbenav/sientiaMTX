@@ -47,6 +47,7 @@
             });
         }
     }" 
+    @task-stopped.window="if ($event.detail.taskId == taskId) { visible = false; }"
     x-show="visible"
     x-init="setInterval(() => { seconds = Math.max(0, Math.floor(Date.now() / 1000) - startTime); }, 1000)"
     class="bg-gradient-to-r from-violet-700 via-purple-700 to-indigo-700 dark:from-violet-950 dark:via-purple-900 dark:to-indigo-950 rounded-2xl p-4 text-white shadow-xl flex items-center justify-between gap-4 flex-wrap border border-violet-400/30 mb-6 transition-all">
