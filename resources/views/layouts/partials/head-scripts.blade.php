@@ -179,7 +179,7 @@
 
                     // Esperar a que la página cargue completamente para evitar bug del spinner infinito en Firefox
                     window.addEventListener('load', () => {
-                        this.pollInterval = setInterval(() => this.checkNewMessages(), 4000);
+                        this.pollInterval = setInterval(() => this.checkNewMessages(), 30000);
                     });
 
                     // --- Real Presence System ---

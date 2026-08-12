@@ -59,6 +59,7 @@ To keep the server optimized, you can purge old files:
 SientiaMTX uses **Gemini** models (Google AI). As an administrator:
 - Configure the global **API Key** in the `.env` file or allow each team to use its own key from its settings panel.
 - We recommend the `gemini-1.5-flash` model for its balance between speed and cost.
+- [View the Full Ax.ia (Google Gemini API) Configuration Manual](axia.md)
 
 ---
 

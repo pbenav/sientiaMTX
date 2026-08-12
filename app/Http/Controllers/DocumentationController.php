@@ -52,6 +52,7 @@ class DocumentationController extends Controller
                 'wellness-metrics'  => 'Métricas de Bienestar (Wellness)',
                 'spdx'              => 'Compatibilidad SPDX',
                 'ens'               => 'Cumplimiento ENS',
+                'axia'              => 'Configuración Ax.ia (Gemini API)',
             ],
             'en' => [
                 'installation'      => 'Installation',
@@ -66,6 +67,7 @@ class DocumentationController extends Controller
                 'wellness-metrics'  => 'Wellness Metrics',
                 'spdx'              => 'SPDX Compatibility',
                 'ens'               => 'ENS Compliance',
+                'axia'              => 'Ax.ia Configuration (Gemini API)',
             ]
         ];
 
@@ -111,6 +113,7 @@ class DocumentationController extends Controller
                 'wellness-metrics'   => 'Métricas de Bienestar (Wellness)',
                 'spdx'               => 'Compatibilidad SPDX',
                 'ens'                => 'Cumplimiento ENS',
+                'axia'               => 'Configuración Ax.ia (Gemini API)',
             ],
             'en' => [
                 'installation'       => 'SientiaMTX Installation Guide',
@@ -125,6 +128,7 @@ class DocumentationController extends Controller
                 'wellness-metrics'   => 'Wellness Metrics',
                 'spdx'               => 'SPDX Compatibility',
                 'ens'                => 'ENS Compliance',
+                'axia'               => 'Ax.ia Configuration (Gemini API)',
             ],
         ];
 
