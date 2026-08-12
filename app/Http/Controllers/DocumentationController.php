@@ -42,6 +42,7 @@ class DocumentationController extends Controller
             'es' => [
                 'installation'      => 'Instalación',
                 'custom-domains'    => 'Dominios Personalizados (White-label)',
+                'axia'              => 'Configuración Ax.ia (Gemini API)',
                 'telegram'          => 'Configuración Telegram',
                 'whatsapp'          => 'Configuración WhatsApp',
                 'onlyoffice-laravel' => 'OnlyOffice — Laravel (MTX)',
@@ -52,11 +53,11 @@ class DocumentationController extends Controller
                 'wellness-metrics'  => 'Métricas de Bienestar (Wellness)',
                 'spdx'              => 'Compatibilidad SPDX',
                 'ens'               => 'Cumplimiento ENS',
-                'axia'              => 'Configuración Ax.ia (Gemini API)',
             ],
             'en' => [
                 'installation'      => 'Installation',
                 'custom-domains'    => 'Custom Domains (White-label)',
+                'axia'              => 'Ax.ia Configuration (Gemini API)',
                 'telegram'          => 'Telegram Setup',
                 'whatsapp'          => 'WhatsApp Setup',
                 'onlyoffice-laravel' => 'OnlyOffice — Laravel (MTX)',
@@ -67,7 +68,6 @@ class DocumentationController extends Controller
                 'wellness-metrics'  => 'Wellness Metrics',
                 'spdx'              => 'SPDX Compatibility',
                 'ens'               => 'ENS Compliance',
-                'axia'              => 'Ax.ia Configuration (Gemini API)',
             ]
         ];
 
@@ -103,6 +103,7 @@ class DocumentationController extends Controller
             'es' => [
                 'installation'       => 'Guía de Instalación SientiaMTX',
                 'custom-domains'     => 'Dominios Personalizados (White-label)',
+                'axia'               => 'Configuración Ax.ia (Gemini API)',
                 'telegram'           => 'Configuración de Telegram',
                 'whatsapp'           => 'Configuración de WhatsApp',
                 'onlyoffice-laravel' => 'OnlyOffice — Laravel (MTX)',
@@ -113,11 +114,11 @@ class DocumentationController extends Controller
                 'wellness-metrics'   => 'Métricas de Bienestar (Wellness)',
                 'spdx'               => 'Compatibilidad SPDX',
                 'ens'                => 'Cumplimiento ENS',
-                'axia'               => 'Configuración Ax.ia (Gemini API)',
             ],
             'en' => [
                 'installation'       => 'SientiaMTX Installation Guide',
                 'custom-domains'     => 'Custom Domains (White-label)',
+                'axia'               => 'Ax.ia Configuration (Gemini API)',
                 'telegram'           => 'Telegram Setup',
                 'whatsapp'           => 'WhatsApp Setup',
                 'onlyoffice-laravel' => 'OnlyOffice — Laravel (MTX)',
@@ -128,7 +129,6 @@ class DocumentationController extends Controller
                 'wellness-metrics'   => 'Wellness Metrics',
                 'spdx'               => 'SPDX Compatibility',
                 'ens'                => 'ENS Compliance',
-                'axia'               => 'Ax.ia Configuration (Gemini API)',
             ],
         ];
 
