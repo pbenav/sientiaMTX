@@ -12,11 +12,20 @@ Ax.ia es el asistente de Inteligencia Artificial integrado en SientiaMTX, potenc
 
 ## 2. Configurar Ax.ia en SientiaMTX
 
-Para activar Ax.ia, debes introducir tu clave de API en el archivo de configuración del entorno de SientiaMTX o a través de la interfaz de administración.
+Para activar Ax.ia, puedes configurar tu clave de API a través de los ajustes de tu perfil. Los administradores de sistemas también pueden establecer una clave global en el entorno.
 
-### Opción A: A través del Archivo `.env` (Para Administradores del Sistema)
+### Opción A: A través de la Interfaz Web (Ajustes de Perfil)
 
-Si administras el servidor donde se aloja SientiaMTX, puedes configurarlo directamente en el archivo de entorno:
+Cualquier usuario puede configurar su propia clave de API para usar Ax.ia:
+
+1. Inicia sesión en SientiaMTX.
+2. Ve a los **Ajustes de tu perfil** y busca la pestaña de **Integraciones de IA** (o el panel de Ax.ia).
+3. Pega tu clave de API de Gemini en el campo indicado.
+4. Guarda los cambios. El sistema validará la conexión y podrás utilizar Ax.ia de inmediato.
+
+### Opción B: A través del Archivo `.env` (Para Administradores del Sistema)
+
+Si administras el servidor donde se aloja SientiaMTX y deseas establecer una clave global, puedes configurarlo directamente en el archivo de entorno:
 
 1. Abre el archivo `.env` ubicado en la raíz de tu proyecto SientiaMTX.
 2. Busca o añade la siguiente variable:
@@ -28,13 +37,6 @@ Si administras el servidor donde se aloja SientiaMTX, puedes configurarlo direct
    ```bash
    php artisan config:clear
    ```
-
-### Opción B: A través de la Interfaz Web (Si está habilitado)
-
-1. Inicia sesión en SientiaMTX con una cuenta de Administrador.
-2. Ve al perfil de usuario o ajustes de sistema y busca el panel de IA / Ax.ia.
-3. Pega tu clave de API de Gemini en el campo indicado.
-4. Guarda los cambios. El sistema validará la conexión.
 
 ## 3. Verificación
 

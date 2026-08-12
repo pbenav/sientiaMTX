@@ -12,11 +12,20 @@ Ax.ia is the Artificial Intelligence assistant integrated into SientiaMTX, power
 
 ## 2. Configure Ax.ia in SientiaMTX
 
-To activate Ax.ia, you must enter your API key in the SientiaMTX environment configuration file or through the administration interface.
+To activate Ax.ia, you can configure your API key through your profile settings. System administrators can also set a global key in the environment.
 
-### Option A: Via the `.env` File (For System Administrators)
+### Option A: Via the Web Interface (Profile Settings)
 
-If you manage the server hosting SientiaMTX, you can configure it directly in the environment file:
+Any user can configure their own API key to use Ax.ia:
+
+1. Log in to SientiaMTX.
+2. Navigate to your **Profile settings** and find the **AI Integrations** tab (or Ax.ia panel).
+3. Paste your Gemini API key in the provided field.
+4. Save the changes. The system will validate the connection and you will be able to use Ax.ia immediately.
+
+### Option B: Via the `.env` File (For System Administrators)
+
+If you manage the server hosting SientiaMTX and wish to set a global key, you can configure it directly in the environment file:
 
 1. Open the `.env` file located in the root of your SientiaMTX project.
 2. Search for or add the following variable:
@@ -28,13 +37,6 @@ If you manage the server hosting SientiaMTX, you can configure it directly in th
    ```bash
    php artisan config:clear
    ```
-
-### Option B: Via the Web Interface (If enabled)
-
-1. Log in to SientiaMTX with an Administrator account.
-2. Navigate to your user profile or system settings and find the AI / Ax.ia panel.
-3. Paste your Gemini API key in the provided field.
-4. Save the changes. The system will validate the connection.
 
 ## 3. Verification
 
