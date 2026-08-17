@@ -39,7 +39,7 @@
             }
         }
     }">
-        <div class="max-w-7xl mx-auto">
+        <div class="w-full max-w-[1920px] mx-auto">
             @include('settings.partials.tabs')
 
             <!-- Pestañas Internas -->

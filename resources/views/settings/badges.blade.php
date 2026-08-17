@@ -29,7 +29,7 @@
     </x-slot>
 
     <div class="py-12 px-4">
-        <div class="max-w-7xl mx-auto">
+        <div class="w-full max-w-[1920px] mx-auto">
             @include('settings.partials.tabs')
             
             <!-- Leyenda Explicativa -->

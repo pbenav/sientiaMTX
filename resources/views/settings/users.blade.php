@@ -34,7 +34,7 @@
     </x-slot>
 
     <div class="py-12 px-4 shadow-sm">
-        <div class="max-w-7xl mx-auto">
+        <div class="w-full max-w-[1920px] mx-auto">
             @include('settings.partials.tabs')
 
             <div class="mb-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-4 shadow-sm">
