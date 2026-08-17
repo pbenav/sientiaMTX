@@ -68,7 +68,7 @@
                             </div>
 
                             <!-- Tab Contents -->
-                            <div x-show="tab === 'privacy'" x-cloak>
+                            <div :class="tab === 'privacy' ? 'block' : 'absolute invisible opacity-0 pointer-events-none h-0 overflow-hidden z-[-1]'">
                                 <div class="mb-4 flex items-start justify-between gap-4">
                                     <div>
                                         <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('Privacy Policy') }}</h3>
@@ -86,7 +86,7 @@
                                 <x-input-error :messages="$errors->get('legal_privacy')" class="mt-2" />
                             </div>
 
-                            <div x-show="tab === 'terms'" x-cloak>
+                            <div :class="tab === 'terms' ? 'block' : 'absolute invisible opacity-0 pointer-events-none h-0 overflow-hidden z-[-1]'">
                                 <div class="mb-4 flex items-start justify-between gap-4">
                                     <div>
                                         <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('Terms of Service') }}</h3>
@@ -104,7 +104,7 @@
                                 <x-input-error :messages="$errors->get('legal_terms')" class="mt-2" />
                             </div>
 
-                            <div x-show="tab === 'cookies'" x-cloak>
+                            <div :class="tab === 'cookies' ? 'block' : 'absolute invisible opacity-0 pointer-events-none h-0 overflow-hidden z-[-1]'">
                                 <div class="mb-4 flex items-start justify-between gap-4">
                                     <div>
                                         <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('Cookie Policy') }}</h3>
