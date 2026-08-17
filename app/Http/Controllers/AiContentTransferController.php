@@ -305,16 +305,13 @@ class AiContentTransferController extends Controller
                     $taskDesc = $taskItem['description'] ?? '';
                     
                     try {
-                        \App\Models\Activity::create([
-                            'team_id' => $team->id,
+                        app(\App\Services\ActivityService::class)->create([
                             'type' => 'task',
                             'title' => $taskTitle,
                             'description' => $taskDesc,
-                            'created_by_id' => $user->id,
-                            'assigned_user_id' => $user->id,
                             'visibility' => 'private',
-                            'status' => 'pending'
-                        ]);
+                            'status' => 'pending',
+                        ], $team);
                         $createdCount++;
                     } catch (\Exception $e) {
                         Log::error("Ax.ia Bulk Activity Creation Error: " . $e->getMessage());
