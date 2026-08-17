@@ -205,4 +205,55 @@ class ActivityAttachment extends Model
             'ppt', 'pptx', 'odp'
         ]);
     }
+
+    /**
+     * Ruta de la copia pública para micrositios.
+     */
+    public function getPublicCopyPath(): string
+    {
+        $basename = basename($this->file_path ?: $this->file_name);
+        return 'microsite_public/activity_attachment_' . $this->id . '/' . $basename;
+    }
+
+    /**
+     * Crea una copia en microsite_public/ si no existe.
+     */
+    public function ensurePublicCopy(): ?string
+    {
+        if ($this->disk === 'google_drive' || !$this->file_path) {
+            return null;
+        }
+
+        $copyPath = $this->getPublicCopyPath();
+
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($copyPath)) {
+            return $copyPath;
+        }
+
+        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($this->file_path)) {
+            return null;
+        }
+
+        \Illuminate\Support\Facades\Storage::disk('public')->makeDirectory(dirname($copyPath));
+        \Illuminate\Support\Facades\Storage::disk('public')->copy($this->file_path, $copyPath);
+
+        return $copyPath;
+    }
+
+    /**
+     * URL pública permanente para incrustar o enlazar el adjunto en micrositios.
+     */
+    public function getPublicEmbedUrl(): ?string
+    {
+        if ($this->disk === 'google_drive') {
+            return $this->file_path; // Link directo si es GDrive (si existiera un link público)
+        }
+
+        if (!$this->file_path) {
+            return null;
+        }
+
+        // Retornamos la URL absoluta hacia la copia pública
+        return url('storage/' . $this->getPublicCopyPath());
+    }
 }

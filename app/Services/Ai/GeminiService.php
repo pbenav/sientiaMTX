@@ -309,7 +309,8 @@ class GeminiService implements AiAssistantInterface
             $contextInfo .= "- Tamaño: " . number_format($this->attachmentContext->file_size / 1024, 2) . " KB\n";
             
             // Proveer siempre una URL pública permanente para micrositios
-            if ($this->attachmentContext->storage_provider !== 'google') {
+            $provider = $this->attachmentContext->storage_provider ?? $this->attachmentContext->disk ?? 'local';
+            if ($provider !== 'google' && $provider !== 'google_drive') {
                 $this->attachmentContext->ensurePublicCopy();
             }
 
@@ -322,7 +323,7 @@ class GeminiService implements AiAssistantInterface
             $mime = $this->attachmentContext->mime_type;
             $canSendAsMedia = $this->isMultimodalMime($mime);
 
-            if ($this->attachmentContext->storage_provider === 'google') {
+            if ($provider === 'google' || $provider === 'google_drive') {
                 $contextInfo .= "- Fuente: Google Drive\n";
                 $contextInfo .= "- Enlace: {$this->attachmentContext->web_view_link}\n";
                 
