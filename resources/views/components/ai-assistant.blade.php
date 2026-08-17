@@ -15,6 +15,7 @@
      @ai:inject-note.window="injectNote($event.detail)"
      @ai:inject-microsite.window="injectMicrosite($event.detail)"
      @ai:inject-survey.window="injectSurvey($event.detail)"
+     @ai:inject-bulk-tasks.window="injectBulkTasks($event.detail)"
      @quicknote-state-changed.window="quickNotesVisible = $event.detail.anyVisible">
     
     <!-- Chat Window -->
@@ -1202,6 +1203,22 @@
                 if (data.current_model) this.currentModel = data.current_model;
                 this.retryCount = 0;
 
+                // Auto-create tasks if AI sent a creation payload
+                if (!isError && hasPayload) {
+                    try {
+                        const match = data.message.match(/\[PAYLOAD\]([\s\S]*?)\[\/PAYLOAD\]/);
+                        if (match) {
+                            const raw = match[1].trim();
+                            const pData = JSON.parse(this.cleanJson(raw));
+                            if (pData.intent === 'bulk_tasks') {
+                                setTimeout(() => window.dispatchEvent(new CustomEvent('ai:inject-bulk-tasks', { detail: { json: JSON.stringify(pData.tasks) } })), 500);
+                            } else if (pData.intent === 'full_task') {
+                                setTimeout(() => this.submitServerTransfer('task', raw), 500);
+                            }
+                        }
+                    } catch (e) { console.error('Auto-trigger parse error:', e); }
+                }
+
                 // Notifications
                 if (!this.open) {
                     this.hasUnread = true;
@@ -1409,6 +1426,40 @@
                                             class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold uppercase tracking-widest rounded-2xl transition-all shadow-lg active:scale-95 flex items-center gap-3">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                                         <span>Crear Nuevo Sitio</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>`;
+                    }
+
+                    // 2.6 SPECIAL: BULK TASKS GENERATOR
+                    if (data.intent === 'bulk_tasks') {
+                        const tasksCount = data.tasks && Array.isArray(data.tasks) ? data.tasks.length : 0;
+                        return `
+                        <div class="group/payload my-6 relative transition-all duration-500">
+                            <div class="absolute -inset-1 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-[2.5rem] blur opacity-20 group-hover/payload:opacity-40 transition duration-1000"></div>
+                            <div class="relative p-6 rounded-[2.5rem] bg-blue-50/90 dark:bg-slate-900 border border-blue-100 dark:border-slate-800 shadow-2xl backdrop-blur-xl">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+                                        </div>
+                                        <div>
+                                            <span class="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400">Tareas en lote extraídas</span>
+                                            <div class="text-[9px] text-slate-500 dark:text-slate-400 mt-0.5">${tasksCount} tareas listas para crear</div>
+                                        </div>
+                                    </div>
+                                    <span class="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-[9px] font-black uppercase tracking-wider">● Lote</span>
+                                </div>
+                                <div class="mt-3 relative">
+                                    <pre class="bg-gray-900/95 text-blue-400 p-4 rounded-2xl text-[10px] overflow-x-auto shadow-inner border border-gray-800 font-mono max-h-48 overflow-y-auto"><code>${JSON.stringify(data.tasks, null, 2).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
+                                </div>
+                                <div class="mt-4 flex items-center justify-end gap-3 pt-4 border-t border-blue-100/50 dark:border-slate-800">
+                                    <span class="text-[9px] font-bold text-blue-500/80 mr-auto uppercase tracking-tighter italic">Crear en lote</span>
+                                    <button onclick="window.dispatchEvent(new CustomEvent('ai:inject-bulk-tasks', { detail: { json: ${JSON.stringify(JSON.stringify(data.tasks)).replace(/"/g, '&quot;')} } }))" 
+                                            class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold uppercase tracking-widest rounded-2xl transition-all shadow-lg active:scale-95 flex items-center gap-3">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                                        <span>Crear ${tasksCount} Tareas</span>
                                     </button>
                                 </div>
                             </div>
@@ -2189,6 +2240,50 @@
             playNotification() {
                 if (!this.soundEnabled) return;
                 this.audio.play().catch(e => console.log('Audio playback failed', e));
+            },
+
+            async injectBulkTasks(detail) {
+                const tasks = JSON.parse(detail.json);
+                if (!tasks || !tasks.length) return;
+                
+                const isDark = document.documentElement.classList.contains('dark');
+                Swal.fire({
+                    title: 'Creando Tareas',
+                    text: `Creando ${tasks.length} tareas...`,
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                try {
+                    let url = '{{ route("ai.transfer_global", ["team" => "TEAM_ID"]) }}'.replace('TEAM_ID', this.teamId || '');
+                    url = url.replace(/\/$/, "");
+
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ 
+                            content: detail.json, 
+                            target: 'bulk_tasks'
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        Swal.fire({ title: '¡Hecho!', text: data.message, icon: 'success', timer: 2500, showConfirmButton: false, background: isDark ? '#0f172a' : '#ffffff', customClass: { popup: 'rounded-[2rem]' } }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire('Error', data.message, 'error');
+                    }
+                } catch (error) {
+                    Swal.fire('Error', 'Problema de conexión.', 'error');
+                }
             }
         }));
         };

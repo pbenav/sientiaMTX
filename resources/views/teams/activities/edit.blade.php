@@ -38,6 +38,7 @@
                 @csrf
                 @method('PATCH')
                 <input type="hidden" name="type" value="{{ $activity->type }}">
+                <input type="hidden" name="tab" :value="activeTab">
 
                 
     

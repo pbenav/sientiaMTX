@@ -382,7 +382,8 @@ class ActivityController extends Controller
 
         $this->activityService->update($activity, $validated, $request->file('attachments') ?? []);
 
-        return redirect()->route('teams.activities.show', [$team, $activity])
+        $tab = $request->input('tab', 'general');
+        return redirect()->route('teams.activities.show', ['team' => $team, 'activity' => $activity, 'tab' => $tab])
             ->with('success', __('activities.updated_success'));
     }
 

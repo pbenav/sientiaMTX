@@ -257,7 +257,7 @@ class AiContentTransferController extends Controller
 
         Log::info("transferGlobalContent PAYLOAD EXTRAIDO", ['payload' => $payload, 'target' => $request->target]);
 
-        if (in_array($request->target, ['task', 'private_note', 'private-notes', 'observations', 'observations_append', 'description', 'quick-note'])) {
+        if (in_array($request->target, ['task', 'private_note', 'private-notes', 'observations', 'observations_append', 'description', 'quick-note', 'bulk_tasks'])) {
             $payload = $this->extractPayload($request->input('content'));
             $user = $request->user();
             
@@ -281,6 +281,49 @@ class AiContentTransferController extends Controller
                     'success' => true,
                     'message' => "Se ha creado una nota rápida con el contenido de la IA.",
                     'note_id' => $note->id
+                ]);
+            }
+
+
+
+            if ($request->target === 'bulk_tasks') {
+                $tasksData = is_string($payload) ? json_decode($payload, true) : $payload;
+                if (isset($tasksData['tasks'])) {
+                    $tasksData = $tasksData['tasks'];
+                }
+                if (is_string($tasksData)) {
+                    $tasksData = json_decode($tasksData, true);
+                }
+                
+                if (!is_array($tasksData)) {
+                    return response()->json(['success' => false, 'message' => 'No se pudieron procesar las tareas enviadas.'], 400);
+                }
+
+                $createdCount = 0;
+                foreach ($tasksData as $taskItem) {
+                    $taskTitle = $taskItem['title'] ?? 'Nueva Tarea (Ax.ia)';
+                    $taskDesc = $taskItem['description'] ?? '';
+                    
+                    try {
+                        \App\Models\Activity::create([
+                            'team_id' => $team->id,
+                            'type' => 'task',
+                            'title' => $taskTitle,
+                            'description' => $taskDesc,
+                            'created_by_id' => $user->id,
+                            'assigned_user_id' => $user->id,
+                            'visibility' => 'private',
+                            'status' => 'pending'
+                        ]);
+                        $createdCount++;
+                    } catch (\Exception $e) {
+                        Log::error("Ax.ia Bulk Activity Creation Error: " . $e->getMessage());
+                    }
+                }
+
+                return response()->json([
+                    'success' => true, 
+                    'message' => "Se han generado $createdCount tareas correctamente.",
                 ]);
             }
 

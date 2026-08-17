@@ -62,7 +62,13 @@ class ActivityChapterController extends Controller
             'action' => \Illuminate\Support\Str::limit("Añadido capítulo: {$newChapter['title']}", 100),
         ]);
 
-        return back()->withFragment('chapters-section')->with('success', __('activities.chapter_added'));
+        $url = url()->previous();
+        if (!str_contains($url, 'tab=')) {
+            $url .= (str_contains($url, '?') ? '&' : '?') . 'tab=chapters';
+        } else {
+            $url = preg_replace('/tab=[^&]+/', 'tab=chapters', $url);
+        }
+        return redirect($url)->withFragment('chapters-section')->with('success', __('activities.chapter_added'));
     }
 
     /**
@@ -107,7 +113,13 @@ class ActivityChapterController extends Controller
             'action' => "Actualizado capítulo ID #{$chapterId}",
         ]);
 
-        return back()->withFragment('chapters-section')->with('success', __('activities.chapter_updated'));
+        $url = url()->previous();
+        if (!str_contains($url, 'tab=')) {
+            $url .= (str_contains($url, '?') ? '&' : '?') . 'tab=chapters';
+        } else {
+            $url = preg_replace('/tab=[^&]+/', 'tab=chapters', $url);
+        }
+        return redirect($url)->withFragment('chapters-section')->with('success', __('activities.chapter_updated'));
     }
 
     /**
@@ -139,7 +151,13 @@ class ActivityChapterController extends Controller
             'action' => "Eliminado capítulo ID #{$chapterId}",
         ]);
 
-        return back()->withFragment('chapters-section')->with('success', __('activities.chapter_deleted'));
+        $url = url()->previous();
+        if (!str_contains($url, 'tab=')) {
+            $url .= (str_contains($url, '?') ? '&' : '?') . 'tab=chapters';
+        } else {
+            $url = preg_replace('/tab=[^&]+/', 'tab=chapters', $url);
+        }
+        return redirect($url)->withFragment('chapters-section')->with('success', __('activities.chapter_deleted'));
     }
 
     /**
