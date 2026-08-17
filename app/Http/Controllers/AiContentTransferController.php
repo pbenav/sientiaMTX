@@ -392,18 +392,14 @@ class AiContentTransferController extends Controller
             }
             
             try {
-                $task = \App\Models\Activity::create([
-                    'team_id' => $team->id,
+                $task = app(\App\Services\ActivityService::class)->create([
                     'type' => $activityType,
                     'title' => $title ?: '📝 Actividad de Ax.ia: ' . now()->format('d/m H:i'),
                     'description' => $desc,
-                    'created_by_id' => $user->id,
-                    'assigned_user_id' => $user->id,
                     'visibility' => 'private',
                     'status' => $status,
                     'metadata' => $metadata
-                ]);
-                $task->refresh();
+                ], $team);
                 
                 if (!empty($obs)) {
                     $task->notes()->create([
