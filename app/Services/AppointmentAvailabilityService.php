@@ -71,9 +71,9 @@ class AppointmentAvailabilityService
             ->keyBy('time');
 
         foreach ($schedules as $schedule) {
-            // Siempre priorizamos la configuración actual del servicio, ignorando el valor cacheado en el schedule
-            $slotMinutes = $service->getEffectiveSlotDuration();
-            $maxPerSlot  = $service->getEffectiveMaxPerSlot();
+            // Jerarquía: 1. Horario (Schedule), 2. Servicio (Service tramo), 3. Servicio (Service duración)
+            $slotMinutes = $schedule->slot_duration_minutes ?: $service->getEffectiveSlotDuration();
+            $maxPerSlot  = $schedule->max_per_slot ?: $service->getEffectiveMaxPerSlot();
             $start       = Carbon::parse($date->format('Y-m-d') . ' ' . $schedule->start_time);
             $end         = Carbon::parse($date->format('Y-m-d') . ' ' . $schedule->end_time);
 
@@ -88,7 +88,9 @@ class AppointmentAvailabilityService
 
             $current = $start->copy();
 
-            while ($current->copy()->addMinutes($service->duration_minutes) <= $end) {
+            // Generamos slots mientras la hora de inicio del slot sea estrictamente menor que la hora de fin del turno.
+            // Esto permite que el último slot se genere (ej. 13:45) aunque su duración teórica rebase ligeramente el fin del turno (ej. 14:00)
+            while ($current < $end) {
                 $timeKey      = $current->format('H:i');
                 $slotEnd      = $current->copy()->addMinutes($slotMinutes);
                 $bookedCount  = $booked->get($timeKey . ':00', collect())->count();
