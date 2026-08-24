@@ -88,7 +88,8 @@
 
             } catch (err) {
                 console.error("Initialization Failed", err);
-                document.getElementById('loading').innerHTML = "<p style='color:red'>Error crítico de conexión con el servidor de documentos. Verifica que office.sientia.com está operativo.</p>";
+                const errorMsg = err.message || err.toString();
+                document.getElementById('loading').innerHTML = "<p style='color:red'>Error crítico de conexión con el servidor de documentos. Verifica que office.sientia.com está operativo.<br><br><small>Detalle: " + errorMsg + "</small></p>";
             }
         });
     </script>
