@@ -492,6 +492,46 @@ class AppointmentController extends Controller
     }
 
     /**
+     * Mueve la cita al momento actual (ahora mismo) y autoriza el aforo, sin importar el horario.
+     */
+    public function attendNow(Team $team, Appointment $appointment)
+    {
+        $this->authorize('update', $appointment);
+        if ($appointment->service->team_id !== $team->id) {
+            abort(403);
+        }
+
+        $now = now();
+        // Redondear a los 5 minutos más cercanos por consistencia
+        $minutes = floor($now->minute / 5) * 5;
+        $now->minute($minutes)->second(0);
+        
+        $date = $now->toDateString();
+        $time = $now->format('H:i:s');
+
+        // Autorizar aforo para este instante
+        $override = \App\Models\AppointmentSlotOverride::firstOrNew([
+            'service_id' => $appointment->service_id,
+            'date' => $date,
+            'time' => substr($time, 0, 5), // 'H:i'
+        ]);
+        $override->extra_capacity += 1;
+        $override->save();
+
+        // Mover cita
+        $appointment->update([
+            'appointment_date' => $date,
+            'appointment_time' => $time,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'date' => $date,
+            'time' => $time,
+        ]);
+    }
+
+    /**
      * Actualiza una cita (mover fecha/hora, notas, expediente).
      */
     public function update(Team $team, Request $request, Appointment $appointment)

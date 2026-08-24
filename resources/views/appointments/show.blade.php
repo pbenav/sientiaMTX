@@ -76,7 +76,7 @@
                             @if(!$appointment->appointment_datetime->isPast())
                             <button type="button" id="btn-add-capacity-backend-header" class="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-all active:scale-95 shadow-sm flex items-center gap-1">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                                <span>Autorizar +1 plaza</span>
+                                <span>Atender Ahora</span>
                             </button>
                             @endif
                             
@@ -401,15 +401,15 @@
                             </form>
                         </div>
                         
-                        {{-- Ampliar Aforo --}}
+                        {{-- Ampliar Aforo / Atender Ahora --}}
                         @if(!$appointment->appointment_datetime->isPast())
                         <div class="pt-4 border-t border-gray-100 dark:border-gray-800">
-                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Forzar Aforo Público</label>
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Atender Cita Ahora</label>
                             <button type="button" id="btn-add-capacity-backend" class="w-full py-2.5 text-[10px] sm:text-xs font-black uppercase tracking-widest bg-amber-500 hover:bg-amber-600 text-white rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                                Autorizar +1 plaza aquí
+                                Atender Ahora (Mover a Hoy)
                             </button>
-                            <p class="text-[9px] text-gray-400 mt-1.5 leading-tight">Abre un hueco extra en el tramo de las <strong>{{ substr($appointment->appointment_time, 0, 5) }}</strong> para que otro ciudadano pueda reservar ahora mismo.</p>
+                            <p class="text-[9px] text-gray-400 mt-1.5 leading-tight text-center">Mueve esta cita al momento exacto actual (ahora) y autoriza aforo extra automáticamente para atenderlo en el acto.</p>
                         </div>
                         @endif
 
@@ -564,18 +564,18 @@
             });
         }
         
-        // Manejar el botón de autorizar capacidad extra
+        // Manejar el botón de Atender Ahora
         const addCapacityBtn = document.getElementById('btn-add-capacity-backend');
         const addCapacityBtnHeader = document.getElementById('btn-add-capacity-backend-header');
         
         function handleAddCapacityClick() {
             if (typeof Swal !== 'undefined') {
                 Swal.fire({
-                    title: '¿Autorizar 1 plaza extra?',
-                    text: 'Se abrirá un nuevo hueco público en el tramo de las {{ substr($appointment->appointment_time, 0, 5) }} de hoy.',
+                    title: '¿Atender en este momento?',
+                    text: 'Esta cita se moverá al día de hoy, ahora mismo. Se autorizará una plaza extra automáticamente para que no afecte al aforo.',
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonText: 'Sí, autorizar',
+                    confirmButtonText: 'Sí, mover a ahora',
                     cancelButtonText: 'Cancelar',
                     customClass: {
                         popup: 'rounded-[2rem] dark:bg-gray-900 border border-gray-150 dark:border-gray-800 p-8',
@@ -589,7 +589,7 @@
                     }
                 });
             } else {
-                if (confirm('¿Abrir un hueco extra a las {{ substr($appointment->appointment_time, 0, 5) }}?')) {
+                if (confirm('¿Mover esta cita a ahora mismo y atenderla?')) {
                     ejecutarAddCapacity();
                 }
             }
@@ -610,11 +610,8 @@
             
             let formData = new FormData();
             formData.append('_token', '{{ csrf_token() }}');
-            formData.append('date', '{{ $appointment->appointment_date->toDateString() }}');
-            formData.append('time', '{{ substr($appointment->appointment_time, 0, 5) }}');
-            formData.append('extra_capacity', '1');
             
-            fetch("{{ route('public.appointments.add-capacity', $appointment->service_id) }}", {
+            fetch("{{ route('appointments.attend-now', [$team, $appointment]) }}", {
                 method: 'POST',
                 body: formData,
                 headers: { 'Accept': 'application/json' }
@@ -625,29 +622,41 @@
                     if (typeof Swal !== 'undefined') {
                         Swal.fire({
                             icon: 'success',
-                            title: '¡Plaza autorizada!',
-                            text: 'Ya hay un hueco libre en este tramo para el público.',
+                            title: '¡Cita movida!',
+                            text: 'La cita ha sido movida a hoy a las ' + data.time.substring(0, 5) + ' y se ha autorizado el aforo.',
                             customClass: {
                                 popup: 'rounded-[2rem] dark:bg-gray-900 border border-gray-150 dark:border-gray-800 p-8',
                                 confirmButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl transition-all shadow-md'
                             },
                             buttonsStyling: false
+                        }).then(() => {
+                            window.location.reload();
                         });
                     } else {
-                        alert('Plaza autorizada correctamente.');
+                        alert('Cita movida a hoy a las ' + data.time.substring(0, 5));
+                        window.location.reload();
                     }
+                } else {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire('Error', data.message || 'No se pudo procesar la solicitud', 'error');
+                    } else {
+                        alert('Error: ' + (data.message || 'No se pudo procesar la solicitud'));
+                    }
+                    restaurarBotones();
                 }
             })
-            .finally(() => {
-                if (addCapacityBtn) {
-                    addCapacityBtn.disabled = false;
-                    addCapacityBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Autorizar +1 plaza aquí';
-                }
-                if (addCapacityBtnHeader) {
-                    addCapacityBtnHeader.disabled = false;
-                    addCapacityBtnHeader.innerHTML = '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg><span>Autorizar +1 plaza</span>';
-                }
-            });
+            .catch(() => restaurarBotones());
+        }
+
+        function restaurarBotones() {
+            if (addCapacityBtn) {
+                addCapacityBtn.disabled = false;
+                addCapacityBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Atender Ahora (Mover a Hoy)';
+            }
+            if (addCapacityBtnHeader) {
+                addCapacityBtnHeader.disabled = false;
+                addCapacityBtnHeader.innerHTML = '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg><span>Atender Ahora</span>';
+            }
         }
     });
 </script>
