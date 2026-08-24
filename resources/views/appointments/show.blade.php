@@ -73,7 +73,7 @@
                                 </form>
                             @endif
 
-                            @if(!$appointment->appointment_datetime->isPast())
+                            @if(!in_array($appointment->status, ['completed', 'cancelled', 'blocked']))
                             <button type="button" id="btn-add-capacity-backend-header" class="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-all active:scale-95 shadow-sm flex items-center gap-1">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                                 <span>Atender Ahora</span>
@@ -402,7 +402,7 @@
                         </div>
                         
                         {{-- Ampliar Aforo / Atender Ahora --}}
-                        @if(!$appointment->appointment_datetime->isPast())
+                        @if(!in_array($appointment->status, ['completed', 'cancelled', 'blocked']))
                         <div class="pt-4 border-t border-gray-100 dark:border-gray-800">
                             <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Atender Cita Ahora</label>
                             <button type="button" id="btn-add-capacity-backend" class="w-full py-2.5 text-[10px] sm:text-xs font-black uppercase tracking-widest bg-amber-500 hover:bg-amber-600 text-white rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-2">
