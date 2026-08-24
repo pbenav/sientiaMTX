@@ -71,8 +71,9 @@ class AppointmentAvailabilityService
             ->keyBy('time');
 
         foreach ($schedules as $schedule) {
-            $slotMinutes = $schedule->slot_duration_minutes ?: $service->getEffectiveSlotDuration();
-            $maxPerSlot  = $schedule->max_per_slot ?: $service->getEffectiveMaxPerSlot();
+            // Siempre priorizamos la configuración actual del servicio, ignorando el valor cacheado en el schedule
+            $slotMinutes = $service->getEffectiveSlotDuration();
+            $maxPerSlot  = $service->getEffectiveMaxPerSlot();
             $start       = Carbon::parse($date->format('Y-m-d') . ' ' . $schedule->start_time);
             $end         = Carbon::parse($date->format('Y-m-d') . ' ' . $schedule->end_time);
 

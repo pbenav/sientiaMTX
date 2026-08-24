@@ -223,8 +223,7 @@ class AppointmentService extends Model
         if ($this->slot_duration_minutes) {
             return $this->slot_duration_minutes;
         }
-        $settings = $this->team ? $this->user->appointmentSettingsForTeam($this->team) : null;
-        return $settings?->default_slot_duration ?? 15;
+        return $this->duration_minutes ?: 15;
     }
 
     /**
