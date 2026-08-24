@@ -177,4 +177,41 @@ class AppointmentAvailabilityService
         
         return $slot && !$slot['full'];
     }
+
+    /**
+     * Calcula y devuelve el próximo tramo horario disponible (o forzado) en relación a la hora actual.
+     * Busca en los tramos de hoy, y si no hay disponibles futuros, busca en los de mañana.
+     *
+     * @param  AppointmentService  $service
+     * @param  bool  $forceIfFull Si es true, devolverá el siguiente tramo aunque esté lleno.
+     * @return array|null  Devuelve ['date' => 'Y-m-d', 'time' => 'H:i'] o null si no encuentra.
+     */
+    public function getNextImmediateSlotTime(AppointmentService $service, bool $forceIfFull = true): ?array
+    {
+        // Buscar hoy y los próximos 7 días como máximo para encontrar un hueco
+        for ($i = 0; $i <= 7; $i++) {
+            $date = now()->addDays($i);
+            $slots = $this->getSlotsForDate($service, $date);
+
+            foreach ($slots as $slot) {
+                // Si es hoy, la hora del slot debe ser mayor a la hora actual
+                if ($i === 0) {
+                    $slotTime = Carbon::parse($date->format('Y-m-d') . ' ' . $slot['time']);
+                    if ($slotTime <= now()) {
+                        continue;
+                    }
+                }
+
+                // Si forzamos incluso llenos, o si hay hueco libre
+                if ($forceIfFull || !$slot['full']) {
+                    return [
+                        'date' => $date->toDateString(),
+                        'time' => $slot['time']
+                    ];
+                }
+            }
+        }
+
+        return null;
+    }
 }

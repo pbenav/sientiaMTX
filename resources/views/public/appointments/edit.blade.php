@@ -69,6 +69,10 @@
                     </div>
                 </div>
                 <div class="flex flex-col items-end gap-3">
+                    <button type="button" id="btn-immediate-slot" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-md active:scale-95 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        Urgencia Inmediata
+                    </button>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="override-capacity-toggle" name="override_capacity" value="1" class="sr-only peer">
                         <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 dark:peer-focus:ring-amber-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-amber-500"></div>
@@ -639,6 +643,81 @@
         
         // Manejar el botón de autorizar capacidad extra
         const addCapacityBtn = document.getElementById('override-add-capacity-btn');
+        const immediateSlotBtn = document.getElementById('btn-immediate-slot');
+
+        if (immediateSlotBtn) {
+            immediateSlotBtn.addEventListener('click', function() {
+                immediateSlotBtn.disabled = true;
+                immediateSlotBtn.innerHTML = 'Buscando...';
+
+                let formData = new FormData();
+                formData.append('_token', '{{ csrf_token() }}');
+
+                fetch(`/citas/service/{{ $service->id }}/add-immediate-capacity`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'Accept': 'application/json' }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    immediateSlotBtn.disabled = false;
+                    immediateSlotBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> Urgencia Inmediata';
+
+                    if (data.success) {
+                        const dateParts = data.date.split('-');
+                        currentYear = parseInt(dateParts[0]);
+                        currentMonth = parseInt(dateParts[1]) - 1;
+                        
+                        selectedDateInput.value = data.date;
+                        
+                        renderCalendar(currentYear, currentMonth);
+
+                        setTimeout(() => {
+                            const activeBtn = document.querySelector(`.calendar-day[data-date="${data.date}"]`);
+                            if (activeBtn) {
+                                selectDate(data.date, activeBtn);
+                            }
+
+                            setTimeout(() => {
+                                const timeBtns = document.querySelectorAll('.slot-btn, .border-amber-400');
+                                timeBtns.forEach(b => {
+                                    if (b.textContent.trim().includes(data.time)) {
+                                        selectTime(data.time, b);
+                                    }
+                                });
+                            }, 500);
+                        }, 200);
+
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Plaza urgente habilitada',
+                                text: `Se ha abierto y seleccionado un hueco para el ${data.date} a las ${data.time}.`,
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 4000
+                            });
+                        }
+                    } else {
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message || 'No se ha podido asignar una plaza urgente.'
+                            });
+                        } else {
+                            alert(data.message || 'No se ha podido asignar.');
+                        }
+                    }
+                })
+                .catch(err => {
+                    immediateSlotBtn.disabled = false;
+                    immediateSlotBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> Urgencia Inmediata';
+                });
+            });
+        }
+
         if (addCapacityBtn) {
             addCapacityBtn.addEventListener('click', function() {
                 const date = selectedDateInput.value;

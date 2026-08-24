@@ -194,6 +194,38 @@ class PublicAppointmentController extends Controller
     }
 
     /**
+     * Autoriza capacidad extra para el próximo tramo disponible inmediato (urgencias).
+     */
+    public function addImmediateCapacity(Request $request, AppointmentService $service)
+    {
+        if (!auth()->check()) {
+            abort(403);
+        }
+
+        $nextSlot = $this->availability->getNextImmediateSlotTime($service, true);
+
+        if (!$nextSlot) {
+            return response()->json(['success' => false, 'message' => 'No hay más tramos disponibles hoy ni en los próximos días.'], 400);
+        }
+
+        $override = AppointmentSlotOverride::firstOrNew([
+            'service_id' => $service->id,
+            'date' => $nextSlot['date'],
+            'time' => $nextSlot['time'],
+        ]);
+
+        $override->extra_capacity += 1;
+        $override->save();
+
+        return response()->json([
+            'success' => true,
+            'date' => $nextSlot['date'],
+            'time' => $nextSlot['time'],
+        ]);
+    }
+
+
+    /**
      * Formulario de reserva: mostrar.
      */
     public function book(Request $request, AppointmentService $service)
