@@ -136,14 +136,18 @@ class PublicAppointmentController extends Controller
     public function slots(Request $request, AppointmentService $service, string $date)
     {
         $parsedDate = Carbon::parse($date);
-        $override = auth()->check() && $request->boolean('override') && $parsedDate->isToday();
+        $isAdmin = auth()->check();
+        $override = $isAdmin && $request->boolean('override');
 
-        // Seguridad: no fechas pasadas ni miembro inactivo
+        // Seguridad: no fechas pasadas a menos que seas administrador editando manualmente
         if ($parsedDate->isPast() && !$parsedDate->isToday()) {
-            return response()->json(['slots' => []]);
+            if (!$isAdmin) {
+                return response()->json(['slots' => []]);
+            }
         }
 
-        $slots = $this->availability->getSlotsForDate($service, $parsedDate);
+        // Si es admin, le devolvemos todos los slots (incluidos los que ya han pasado) para que tenga control total manual
+        $slots = $this->availability->getSlotsForDate($service, $parsedDate, $isAdmin);
         return response()->json(['slots' => $slots, 'override' => $override]);
     }
 
@@ -152,10 +156,11 @@ class PublicAppointmentController extends Controller
      */
     public function availableDays(Request $request, AppointmentService $service, int $year, int $month)
     {
-        $override = auth()->check() && $request->boolean('override');
+        $isAdmin = auth()->check();
+        $override = $isAdmin && $request->boolean('override');
         // El override solo tiene sentido aplicarlo visualmente para el día de hoy
-        // No pasamos override a getAvailableDaysInMonth a menos que queramos que el mes actual muestre HOY disponible siempre
-        $days = $this->availability->getAvailableDaysInMonth($service, $year, $month, $override);
+        // Pasamos $isAdmin a getAvailableDaysInMonth para permitir que los administradores seleccionen fechas pasadas
+        $days = $this->availability->getAvailableDaysInMonth($service, $year, $month, $override, $isAdmin);
         
         // Si hay override, solo filtramos para asegurar que solo HOY se beneficia de ello
         if ($override) {

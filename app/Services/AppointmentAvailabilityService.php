@@ -28,9 +28,10 @@ class AppointmentAvailabilityService
      *
      * @param  AppointmentService  $service
      * @param  Carbon  $date
+     * @param  bool  $includePast Si es true, incluye tramos cuya hora ya ha pasado
      * @return array
      */
-    public function getSlotsForDate(AppointmentService $service, Carbon $date): array
+    public function getSlotsForDate(AppointmentService $service, Carbon $date, bool $includePast = false): array
     {
         $user        = $service->user;
         $dayOfWeek   = $date->dayOfWeek; // 0=Dom ... 6=Sáb
@@ -104,8 +105,8 @@ class AppointmentAvailabilityService
                     return $block->start_datetime < $slotEnd && $block->end_datetime > $current;
                 });
 
-                // Comprobar si el tramo es en el pasado
-                $isPast = $current->isPast();
+                // Comprobar si el tramo es en el pasado (y si debemos filtrarlo)
+                $isPast = !$includePast && $current->isPast();
 
                 if (!$isBlocked && !$isPast) {
                     // Evitar duplicados si por algún motivo coinciden franjas
@@ -138,14 +139,14 @@ class AppointmentAvailabilityService
      * @param  int  $month
      * @return array
      */
-    public function getAvailableDaysInMonth(AppointmentService $service, int $year, int $month, bool $overrideCapacity = false): array
+    public function getAvailableDaysInMonth(AppointmentService $service, int $year, int $month, bool $overrideCapacity = false, bool $includePast = false): array
     {
         $start     = Carbon::create($year, $month, 1)->startOfDay();
         $end       = $start->copy()->endOfMonth();
         $available = [];
 
-        // No ofrecer fechas pasadas
-        if ($start < now()->startOfDay()) {
+        // No ofrecer fechas pasadas, a menos que se fuerce la inclusión
+        if (!$includePast && $start < now()->startOfDay()) {
             $start = now()->startOfDay();
         }
 
