@@ -237,10 +237,15 @@ class GoogleDriveController extends Controller
 
         // Basic Authorization check based on type
         $user = auth()->user();
-        if ($request->attachable_type === Task::class) {
+        if ($request->attachable_type === Task::class || $request->attachable_type === 'App\\Models\\Task') {
             $task = Task::where('team_id', $team->id)->findOrFail($request->attachable_id);
             if ($user->cannot('view', $task)) {
                 return response()->json(['success' => false, 'message' => 'No tienes permiso para ver esta tarea.'], 403);
+            }
+        } elseif ($request->attachable_type === \App\Models\Activity::class || $request->attachable_type === 'App\\Models\\Activity') {
+            $activity = \App\Models\Activity::where('team_id', $team->id)->findOrFail($request->attachable_id);
+            if ($user->cannot('view', $activity)) {
+                return response()->json(['success' => false, 'message' => 'No tienes permiso para ver esta actividad.'], 403);
             }
         } elseif ($request->attachable_type === \App\Models\ForumMessage::class) {
             $message = \App\Models\ForumMessage::findOrFail($request->attachable_id);
@@ -257,18 +262,30 @@ class GoogleDriveController extends Controller
         }
 
         try {
-            $attachment = TaskAttachment::create([
-                'attachable_id' => $request->attachable_id,
-                'attachable_type' => $request->attachable_type,
-                'user_id' => auth()->id(),
-                'file_name' => $request->file_name,
-                'file_path' => 'google_drive/' . $request->file_id, // Virtual path
-                'file_size' => $request->file_size ?? 0,
-                'mime_type' => $request->mime_type ?? 'application/octet-stream',
-                'storage_provider' => 'google',
-                'provider_file_id' => $request->file_id,
-                'web_view_link' => $request->web_view_link,
-            ]);
+            if ($request->attachable_type === \App\Models\Activity::class || $request->attachable_type === 'App\\Models\\Activity') {
+                $attachment = \App\Models\ActivityAttachment::create([
+                    'activity_id' => $request->attachable_id,
+                    'uploaded_by_id' => auth()->id(),
+                    'file_name' => $request->file_name,
+                    'file_path' => $request->web_view_link, // Para Actividades, se guarda la URL directa
+                    'file_size' => $request->file_size ?? 0,
+                    'mime_type' => $request->mime_type ?? 'application/octet-stream',
+                    'disk' => 'google_drive',
+                ]);
+            } else {
+                $attachment = TaskAttachment::create([
+                    'attachable_id' => $request->attachable_id,
+                    'attachable_type' => $request->attachable_type,
+                    'user_id' => auth()->id(),
+                    'file_name' => $request->file_name,
+                    'file_path' => 'google_drive/' . $request->file_id, // Virtual path
+                    'file_size' => $request->file_size ?? 0,
+                    'mime_type' => $request->mime_type ?? 'application/octet-stream',
+                    'storage_provider' => 'google',
+                    'provider_file_id' => $request->file_id,
+                    'web_view_link' => $request->web_view_link,
+                ]);
+            }
 
             AttachmentLog::create([
                 'attachment_id' => $attachment->id,
