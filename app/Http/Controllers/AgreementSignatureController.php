@@ -129,11 +129,14 @@ class AgreementSignatureController extends Controller
     public function processSignature(Request $request, Team $team, Activity $activity)
     {
         $request->validate([
-            'signed_file' => 'required|file|mimes:pdf',
+            'signed_file' => 'required|file',
             'signer_email' => 'required|email'
         ]);
 
         $file = $request->file('signed_file');
+        if (strtolower($file->getClientOriginalExtension()) !== 'pdf' && $file->getClientMimeType() !== 'application/pdf') {
+            return response()->json(['message' => 'El archivo debe ser un PDF.'], 422);
+        }
         
         // 3. Guardar el nuevo attachment (versión firmada)
         $path = $file->store("activities/{$activity->id}/signed", 'local');

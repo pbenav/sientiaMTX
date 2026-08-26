@@ -93,7 +93,7 @@
                     ⬇ Descargar PDF para firmar
                 </a>
                 <label class="block text-xs font-bold text-amber-700 mb-1">Subir PDF firmado:</label>
-                <input type="file" id="manual-file-input" accept="application/pdf"
+                <input type="file" id="manual-file-input" accept=".pdf,application/pdf"
                        class="block w-full text-xs text-gray-600 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-amber-100 file:text-amber-700 hover:file:bg-amber-200 cursor-pointer">
                 <button type="button" id="btn-upload-manual"
                         class="mt-3 w-full py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-sm transition-colors">
