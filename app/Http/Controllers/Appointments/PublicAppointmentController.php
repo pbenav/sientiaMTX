@@ -301,9 +301,13 @@ class PublicAppointmentController extends Controller
         if (!empty($data['email'])) {
             $existingEmailVisitor = \App\Models\AppointmentVisitor::where('email', $data['email'])->first();
             if ($existingEmailVisitor) {
-                // Validación estricta eliminada a petición del usuario.
-                // Permitimos que el sistema actualice el DNI/Nombre del visitante 
-                // en caso de erratas o familiares compartiendo email.
+                $checkData = array_merge($data, [
+                    'first_name' => $firstName,
+                    'last_name' => $lastName,
+                ]);
+                if ($this->isDifferentPerson($checkData, $existingEmailVisitor)) {
+                    return back()->withErrors(['email' => 'Este correo electrónico ya está registrado a nombre de otra persona. No se permite usar el mismo correo para distintas personas.'])->withInput();
+                }
             }
         }
 
@@ -755,14 +759,11 @@ class PublicAppointmentController extends Controller
                 ->first();
                 
             if ($existingEmailVisitor) {
-                $isDifferentPerson = false;
-                
-                if (!empty($data['dni']) && !empty($existingEmailVisitor->dni) && mb_strtoupper($data['dni']) !== mb_strtoupper($existingEmailVisitor->dni)) {
-                    $isDifferentPerson = true;
-                }
-                // Se elimina la validación estricta de nombre y apellidos para permitir erratas, diminutivos o pequeños cambios.
-                
-                if ($isDifferentPerson) {
+                $checkData = array_merge($data, [
+                    'first_name' => $firstName,
+                    'last_name' => $lastName,
+                ]);
+                if ($this->isDifferentPerson($checkData, $existingEmailVisitor)) {
                     return back()->withErrors(['email' => 'Este correo electrónico ya está registrado a nombre de otra persona. No se permite usar el mismo correo para distintas personas.'])->withInput();
                 }
             }
@@ -912,5 +913,69 @@ class PublicAppointmentController extends Controller
         }
 
         return trim($text);
+    }
+
+    /**
+     * Checks if the new booking data belongs to a different person than the existing visitor.
+     */
+    protected function isDifferentPerson(array $newData, AppointmentVisitor $existing): bool
+    {
+        // 1. DNI check: if both have DNI and they do not match, they are different people
+        $newDni = preg_replace('/[^A-Za-z0-9]/', '', $newData['dni'] ?? '');
+        $existingDni = preg_replace('/[^A-Za-z0-9]/', '', $existing->dni ?? '');
+        if (!empty($newDni) && !empty($existingDni) && mb_strtoupper($newDni) !== mb_strtoupper($existingDni)) {
+            return true;
+        }
+
+        // 2. Normalize function to compare names and check similarity
+        $normalize = function (?string $str) {
+            if (!$str) {
+                return '';
+            }
+            $str = \Illuminate\Support\Str::ascii($str);
+            $str = mb_strtolower($str);
+            // Remove everything except letters, digits and spaces
+            $str = preg_replace('/[^a-z0-9\s]/', '', $str);
+            return trim(preg_replace('/\s+/', ' ', $str));
+        };
+
+        $newFirstName = $normalize($newData['first_name'] ?? '');
+        $newLastName = $normalize($newData['last_name'] ?? '');
+        $existingFirstName = $normalize($existing->first_name ?? '');
+        $existingLastName = $normalize($existing->last_name ?? '');
+
+        // Direct swap check (e.g. FirstName and LastName fields are swapped)
+        if (!empty($newFirstName) && $newFirstName === $existingLastName && $newLastName === $existingFirstName) {
+            return false;
+        }
+
+        // Similar text check
+        $firstNamePercent = 0.0;
+        $lastNamePercent = 0.0;
+        
+        similar_text($newFirstName, $existingFirstName, $firstNamePercent);
+        similar_text($newLastName, $existingLastName, $lastNamePercent);
+
+        $firstNameMatch = ($firstNamePercent >= 55) || 
+                          (!empty($newFirstName) && !empty($existingFirstName) && (str_contains($newFirstName, $existingFirstName) || str_contains($existingFirstName, $newFirstName)));
+                          
+        $lastNameMatch = ($lastNamePercent >= 55) || 
+                         (!empty($newLastName) && !empty($existingLastName) && (str_contains($newLastName, $existingLastName) || str_contains($existingLastName, $newLastName)));
+
+        // If either first name or last name doesn't match/is not similar, they are different people
+        if (!$firstNameMatch || !$lastNameMatch) {
+            // Check full name similarity as a fallback to handle edge cases
+            $newFullName = $newFirstName . ' ' . $newLastName;
+            $existingFullName = $existingFirstName . ' ' . $existingLastName;
+            $fullNamePercent = 0.0;
+            similar_text($newFullName, $existingFullName, $fullNamePercent);
+            if ($fullNamePercent >= 70) {
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 }
