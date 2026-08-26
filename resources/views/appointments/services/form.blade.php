@@ -83,9 +83,15 @@
                         <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="description">
                             Descripción <span class="text-[9px] font-bold text-cyan-500 normal-case tracking-normal ml-1">Markdown</span>
                         </label>
-                        <textarea id="description" name="description" rows="5"
-                                  class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all font-mono resize-y"
-                                  placeholder="Describe el servicio. Puedes usar **negrita**, *cursiva*, listas, etc.">{{ old('description', $service->description ?? '') }}</textarea>
+                        <x-markdown-editor 
+                            name="description" 
+                            id="description"
+                            :value="old('description', $service->description ?? '')"
+                            rows="5"
+                            placeholder="Describe el servicio. Puedes usar **negrita**, *cursiva*, listas, etc."
+                            :upload-url="route('teams.forum.upload_image', $team)"
+                            :mentions-url="route('teams.mentions', $team)"
+                        />
                         @error('description') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
 
