@@ -1,4 +1,8 @@
 <div class="space-y-6">
+    @php
+        $resolvedTeam = $team ?? $activity->team ?? null;
+        $isWhatsappEnabled = config('services.whatsapp.enabled', true) && ($resolvedTeam && ($resolvedTeam->settings['has_whatsapp'] ?? false));
+    @endphp
     <!-- Notification Channels -->
     <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm">
         <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
@@ -52,12 +56,13 @@
                         <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('Notificación Push') }}</span>
                     </div>
                 </label>
-                <label class="flex items-center gap-3 cursor-pointer group">
+                <label class="flex items-center gap-3 {{ !$isWhatsappEnabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer group' }}">
                     <div class="relative flex items-center justify-center">
                         <input type="checkbox" name="metadata[channels][]" value="whatsapp"
                             {{ in_array('whatsapp', old('channels', $activity->metadata['channels'] ?? ['email','push'])) ? 'checked' : '' }}
+                            {{ !$isWhatsappEnabled ? 'disabled' : '' }}
                             class="peer sr-only">
-                        <div class="w-5 h-5 rounded border-2 border-gray-300 dark:border-gray-600 peer-checked:bg-pink-500 peer-checked:border-pink-500 transition-all flex items-center justify-center text-white">
+                        <div class="w-5 h-5 rounded border-2 border-gray-300 dark:border-gray-600 peer-checked:bg-pink-500 peer-checked:border-pink-500 transition-all flex items-center justify-center text-white peer-disabled:opacity-50">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20"
                                 fill="currentColor">
                                 <path fill-rule="evenodd"
@@ -70,7 +75,12 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                         </svg>
-                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('WhatsApp') }}</span>
+                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 {{ $isWhatsappEnabled ? 'group-hover:text-gray-900 dark:group-hover:text-white' : '' }} transition-colors">
+                            {{ __('WhatsApp') }}
+                            @if(!$isWhatsappEnabled)
+                                <span class="text-[10px] text-gray-400 dark:text-gray-500 font-normal">({{ __('desactivado') }})</span>
+                            @endif
+                        </span>
                     </div>
                 </label>
                 <label class="flex items-center gap-3 cursor-pointer group">

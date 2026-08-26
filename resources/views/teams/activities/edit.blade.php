@@ -705,7 +705,10 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="md:col-span-2">
                                 <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Canales de Notificación</label>
-                                @php $channels = data_get($activity->metadata, 'channels', ['email']); @endphp
+                                @php 
+                                    $channels = data_get($activity->metadata, 'channels', ['email']); 
+                                    $isWhatsappEnabled = config('services.whatsapp.enabled', true) && ($team->settings['has_whatsapp'] ?? false);
+                                @endphp
                                 <div class="flex flex-wrap gap-4 mt-2">
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" name="metadata[channels][]" value="email" {{ in_array('email', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
@@ -715,9 +718,16 @@
                                         <input type="checkbox" name="metadata[channels][]" value="push" {{ in_array('push', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
                                         <span class="text-sm text-gray-700 dark:text-gray-300"> Notificación en la App (Push/Nudge)</span>
                                     </label>
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" name="metadata[channels][]" value="whatsapp" {{ in_array('whatsapp', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
-                                        <span class="text-sm text-gray-700 dark:text-gray-300"> WhatsApp</span>
+                                    <label class="flex items-center gap-2 {{ !$isWhatsappEnabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer' }}">
+                                        <input type="checkbox" name="metadata[channels][]" value="whatsapp" 
+                                               {{ in_array('whatsapp', $channels) ? 'checked' : '' }} 
+                                               {{ !$isWhatsappEnabled ? 'disabled' : '' }}
+                                               class="accent-violet-600 rounded disabled:opacity-50">
+                                        <span class="text-sm text-gray-700 dark:text-gray-300"> WhatsApp
+                                            @if(!$isWhatsappEnabled)
+                                                <span class="text-[10px] text-gray-400 dark:text-gray-500 font-normal">({{ __('desactivado') }})</span>
+                                            @endif
+                                        </span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" name="metadata[channels][]" value="telegram" {{ in_array('telegram', $channels) ? 'checked' : '' }} class="accent-violet-600 rounded">
