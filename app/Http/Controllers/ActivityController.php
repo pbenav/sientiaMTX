@@ -189,6 +189,7 @@ class ActivityController extends Controller
      */
     public function store(StoreActivityRequest $request, Team $team)
     {
+        \Illuminate\Support\Facades\Log::info("STORE PAYLOAD:", $request->all());
         $validated = $request->validated();
         $type = $validated['type'];
         
@@ -207,11 +208,14 @@ class ActivityController extends Controller
             }
         }
 
+        \Illuminate\Support\Facades\Log::info("ActivityController@store: drive_attachments = " . $request->input('drive_attachments'));
+
         $activity = $this->activityService->create(
             $team,
             $type,
             $validated,
-            $request->file('attachments') ?? []
+            $request->file('attachments') ?? [],
+            $request->input('drive_attachments')
         );
 
         return redirect()->route('teams.activities.show', [$team, $activity])
@@ -380,7 +384,12 @@ class ActivityController extends Controller
             }
         }
 
-        $this->activityService->update($activity, $validated, $request->file('attachments') ?? []);
+        $this->activityService->update(
+            $activity, 
+            $validated, 
+            $request->file('attachments') ?? [],
+            $request->input('drive_attachments')
+        );
 
         $tab = $request->input('tab', 'general');
         return redirect()->route('teams.activities.show', ['team' => $team, 'activity' => $activity, 'tab' => $tab])

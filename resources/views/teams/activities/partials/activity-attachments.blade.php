@@ -124,7 +124,7 @@
                             $isTeamLinked = auth()->user()->teams()->where('team_id', $team->id)->wherePivotNotNull('google_token')->exists();
                         @endphp
                         @if($isTeamLinked)
-                            <button type="button" @click="$dispatch('open-drive-picker', { id: {{ $activity->id }}, type: 'App\\Models\\Activity' })"
+                            <button type="button" @click="$dispatch('open-drive-picker', { id: {{ $activity->id }}, type: '{{ addslashes(\App\Models\Activity::class) }}' })"
                                 class="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold
                                        bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400
                                        border border-blue-200 dark:border-blue-500/20
@@ -164,23 +164,23 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         @foreach ($allAttachments as $attachment)
                             @php 
-                                $isFromMe = $attachment->user_id === auth()->id();
-                                $isTaskType = $attachment->attachable_type === 'App\Models\Activity';
-                                $isFromParent = $isTaskType && $attachment->attachable_id === $activity->parent_id;
-                                $isFromChild = $isTaskType && $attachment->attachable_id !== $activity->id && $attachment->attachable_id !== $activity->parent_id;
+                                $isFromMe = $attachment->uploaded_by_id === auth()->id();
+                                $isTaskType = true; // Always true for ActivityAttachment
+                                $isFromParent = $attachment->activity_id === $activity->parent_id;
+                                $isFromChild = $attachment->activity_id !== $activity->id && $attachment->activity_id !== $activity->parent_id;
                             @endphp
                             <div
                                 class="group flex items-center justify-between p-3 {{ $isFromParent ? 'bg-violet-50/30 dark:bg-violet-900/10 border-violet-100/50' : 'bg-gray-50 dark:bg-gray-800/50 border-gray-100 dark:border-gray-700/50' }} border rounded-xl hover:border-violet-200 dark:hover:border-violet-800 transition-all">
                                 <div class="flex items-center gap-3 min-w-0">
                                     <div
-                                        class="w-10 h-10 rounded-lg flex items-center justify-center shadow-sm border shrink-0 {{ $attachment->storage_provider === 'google' ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800' : ($isFromParent ? 'bg-violet-50 dark:bg-gray-800 text-violet-500 border-gray-100 dark:border-gray-700' : 'bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 border-gray-100 dark:border-gray-700') }}">
+                                        class="w-10 h-10 rounded-lg flex items-center justify-center shadow-sm border shrink-0 {{ $attachment->disk === 'google_drive' ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800' : ($isFromParent ? 'bg-violet-50 dark:bg-gray-800 text-violet-500 border-gray-100 dark:border-gray-700' : 'bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 border-gray-100 dark:border-gray-700') }}">
                                         @if(!$attachment->exists)
                                             <div class="text-red-500/50">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                                 </svg>
                                             </div>
-                                        @elseif($attachment->storage_provider === 'google')
+                                        @elseif($attachment->disk === 'google_drive')
                                             <svg class="w-6 h-6" viewBox="0 0 48 48">
                                                 <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/>
                                                 <path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/>
@@ -202,8 +202,8 @@
                                             title="{{ $attachment->file_name }}">
                                             @if(!$attachment->exists)
                                                 <span class="text-gray-400 line-through decoration-red-500/30">{{ $attachment->file_name }}</span>
-                                            @elseif($attachment->storage_provider === 'google' && $attachment->web_view_link)
-                                                <a href="{{ $attachment->web_view_link }}" 
+                                            @elseif($attachment->disk === 'google_drive' && $attachment->file_path)
+                                                <a href="{{ $attachment->file_path }}" 
                                                    target="_blank" 
                                                    class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1">
                                                     {{ $attachment->file_name }}
@@ -220,7 +220,7 @@
                                         <p class="text-[10px] text-gray-400 flex items-center gap-1.5">
                                             @if(!$attachment->exists)
                                                 <span class="text-red-500/70 font-bold uppercase tracking-tighter">{{ __('Archivo Purgado') }}</span>
-                                            @elseif($attachment->storage_provider === 'google')
+                                            @elseif($attachment->disk === 'google_drive')
                                                 <span class="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 rounded font-black uppercase text-[8px]">Google Drive</span>
                                             @else
                                                 {{ number_format($attachment->file_size / 1024 / 1024, 2) }} MB
@@ -229,7 +229,7 @@
                                             @if($isFromParent) 
                                                 <span class="text-violet-500 font-bold uppercase tracking-tighter">{{ __('activities.shared') ?? 'Plan' }}</span>
                                             @elseif($isFromChild)
-                                                <span class="text-amber-500 font-bold uppercase tracking-tighter">{{ $attachment->attachable->assignedUser?->name ?? 'Equipo' }}</span>
+                                                <span class="text-amber-500 font-bold uppercase tracking-tighter">{{ $attachment->activity?->assignedUser?->name ?? 'Equipo' }}</span>
                                             @else
                                                 {{ $attachment->created_at->diffForHumans() }}
                                             @endif
@@ -238,7 +238,7 @@
                                 </div>
                                 <div
                                     class="flex items-center gap-0.5 opacity-60 group-hover:opacity-100 transition-all duration-200">
-                                    @if($attachment->storage_provider === 'local' && auth()->user()->google_token)
+                                    @if($attachment->disk === 'local' && auth()->user()->google_token)
                                         <form action="{{ route('teams.activities.attachments.to-drive', [$team, $activity, $attachment]) }}" method="POST" class="inline">
                                             @csrf
                                             <button type="submit" 
@@ -264,7 +264,7 @@
                                         @click="$dispatch('ai:analyze-file', { 
                                             fileName: '{{ addslashes($attachment->file_name) }}', 
                                             fileId: {{ $attachment->id }},
-                                            fileUrl: '{{ $attachment->storage_provider === 'google' ? $attachment->web_view_link : route('teams.activities.attachments.view', [$team, $activity, $attachment]) }}',
+                                            fileUrl: '{{ $attachment->disk === 'google_drive' ? $attachment->file_path : route('teams.activities.attachments.view', [$team, $activity, $attachment]) }}',
                                             fileType: '{{ $attachment->mime_type }}',
                                             taskId: {{ $activity->id }},
                                             teamId: {{ $team->id }},
@@ -301,7 +301,7 @@
                                         </svg>
                                     </a>
                                     @can('delete', $attachment)
-                                        @if($attachment->storage_provider === 'local' && str_starts_with($attachment->mime_type, 'image/'))
+                                        @if($attachment->disk === 'local' && str_starts_with($attachment->mime_type, 'image/'))
                                             <button type="button"
                                                 onclick="editAttachmentImage({{ $attachment->id }}, '{{ route('teams.activities.attachments.view', [$team, $activity, $attachment]) }}')"
                                                 class="p-1.5 text-gray-500 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-lg transition-all"
@@ -341,7 +341,7 @@
                                             </button>
                                         </form>
                                     @else
-                                        @if(!$isTaskType || $attachment->attachable_id !== $activity->id)
+                                        @if($attachment->activity_id !== $activity->id)
                                             {{-- Informativo para compartidos si el usuario normal no tiene permisos --}}
                                             <span class="p-1.5 text-gray-300 dark:text-gray-600 cursor-help"
                                                 title="{{ $isFromParent ? 'Este archivo es del Plan Maestro y debe eliminarse desde allí.' : 'Este archivo pertenece a una subtarea.' }}">

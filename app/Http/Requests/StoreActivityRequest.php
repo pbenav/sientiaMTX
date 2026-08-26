@@ -76,6 +76,7 @@ class StoreActivityRequest extends FormRequest
             'metadata.*' => 'nullable',
             'attachments' => 'nullable|array',
             'attachments.*' => 'file|max:' . (UploadedFile::getMaxFilesize() / 1024),
+            'drive_attachments' => 'nullable|string',
         ];
 
         // -------------------------------------------------------------

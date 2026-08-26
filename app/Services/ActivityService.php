@@ -40,7 +40,7 @@ class ActivityService
      * @param  array  $files      Archivos adjuntos (UploadedFile[])
      * @return Activity
      */
-    public function create(Team $team, string $type, array $data, array $files = []): Activity
+    public function create(Team $team, string $type, array $data, array $files = [], ?string $driveAttachmentsJson = null): Activity
     {
         // Fallback: Asegurar que los campos del primer capítulo no se pierdan 
         if (request()->has('metadata.chapter_title') && empty($data['metadata']['chapter_title'])) {
@@ -50,7 +50,7 @@ class ActivityService
             $data['metadata']['chapter_content'] = request()->input('metadata.chapter_content');
         }
 
-        return DB::transaction(function () use ($team, $type, $data, $files) {
+        return DB::transaction(function () use ($team, $type, $data, $files, $driveAttachmentsJson) {
             $activity = new Activity([
                 'type'                => $type,
                 'title'               => $data['title'],
@@ -91,6 +91,10 @@ class ActivityService
             if (!empty($files)) {
                 $this->handleAttachments($activity, $files);
             }
+            \Illuminate\Support\Facades\Log::info("ActivityService@create: driveAttachmentsJson received = ", ['json' => $driveAttachmentsJson]);
+            if (!empty($driveAttachmentsJson)) {
+                $this->handleDriveAttachments($activity, $driveAttachmentsJson);
+            }
 
             // Etiquetas
             if (!empty($data['tags'])) {
@@ -117,9 +121,9 @@ class ActivityService
 
     // ─── Actualización ────────────────────────────────────────────────────────
 
-    public function update(Activity $activity, array $data, array $files = []): Activity
+    public function update(Activity $activity, array $data, array $files = [], ?string $driveAttachmentsJson = null): Activity
     {
-        return DB::transaction(function () use ($activity, $data, $files) {
+        return DB::transaction(function () use ($activity, $data, $files, $driveAttachmentsJson) {
             $oldValues = $activity->toArray();
 
             $fillable = [
@@ -193,6 +197,9 @@ class ActivityService
 
             if (!empty($files)) {
                 $this->handleAttachments($activity, $files);
+            }
+            if (!empty($driveAttachmentsJson)) {
+                $this->handleDriveAttachments($activity, $driveAttachmentsJson);
             }
 
             if (array_key_exists('tags', $data)) {
@@ -521,6 +528,26 @@ class ActivityService
                 'mime_type'      => $file->getMimeType(),
                 'file_size'      => $file->getSize(),
             ]);
+        }
+    }
+
+    public function handleDriveAttachments(Activity $activity, ?string $driveAttachmentsJson): void
+    {
+        if (empty($driveAttachmentsJson)) return;
+
+        $driveFiles = json_decode($driveAttachmentsJson, true);
+        if (is_array($driveFiles)) {
+            foreach ($driveFiles as $file) {
+                ActivityAttachment::create([
+                    'activity_id'    => $activity->id,
+                    'uploaded_by_id' => auth()->id(),
+                    'file_name'      => $file['name'] ?? 'Google Drive File',
+                    'file_path'      => $file['webViewLink'] ?? "https://drive.google.com/file/d/" . ($file['id'] ?? '') . "/view",
+                    'disk'           => 'google_drive',
+                    'mime_type'      => $file['mimeType'] ?? 'application/octet-stream',
+                    'file_size'      => $file['size'] ?? 0,
+                ]);
+            }
         }
     }
 
