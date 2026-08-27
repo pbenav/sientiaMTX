@@ -36,7 +36,7 @@ Para que la sincronización de tareas con Google Calendar funcione, necesitas ob
    - Añade: `http://localhost:8000/auth/google/callback` (para pruebas locales).
    - Añade la URL de tu servidor de pruebas (ej: `https://tuservidor.com/auth/google/callback`).
 
-### 5. Configurar en cientiaMTX
+### 5. Configurar en SientiaMTX
 1. Una vez creado, copia el **Client ID** y el **Client Secret**.
 2. Ve a los **Ajustes** de la aplicación en el menú lateral.
 3. Pega las credenciales en la sección de Google.
