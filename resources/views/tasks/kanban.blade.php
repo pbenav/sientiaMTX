@@ -140,72 +140,102 @@
                         </button>
                     </div>
                 </div>
-                <select name="status" onchange="this.form.submit()" class="w-40 {{ $filters['status'] ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' }} border rounded-xl text-xs font-bold uppercase py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
-                    <option value="">{{ __('tasks.status') }}</option>
+                <x-kanban.filter-select
+                    name="status"
+                    :selected="$filters['status']"
+                    placeholder="{{ __('tasks.status') }}"
+                    width="w-40"
+                >
                     @foreach (['pending', 'in_progress', 'completed', 'cancelled', 'blocked'] as $status)
                         <option value="{{ $status }}" {{ $filters['status'] === $status ? 'selected' : '' }}>{{ __("tasks.statuses.{$status}") }}</option>
                     @endforeach
-                </select>
-                <select name="priority" onchange="this.form.submit()" class="w-40 {{ $filters['priority'] ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' }} border rounded-xl text-xs font-bold uppercase py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
-                    <option value="">{{ __('tasks.priority') }}</option>
+                </x-kanban.filter-select>
+
+                <x-kanban.filter-select
+                    name="priority"
+                    :selected="$filters['priority']"
+                    placeholder="{{ __('tasks.priority') }}"
+                    width="w-40"
+                >
                     @foreach(['low','medium','high','critical'] as $p)
                         <option value="{{$p}}" {{$filters['priority']==$p?'selected':''}}>{{__("tasks.priorities.{$p}")}}</option>
                     @endforeach
-                </select>
+                </x-kanban.filter-select>
 
-                <!-- Assigned To -->
-                <select name="assigned_to" onchange="this.form.submit()" class="w-40 {{ $filters['assigned_to'] ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' }} border rounded-xl text-xs font-bold uppercase py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
-                    <option value="">{{ __('tasks.assigned_to') }}</option>
+                <x-kanban.filter-select
+                    name="assigned_to"
+                    :selected="$filters['assigned_to']"
+                    placeholder="{{ __('tasks.assigned_to') }}"
+                    width="w-40"
+                >
                     @foreach ($members as $member)
                         <option value="{{ $member->id }}" {{ $filters['assigned_to'] == $member->id ? 'selected' : '' }}>{{ $member->name }}</option>
                     @endforeach
-                </select>
+                </x-kanban.filter-select>
 
-                <!-- Expediente Filter -->
-                <select name="expediente_id" onchange="this.form.submit()" class="w-40 {{ ($filters['expediente_id'] ?? null) ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' }} border rounded-xl text-xs font-bold uppercase py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
-                    <option value="">{{ __('Expediente') }}</option>
+                <x-kanban.filter-select
+                    name="expediente_id"
+                    :selected="$filters['expediente_id'] ?? null"
+                    placeholder="{{ __('Expediente') }}"
+                    width="w-40"
+                >
                     @foreach($expedientes as $exp)
                         <option value="{{ $exp->id }}" {{ ($filters['expediente_id'] ?? null) == $exp->id ? 'selected' : '' }}>{{ $exp->code }}</option>
                     @endforeach
-                </select>
+                </x-kanban.filter-select>
 
-                <!-- Skill Filter -->
-                <select name="skill_id" onchange="this.form.submit()" class="w-40 {{ $filters['skill_id'] ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' }} border rounded-xl text-xs font-bold uppercase py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
-                    <option value="">{{ __('tasks.skill') ?? 'Especialidad' }}</option>
+                <x-kanban.filter-select
+                    name="skill_id"
+                    :selected="$filters['skill_id']"
+                    placeholder="{{ __('tasks.skill') ?? 'Especialidad' }}"
+                    width="w-40"
+                >
                     @foreach($skills as $skill)
                         <option value="{{ $skill->id }}" {{ $filters['skill_id'] == $skill->id ? 'selected' : '' }}>{{ $skill->name }}</option>
                     @endforeach
-                </select>
+                </x-kanban.filter-select>
 
-                <!-- Type Filter -->
-                <select name="type" onchange="this.form.submit()" class="w-40 {{ ($filters['type'] ?? null) ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' }} border rounded-xl text-xs font-bold uppercase py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
-                    <option value="">{{ __('tasks.type') }}</option>
+                <x-kanban.filter-select
+                    name="type"
+                    :selected="$filters['type'] ?? null"
+                    placeholder="{{ __('tasks.type') }}"
+                    width="w-40"
+                >
                     <option value="template" {{ ($filters['type'] ?? null) === 'template' ? 'selected' : '' }}>{{ __('tasks.template') }}</option>
                     <option value="instance" {{ ($filters['type'] ?? null) === 'instance' ? 'selected' : '' }}>{{ __('tasks.subtask') }}</option>
                     <option value="plain" {{ ($filters['type'] ?? null) === 'plain' ? 'selected' : '' }}>{{ __('tasks.task') }}</option>
-                </select>
+                </x-kanban.filter-select>
 
-                <!-- Urgency Filter -->
-                <select name="urgency" onchange="this.form.submit()" class="w-36 {{ ($filters['urgency'] ?? null) ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' }} border rounded-xl text-xs font-bold uppercase py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
-                    <option value="">{{ __('tasks.urgency') }}</option>
+                <x-kanban.filter-select
+                    name="urgency"
+                    :selected="$filters['urgency'] ?? null"
+                    placeholder="{{ __('tasks.urgency') }}"
+                    width="w-36"
+                >
                     @foreach(['very_low','low','medium','high','very_high'] as $u)
                         <option value="{{ $u }}" {{ ($filters['urgency'] ?? null) === $u ? 'selected' : '' }}>{{ __("tasks.urgencies.{$u}") }}</option>
                     @endforeach
-                </select>
+                </x-kanban.filter-select>
 
-                <!-- Assignment Mode Filter -->
-                <select name="assignment_mode" onchange="this.form.submit()" class="w-40 {{ ($filters['assignment_mode'] ?? null) ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' }} border rounded-xl text-xs font-bold uppercase py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
-                    <option value="">{{ __('tasks.assignment_mode') }}</option>
+                <x-kanban.filter-select
+                    name="assignment_mode"
+                    :selected="$filters['assignment_mode'] ?? null"
+                    placeholder="{{ __('tasks.assignment_mode') }}"
+                    width="w-40"
+                >
                     <option value="individual" {{ ($filters['assignment_mode'] ?? null) === 'individual' ? 'selected' : '' }}>{{ __('tasks.assignment_individual') }}</option>
                     <option value="shared" {{ ($filters['assignment_mode'] ?? null) === 'shared' ? 'selected' : '' }}>{{ __('tasks.assignment_collaborative') }}</option>
-                </select>
+                </x-kanban.filter-select>
 
-                <!-- Blocked Filter -->
-                <select name="blocked" onchange="this.form.submit()" class="w-32 {{ ($filters['blocked'] ?? null) ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' }} border rounded-xl text-xs font-bold uppercase py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
-                    <option value="">{{ __('tasks.blocked') }}</option>
+                <x-kanban.filter-select
+                    name="blocked"
+                    :selected="$filters['blocked'] ?? null"
+                    placeholder="{{ __('tasks.blocked') }}"
+                    width="w-32"
+                >
                     <option value="1" {{ ($filters['blocked'] ?? null) === '1' ? 'selected' : '' }}>{{ __('tasks.blocked_yes') }}</option>
                     <option value="0" {{ ($filters['blocked'] ?? null) === '0' ? 'selected' : '' }}>{{ __('tasks.blocked_no') }}</option>
-                </select>
+                </x-kanban.filter-select>
 
                 @if(collect($filters ?? [])->filter()->isNotEmpty())
                     <a href="{{ route('teams.kanban', [$team, 'reset_filters' => 1]) }}" class="text-xs font-bold text-red-500 uppercase tracking-widest">{{ __('tasks.clear_filters') }}</a>
@@ -222,315 +252,7 @@
         <div class="flex-1 overflow-x-auto pb-6 pt-2 no-scrollbar">
             <div class="flex h-full gap-2 sm:gap-3 md:gap-4 px-2 sm:px-3 md:px-6 w-max min-w-full items-start pb-4" id="kanban-board">
                 @foreach($columns as $column)
-                    <div class="shrink-0 flex flex-col rounded-[2.5rem] border-2 border-black/10 dark:border-white/10 transition-all duration-500 shadow-xl hover:shadow-2xl animate-fade-in group relative overflow-hidden kanban-column" 
-                         style="--col-bg: {{ $column->color ?? '#f9fafb' }}; border-color: {{ ($column->color ?? '#f9fafb') }}40;"
-                         data-column-id="{{ $column->id }}">
-                        <!-- Accent Top Bar -->
-                        <div class="absolute top-0 left-0 right-0 h-2 kanban-column-accent" style="background-color: {{ $column->color ?? '#f9fafb' }};"></div>
-                        
-                        <!-- Column Header -->
-                        <div class="p-3 sm:p-3.5 md:p-4 flex flex-col gap-1.5 sm:gap-2 cursor-grab active:cursor-grabbing column-handle">
-                            <div class="flex items-center justify-between gap-1">
-                                <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
-                                    <h3 class="font-black text-gray-900 dark:text-white uppercase tracking-[0.15em] text-[13px] column-title truncate" 
-                                        contenteditable="true" 
-                                        onblur="updateColumnTitle({{ $column->id }}, this.innerText)"
-                                        onclick="event.stopPropagation()">
-                                        {{ $column->title }}
-                                    </h3>
-                                    <span class="px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-lg sm:rounded-xl bg-black/5 dark:bg-white/10 text-[10px] sm:text-[11px] font-black text-gray-700 dark:text-gray-300 border border-black/5 dark:border-white/5 shadow-sm shrink-0">
-                                        {{ count($column->activities->filter(fn($t) => !$t->is_archived)) }}
-                                    </span>
-
-                                    <!-- Trash Icon for Custom Columns -->
-                                    @if($column->type === 'custom')
-                                        <button onclick="deleteColumn({{ $column->id }})" 
-                                                class="p-1 sm:p-1.5 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm border border-red-200/50 dark:border-red-500/20 shrink-0"
-                                                title="Eliminar columna">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-3.5 w-3 sm:w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                        </button>
-                                    @endif
-
-                                    <!-- Archive All Completed Button -->
-                                    @if(count($column->activities->filter(fn($t) => !$t->is_archived && ($t->isCompleted() || $column->type === 'done'))) > 0)
-                                        <button onclick="archiveAllCompleted({{ $column->id }})" 
-                                                class="p-1 sm:p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all shadow-sm border border-emerald-200/50 dark:border-emerald-500/20 shrink-0 group/btn"
-                                                title="{{ __('Archivar/ocultar todas las tareas completadas de la columna') }}">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-3.5 w-3 sm:w-3.5 group-hover/btn:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-                                            </svg>
-                                        </button>
-                                    @endif
-                                </div>
-                                        <div class="flex items-center gap-1.5 sm:gap-2 transition-all duration-300" onclick="event.stopPropagation()">
-                                                <!-- Palette Icon -->
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 sm:h-3 w-2.5 sm:w-3 text-gray-400 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-3" />
-                                                </svg>
-                                                @foreach(['#fee2e2', '#dbeafe', '#dcfce7', '#fef3c7'] as $hex)
-                                                    <button onclick="updateColumnColor({{ $column->id }}, '{{ $hex }}')" 
-                                                            class="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 rounded-full border border-gray-300/30 dark:border-white/10 hover:scale-110 active:scale-95 transition-all shadow-sm"
-                                                            style="background-color: {{ $hex }};"
-                                                            title="Cambiar color"></button>
-                                                @endforeach
-                                                <!-- Custom Color Picker -->
-                                                <div class="relative flex items-center justify-center">
-                                                    <button onclick="this.nextElementSibling.click()" 
-                                                            class="w-2.5 sm:w-3 md:w-3.5 h-2.5 sm:h-3 md:h-3.5 rounded-full border-2 border-dashed border-gray-400 dark:border-gray-500 hover:scale-125 hover:border-violet-500 transition-all flex items-center justify-center bg-transparent"
-                                                            title="Color personalizado">
-                                                        <span class="text-[6px] sm:text-[7px] md:text-[8px] font-bold text-gray-500">+</span>
-                                                    </button>
-                                                    <input type="color" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer" 
-                                                           onchange="updateColumnColor({{ $column->id }}, this.value)" 
-                                                           value="{{ $column->color ?? '#f9fafb' }}">
-                                                </div>
-                                            </div>
-                                    <div class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 shrink-0">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-3.5 md:h-4 w-3 sm:w-3.5 md:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
-                                        </svg>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Tasks List -->
-                        <div class="flex-1 overflow-y-auto px-1.5 sm:px-2 pb-2.5 sm:pb-3.5 md:pb-4 space-y-2 sm:space-y-2.5 md:space-y-3 task-list custom-scrollbar" data-column-id="{{ $column->id }}">
-                            @foreach($column->activities->filter(fn($t) => !$t->is_archived) as $task)
-                                @php
-                                    $quadrant = $task->getQuadrant($task);
-                                    $qCfg = $quadrantConfig[$quadrant] ?? null;
-                                @endphp
-                                <div x-data="{ 
-                                         taskId: {{ $task->id }},
-                                         get isWorking() { return Alpine.store('timer').activeTaskId == this.taskId }
-                                     }"
-                                     :class="isWorking ? 'ring-2 ring-violet-500 shadow-xl shadow-violet-500/20 bg-violet-50/30 dark:bg-violet-900/10' : ({{ ($task->isCompleted() || $column->type === 'done') ? 'true' : 'false' }} ? 'bg-gray-50/50 dark:bg-gray-900/50 grayscale-[0.3]' : 'bg-white dark:bg-gray-900')"
-                                     class="backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-md border-l-[5px] sm:border-l-[6px] p-2.5 sm:p-3.5 md:p-4 cursor-grab active:cursor-grabbing hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 group relative animate-card-appear border-t border-r border-b border-gray-100/50 dark:border-gray-800/50"
-                                     data-task-id="{{ $task->id }}"
-                                     {{ ($task->isCompleted() || $column->type === 'done') ? 'data-completed=1' : '' }}
-                                     style="border-left-color: {{ $qCfg['color'] ?? '#d1d5db' }}; animation-delay: {{ $loop->index * 50 }}ms; will-change: transform, opacity;">
-                                    
-                                    <!-- Card Content -->
-                                    <div class="flex items-start justify-between gap-2 mb-2">
-                                        <div class="flex flex-col gap-1 flex-1">
-                                            <div class="flex items-center gap-1.5 mb-0.5">
-                                                <span class="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider shadow-sm border flex items-center gap-1"
-                                                      style="background-color: {{ $task->type_badge_color }}15; color: {{ $task->type_badge_color }}; border-color: {{ $task->type_badge_color }}30;">
-                                                    @if($task->type_icon)
-                                                        {!! $task->type_icon !!}
-                                                    @endif
-                                                    {{ $task->type_label }}
-                                                </span>
-                                                @if ($task->priority)
-                                                    <span class="text-[9px] font-bold uppercase tracking-tighter px-1.5 py-0.5 rounded border shadow-sm {{ match($task->priority) {
-                                                        'critical' => 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-700/50',
-                                                        'high' => 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700/50',
-                                                        'medium' => 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-700/50',
-                                                        default => 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700'
-                                                    } }}">
-                                                        {{ __("tasks.priorities.{$task->priority}") }}
-                                                    </span>
-                                                @endif
-                                            </div>
-                                            <a href="{{ route('teams.activities.show', [$team, $task]) }}" class="text-sm font-black text-gray-900 dark:text-gray-50 leading-tight hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
-                                                {{ $task->title }}
-                                            </a>
-                                            <div class="flex flex-wrap gap-1 mt-0.5">
-                                                @if ($task->is_template)
-                                                    @php
-                                                        $isCollabKanban = isset($task->metadata['assignment_mode']) && $task->metadata['assignment_mode'] === 'shared';
-                                                    @endphp
-                                                    <span class="px-1.5 py-0.5 rounded-md {{ $isCollabKanban ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700/50' : 'bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-700/50' }} text-[8px] font-black uppercase tracking-tighter border shadow-sm">
-                                                        {{ $isCollabKanban ? (__('activities.collaborative_task') ?? 'Tarea Colaborativa') : __('tasks.plan_master') }}
-                                                    </span>
-                                                @endif
-                                                @if ($task->assigned_user_id === auth()->id() && $task->parent_id)
-                                                    <span class="px-1.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-[8px] font-black uppercase tracking-tighter border border-emerald-200 dark:border-emerald-700/50 shadow-sm">
-                                                        {{ __('tasks.your_execution') }}
-                                                    </span>
-                                                @endif
-                                                @if ($task->expediente)
-                                                    <a href="{{ route('teams.expedientes.show', [$team, $task->expediente]) }}" onclick="event.stopPropagation()" class="px-1.5 py-0.5 rounded-md bg-violet-100/60 dark:bg-violet-900/50 text-violet-700 dark:text-violet-300 text-[8px] font-black uppercase tracking-tighter border border-violet-200/50 dark:border-violet-800/50 shadow-sm hover:ring-1 hover:ring-violet-500 transition-all">
-                                                        {{ $task->expediente->code }}
-                                                    </a>
-                                                @endif
-                                                @if ($task->google_task_id)
-                                                    <span class="px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200/50 dark:border-blue-700/50 shadow-sm" title="Sincronizada con Google Tasks">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
-                                                    </span>
-                                                @endif
-                                                @if ($task->google_calendar_event_id)
-                                                    <span class="px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-700/50 shadow-sm" title="Sincronizada con Google Calendar">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                                    </span>
-                                                @endif
-                                                 @if ($task->is_autoprogrammable)
-                                                     <span class="px-1.5 py-0.5 rounded-md bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 border border-violet-200/50 dark:border-violet-700/50 shadow-sm" title="Plantilla de Autoprogramación">
-                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                                                     </span>
-                                                 @elseif (!$task->is_autoprogrammable && $task->parent && $task->parent->is_autoprogrammable)
-                                                     <a href="{{ route('teams.activities.show', [$team, $task->parent_id]) }}" class="px-1.5 py-0.5 rounded-md bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 border border-violet-200/50 dark:border-violet-700/50 shadow-sm hover:bg-violet-200 dark:hover:bg-violet-900/60 transition-colors" title="Tarea autoprogramada (Ir a plantilla maestra)" onclick="event.stopPropagation();">
-                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                                                     </a>
-                                                 @endif
-                                                 @if($task->urgency)
-                                                     <span class="px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-tighter border shadow-sm {{ match($task->urgency) {
-                                                         'very_high' => 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-700/50',
-                                                         'high' => 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700/50',
-                                                         'medium' => 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700/50',
-                                                         'low' => 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700/50',
-                                                         'very_low' => 'bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-700/50',
-                                                         default => 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700'
-                                                     } }}" title="{{ __("tasks.urgencies.{$task->urgency}") }}">
-                                                         ⚡ {{ __("tasks.urgencies.{$task->urgency}") }}
-                                                     </span>
-                                                 @endif
-                                                 @if($task->is_blocked || $task->status_value === 'blocked')
-                                                     <span class="px-1.5 py-0.5 rounded-md bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border border-red-200/50 dark:border-red-700/50 shadow-sm text-[8px] font-black uppercase tracking-tighter" title="Bloqueada">
-                                                         🔒 {{ __('tasks.blocked') }}
-                                                     </span>
-                                                 @endif
-                                                 @if($task->instances_count > 0)
-                                                     <span class="px-1.5 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200/50 dark:border-indigo-700/50 shadow-sm text-[8px] font-black uppercase tracking-tighter" title="{{ $task->instances_count }} instanc{{ $task->instances_count === 1 ? 'ia' : 'ias' }}">
-                                                         📋 {{ $task->instances_count }}
-                                                     </span>
-                                                 @endif
-                                                 @if($task->has_private_notes)
-                                                     <span class="px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-700/50 shadow-sm" title="Notas privadas">
-                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                                     </span>
-                                                 @endif
-                                                 @if($task->has_attachments)
-                                                     <span class="px-1.5 py-0.5 rounded-md bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-300 border border-sky-200/50 dark:border-sky-700/50 shadow-sm" title="{{ $task->attachments->count() }} adjunto{{ $task->attachments->count() !== 1 ? 's' : '' }}">
-                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
-                                                     </span>
-                                                 @endif
-                                             </div>
-                                         </div>
-                                        <div class="shrink-0 flex flex-col items-end gap-1.5">
-                                            <div class="flex items-center gap-1.5">
-                                                @include('tasks.partials.task-timer-button')
-                                                @if(!$task->is_archived && ($task->isCompleted() || $column->type === 'done'))
-                                                    <button onclick="archiveTask({{ $task->id }})" 
-                                                            class="p-1 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-500 hover:text-emerald-600 transition-colors"
-                                                            title="{{ __('tasks.mark_as_completed_and_archive') }}">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                                                        </svg>
-                                                    </button>
-                                                @endif
-                                            </div>
-                                            <a href="{{ route('teams.dashboard', $team) }}" 
-                                               onclick="event.stopPropagation()"
-                                               class="text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter hover:ring-2 hover:ring-violet-500 transition-all cursor-pointer shadow-sm"
-                                               style="background-color: {{ $qCfg['color'] ?? '#d1d5db' }}40; color: {{ $qCfg['color'] ?? '#374151' }};"
-                                               title="{{ __('teams.view_dashboard') ?? 'Ver Eisenhower' }}">
-                                                Q{{ $quadrant }}
-                                            </a>
-                                        </div>
-                                    </div>
-
-                                    @if($task->description)
-                                        <div class="text-[11px] text-gray-600 dark:text-gray-300 line-clamp-2 mb-3 opacity-80 leading-relaxed">
-                                            {{ \Illuminate\Support\Str::limit(html_entity_decode(strip_tags(\Illuminate\Support\Str::markdown($task->description))), 120) }}
-                                        </div>
-                                    @endif
-
-                                    <!-- Progress Slider -->
-                                    <div class="mt-4 space-y-1.5">
-                                        <div class="flex items-center justify-between text-[10px] font-bold">
-                                            <span class="text-gray-400 uppercase tracking-widest">{{ __('tasks.progress') }}</span>
-                                            <span class="text-violet-600 dark:text-violet-400 progress-label">{{ $task->progress }}%</span>
-                                        </div>
-                                        <div class="relative w-full h-8 flex items-center group">
-                                            <!-- Visual Track -->
-                                            <div class="absolute w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg pointer-events-none"></div>
-                                            <!-- Visual Fill -->
-                                            <div class="absolute h-2 bg-violet-500 rounded-lg transition-all duration-300 pointer-events-none progress-fill" style="width: {{ $task->progress }}%;"></div>
-                                            <!-- Visual Thumb -->
-                                            <div class="absolute w-4 h-4 bg-white border-2 border-violet-500 rounded-full shadow-sm transition-all duration-300 pointer-events-none progress-thumb transform -translate-x-1/2" style="left: {{ $task->progress }}%; {{ $task->progress == 0 ? 'margin-left: 8px;' : ($task->progress == 100 ? 'margin-left: -8px;' : '') }}"></div>
-                                            
-                                            <!-- Interactive Invisible Slider (Touch Target) -->
-                                            <input type="range" min="0" max="100" value="{{ $task->progress }}" autocomplete="off"
-                                                class="absolute w-full h-full opacity-0 cursor-pointer z-30 progress-slider"
-                                                data-task-id="{{ $task->id }}"
-                                                {{ $task->children()->count() > 0 ? 'disabled' : '' }}>
-                                        </div>
-                                    </div>
-
-                                     <!-- Card Footer -->
-                                     <div class="mt-4 flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700/50">
-                                         <div class="flex items-center gap-2">
-                                             <div class="flex -space-x-2">
-                                                 @if($task->assignedUser)
-                                                     <img src="{{ $task->assignedUser->profile_photo_url }}" alt="{{ $task->assignedUser->name }}" 
-                                                         class="w-6 h-6 rounded-full object-cover border-2 border-white dark:border-gray-800 shadow-sm" title="{{ $task->assignedUser->name }}">
-                                                 @elseif($task->assignedTo->count() > 0)
-                                                     @foreach($task->assignedTo->take(3) as $user)
-                                                         <img src="{{ $user->profile_photo_url }}" alt="{{ $user->name }}" 
-                                                             class="w-6 h-6 rounded-full object-cover border-2 border-white dark:border-gray-800 shadow-sm" title="{{ $user->name }}">
-                                                     @endforeach
-                                                 @endif
-                                             </div>
-                                             @if($task->assignedUser)
-                                                 <span class="text-[9px] font-bold text-gray-500 dark:text-gray-400 truncate max-w-[80px]">
-                                                     {{ $task->assignedUser->id === auth()->id() ? __('Tú') : explode(' ', $task->assignedUser->name)[0] }}
-                                                 </span>
-                                             @endif
-                                         </div>
-                                         
-                                         <div class="flex items-center gap-1.5">
-                                             @if($task->today_time_minutes > 0)
-                                                 <span class="text-[9px] font-bold text-violet-600 dark:text-violet-400 flex items-center gap-0.5" title="Tiempo hoy">
-                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                                     {{ floor($task->today_time_minutes / 60) }}h{{ $task->today_time_minutes % 60 }}m
-                                                 </span>
-                                             @endif
-                                             @if($task->avg_quality_score !== null)
-                                                 <span class="text-[9px] font-bold {{ $task->avg_quality_score >= 4 ? 'text-green-600' : ($task->avg_quality_score >= 3 ? 'text-yellow-600' : 'text-red-600') }}" title="Calificación promedio">
-                                                     ⭐ {{ number_format($task->avg_quality_score, 1) }}
-                                                 </span>
-                                             @endif
-                                             @if($task->skills->isNotEmpty())
-                                                 <span class="text-[9px] font-bold text-sky-600 dark:text-sky-400 flex items-center gap-0.5" title="Habilidades">
-                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
-                                                     {{ $task->skills->count() }}
-                                                 </span>
-                                             @endif
-                                             @if($task->tags->isNotEmpty())
-                                                 <span class="text-[9px] font-bold text-gray-500 dark:text-gray-400 flex items-center gap-0.5" title="Etiquetas">
-                                                     #{{ $task->tags->count() }}
-                                                 </span>
-                                             @endif
-                                             @if($task->days_remaining !== null)
-                                                 <div class="flex items-center gap-1 text-[10px] font-bold {{ $task->due_date->isPast() && !$task->isCompleted() ? 'text-red-500' : ($task->days_remaining === 0 ? 'text-orange-500' : 'text-gray-400') }}">
-                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" />
-                                                     </svg>
-                                                     @if($task->days_remaining < 0)
-                                                         {{ abs($task->days_remaining) }}d atrasada
-                                                     @elseif($task->days_remaining === 0)
-                                                         Hoy
-                                                     @else
-                                                         {{ $task->days_remaining }}d
-                                                     @endif
-                                                 </div>
-                                             @elseif($task->due_date)
-                                                 <div class="flex items-center gap-1 text-[10px] font-bold text-gray-400">
-                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" />
-                                                     </svg>
-                                                     {{ $task->due_date->format('d M') }}
-                                                 </div>
-                                             @endif
-                                         </div>
-                                     </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
+                    <x-kanban.column :column="$column" :team="$team" :quadrantConfig="$quadrantConfig" />
                 @endforeach
 
                 <!-- Today Column -->

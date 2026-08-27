@@ -187,7 +187,7 @@ class BuildKanbanDataAction
      */
     protected function getFilters(Request $request): array
     {
-        return app(\App\Traits\HandlesPersistentFilters::class)->getPersistentFilters($request, 'tasks', [
+        return app(\App\Services\PersistentFilterService::class)->getFilters($request, 'tasks', [
             'status', 'priority', 'assigned_to', 'skill_id', 'type', 'search', 'expediente_id',
             'urgency', 'assignment_mode', 'blocked',
         ]);

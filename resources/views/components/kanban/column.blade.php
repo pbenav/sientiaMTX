@@ -75,6 +75,8 @@
 
     <!-- Tasks List -->
     <div class="flex-1 overflow-y-auto px-1.5 sm:px-2 pb-2.5 sm:pb-3.5 md:pb-4 space-y-2 sm:space-y-2.5 md:space-y-3 task-list custom-scrollbar" data-column-id="{{ $column->id }}">
-        {{ $slot }}
+        @foreach($column->activities as $index => $task)
+            <x-kanban.task-card :task="$task" :team="$team" :column="$column" :quadrantConfig="$quadrantConfig" :cardIndex="$index" />
+        @endforeach
     </div>
 </div>
