@@ -126,10 +126,34 @@
                         @php
                             $task = $appointment->activity ?? $appointment->task;
                         @endphp
-                        <div>
+                        <div x-data="{
+                            taskId: {{ $task->id }},
+                            baseTimeHuman: '{{ $task->totalTrackedTimeHuman() }}',
+                            get isActive() { return Alpine.store('timer') && Alpine.store('timer').activeTaskId == this.taskId },
+                            get elapsed() { return this.isActive ? Alpine.store('timer').elapsed : 0 },
+                            formatTime(sec) {
+                                if (!sec) return '0s';
+                                const h = Math.floor(sec / 3600);
+                                const m = Math.floor((sec % 3600) / 60);
+                                const s = sec % 60;
+                                return (h > 0 ? h + 'h ' : '') + (m > 0 || h > 0 ? m + 'm ' : '') + s + 's';
+                            },
+                            init() {
+                                window.addEventListener('time-updated', (e) => {
+                                    if (e.detail.taskId == this.taskId && e.detail.humanTime) {
+                                        this.baseTimeHuman = e.detail.humanTime;
+                                    }
+                                });
+                            }
+                        }">
                             <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Duración real (contador)</p>
                             <p class="text-sm font-bold text-cyan-600 dark:text-cyan-400">
-                                {{ $task->totalTrackedTimeHuman() }}
+                                <template x-if="!isActive">
+                                    <span x-text="baseTimeHuman"></span>
+                                </template>
+                                <template x-if="isActive">
+                                    <span class="text-violet-600 dark:text-violet-400 animate-pulse font-extrabold" x-text="formatTime(elapsed)"></span>
+                                </template>
                             </p>
                         </div>
                         @endif

@@ -36,6 +36,7 @@
             } else {
                 if (data.total_human_time) {
                     this.humanTime = data.total_human_time;
+                    window.dispatchEvent(new CustomEvent('time-updated', { detail: { taskId: this.taskId, humanTime: data.total_human_time } }));
                 }
                 if (Alpine.store('timer')) Alpine.store('timer').stop();
                 window.dispatchEvent(new CustomEvent('task-stopped', { detail: { taskId: this.taskId } }));
