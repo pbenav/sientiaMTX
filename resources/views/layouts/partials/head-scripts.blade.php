@@ -716,6 +716,11 @@
                             this.fetch();
                         }
                     });
+
+                    // Periodic sync to detect timer changes from other tabs/sessions
+                    this.syncInterval = setInterval(() => {
+                        this.fetch();
+                    }, 5000);
                 }
             });
 

@@ -23,6 +23,11 @@
              this.working = true;
              this.fetchStatus(); 
         });
+
+        // SYNC: If a task is stopped, update workday status to clear active task info
+        window.addEventListener('task-stopped', () => {
+             this.fetchStatus(); 
+        });
     },
     
     fetchStatus(isInit = false) {
