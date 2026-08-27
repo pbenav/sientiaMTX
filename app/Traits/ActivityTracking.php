@@ -37,15 +37,22 @@ trait ActivityTracking
     public function totalTrackedTimeHuman(): string
     {
         $seconds = $this->totalTrackedSeconds();
-        if ($seconds === 0) return '0m';
+        if ($seconds === 0) return '0s';
 
         $hours = floor($seconds / 3600);
         $minutes = floor(($seconds % 3600) / 60);
+        $secs = $seconds % 60;
         
+        $parts = [];
         if ($hours > 0) {
-            return "{$hours}h {$minutes}m";
+            $parts[] = "{$hours}h";
         }
-        return "{$minutes}m";
+        if ($minutes > 0 || $hours > 0) {
+            $parts[] = "{$minutes}m";
+        }
+        $parts[] = "{$secs}s";
+        
+        return implode(' ', $parts);
     }
 
     /**
