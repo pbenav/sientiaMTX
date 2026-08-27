@@ -1049,12 +1049,10 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
     <style>
-        #resilience-heatmap { z-index: 0 !important; }
-        .leaflet-pane { z-index: 1 !important; }
-        .leaflet-top, .leaflet-bottom { z-index: 2 !important; }
+        #resilience-heatmap { z-index: 0; }
         .custom-div-icon { z-index: 10 !important; }
         .incidence-beacon { z-index: 999 !important; }
-        .leaflet-popup { z-index: 1000 !important; }
+        
         
         @keyframes marker-pulse-rose {
             0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); }
@@ -1113,6 +1111,11 @@
             });
             
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            
+            // Asegurar que el layout de Tailwind termine de computarse antes de calcular dimensiones del mapa
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 250);
             
             // Forzamos el orden de las capas para que los popups nunca se queden detrás
             map.getPane('markerPane').style.zIndex = 650;

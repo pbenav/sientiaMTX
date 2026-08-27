@@ -36,9 +36,9 @@ class SecurityHeadersMiddleware
 
             // Content-Security-Policy (H-24 / L-05): Restricción de fuentes adaptada a Alpine/Tailwind/Sientia
             $csp = "default-src 'self' http://localhost:* ws://localhost:*; " .
-                   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://meet.jit.si https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://scaleflex.cloudimg.io {$onlyOfficeUrl}; " .
-                   "style-src 'self' 'unsafe-inline' https://fonts.bunny.net https://fonts.googleapis.com https://cdnjs.cloudflare.com; " .
-                   "img-src 'self' data: blob: https://ui-avatars.com https://*.tile.openstreetmap.org; " .
+                   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://meet.jit.si https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://scaleflex.cloudimg.io {$onlyOfficeUrl}; " .
+                   "style-src 'self' 'unsafe-inline' https://fonts.bunny.net https://fonts.googleapis.com https://cdnjs.cloudflare.com https://unpkg.com; " .
+                   "img-src 'self' data: blob: https://ui-avatars.com https://*.tile.openstreetmap.org https://unpkg.com; " .
                    "font-src 'self' data: https://fonts.bunny.net https://fonts.gstatic.com; " .
                    "media-src 'self' data: blob: https://assets.mixkit.co; " .
                    "worker-src 'self' blob:; " .
