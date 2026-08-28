@@ -311,6 +311,37 @@ class PublicAppointmentController extends Controller
             }
         }
 
+        // Verificar si ya existe una cita activa para el mismo servicio con el mismo DNI o Email
+        $existingAppointment = null;
+        if (!empty($data['dni']) || !empty($data['email'])) {
+            $existingAppointment = Appointment::where('service_id', $service->id)
+                ->whereIn('status', ['confirmed', 'scheduled', 'pending'])
+                ->whereHas('visitor', function ($query) use ($data) {
+                    $query->where(function ($q) use ($data) {
+                        if (!empty($data['dni'])) {
+                            $q->where('dni', $data['dni']);
+                        }
+                        if (!empty($data['email'])) {
+                            $q->orWhere('email', $data['email']);
+                        }
+                    });
+                })
+                ->first();
+        }
+
+        if ($existingAppointment) {
+            $formattedTime = \Carbon\Carbon::parse($existingAppointment->appointment_time)->format('H:i');
+            $formattedDate = $existingAppointment->appointment_date->format('d/m/Y');
+            
+            return back()
+                ->withErrors([
+                    'appointment_date' => "Ya tienes una cita concertada para este servicio el día {$formattedDate} a las {$formattedTime}."
+                ])
+                ->with('existing_appointment_localizador', $existingAppointment->localizador)
+                ->withInput();
+        }
+
+
         // Bloquear el tramo horario específico para evitar que múltiples personas (o clics dobles)
         // reserven el mismo espacio simultáneamente, causando una condición de carrera.
         $lockKey = 'appointment_slot_' . $service->id . '_' . $date->format('Ymd') . '_' . str_replace(':', '', $data['appointment_time']);
