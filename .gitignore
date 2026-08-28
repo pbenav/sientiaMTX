@@ -36,3 +36,6 @@ mkdocs.yml
 
 # WWebJS (L-03)
 .wwebjs_auth/
+
+# Opencode AI agent files
+.opencode/
