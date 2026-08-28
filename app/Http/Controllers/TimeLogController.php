@@ -390,7 +390,6 @@ class TimeLogController extends Controller
                         $isActive      = true;
                         $totalMinutes += (int) $log->start_at->diffInMinutes(now());
                     } else {
-                        // effectiveMinutes() devuelve expected_minutes si el log es anómalo
                         $totalMinutes += $log->effectiveMinutes();
                         if ($log->is_anomalous) {
                             $hasAnomaly = true;
@@ -399,12 +398,31 @@ class TimeLogController extends Controller
                     }
                 }
 
+                // Red de seguridad a nivel de DÍA: si la suma de todos los registros del día
+                // supera el máximo permitido (ya sea por turnos duplicados, errores de API, etc),
+                // capamos el día entero.
+                $firstLog = $logs->first();
+                $expectedForDay = \App\Models\TimeLog::expectedMinutesForUser($firstLog->user ?? $user, \Carbon\Carbon::parse($date));
+                $hardCapMinutes = \App\Models\TimeLog::ANOMALY_HARD_CAP_HOURS * 60;
+                $dailyThreshold = min((int) ($expectedForDay * 1.20), $hardCapMinutes);
+
+                if ($totalMinutes > $dailyThreshold) {
+                    $hasAnomaly = true;
+                    // Si superaba el threshold, normalizamos al expected
+                    $totalMinutes = $expectedForDay > 0 && $expectedForDay <= $hardCapMinutes ? $expectedForDay : $hardCapMinutes;
+                }
+
+                // Última red de seguridad: jamás superar el hard cap de 10h en un día
+                if ($totalMinutes > $hardCapMinutes) {
+                    $totalMinutes = $hardCapMinutes;
+                }
+
                 return (object)[
                     'date'          => \Carbon\Carbon::parse($date),
                     'total_minutes' => $totalMinutes,
                     'is_active'     => $isActive,
                     'has_anomaly'   => $hasAnomaly,
-                    'anomaly_count' => $anomalyCount,
+                    'anomaly_count' => $anomalyCount ?: ($hasAnomaly ? 1 : 0),
                 ];
             })
             ->take($presenceLimit);
