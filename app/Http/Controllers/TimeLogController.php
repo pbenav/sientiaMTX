@@ -41,6 +41,7 @@ class TimeLogController extends Controller
                 if ($workdayEndTime->lt($activeLog->start_at)) $workdayEndTime = $activeLog->start_at;
                 
                 $activeLog->update(['end_at' => $workdayEndTime]);
+                $activeLog->fresh()->markAnomalousIfNeeded();
                 $activeTaskLog = $user->activeTaskLog();
                 if ($activeTaskLog) {
                     $taskEndTime = $endTime->copy();
@@ -99,6 +100,7 @@ class TimeLogController extends Controller
                     } else {
                         $activeLog->update(['end_at' => now()]);
                     }
+                    $activeLog->fresh()->markAnomalousIfNeeded();
                 }
                 $activeTaskLog = $user->activeTaskLog();
                 if ($activeTaskLog) {
@@ -130,6 +132,7 @@ class TimeLogController extends Controller
         $activeLog = $user->activeWorkdayLog();
         if ($activeLog) {
             $activeLog->update(['end_at' => now()]);
+            $activeLog->fresh()->markAnomalousIfNeeded();
             
             $activeTaskLog = $user->activeTaskLog();
             if ($activeTaskLog) {
@@ -367,6 +370,8 @@ class TimeLogController extends Controller
             ->get();
 
         // Get my recent workdays grouped by day
+        // Uses effectiveMinutes() so anomalous logs (jornada olvidada abierta) are normalized
+        // to the user's configured schedule instead of inflating the stats.
         $workdayLogs = $user->timeLogs()
             ->where('type', 'workday')
             ->orderBy('start_at', 'desc')
@@ -376,19 +381,30 @@ class TimeLogController extends Controller
             })
             ->map(function($logs, $date) {
                 $totalMinutes = 0;
-                $isActive = false;
+                $isActive     = false;
+                $hasAnomaly   = false;
+                $anomalyCount = 0;
+
                 foreach($logs as $log) {
                     if (!$log->end_at) {
-                        $isActive = true;
-                        $totalMinutes += floor($log->start_at->diffInMinutes(now()));
+                        $isActive      = true;
+                        $totalMinutes += (int) $log->start_at->diffInMinutes(now());
                     } else {
-                        $totalMinutes += floor($log->start_at->diffInMinutes($log->end_at));
+                        // effectiveMinutes() devuelve expected_minutes si el log es anómalo
+                        $totalMinutes += $log->effectiveMinutes();
+                        if ($log->is_anomalous) {
+                            $hasAnomaly = true;
+                            $anomalyCount++;
+                        }
                     }
                 }
+
                 return (object)[
-                    'date' => \Carbon\Carbon::parse($date),
+                    'date'          => \Carbon\Carbon::parse($date),
                     'total_minutes' => $totalMinutes,
-                    'is_active' => $isActive
+                    'is_active'     => $isActive,
+                    'has_anomaly'   => $hasAnomaly,
+                    'anomaly_count' => $anomalyCount,
                 ];
             })
             ->take($presenceLimit);
@@ -456,6 +472,7 @@ class TimeLogController extends Controller
         $activeLog = $user->activeWorkdayLog();
         if ($activeLog) {
             $activeLog->update(['end_at' => now()]);
+            $activeLog->fresh()->markAnomalousIfNeeded();
         }
         $activeTaskLog = $user->activeTaskLog();
         if ($activeTaskLog) {

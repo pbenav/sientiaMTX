@@ -1096,6 +1096,15 @@
                                             @if($log->is_active)
                                                 <span class="text-[9px] font-black uppercase text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 px-2 py-0.5 rounded-full">Activa</span>
                                             @endif
+                                            @if($log->has_anomaly)
+                                                <span title="Se detectó una jornada anómala ({{ $log->anomaly_count }} registro{{ $log->anomaly_count > 1 ? 's' : '' }}). El tiempo mostrado corresponde a la jornada esperada según tu horario configurado."
+                                                      class="text-[9px] font-black uppercase text-amber-600 bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400 px-2 py-0.5 rounded-full cursor-help flex items-center gap-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                                                    </svg>
+                                                    Normalizado
+                                                </span>
+                                            @endif
                                             <span>{{ floor($log->total_minutes / 60).'h '.($log->total_minutes % 60).'m' }}</span>
                                         </div>
                                     </td>
