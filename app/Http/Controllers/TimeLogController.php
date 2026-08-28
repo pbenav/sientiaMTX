@@ -341,6 +341,12 @@ class TimeLogController extends Controller
         // Get all my tasks in this team that have time logged and are visible to me
         $tasks = $team->activities()
             ->visibleTo($user, $team->isManager($user))
+            ->where(function($q) use ($user) {
+                $q->whereNull('metadata->is_distributed_instance')
+                  ->orWhere('metadata->is_distributed_instance', false)
+                  ->orWhere('metadata->is_distributed_instance', 'false')
+                  ->orWhere('metadata->distributed_user_id', $user->id);
+            })
             ->whereHas('timeLogs', function($q) use ($user) {
                 $q->where('user_id', $user->id);
             })->with([

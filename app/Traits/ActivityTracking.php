@@ -56,6 +56,53 @@ trait ActivityTracking
     }
 
     /**
+     * Calcula los segundos rastreados por un usuario específico (por defecto, el autenticado) en esta actividad y sus hijos.
+     */
+    public function trackedSecondsByUser($userId = null): int
+    {
+        $userId = $userId ?? auth()->id();
+        if (!$userId) return 0;
+
+        // Own logs by this user
+        $ownSeconds = (int) $this->timeLogs()->where('user_id', $userId)->whereNotNull('end_at')->get()
+            ->sum(fn($log) => max(0, $log->start_at->diffInSeconds($log->end_at, false)));
+
+        // Children logs by this user
+        $childrenSeconds = 0;
+        if ($this->children()->exists()) {
+             $childrenIds = $this->children()->pluck('id');
+             $childrenLogs = \App\Models\TimeLog::whereIn('task_id', $childrenIds)->where('user_id', $userId)->whereNotNull('end_at')->get();
+             $childrenSeconds = (int) $childrenLogs->sum(fn($log) => max(0, $log->start_at->diffInSeconds($log->end_at, false)));
+        }
+
+        return $ownSeconds + $childrenSeconds;
+    }
+
+    /**
+     * Devuelve el tiempo rastreado por un usuario en formato legible (ej: "2h 30m" o "45m").
+     */
+    public function trackedTimeHumanByUser($userId = null): string
+    {
+        $seconds = $this->trackedSecondsByUser($userId);
+        if ($seconds === 0) return '0s';
+
+        $hours = floor($seconds / 3600);
+        $minutes = floor(($seconds % 3600) / 60);
+        $secs = $seconds % 60;
+        
+        $parts = [];
+        if ($hours > 0) {
+            $parts[] = "{$hours}h";
+        }
+        if ($minutes > 0 || $hours > 0) {
+            $parts[] = "{$minutes}m";
+        }
+        $parts[] = "{$secs}s";
+        
+        return implode(' ', $parts);
+    }
+
+    /**
      * Obtiene el tiempo total rastreado HOY por TODOS los usuarios en esta actividad y sus hijos.
      */
     public function totalTrackedTimeTodaySeconds(): int

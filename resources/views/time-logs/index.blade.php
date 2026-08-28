@@ -1041,7 +1041,7 @@
                                     </td>
                                     <td class="px-6 py-4 text-right">
                                         <span class="bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300 px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap">
-                                            {{ $task->totalTrackedTimeHuman() }}
+                                            {{ $task->trackedTimeHumanByUser() }}
                                         </span>
                                     </td>
                                 </tr>
