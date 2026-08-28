@@ -556,6 +556,7 @@ class AppointmentController extends Controller
             'visitor_postal_code' => 'nullable|string|max:50',
             'visitor_observations' => 'nullable|string|max:2000',
             'tracked_time_format' => 'nullable|string|regex:/^\d{1,3}:\d{2}:\d{2}$/',
+            'custom_fields_values' => 'nullable|array',
         ]);
 
         // Si cambia fecha/hora, revalidar disponibilidad
@@ -584,13 +585,20 @@ class AppointmentController extends Controller
         if ($request->has('visitor_full_name')) {
             $appointment->visitor->update([
                 'full_name'    => $request->input('visitor_full_name'),
-                'dni'          => $request->input('visitor_dni'),
-                'email'        => $request->input('visitor_email'),
+                'dni'          => $request->input('visitor_dni') ? strtoupper(trim($request->input('visitor_dni'))) : null,
+                'email'        => $request->input('visitor_email') ? strtolower(trim($request->input('visitor_email'))) : null,
                 'phone'        => $request->input('visitor_phone'),
                 'city'         => $request->input('visitor_city'),
                 'postal_code'  => $request->input('visitor_postal_code'),
                 'observations' => $request->input('visitor_observations'),
             ]);
+        }
+
+        // Actualizar campos personalizados del servicio si se proporcionan
+        if ($request->has('custom_fields_values') && is_array($request->input('custom_fields_values'))) {
+            $currentValues = $appointment->custom_fields_values ?? [];
+            $newValues = array_merge($currentValues, $request->input('custom_fields_values'));
+            $appointment->update(['custom_fields_values' => $newValues]);
         }
 
         // Si cambió la fecha o la hora, y el visitante consintió el email, le notificamos

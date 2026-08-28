@@ -983,7 +983,7 @@
                     </div>
                     <div class="overflow-x-auto overflow-y-auto max-h-[400px] no-scrollbar">
                         <table class="w-full text-left">
-                        <thead class="bg-gray-50 dark:bg-gray-800/40"><tr><th class="px-6 py-4 text-[10px] font-black uppercase text-gray-400 dark:text-gray-500">Tarea</th><th class="px-6 py-4 text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 text-right">Tiempo</th></tr></thead>
+                        <thead class="bg-gray-50 dark:bg-gray-800/40"><tr><th class="px-6 py-4 text-[10px] font-black uppercase text-gray-400 dark:text-gray-500">Actividad</th><th class="px-6 py-4 text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 text-right">Tiempo</th></tr></thead>
                         <tbody class="divide-y divide-gray-50 dark:divide-gray-800/50">
                             @foreach($tasks as $task)
                                 <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/10 transition-colors">
@@ -996,6 +996,14 @@
                                                 <span class="text-[9px] font-black text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded shadow-sm">
                                                     #{{ $task->id }}
                                                 </span>
+                                                @if($task->type_icon)
+                                                    <span class="flex items-center gap-1 text-[9px] font-black px-1.5 py-0.5 rounded border"
+                                                          style="background-color: {{ $task->type_badge_color }}15; color: {{ $task->type_badge_color }}; border-color: {{ $task->type_badge_color }}30;"
+                                                          title="{{ $task->type_label }}">
+                                                        {!! $task->type_icon !!}
+                                                        {{ $task->type_label }}
+                                                    </span>
+                                                @endif
                                                 @php
                                                     $statusValue = $task->status_value;
                                                     $statusLabel = __("tasks.statuses.{$statusValue}") ?? $statusValue;
@@ -1013,9 +1021,11 @@
                                                 </span>
                                             </div>
                                             <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[9px] font-bold text-gray-500 dark:text-gray-400">
-                                                <span class="bg-gray-50 dark:bg-gray-800/40 px-1.5 py-0.5 rounded text-gray-600 dark:text-gray-400 uppercase tracking-tighter">
-                                                    Q{{ $task->getQuadrant($task) }}
-                                                </span>
+                                                @if(in_array($task->type, \App\Models\Activity::MATRIX_TYPES))
+                                                    <span class="bg-gray-50 dark:bg-gray-800/40 px-1.5 py-0.5 rounded text-gray-600 dark:text-gray-400 uppercase tracking-tighter">
+                                                        Q{{ $task->getQuadrant($task) }}
+                                                    </span>
+                                                @endif
                                                 @if($task->skill)
                                                     <span class="text-gray-400 dark:text-gray-600">•</span>
                                                     <span class="text-gray-600 dark:text-gray-400">{{ $task->skill->name }}</span>

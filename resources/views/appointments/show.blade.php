@@ -224,13 +224,13 @@
                         @if($appointment->visitor->dni)
                         <div>
                             <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">DNI/NIE</p>
-                            <p class="text-sm font-bold text-gray-900 dark:text-white">{{ $appointment->visitor->dni }}</p>
+                            <p class="text-sm font-bold text-gray-900 dark:text-white" style="text-transform: uppercase">{{ $appointment->visitor->dni }}</p>
                         </div>
                         @endif
                         @if($appointment->visitor->email)
                         <div>
                             <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Email</p>
-                            <a href="mailto:{{ $appointment->visitor->email }}" class="text-sm font-bold text-cyan-600 dark:text-cyan-400 hover:underline">
+                            <a href="mailto:{{ $appointment->visitor->email }}" class="text-sm font-bold text-cyan-600 dark:text-cyan-400 hover:underline" style="text-transform: lowercase">
                                 {{ $appointment->visitor->email }}
                             </a>
                         </div>
@@ -272,12 +272,16 @@
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1">DNI / NIE</label>
-                                <input type="text" name="visitor_dni" value="{{ $appointment->visitor->dni }}"
+                                <input type="text" name="visitor_dni" value="{{ old('visitor_dni', strtoupper($appointment->visitor->dni ?? '')) }}"
+                                       style="text-transform: uppercase"
+                                       oninput="this.value = this.value.toUpperCase()"
                                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 dark:text-white outline-none transition-all">
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1">Email</label>
-                                <input type="email" name="visitor_email" value="{{ $appointment->visitor->email }}"
+                                <input type="email" name="visitor_email" value="{{ old('visitor_email', strtolower($appointment->visitor->email ?? '')) }}"
+                                       style="text-transform: lowercase"
+                                       oninput="this.value = this.value.toLowerCase()"
                                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 dark:text-white outline-none transition-all">
                             </div>
                             <div>
@@ -301,6 +305,51 @@
                                           class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 dark:text-white outline-none transition-all resize-y">{{ $appointment->visitor->observations }}</textarea>
                             </div>
                         </div>
+
+                        {{-- Campos personalizados del servicio --}}
+                        @if(!empty($appointment->service->custom_fields))
+                        <div class="sm:col-span-2 border-t border-gray-100 dark:border-gray-800 pt-4">
+                            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">📝 Información Adicional del Servicio</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                @foreach($appointment->service->custom_fields as $field)
+                                    <div class="{{ ($field['type'] ?? 'text') === 'textarea' ? 'sm:col-span-2' : '' }}">
+                                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1">
+                                            {{ $field['name'] }}
+                                            @if(!empty($field['required'])) <span class="text-red-400">*</span> @endif
+                                        </label>
+                                        @php
+                                            $cfValue = $appointment->custom_fields_values[$field['id']] ?? '';
+                                        @endphp
+                                        @if(($field['type'] ?? 'text') === 'textarea')
+                                            <textarea name="custom_fields_values[{{ $field['id'] }}]" rows="3"
+                                                      class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 dark:text-white outline-none transition-all resize-y">{{ $cfValue }}</textarea>
+                                        @elseif(($field['type'] ?? 'text') === 'select' && !empty($field['options']))
+                                            <select name="custom_fields_values[{{ $field['id'] }}]"
+                                                    class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 dark:text-white outline-none transition-all">
+                                                <option value="">— Seleccionar —</option>
+                                                @foreach($field['options'] as $opt)
+                                                    <option value="{{ $opt }}" {{ $cfValue === $opt ? 'selected' : '' }}>{{ $opt }}</option>
+                                                @endforeach
+                                            </select>
+                                        @elseif(($field['type'] ?? 'text') === 'date')
+                                            <input type="date" name="custom_fields_values[{{ $field['id'] }}]" value="{{ $cfValue }}"
+                                                   class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 dark:text-white outline-none transition-all">
+                                        @elseif(($field['type'] ?? 'text') === 'checkbox')
+                                            <label class="flex items-center gap-2 cursor-pointer mt-1">
+                                                <input type="hidden" name="custom_fields_values[{{ $field['id'] }}]" value="0">
+                                                <input type="checkbox" name="custom_fields_values[{{ $field['id'] }}]" value="1" {{ $cfValue ? 'checked' : '' }}
+                                                       class="rounded border-gray-300 dark:border-gray-600 text-cyan-600 focus:ring-cyan-500">
+                                                <span class="text-xs text-gray-600 dark:text-gray-400">{{ $field['name'] }}</span>
+                                            </label>
+                                        @else
+                                            <input type="text" name="custom_fields_values[{{ $field['id'] }}]" value="{{ $cfValue }}"
+                                                   class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 dark:text-white outline-none transition-all">
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        @endif
                         
                         <div class="flex justify-end gap-2 pt-2 border-t border-gray-100 dark:border-gray-800">
                             <button type="button" @click="editingVisitor = false" class="px-4 py-2 text-xs font-black uppercase tracking-widest bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl transition-all">
