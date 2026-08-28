@@ -27,6 +27,19 @@
     </div>
 </div>
 
+<style>
+    /* Ensure all Filerobot dynamic modal wrappers, dialogs, and poppers (such as color pickers) */
+    /* overlay properly above all other modals on the page. */
+    .SfxModal-Wrapper,
+    .SfxPopper-wrapper,
+    [class*="SfxModal-Wrapper"],
+    [class*="SfxPopper-wrapper"],
+    [class*="SfxModal-"],
+    [class*="SfxPopper-"] {
+        z-index: 25000 !important;
+    }
+</style>
+
 @push('scripts')
 <script src="https://scaleflex.cloudimg.io/v7/plugins/filerobot-image-editor/latest/filerobot-image-editor.min.js"></script>
 <script>
