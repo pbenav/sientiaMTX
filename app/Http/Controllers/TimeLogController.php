@@ -338,14 +338,16 @@ class TimeLogController extends Controller
         $effortLimit = (int) $request->input('effort_limit', 10);
         $presenceLimit = (int) $request->input('presence_limit', 10);
 
-        // Get all my tasks in this team that have time logged
-        $tasks = $team->activities()->whereHas('timeLogs', function($q) use ($user) {
-            $q->where('user_id', $user->id);
-        })->with(['timeLogs' => function($q) use ($user) {
-            $q->where('user_id', $user->id);
-        }])
-        ->limit($effortLimit)
-        ->get();
+        // Get all my tasks in this team that have time logged and are visible to me
+        $tasks = $team->activities()
+            ->visibleTo($user, $team->isManager($user))
+            ->whereHas('timeLogs', function($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })->with(['timeLogs' => function($q) use ($user) {
+                $q->where('user_id', $user->id);
+            }])
+            ->limit($effortLimit)
+            ->get();
 
         // Get my recent workdays grouped by day
         $workdayLogs = $user->timeLogs()
