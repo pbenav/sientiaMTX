@@ -343,9 +343,13 @@ class TimeLogController extends Controller
             ->visibleTo($user, $team->isManager($user))
             ->whereHas('timeLogs', function($q) use ($user) {
                 $q->where('user_id', $user->id);
-            })->with(['timeLogs' => function($q) use ($user) {
-                $q->where('user_id', $user->id);
-            }])
+            })->with([
+                'timeLogs' => function($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                },
+                'parent',
+                'skill'
+            ])
             ->limit($effortLimit)
             ->get();
 

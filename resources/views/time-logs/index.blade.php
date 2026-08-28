@@ -964,15 +964,15 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4">
-                <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-100 flex flex-col">
-                    <div class="p-6 border-b border-gray-50 flex items-center justify-between">
-                        <h4 class="font-black text-gray-900">Contabilidad de Esfuerzo</h4>
+                <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-100 dark:border-gray-800/80 flex flex-col">
+                    <div class="p-6 border-b border-gray-50 dark:border-gray-800/50 flex items-center justify-between">
+                        <h4 class="font-black text-gray-900 dark:text-gray-100">Contabilidad de Esfuerzo</h4>
                         <form action="" method="GET" class="flex items-center gap-2">
                             @if(request('presence_limit'))
                                 <input type="hidden" name="presence_limit" value="{{ request('presence_limit') }}">
                             @endif
-                            <label class="text-[9px] font-black uppercase text-gray-400">Ver:</label>
-                            <select name="effort_limit" onchange="this.form.submit()" class="text-[10px] font-bold border-gray-200 dark:border-gray-700 rounded-lg py-0.5 pl-2 pr-8 bg-gray-50 dark:bg-gray-800 focus:ring-0 focus:border-violet-500 transition-all">
+                            <label class="text-[9px] font-black uppercase text-gray-400 dark:text-gray-500">Ver:</label>
+                            <select name="effort_limit" onchange="this.form.submit()" class="text-[10px] font-bold border-gray-200 dark:border-gray-700 rounded-lg py-0.5 pl-2 pr-8 bg-gray-50 dark:bg-gray-800 dark:text-gray-200 focus:ring-0 focus:border-violet-500 transition-all">
                                 <option value="5" {{ request('effort_limit') == 5 ? 'selected' : '' }}>5</option>
                                 <option value="10" {{ (!request('effort_limit') || request('effort_limit') == 10) ? 'selected' : '' }}>10</option>
                                 <option value="20" {{ request('effort_limit') == 20 ? 'selected' : '' }}>20</option>
@@ -983,27 +983,82 @@
                     </div>
                     <div class="overflow-x-auto overflow-y-auto max-h-[400px] no-scrollbar">
                         <table class="w-full text-left">
-                        <thead class="bg-gray-50"><tr><th class="px-6 py-4 text-[10px] font-black uppercase text-gray-400">Tarea</th><th class="px-6 py-4 text-[10px] font-black uppercase text-gray-400 text-right">Tiempo</th></tr></thead>
-                        <tbody class="divide-y divide-gray-50">
+                        <thead class="bg-gray-50 dark:bg-gray-800/40"><tr><th class="px-6 py-4 text-[10px] font-black uppercase text-gray-400 dark:text-gray-500">Tarea</th><th class="px-6 py-4 text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 text-right">Tiempo</th></tr></thead>
+                        <tbody class="divide-y divide-gray-50 dark:divide-gray-800/50">
                             @foreach($tasks as $task)
-                                <tr>
-                                    <td class="px-6 py-4"><span class="text-sm font-bold text-gray-900">{{ $task->title }}</span><br><span class="text-[8px] uppercase font-black text-gray-400">Q{{ $task->getQuadrant($task) }} {{ $task->skill ? '• '.$task->skill->name : '' }}</span></td>
-                                    <td class="px-6 py-4 text-right"><span class="bg-violet-50 text-violet-700 px-3 py-1 rounded-full text-xs font-bold">{{ $task->totalTrackedTimeHuman() }}</span></td>
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/10 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <div class="flex flex-col gap-1.5">
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <a href="{{ route('teams.activities.show', [$team, $task]) }}" class="text-sm font-bold text-gray-900 dark:text-gray-100 hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
+                                                    {{ $task->title }}
+                                                </a>
+                                                <span class="text-[9px] font-black text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded shadow-sm">
+                                                    #{{ $task->id }}
+                                                </span>
+                                                @php
+                                                    $statusValue = $task->status_value;
+                                                    $statusLabel = __("tasks.statuses.{$statusValue}") ?? $statusValue;
+                                                    $badgeClasses = match($statusValue) {
+                                                        'completed', 'done', 'approved', 'published', 'finished', 'accepted' => 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/30',
+                                                        'in_progress', 'active', 'editing', 'reviewing', 'under_review' => 'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/30 dark:text-violet-400 dark:border-violet-900/30',
+                                                        'pending', 'draft', 'proposed', 'scheduled' => 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/30',
+                                                        'cancelled', 'rejected', 'dismissed' => 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/30',
+                                                        'blocked', 'broken' => 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-900/30',
+                                                        default => 'bg-gray-50 text-gray-700 border border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'
+                                                    };
+                                                @endphp
+                                                <span class="text-[8px] font-black uppercase px-1.5 py-0.5 rounded border {{ $badgeClasses }}">
+                                                    {{ $statusLabel }}
+                                                </span>
+                                            </div>
+                                            <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[9px] font-bold text-gray-500 dark:text-gray-400">
+                                                <span class="bg-gray-50 dark:bg-gray-800/40 px-1.5 py-0.5 rounded text-gray-600 dark:text-gray-400 uppercase tracking-tighter">
+                                                    Q{{ $task->getQuadrant($task) }}
+                                                </span>
+                                                @if($task->skill)
+                                                    <span class="text-gray-400 dark:text-gray-600">•</span>
+                                                    <span class="text-gray-600 dark:text-gray-400">{{ $task->skill->name }}</span>
+                                                @endif
+                                                @if($task->parent)
+                                                    <span class="text-gray-400 dark:text-gray-600">•</span>
+                                                    <span class="text-violet-600 dark:text-violet-400 truncate max-w-[200px]" title="Instancia de: {{ $task->parent->title }}">
+                                                        Instancia de: {{ $task->parent->title }}
+                                                    </span>
+                                                @endif
+                                                @if($task->scheduled_date)
+                                                    <span class="text-gray-400 dark:text-gray-600">•</span>
+                                                    <span>Prog: {{ \Carbon\Carbon::parse($task->scheduled_date)->format('d/m/Y') }}</span>
+                                                @endif
+                                                @if($task->due_date)
+                                                    <span class="text-gray-400 dark:text-gray-600">•</span>
+                                                    <span class="{{ \Carbon\Carbon::parse($task->due_date)->isPast() && !$task->isCompleted() ? 'text-red-500 font-black' : '' }}">
+                                                        Vence: {{ \Carbon\Carbon::parse($task->due_date)->format('d/m/Y') }}
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <span class="bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300 px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap">
+                                            {{ $task->totalTrackedTimeHuman() }}
+                                        </span>
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table></div>
                 </div>
 
-                <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-100 flex flex-col">
-                    <div class="p-6 border-b border-gray-50 flex items-center justify-between">
-                        <h4 class="font-black text-gray-900">Registro de Presencia</h4>
+                <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-100 dark:border-gray-800/80 flex flex-col">
+                    <div class="p-6 border-b border-gray-50 dark:border-gray-800/50 flex items-center justify-between">
+                        <h4 class="font-black text-gray-900 dark:text-gray-100">Registro de Presencia</h4>
                         <form action="" method="GET" class="flex items-center gap-2">
                             @if(request('effort_limit'))
                                 <input type="hidden" name="effort_limit" value="{{ request('effort_limit') }}">
                             @endif
-                            <label class="text-[9px] font-black uppercase text-gray-400">Ver:</label>
-                            <select name="presence_limit" onchange="this.form.submit()" class="text-[10px] font-bold border-gray-200 dark:border-gray-700 rounded-lg py-0.5 pl-2 pr-8 bg-gray-50 dark:bg-gray-800 focus:ring-0 focus:border-emerald-500 transition-all">
+                            <label class="text-[9px] font-black uppercase text-gray-400 dark:text-gray-500">Ver:</label>
+                            <select name="presence_limit" onchange="this.form.submit()" class="text-[10px] font-bold border-gray-200 dark:border-gray-700 rounded-lg py-0.5 pl-2 pr-8 bg-gray-50 dark:bg-gray-800 dark:text-gray-200 focus:ring-0 focus:border-emerald-500 transition-all">
                                 <option value="5" {{ request('presence_limit') == 5 ? 'selected' : '' }}>5</option>
                                 <option value="10" {{ (!request('presence_limit') || request('presence_limit') == 10) ? 'selected' : '' }}>10</option>
                                 <option value="20" {{ request('presence_limit') == 20 ? 'selected' : '' }}>20</option>
