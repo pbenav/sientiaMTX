@@ -183,4 +183,16 @@ trait ActivityAccessors
             default     => 'gray',
         };
     }
+
+    /**
+     * Mutador para normalizar el estado a un array estructurado (JSON object)
+     * cuando se asigna un valor de tipo string, garantizando coherencia en la BD.
+     */
+    public function setStatusAttribute($value): void
+    {
+        if (is_string($value)) {
+            $value = ['value' => $value];
+        }
+        $this->attributes['status'] = $this->castAttributeAsJson('status', $value);
+    }
 }
