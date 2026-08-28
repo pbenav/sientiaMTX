@@ -217,14 +217,22 @@ class TimeLog extends Model
      */
     public function effectiveMinutes(): int
     {
+        $hardCap = self::ANOMALY_HARD_CAP_HOURS * 60;
+
         if (!$this->end_at) {
-            return (int) $this->start_at->diffInMinutes(now());
+            return min((int) $this->start_at->diffInMinutes(now()), $hardCap);
         }
 
-        if ($this->is_anomalous && $this->expected_minutes) {
-            return $this->expected_minutes;
+        $real = (int) $this->start_at->diffInMinutes($this->end_at);
+
+        if ($this->is_anomalous) {
+            // Si expected_minutes está bien definido y es razonable, usarlo
+            // Si no, usar el hard cap como fallback seguro
+            $expected = $this->expected_minutes ?? 0;
+            return ($expected > 0 && $expected <= $hardCap) ? $expected : $hardCap;
         }
 
-        return (int) $this->start_at->diffInMinutes($this->end_at);
+        // Red de seguridad: ningún registro no-anómalo puede superar el hard cap en estadísticas
+        return min($real, $hardCap);
     }
 }

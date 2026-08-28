@@ -22,10 +22,22 @@ class MarkAnomalousTimeLogs extends Command
         $dryRun = $this->option('dry-run');
         $userId = $this->option('user');
 
+        $hardCapMinutes = TimeLog::ANOMALY_HARD_CAP_HOURS * 60;
+
+        // Procesa:
+        // 1. Registros aún no marcados (is_anomalous = false) que superen el umbral
+        // 2. Registros marcados pero sin expected_minutes (normalización incompleta)
         $query = TimeLog::query()
             ->where('type', 'workday')
             ->whereNotNull('end_at')
-            ->where('is_anomalous', false) // Solo procesa los aún no marcados
+            ->where(function($q) use ($hardCapMinutes) {
+                $q->where('is_anomalous', false)
+                  ->orWhere(function($q2) {
+                      // Anómalos sin expected_minutes = normalización pendiente
+                      $q2->where('is_anomalous', true)
+                         ->whereNull('expected_minutes');
+                  });
+            })
             ->with('user');
 
         if ($userId) {
@@ -34,6 +46,7 @@ class MarkAnomalousTimeLogs extends Command
 
         $total   = $query->count();
         $marked  = 0;
+        $fixed   = 0;
         $skipped = 0;
 
         $this->info("Analizando {$total} registros de jornada cerrados" . ($dryRun ? ' [DRY-RUN]' : '') . '…');
@@ -41,7 +54,7 @@ class MarkAnomalousTimeLogs extends Command
         $bar = $this->output->createProgressBar($total);
         $bar->start();
 
-        $query->chunkById(200, function ($logs) use ($dryRun, &$marked, &$skipped, $bar) {
+        $query->chunkById(200, function ($logs) use ($dryRun, &$marked, &$fixed, &$skipped, $bar) {
             foreach ($logs as $log) {
                 $user = $log->user;
                 if (!$user) {
@@ -55,7 +68,9 @@ class MarkAnomalousTimeLogs extends Command
                 $expectedMinutes = TimeLog::expectedMinutesForUser($user, $log->start_at);
                 $threshold       = min((int) ($expectedMinutes * 1.20), $hardCapMinutes);
 
-                if ($durationMinutes > $threshold) {
+                $alreadyMarked = $log->is_anomalous && is_null($log->expected_minutes);
+
+                if ($alreadyMarked || $durationMinutes > $threshold) {
                     $reason = $durationMinutes > $hardCapMinutes
                         ? 'exceeded_threshold'
                         : 'exceeded_schedule';
@@ -63,22 +78,19 @@ class MarkAnomalousTimeLogs extends Command
                     if (!$dryRun) {
                         $log->update([
                             'is_anomalous'     => true,
-                            'anomaly_reason'   => $reason,
+                            'anomaly_reason'   => $log->anomaly_reason ?? $reason,
                             'expected_minutes' => $expectedMinutes,
                         ]);
                     } else {
                         $this->newLine();
                         $this->line(sprintf(
-                            '  [DRY-RUN] Log #%d  user=%s  dur=%dm  expected=%dm  reason=%s',
-                            $log->id,
-                            $user->name,
-                            $durationMinutes,
-                            $expectedMinutes,
-                            $reason
+                            '  [DRY-RUN] Log #%d  user=%s  dur=%dm  expected=%dm  reason=%s%s',
+                            $log->id, $user->name, $durationMinutes, $expectedMinutes, $reason,
+                            $alreadyMarked ? '  [CORRIGIENDO expected_minutes faltante]' : ''
                         ));
                     }
 
-                    $marked++;
+                    $alreadyMarked ? $fixed++ : $marked++;
                 }
 
                 $bar->advance();
@@ -88,9 +100,9 @@ class MarkAnomalousTimeLogs extends Command
         $bar->finish();
         $this->newLine(2);
 
-        $this->info("✅ Completado: {$marked} registros marcados como anómalos, {$skipped} omitidos (sin usuario).");
+        $this->info("✅ Completado: {$marked} nuevos registros marcados, {$fixed} normalizaciones completadas, {$skipped} omitidos (sin usuario).");
 
-        if ($dryRun && $marked > 0) {
+        if ($dryRun && ($marked + $fixed) > 0) {
             $this->warn('ℹ️  Modo DRY-RUN: ningún registro fue modificado. Ejecuta sin --dry-run para aplicar.');
         }
 
