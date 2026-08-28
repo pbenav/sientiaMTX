@@ -1,4 +1,4 @@
-<div id="global-image-editor-modal" x-data="draggableImageEditor()" class="fixed inset-0 z-[60] hidden pointer-events-none">
+<div id="global-image-editor-modal" x-data="draggableImageEditor()" class="fixed inset-0 z-[20000] hidden pointer-events-none">
     <!-- Backdrop -->
     <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm pointer-events-auto" onclick="closeGlobalImageEditor()"></div>
     
