@@ -47,9 +47,17 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(\App\Models\Activity::class, \App\Policies\ActivityPolicy::class);
         Gate::policy(\App\Models\ActivityAttachment::class, \App\Policies\ActivityAttachmentPolicy::class);
 
-        if ($this->app->environment('production', 'staging')) {
+        $appUrl = config('app.url');
+        if (!empty($appUrl) && $appUrl !== 'http://localhost' && $appUrl !== 'http://localhost:8000') {
+            URL::forceRootUrl($appUrl);
+            if (str_starts_with($appUrl, 'https://')) {
+                URL::forceScheme('https');
+            }
+        }
+
+        if (env('FORCE_HTTPS', false) || $this->app->environment('production', 'staging')) {
             URL::forceScheme('https');
-        } elseif (str_starts_with(config('app.url') ?? '', 'https') || request()->header('X-Forwarded-Proto') === 'https') {
+        } elseif (request()->header('X-Forwarded-Proto') === 'https' || request()->server('HTTP_X_FORWARDED_PROTO') === 'https') {
             URL::forceScheme('https');
         }
 
