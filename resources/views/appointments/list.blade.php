@@ -264,9 +264,37 @@
                                         ($cita->activity_id && $userActiveLog->task_id == $cita->activity_id) ||
                                         ($cita->task_id && $userActiveLog->task_id == $cita->task_id)
                                     );
+
+                                    $citaDate = \Carbon\Carbon::parse($cita->appointment_date)->startOfDay();
+                                    $today = now()->startOfDay();
+                                    $diffDays = (int) $citaDate->diffInDays($today, false);
+                                    
+                                    $dayOfWeek = $citaDate->dayOfWeek;
+                                    $schedulesForDay = $cita->service->schedules->where('day_of_week', $dayOfWeek)->sortBy('start_time')->values();
+                                    
+                                    $scheduleIndex = 0;
+                                    foreach ($schedulesForDay as $index => $schedule) {
+                                        if ($cita->appointment_time >= $schedule->start_time && $cita->appointment_time < $schedule->end_time) {
+                                            $scheduleIndex = $index;
+                                            break;
+                                        }
+                                    }
+                                    
+                                    if ($schedulesForDay->isEmpty()) {
+                                        $hour = (int) substr($cita->appointment_time, 0, 2);
+                                        $isFirstBlock = ($hour < 15);
+                                    } else {
+                                        $isFirstBlock = ($scheduleIndex % 2 === 0);
+                                    }
+                                    
+                                    if (abs($diffDays) % 2 === 0) {
+                                        $bgClass = $isFirstBlock ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800/60';
+                                    } else {
+                                        $bgClass = $isFirstBlock ? 'bg-slate-50 dark:bg-slate-900/40' : 'bg-slate-100 dark:bg-slate-800/60';
+                                    }
                                 @endphp
                                 <tr onclick="if(!event.target.closest('input, button, a, label, form')) window.location.href='{{ route('appointments.show', [$team, $cita]) }}'"
-                                    class="{{ $isActiveTimerCita ? 'bg-amber-50/70 dark:bg-amber-900/30 border-l-4 border-amber-500' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50' }} transition-colors group cursor-pointer">
+                                    class="{{ $isActiveTimerCita ? 'bg-amber-50/70 dark:bg-amber-900/30 border-l-4 border-amber-500' : $bgClass . ' hover:bg-cyan-50/50 dark:hover:bg-cyan-900/20' }} transition-colors group cursor-pointer">
                                     <td class="px-5 py-3.5 text-center">
                                         <input type="checkbox" name="appointment_ids[]" value="{{ $cita->id }}" form="bulk-form" class="bulk-cb w-4 h-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500 dark:bg-gray-800 dark:border-gray-600" @change="updateCount()">
                                     </td>

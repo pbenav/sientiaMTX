@@ -264,8 +264,29 @@
                                 ($cita->activity_id && $userActiveLog->task_id == $cita->activity_id) ||
                                 ($cita->task_id && $userActiveLog->task_id == $cita->task_id)
                             );
+
+                            $citaDate = clone $cita->appointment_date;
+                            $dayOfWeek = $citaDate->dayOfWeek;
+                            $schedulesForDay = $cita->service->schedules->where('day_of_week', $dayOfWeek)->sortBy('start_time')->values();
+                            
+                            $scheduleIndex = 0;
+                            foreach ($schedulesForDay as $index => $schedule) {
+                                if ($cita->appointment_time >= $schedule->start_time && $cita->appointment_time < $schedule->end_time) {
+                                    $scheduleIndex = $index;
+                                    break;
+                                }
+                            }
+                            
+                            if ($schedulesForDay->isEmpty()) {
+                                $hour = (int) substr($cita->appointment_time, 0, 2);
+                                $isFirstBlock = ($hour < 15);
+                            } else {
+                                $isFirstBlock = ($scheduleIndex % 2 === 0);
+                            }
+
+                            $bgClass = $isFirstBlock ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800/60';
                         @endphp
-                        <div class="flex items-center gap-4 p-4 {{ $isActiveTimerCita ? 'bg-amber-50/70 dark:bg-amber-900/30 border-l-4 border-amber-500' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50' }} transition-colors">
+                        <div class="flex items-center gap-4 p-4 {{ $isActiveTimerCita ? 'bg-amber-50/70 dark:bg-amber-900/30 border-l-4 border-amber-500' : $bgClass . ' hover:bg-cyan-50/50 dark:hover:bg-cyan-900/20' }} transition-colors">
                             <div class="w-14 text-center shrink-0">
                                 <p class="text-lg font-black text-cyan-600 dark:text-cyan-400 tabular-nums leading-none">{{ substr($cita->appointment_time, 0, 5) }}</p>
                                 <p class="text-[9px] font-bold text-gray-400 uppercase mt-0.5">{{ $cita->slot_duration_minutes }}min</p>
@@ -338,7 +359,36 @@
                 </div>
                 <div class="divide-y divide-gray-100 dark:divide-gray-800 max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700">
                     @forelse($upcoming->skip($todayCitas->count() > 0 ? 0 : 0)->take(8) as $cita)
-                        <a href="{{ route('appointments.show', [$team, $cita]) }}" class="flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
+                        @php
+                            $citaDate = clone $cita->appointment_date;
+                            $today = now()->startOfDay();
+                            $diffDays = (int) $citaDate->startOfDay()->diffInDays($today, false);
+                            
+                            $dayOfWeek = $citaDate->dayOfWeek;
+                            $schedulesForDay = $cita->service->schedules->where('day_of_week', $dayOfWeek)->sortBy('start_time')->values();
+                            
+                            $scheduleIndex = 0;
+                            foreach ($schedulesForDay as $index => $schedule) {
+                                if ($cita->appointment_time >= $schedule->start_time && $cita->appointment_time < $schedule->end_time) {
+                                    $scheduleIndex = $index;
+                                    break;
+                                }
+                            }
+                            
+                            if ($schedulesForDay->isEmpty()) {
+                                $hour = (int) substr($cita->appointment_time, 0, 2);
+                                $isFirstBlock = ($hour < 15);
+                            } else {
+                                $isFirstBlock = ($scheduleIndex % 2 === 0);
+                            }
+                            
+                            if (abs($diffDays) % 2 === 0) {
+                                $bgClass = $isFirstBlock ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800/60';
+                            } else {
+                                $bgClass = $isFirstBlock ? 'bg-slate-50 dark:bg-slate-900/40' : 'bg-slate-100 dark:bg-slate-800/60';
+                            }
+                        @endphp
+                        <a href="{{ route('appointments.show', [$team, $cita]) }}" class="flex items-center gap-4 p-4 {{ $bgClass }} hover:bg-cyan-50/50 dark:hover:bg-cyan-900/20 transition-colors group">
                             <div class="w-14 text-center shrink-0">
                                 <p class="text-xs font-black text-gray-500 dark:text-gray-400 tabular-nums">{{ $cita->appointment_date->format('d/m') }}</p>
                                 <p class="text-sm font-black text-cyan-600 dark:text-cyan-400 tabular-nums leading-none">{{ substr($cita->appointment_time, 0, 5) }}</p>
