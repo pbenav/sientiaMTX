@@ -288,9 +288,9 @@
                                     }
                                     
                                     if (abs($diffDays) % 2 === 0) {
-                                        $bgClass = $isFirstBlock ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800/60';
+                                        $bgClass = $isFirstBlock ? 'bg-white dark:bg-gray-900' : 'bg-gray-100 dark:bg-gray-800';
                                     } else {
-                                        $bgClass = $isFirstBlock ? 'bg-slate-50 dark:bg-slate-900/40' : 'bg-slate-100 dark:bg-slate-800/60';
+                                        $bgClass = $isFirstBlock ? 'bg-slate-50 dark:bg-slate-800' : 'bg-slate-200 dark:bg-slate-700';
                                     }
                                 @endphp
                                 <tr onclick="if(!event.target.closest('input, button, a, label, form')) window.location.href='{{ route('appointments.show', [$team, $cita]) }}'"

@@ -284,7 +284,7 @@
                                 $isFirstBlock = ($scheduleIndex % 2 === 0);
                             }
 
-                            $bgClass = $isFirstBlock ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800/60';
+                            $bgClass = $isFirstBlock ? 'bg-white dark:bg-gray-900' : 'bg-gray-100 dark:bg-gray-800';
                         @endphp
                         <div class="flex items-center gap-4 p-4 {{ $isActiveTimerCita ? 'bg-amber-50/70 dark:bg-amber-900/30 border-l-4 border-amber-500' : $bgClass . ' hover:bg-cyan-50/50 dark:hover:bg-cyan-900/20' }} transition-colors">
                             <div class="w-14 text-center shrink-0">
@@ -383,9 +383,9 @@
                             }
                             
                             if (abs($diffDays) % 2 === 0) {
-                                $bgClass = $isFirstBlock ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800/60';
+                                $bgClass = $isFirstBlock ? 'bg-white dark:bg-gray-900' : 'bg-gray-100 dark:bg-gray-800';
                             } else {
-                                $bgClass = $isFirstBlock ? 'bg-slate-50 dark:bg-slate-900/40' : 'bg-slate-100 dark:bg-slate-800/60';
+                                $bgClass = $isFirstBlock ? 'bg-slate-50 dark:bg-slate-800' : 'bg-slate-200 dark:bg-slate-700';
                             }
                         @endphp
                         <a href="{{ route('appointments.show', [$team, $cita]) }}" class="flex items-center gap-4 p-4 {{ $bgClass }} hover:bg-cyan-50/50 dark:hover:bg-cyan-900/20 transition-colors group">
