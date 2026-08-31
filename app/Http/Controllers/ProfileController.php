@@ -243,17 +243,21 @@ class ProfileController extends Controller
         
         if ($applyToAll) {
             // Update all preferences for this user to match this new config
-            \App\Models\UserAiPreference::where('user_id', $user->id)
+            $preferencesToUpdate = \App\Models\UserAiPreference::where('user_id', $user->id)
                 ->where(function($q) use ($validated) {
                     $q->whereNull('team_id')
                       ->orWhere('team_id', $validated['team_id']);
                 })
-                ->update([
+                ->get();
+                
+            foreach ($preferencesToUpdate as $pref) {
+                $pref->update([
                     'api_key' => $apiKey,
                     'ai_model' => $aiModel,
                     'mood_tracking_enabled' => $request->boolean('mood_tracking_enabled'),
                     'smart_matching_opt_in' => $request->boolean('smart_matching_opt_in'),
                 ]);
+            }
             
             // Also ensure the "Global" or "Specific" one exists if not yet created
             $user->aiPreferences()->updateOrCreate(
