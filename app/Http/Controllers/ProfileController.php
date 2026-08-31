@@ -239,47 +239,17 @@ class ProfileController extends Controller
         $aiModel = $validated['ai_model'] ?: 'gemini-1.5-flash';
         $applyToAll = $request->boolean('apply_to_all');
 
-        \Illuminate\Support\Facades\Log::info("Ax.ia: Guardando preferencia de modelo '{$aiModel}' para usuario {$user->id} (Contexto: " . ($validated['team_id'] ?? 'global') . ", Todo: " . ($applyToAll ? 'SI' : 'NO') . ")");
+        \Illuminate\Support\Facades\Log::info("Ax.ia: Guardando preferencia de modelo '{$aiModel}' para usuario {$user->id} (Contexto: " . ($validated['team_id'] ?? 'global') . ")");
         
-        if ($applyToAll) {
-            // Update all preferences for this user to match this new config
-            $preferencesToUpdate = \App\Models\UserAiPreference::where('user_id', $user->id)
-                ->where(function($q) use ($validated) {
-                    $q->whereNull('team_id')
-                      ->orWhere('team_id', $validated['team_id']);
-                })
-                ->get();
-                
-            foreach ($preferencesToUpdate as $pref) {
-                $pref->update([
-                    'api_key' => $apiKey,
-                    'ai_model' => $aiModel,
-                    'mood_tracking_enabled' => $request->boolean('mood_tracking_enabled'),
-                    'smart_matching_opt_in' => $request->boolean('smart_matching_opt_in'),
-                ]);
-            }
-            
-            // Also ensure the "Global" or "Specific" one exists if not yet created
-            $user->aiPreferences()->updateOrCreate(
-                ['team_id' => $validated['team_id']],
-                [
-                    'api_key' => $apiKey,
-                    'ai_model' => $aiModel,
-                    'mood_tracking_enabled' => $request->boolean('mood_tracking_enabled'),
-                    'smart_matching_opt_in' => $request->boolean('smart_matching_opt_in'),
-                ]
-            );
-        } else {
-            $user->aiPreferences()->updateOrCreate(
-                ['team_id' => $validated['team_id']],
-                [
-                    'api_key' => $apiKey,
-                    'ai_model' => $aiModel,
-                    'mood_tracking_enabled' => $request->boolean('mood_tracking_enabled'),
-                    'smart_matching_opt_in' => $request->boolean('smart_matching_opt_in'),
-                ]
-            );
-        }
+        $user->aiPreferences()->updateOrCreate(
+            ['team_id' => $validated['team_id']],
+            [
+                'api_key' => $apiKey,
+                'ai_model' => $aiModel,
+                'mood_tracking_enabled' => $request->boolean('mood_tracking_enabled'),
+                'smart_matching_opt_in' => $request->boolean('smart_matching_opt_in'),
+            ]
+        );
 
         // Limpiar el caché de sesión del modelo funcional para evitar que use un fallback obsoleto
         if ($apiKey) {

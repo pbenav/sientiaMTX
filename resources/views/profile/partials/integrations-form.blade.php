@@ -349,12 +349,6 @@
                                 <input type="checkbox" name="smart_matching_opt_in" value="1" x-model="form.smart_matching_opt_in" class="w-5 h-5 rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-violet-600 focus:ring-violet-500">
                                 <span class="text-[10px] font-black text-gray-500 uppercase group-hover:text-violet-600 transition-colors">Smart Context</span>
                             </label>
-                            <div x-show="getActiveContext()?.type === 'global'">
-                                <label class="flex items-center gap-3 cursor-pointer group">
-                                    <input type="checkbox" name="apply_to_all" value="1" x-model="form.apply_to_all" class="w-5 h-5 rounded-lg border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/30 text-amber-600 focus:ring-amber-500">
-                                    <span class="text-[10px] font-black text-amber-600 uppercase group-hover:text-amber-700 transition-colors">💥 Aplicar a TODOS mis equipos</span>
-                                </label>
-                            </div>
                         </div>
                     </div>
                 </form>
