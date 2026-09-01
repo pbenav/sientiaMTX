@@ -50,8 +50,14 @@ class AppServiceProvider extends ServiceProvider
         $forwardedHost = request()->header('X-Forwarded-Host');
         $host = $forwardedHost ?: request()->getHost();
         $isIpAddress = filter_var($host, FILTER_VALIDATE_IP) !== false;
+        $isLocalhost = in_array($host, ['localhost', '127.0.0.1', '::1']) || str_ends_with($host, '.test') || str_ends_with($host, '.local');
 
-        $scheme = (env('FORCE_HTTPS', false) || request()->header('X-Forwarded-Proto') === 'https' || request()->server('HTTP_X_FORWARDED_PROTO') === 'https' || $this->app->environment('production', 'staging')) ? 'https' : 'http';
+        // Si no es un entorno local, forzamos HTTPS por defecto. 
+        // Los proxies mal configurados a menudo pierden X-Forwarded-Proto, lo que causa bloqueos CSP.
+        $scheme = 'https';
+        if ($isLocalhost && !env('FORCE_HTTPS', false)) {
+            $scheme = 'http';
+        }
 
         if ($isIpAddress) {
             $appUrl = config('app.url');
