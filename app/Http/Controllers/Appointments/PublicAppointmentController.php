@@ -298,13 +298,23 @@ class PublicAppointmentController extends Controller
         $firstName = $this->transliterateArabic($data['first_name']);
         $lastName = $this->transliterateArabic($data['last_name']);
 
+        $checkData = array_merge($data, [
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+        ]);
+
+        if (!empty($data['dni'])) {
+            $existingDniVisitor = \App\Models\AppointmentVisitor::where('dni', $data['dni'])->first();
+            if ($existingDniVisitor) {
+                if ($this->isDifferentPerson($checkData, $existingDniVisitor)) {
+                    return back()->withErrors(['dni' => 'Este DNI o documento ya está registrado a nombre de otra persona. Comprueba los datos introducidos.'])->withInput();
+                }
+            }
+        }
+
         if (!empty($data['email'])) {
             $existingEmailVisitor = \App\Models\AppointmentVisitor::where('email', $data['email'])->first();
             if ($existingEmailVisitor) {
-                $checkData = array_merge($data, [
-                    'first_name' => $firstName,
-                    'last_name' => $lastName,
-                ]);
                 if ($this->isDifferentPerson($checkData, $existingEmailVisitor)) {
                     return back()->withErrors(['email' => 'Este correo electrónico ya está registrado a nombre de otra persona. No se permite usar el mismo correo para distintas personas.'])->withInput();
                 }
@@ -357,20 +367,22 @@ class PublicAppointmentController extends Controller
                     return back()->withErrors(['appointment_time' => 'El tramo seleccionado ya no está disponible. Por favor, elige otro.'])->withInput();
                 }
 
-                // Buscar si existe un visitante previo con coincidencia estricta para evitar cruce de datos
-                $visitorQuery = AppointmentVisitor::query();
-                if (!empty($data['email'])) {
-                    $visitorQuery->where('email', $data['email']);
-                } elseif (!empty($data['dni'])) {
-                    $visitorQuery->where('dni', $data['dni']);
-                } else {
-                    $visitorQuery->where('first_name', $firstName)
-                                 ->where('last_name', $lastName)
-                                 ->where('phone', $data['phone']);
+                // Buscar si existe un visitante previo (priorizando DNI, luego Email)
+                $visitor = null;
+                if (!empty($data['dni'])) {
+                    $visitor = AppointmentVisitor::where('dni', $data['dni'])->lockForUpdate()->first();
                 }
-
-                // Bloqueamos la fila del visitante para actualización si existe
-                $visitor = $visitorQuery->lockForUpdate()->first();
+                
+                if (!$visitor && !empty($data['email'])) {
+                    $visitor = AppointmentVisitor::where('email', $data['email'])->lockForUpdate()->first();
+                }
+                
+                if (!$visitor) {
+                    $visitor = AppointmentVisitor::where('first_name', $firstName)
+                                 ->where('last_name', $lastName)
+                                 ->where('phone', $data['phone'])
+                                 ->lockForUpdate()->first();
+                }
 
                 if ($visitor) {
                     // Restricción: No puede tener más de dos citas el mismo día para este servicio específico
@@ -784,16 +796,29 @@ class PublicAppointmentController extends Controller
         $firstName = $this->transliterateArabic($data['first_name']);
         $lastName = $this->transliterateArabic($data['last_name']);
 
+        $checkData = array_merge($data, [
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+        ]);
+
+        if (!empty($data['dni'])) {
+            $existingDniVisitor = \App\Models\AppointmentVisitor::where('dni', $data['dni'])
+                ->where('id', '!=', $appointment->visitor_id)
+                ->first();
+                
+            if ($existingDniVisitor) {
+                if ($this->isDifferentPerson($checkData, $existingDniVisitor)) {
+                    return back()->withErrors(['dni' => 'Este DNI o documento ya está registrado a nombre de otra persona. Comprueba los datos introducidos.'])->withInput();
+                }
+            }
+        }
+
         if (!empty($data['email'])) {
             $existingEmailVisitor = \App\Models\AppointmentVisitor::where('email', $data['email'])
                 ->where('id', '!=', $appointment->visitor_id)
                 ->first();
                 
             if ($existingEmailVisitor) {
-                $checkData = array_merge($data, [
-                    'first_name' => $firstName,
-                    'last_name' => $lastName,
-                ]);
                 if ($this->isDifferentPerson($checkData, $existingEmailVisitor)) {
                     return back()->withErrors(['email' => 'Este correo electrónico ya está registrado a nombre de otra persona. No se permite usar el mismo correo para distintas personas.'])->withInput();
                 }
@@ -833,6 +858,30 @@ class PublicAppointmentController extends Controller
 
                 $originalDate = clone $appointment->appointment_date;
                 $originalTime = $appointment->appointment_time;
+
+                // Si el DNI o el Email que intentan poner pertenece a otro registro (que ya pasó la validación
+                // porque isDifferentPerson determinó que son la misma persona), re-vinculamos la cita a ese registro
+                // para evitar un error 1062 Duplicate Entry en la base de datos por el unique(email).
+                $potentialVisitor = null;
+                if (!empty($data['dni'])) {
+                    $potentialVisitor = AppointmentVisitor::where('dni', $data['dni'])
+                        ->where('id', '!=', $appointment->visitor_id)
+                        ->lockForUpdate()
+                        ->first();
+                }
+                if (!$potentialVisitor && !empty($data['email'])) {
+                    $potentialVisitor = AppointmentVisitor::where('email', $data['email'])
+                        ->where('id', '!=', $appointment->visitor_id)
+                        ->lockForUpdate()
+                        ->first();
+                }
+
+                if ($potentialVisitor) {
+                    $appointment->visitor_id = $potentialVisitor->id;
+                    $appointment->save(); // Guardar el nuevo visitor_id
+                    // Refrescar la relación para que el update se haga sobre el correcto
+                    $appointment->load('visitor');
+                }
 
                 $appointment->visitor->update([
             'first_name'    => $firstName,
@@ -951,62 +1000,73 @@ class PublicAppointmentController extends Controller
      */
     protected function isDifferentPerson(array $newData, AppointmentVisitor $existing): bool
     {
-        // 1. DNI check: if both have DNI and they do not match, they are different people
+        // 1. DNI check
         $newDni = preg_replace('/[^A-Za-z0-9]/', '', $newData['dni'] ?? '');
         $existingDni = preg_replace('/[^A-Za-z0-9]/', '', $existing->dni ?? '');
-        if (!empty($newDni) && !empty($existingDni) && mb_strtoupper($newDni) !== mb_strtoupper($existingDni)) {
-            return true;
+        
+        if (!empty($newDni) && !empty($existingDni)) {
+            // Si ambos tienen DNI, el DNI manda de forma estricta.
+            return mb_strtoupper($newDni) !== mb_strtoupper($existingDni);
         }
 
-        // 2. Normalize function to compare names and check similarity
+        // 2. Name check
         $normalize = function (?string $str) {
             if (!$str) {
                 return '';
             }
             $str = \Illuminate\Support\Str::ascii($str);
             $str = mb_strtolower($str);
-            // Remove everything except letters, digits and spaces
-            $str = preg_replace('/[^a-z0-9\s]/', '', $str);
-            return trim(preg_replace('/\s+/', ' ', $str));
+            // Remove everything except letters and digits (no spaces)
+            $str = preg_replace('/[^a-z0-9]/', '', $str);
+            return $str;
         };
 
-        $newFirstName = $normalize($newData['first_name'] ?? '');
-        $newLastName = $normalize($newData['last_name'] ?? '');
-        $existingFirstName = $normalize($existing->first_name ?? '');
-        $existingLastName = $normalize($existing->last_name ?? '');
+        $newFirst = $normalize($newData['first_name'] ?? '');
+        $newLast = $normalize($newData['last_name'] ?? '');
+        $extFirst = $normalize($existing->first_name ?? '');
+        $extLast = $normalize($existing->last_name ?? '');
 
         // Direct swap check (e.g. FirstName and LastName fields are swapped)
-        if (!empty($newFirstName) && $newFirstName === $existingLastName && $newLastName === $existingFirstName) {
+        if (!empty($newFirst) && $newFirst === $extLast && $newLast === $extFirst) {
             return false;
         }
 
-        // Similar text check
-        $firstNamePercent = 0.0;
-        $lastNamePercent = 0.0;
-        
-        similar_text($newFirstName, $existingFirstName, $firstNamePercent);
-        similar_text($newLastName, $existingLastName, $lastNamePercent);
-
-        $firstNameMatch = ($firstNamePercent >= 55) || 
-                          (!empty($newFirstName) && !empty($existingFirstName) && (str_contains($newFirstName, $existingFirstName) || str_contains($existingFirstName, $newFirstName)));
+        // Strict inclusion check (e.g. "Jose Antonio" contains "Jose")
+        $firstNameMatch = (!empty($newFirst) && !empty($extFirst)) && 
+                          (str_contains($newFirst, $extFirst) || str_contains($extFirst, $newFirst));
                           
-        $lastNameMatch = ($lastNamePercent >= 55) || 
-                         (!empty($newLastName) && !empty($existingLastName) && (str_contains($newLastName, $existingLastName) || str_contains($existingLastName, $newLastName)));
+        $lastNameMatch = (!empty($newLast) && !empty($extLast)) && 
+                         (str_contains($newLast, $extLast) || str_contains($extLast, $newLast));
 
-        // If either first name or last name doesn't match/is not similar, they are different people
-        if (!$firstNameMatch || !$lastNameMatch) {
-            // Check full name similarity as a fallback to handle edge cases
-            $newFullName = $newFirstName . ' ' . $newLastName;
-            $existingFullName = $existingFirstName . ' ' . $existingLastName;
-            $fullNamePercent = 0.0;
-            similar_text($newFullName, $existingFullName, $fullNamePercent);
-            if ($fullNamePercent >= 70) {
-                return false;
-            }
-
-            return true;
+        if ($firstNameMatch && $lastNameMatch) {
+            return false; // They match enough to be considered the same
         }
 
-        return false;
+        // Similar_text check with high threshold (e.g. for small typos)
+        $firstPercent = 0.0;
+        $lastPercent = 0.0;
+        similar_text($newFirst, $extFirst, $firstPercent);
+        similar_text($newLast, $extLast, $lastPercent);
+
+        if ($firstPercent >= 85 && $lastPercent >= 85) {
+            return false;
+        }
+
+        // Try full name comparison as a fallback
+        $newFull = $newFirst . $newLast;
+        $extFull = $extFirst . $extLast;
+        
+        $fullPercent = 0.0;
+        similar_text($newFull, $extFull, $fullPercent);
+        if ($fullPercent >= 90) {
+            return false;
+        }
+
+        // If one name is an exact match and the other is highly similar
+        if (($firstPercent == 100 && $lastPercent >= 75) || ($lastPercent == 100 && $firstPercent >= 75)) {
+            return false;
+        }
+
+        return true; // Different person!
     }
 }
