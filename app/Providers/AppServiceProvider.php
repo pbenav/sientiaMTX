@@ -47,17 +47,23 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(\App\Models\Activity::class, \App\Policies\ActivityPolicy::class);
         Gate::policy(\App\Models\ActivityAttachment::class, \App\Policies\ActivityAttachmentPolicy::class);
 
-        $appUrl = config('app.url');
-        if (!empty($appUrl) && $appUrl !== 'http://localhost' && $appUrl !== 'http://localhost:8000') {
-            URL::forceRootUrl($appUrl);
-            if (str_starts_with($appUrl, 'https://')) {
-                URL::forceScheme('https');
+        $forwardedHost = request()->header('X-Forwarded-Host');
+        $host = $forwardedHost ?: request()->getHost();
+        $isIpAddress = filter_var($host, FILTER_VALIDATE_IP) !== false;
+
+        $scheme = (env('FORCE_HTTPS', false) || request()->header('X-Forwarded-Proto') === 'https' || request()->server('HTTP_X_FORWARDED_PROTO') === 'https' || $this->app->environment('production', 'staging')) ? 'https' : 'http';
+
+        if ($isIpAddress) {
+            $appUrl = config('app.url');
+            if (!empty($appUrl) && $appUrl !== 'http://localhost' && $appUrl !== 'http://localhost:8000') {
+                URL::forceRootUrl($appUrl);
             }
+        } else {
+            // Forzar Root URL al dominio actual de la petición para soportar alias de dominios
+            URL::forceRootUrl($scheme . '://' . $host);
         }
 
-        if (env('FORCE_HTTPS', false) || $this->app->environment('production', 'staging')) {
-            URL::forceScheme('https');
-        } elseif (request()->header('X-Forwarded-Proto') === 'https' || request()->server('HTTP_X_FORWARDED_PROTO') === 'https') {
+        if ($scheme === 'https') {
             URL::forceScheme('https');
         }
 
