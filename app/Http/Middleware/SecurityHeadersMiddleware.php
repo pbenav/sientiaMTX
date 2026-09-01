@@ -42,7 +42,7 @@ class SecurityHeadersMiddleware
                    "font-src 'self' data: https://fonts.bunny.net https://fonts.gstatic.com; " .
                    "media-src 'self' data: blob: https://assets.mixkit.co; " .
                    "worker-src 'self' blob:; " .
-                   "connect-src 'self' data: ws://* wss://* ws://127.0.0.1:* wss://127.0.0.1:* https://meet.jit.si https://nominatim.openstreetmap.org {$onlyOfficeUrl}; " .
+                   "connect-src 'self' data: ws://* wss://* ws://127.0.0.1:* wss://127.0.0.1:* https://meet.jit.si https://nominatim.openstreetmap.org https://unpkg.com {$onlyOfficeUrl}; " .
                    "frame-src 'self' https://meet.jit.si afirma: {$onlyOfficeUrl};";
             $response->headers->set('Content-Security-Policy', $csp);
         }
