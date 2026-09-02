@@ -123,8 +123,15 @@
                     </div>
 
                     <!-- 2. TABLET & MOBILE (sm to lg): Main Menu Dropdown -->
-                    <div class="hidden sm:block lg:hidden relative shrink-0" x-data="{ open: false }">
-                        <button @click="open = !open" @click.outside="open = false"
+                    <div class="hidden sm:block lg:hidden relative shrink-0" x-data="{ 
+                        open: false,
+                        init() {
+                            window.addEventListener('close-main-nav-menus', (e) => {
+                                if (e.detail.id !== 'main-menu') this.open = false;
+                            });
+                        }
+                    }">
+                        <button @click="if(!open) window.dispatchEvent(new CustomEvent('close-main-nav-menus', { detail: { id: 'main-menu' } })); open = !open" @click.outside="open = false"
                                 class="flex items-center gap-2 px-3 h-11 text-sm font-bold uppercase tracking-tight text-gray-500 hover:text-violet-600 bg-gray-50 dark:bg-gray-800/80 rounded-xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
@@ -281,8 +288,15 @@
                         </a>
 
                         <!-- User menu: hidden on mobile -->
-                        <div class="hidden sm:block relative" x-data="{ open: false }">
-                            <button @click="open = !open" @click.outside="open = false"
+                        <div class="hidden sm:block relative" x-data="{ 
+                            open: false,
+                            init() {
+                                window.addEventListener('close-main-nav-menus', (e) => {
+                                    if (e.detail.id !== 'user-menu') this.open = false;
+                                });
+                            }
+                        }">
+                            <button @click="if(!open) window.dispatchEvent(new CustomEvent('close-main-nav-menus', { detail: { id: 'user-menu' } })); open = !open" @click.outside="open = false"
                                 class="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors">
                                 <img src="{{ auth()->user()->profile_photo_url }}"
                                     alt="{{ auth()->user()->name }}"
