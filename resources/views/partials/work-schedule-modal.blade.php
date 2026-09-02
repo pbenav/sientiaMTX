@@ -8,8 +8,6 @@
 <div x-data="{
     startedAtDate: '{{ $startedAtDate }}',
     open: false,
-    countdown: 60,
-    timer: null,
     endTime1: '{{ auth()->user()->work_end_time_1 }}',
     workDays1: {{ json_encode(auth()->user()->work_days_1 ?? []) }},
     startTime2: '{{ auth()->user()->work_start_time_2 }}',
@@ -44,7 +42,6 @@
         if (this.startedAtDate && this.startedAtDate < todayStr) {
              this.limitShown = 'Cambio de Día';
              this.open = true;
-             this.startCountdown();
              return;
         }
         
@@ -69,13 +66,13 @@
 
         if (shift1Active || shift2Active) {
             // Caso Turno 1
-            if (shift1Active && end1 && currentMinutes >= end1) {
+            if (shift1Active && end1 && currentMinutes >= (end1 + 15)) {
                 // Si el turno 2 también está activo hoy y empieza después, esperamos.
                 if (shift2Active && start2) {
                     if (currentMinutes < start2) {
                         pastEndTime = true;
                         limitLabel = this.endTime1;
-                    } else if (end2 && currentMinutes >= end2) {
+                    } else if (end2 && currentMinutes >= (end2 + 15)) {
                         pastEndTime = true;
                         limitLabel = this.endTime2;
                     }
@@ -85,7 +82,7 @@
                 }
             } 
             // Caso solo Turno 2 activo hoy o turno 1 no activado pero el 2 sí
-            else if (shift2Active && end2 && currentMinutes >= end2) {
+            else if (shift2Active && end2 && currentMinutes >= (end2 + 15)) {
                 pastEndTime = true;
                 limitLabel = this.endTime2;
             }
@@ -100,22 +97,10 @@
         if (pastEndTime) {
             this.limitShown = limitLabel;
             this.open = true;
-            this.startCountdown();
         }
     },
     
-    startCountdown() {
-        this.countdown = 60;
-        this.timer = setInterval(() => {
-            this.countdown--;
-            if (this.countdown <= 0) {
-                this.autoLogout();
-            }
-        }, 1000);
-    },
-    
     keepWorking() {
-        clearInterval(this.timer);
         this.open = false;
         const today = new Date().toISOString().slice(0, 10);
         localStorage.setItem('schedule_check_ack_' + today, 'true');
@@ -125,8 +110,7 @@
             .catch(err => console.error('Error keeping session alive:', err));
     },
     
-    autoLogout() {
-        clearInterval(this.timer);
+    logout() {
         clearInterval(this.checkInterval);
         document.getElementById('schedule-logout-form').submit();
     }
@@ -167,24 +151,13 @@ class="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-gray-950/
                     Hemos detectado que tu turno habitual finalizó a las <span class="font-bold text-violet-600 dark:text-violet-400" x-text="limitShown">14:00</span>, pero tus contadores de tiempo siguen activos.
                 </p>
                 <p class="text-[11px] text-gray-400 dark:text-gray-500 leading-relaxed">
-                    Si no respondes, el sistema detendrá automáticamente tu jornada y cerrará tu sesión para evitar registros erróneos.
+                    Si ya has finalizado tu jornada, por favor, cierra tu sesión para evitar registros erróneos.
                 </p>
-            </div>
-
-            <!-- Countdown Timer Ring -->
-            <div class="flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 rounded-xl">
-                <span class="flex h-2 w-2 relative">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-                </span>
-                <span class="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
-                    Cierre automático en: <span x-text="countdown" class="font-mono font-black">60</span>s
-                </span>
             </div>
 
             <!-- Interactive Action Buttons -->
             <div class="w-full grid grid-cols-2 gap-3 pt-2">
-                <button @click="autoLogout()" 
+                <button @click="logout()" 
                         class="px-4 py-3 bg-gray-50 hover:bg-gray-100 dark:bg-gray-800/50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-bold uppercase tracking-wider rounded-2xl border border-gray-100 dark:border-gray-700/50 transition-all">
                     Finalizar y Salir
                 </button>

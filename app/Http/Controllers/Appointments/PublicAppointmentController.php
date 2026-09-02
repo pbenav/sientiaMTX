@@ -20,6 +20,34 @@ class PublicAppointmentController extends Controller
 {
     public function __construct(private AppointmentAvailabilityService $availability) {}
 
+    /**
+     * Normaliza un email eliminando los puntos del alias y todo lo que haya después del '+'
+     * (útil para evitar que los usuarios hagan bypass de los límites de cuenta usando trucos de Gmail/etc).
+     */
+    protected function normalizeEmail(?string $email): ?string
+    {
+        if (!$email) return null;
+        
+        $email = strtolower(trim($email));
+        $parts = explode('@', $email);
+        
+        if (count($parts) === 2) {
+            $localPart = $parts[0];
+            
+            // Eliminar alias con '+' (e.g. user+spam@gmail.com -> user@gmail.com)
+            if (($plusPos = strpos($localPart, '+')) !== false) {
+                $localPart = substr($localPart, 0, $plusPos);
+            }
+            
+            // Eliminar puntos
+            $localPart = str_replace('.', '', $localPart);
+            
+            return $localPart . '@' . $parts[1];
+        }
+        
+        return $email;
+    }
+
     public function map()
     {
         // 1. Obtener miembros con coordenadas GPS y habilitados por el coordinador
@@ -312,11 +340,18 @@ class PublicAppointmentController extends Controller
             }
         }
 
+        $normalizedEmail = null;
         if (!empty($data['email'])) {
-            $existingEmailVisitor = \App\Models\AppointmentVisitor::where('email', $data['email'])->first();
+            $normalizedEmail = $this->normalizeEmail($data['email']);
+            
+            $existingEmailVisitor = \App\Models\AppointmentVisitor::where(function($q) use ($data, $normalizedEmail) {
+                $q->where('email', $data['email'])
+                  ->orWhereRaw("CONCAT(REPLACE(SUBSTRING_INDEX(SUBSTRING_INDEX(email, '@', 1), '+', 1), '.', ''), '@', SUBSTRING_INDEX(email, '@', -1)) = ?", [$normalizedEmail]);
+            })->first();
+            
             if ($existingEmailVisitor) {
                 if ($this->isDifferentPerson($checkData, $existingEmailVisitor)) {
-                    return back()->withErrors(['email' => 'Este correo electrónico ya está registrado a nombre de otra persona. No se permite usar el mismo correo para distintas personas.'])->withInput();
+                    return back()->withErrors(['email' => 'Este correo electrónico (o una variación del mismo) ya está registrado a nombre de otra persona. No se permite usar alias para distintas personas.'])->withInput();
                 }
             }
         }
@@ -326,13 +361,16 @@ class PublicAppointmentController extends Controller
         if (!empty($data['dni']) || !empty($data['email'])) {
             $existingAppointment = Appointment::where('service_id', $service->id)
                 ->whereIn('status', ['confirmed', 'scheduled', 'pending'])
-                ->whereHas('visitor', function ($query) use ($data) {
-                    $query->where(function ($q) use ($data) {
+                ->whereHas('visitor', function ($query) use ($data, $normalizedEmail) {
+                    $query->where(function ($q) use ($data, $normalizedEmail) {
                         if (!empty($data['dni'])) {
                             $q->where('dni', $data['dni']);
                         }
                         if (!empty($data['email'])) {
-                            $q->orWhere('email', $data['email']);
+                            $q->orWhere(function($subQ) use ($data, $normalizedEmail) {
+                                $subQ->where('email', $data['email'])
+                                     ->orWhereRaw("CONCAT(REPLACE(SUBSTRING_INDEX(SUBSTRING_INDEX(email, '@', 1), '+', 1), '.', ''), '@', SUBSTRING_INDEX(email, '@', -1)) = ?", [$normalizedEmail]);
+                            });
                         }
                     });
                 })
@@ -374,7 +412,10 @@ class PublicAppointmentController extends Controller
                 }
                 
                 if (!$visitor && !empty($data['email'])) {
-                    $visitor = AppointmentVisitor::where('email', $data['email'])->lockForUpdate()->first();
+                    $visitor = AppointmentVisitor::where(function($q) use ($data, $normalizedEmail) {
+                        $q->where('email', $data['email'])
+                          ->orWhereRaw("CONCAT(REPLACE(SUBSTRING_INDEX(SUBSTRING_INDEX(email, '@', 1), '+', 1), '.', ''), '@', SUBSTRING_INDEX(email, '@', -1)) = ?", [$normalizedEmail]);
+                    })->lockForUpdate()->first();
                 }
                 
                 if (!$visitor) {
