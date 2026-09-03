@@ -397,8 +397,8 @@ class PublicAppointmentController extends Controller
         // Evitamos usar el driver 'file' para los bloqueos, ya que puede dar fallos de 'fopen' si los directorios temporales no existen
         $cacheStore = config('cache.default') === 'file' ? 'database' : null;
 
-        return Cache::store($cacheStore)->lock($lockKey, 10)->block(5, function () use ($request, $service, $data, $settings, $date, $firstName, $lastName) {
-            return DB::transaction(function () use ($request, $service, $data, $settings, $date, $firstName, $lastName) {
+        return Cache::store($cacheStore)->lock($lockKey, 10)->block(5, function () use ($request, $service, $data, $settings, $date, $firstName, $lastName, $normalizedEmail) {
+            return DB::transaction(function () use ($request, $service, $data, $settings, $date, $firstName, $lastName, $normalizedEmail) {
                 // Validar disponibilidad en tiempo real dentro de la transacción
                 $overrideCapacity = auth()->check() && $request->boolean('override_capacity') && $date->isToday();
                 if (!$this->availability->isSlotAvailable($service, $date, $data['appointment_time'], $overrideCapacity)) {
