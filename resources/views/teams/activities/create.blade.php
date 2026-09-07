@@ -155,11 +155,6 @@
                                 <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Fecha del Acuerdo</label>
                                 <input type="date" name="metadata[agreement_date]" value="{{ old('metadata.agreement_date', now()->format('Y-m-d')) }}" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none">
                             </div>
-                            
-                            <div class="md:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Partes Externas Involucradas (Firmantes)</label>
-                                <p class="text-[10px] text-gray-500 mb-3 leading-tight">Añade a las personas externas al equipo que deberán ratificar/firmar este acuerdo. Se les enviará un correo seguro con el documento.</p>
-                                <x-guest-crud :initialGuests="old('metadata.guests', [])" :initialMessage="old('metadata.invitation_message', '')" />
                             </div>
                         </div>
                     </div>
@@ -235,11 +230,6 @@
                                     </div>
                                 </div>
                                 <input type="text" name="metadata[location]" x-model="link" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none" placeholder="Ej. Sala de juntas principal o Enlace de Google Meet/Teams">
-                            </div>
-                            <div class="md:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Invitados Externos a la Reunión</label>
-                                <p class="text-[10px] text-gray-500 mb-3 leading-tight">Añade a las personas externas al equipo que asistirán a la reunión. Se les enviará una invitación por correo con los detalles.</p>
-                                <x-guest-crud :initialGuests="old('metadata.guests', [])" :initialMessage="old('metadata.invitation_message', '')" />
                             </div>
                         </div>
                     </div>
@@ -534,12 +524,6 @@
                             <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Notificar a una hora específica (HH:MM)</label>
                             <input type="time" name="metadata[notify_at_hour]" value="{{ old('metadata.notify_at_hour') }}" step="60" class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all">
                             <p class="text-[10px] text-gray-400 mt-1">Si se establece, se notifica a esa hora exacta en la fecha de due_date. No se puede usar junto con "minutos antes".</p>
-                        </div>
-
-                        <div class="md:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                            <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Destinatarios / Invitados al Recordatorio</label>
-                            <p class="text-[10px] text-gray-500 mb-3 leading-tight">Añade a las personas (individualmente o pegando una lista masiva en formato bulk) que recibirán este recordatorio por correo electrónico.</p>
-                            <x-guest-crud :initialGuests="old('metadata.guests', [])" :initialMessage="old('metadata.invitation_message', '')" />
                         </div>
                     </div>
                 </div>
@@ -986,8 +970,20 @@
                             </label>
                         </div>
                     </div>
-                </div>
 
+                    <!-- BLOCK: Invitados Externos y Destinatarios -->
+                    <div class="bg-gray-50/50 dark:bg-gray-800/30 border border-gray-150 dark:border-gray-800 rounded-3xl p-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0 shadow-sm border border-violet-200 dark:border-violet-500/10">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-black uppercase tracking-widest text-violet-700 dark:text-violet-400">Invitados Externos y Destinatarios</h4>
+                                <p class="text-[10px] text-gray-500 dark:text-gray-400">Añade personas externas al equipo (asistentes a reuniones, firmantes de acuerdos o destinatarios de avisos/recordatorios).</p>
+                            </div>
+                        </div>
+                        <x-guest-crud :initialGuests="old('metadata.guests', [])" :initialMessage="old('metadata.invitation_message', '')" />
+                    </div>
                     </div>
 
                     <!-- TAB: Context -->

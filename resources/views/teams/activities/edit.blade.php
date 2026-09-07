@@ -238,11 +238,6 @@
                                 <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Fecha del Acuerdo</label>
                                 <input type="date" name="metadata[agreement_date]" value="{{ old('metadata.agreement_date', data_get($activity->metadata, 'agreement_date', now()->format('Y-m-d'))) }}" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none">
                             </div>
-                            
-                            <div class="md:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Partes Externas Involucradas (Firmantes)</label>
-                                <p class="text-[10px] text-gray-500 mb-3 leading-tight">Añade a las personas externas al equipo que deberán ratificar/firmar este acuerdo. Se les enviará un correo seguro con el documento.</p>
-                                <x-guest-crud :initialGuests="old('metadata.guests', data_get($activity->metadata, 'guests', []))" :initialMessage="old('metadata.invitation_message', data_get($activity->metadata, 'invitation_message', ''))" />
                             </div>
                         </div>
                     @elseif ($activity->type === 'meeting')
@@ -317,10 +312,6 @@
                                 </div>
                                 <input type="text" name="metadata[location]" x-model="link" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none" placeholder="Ej. Sala de juntas principal o Enlace de Google Meet/Teams">
                             </div>
-                            <div class="md:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Invitados Externos a la Reunión</label>
-                                <p class="text-[10px] text-gray-500 mb-3 leading-tight">Añade a las personas externas al equipo que asistirán a la reunión. Se les enviará una invitación por correo con los detalles.</p>
-                                <x-guest-crud :initialGuests="old('metadata.guests', data_get($activity->metadata, 'guests', []))" :initialMessage="old('metadata.invitation_message', data_get($activity->metadata, 'invitation_message', ''))" />
                             </div>
                         </div>
                     @endif
@@ -534,6 +525,24 @@
                         </div>
                     @endif
                 </div>
+        </div>
+
+        <!-- BLOCK: Invitados Externos y Destinatarios -->
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-7">
+            <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800 relative z-10">
+                <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 shadow-inner border border-violet-100/50 dark:border-violet-500/10 group-hover:scale-110 transition-transform duration-300">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
+                        Invitados Externos y Destinatarios
+                    </h3>
+                    <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Asistentes externos, firmantes de acuerdos o destinatarios de avisos</p>
+                </div>
+            </div>
+            <div class="relative z-10">
+                <x-guest-crud :initialGuests="old('metadata.guests', data_get($activity->metadata, 'guests', []))" :initialMessage="old('metadata.invitation_message', data_get($activity->metadata, 'invitation_message', ''))" />
+            </div>
         </div>
     </div>
 
@@ -800,11 +809,6 @@
                                 <p class="text-[10px] text-gray-400 mt-1">Si se establece, se notifica a esa hora exacta en la fecha de due_date. No se puede usar junto con "minutos antes".</p>
                             </div>
 
-                            <div class="md:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Destinatarios / Invitados al Recordatorio</label>
-                                <p class="text-[10px] text-gray-500 mb-3 leading-tight">Añade a las personas (individualmente o pegando una lista masiva en formato bulk) que recibirán este recordatorio por correo electrónico.</p>
-                                <x-guest-crud :initialGuests="old('metadata.guests', data_get($activity->metadata, 'guests', []))" :initialMessage="old('metadata.invitation_message', data_get($activity->metadata, 'invitation_message', ''))" />
-                            </div>
                         </div>
                     </div>
                     @endif
