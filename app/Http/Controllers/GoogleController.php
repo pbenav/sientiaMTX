@@ -380,7 +380,7 @@ class GoogleController extends Controller
             }
         }
 
-        return redirect()->route('teams.tasks.index', $teamId)
+        return redirect()->route('teams.activities.index', $teamId)
             ->with('success', __('google.import_success', ['count' => $syncCount]));
     }
 

@@ -284,6 +284,9 @@ Route::middleware('auth')->group(function () {
     // Legacy Task routes - all redirect to Activity equivalents
     // These exist only for backward compatibility with existing bookmarks/links
     Route::prefix('teams/{team}')->group(function() {
+        Route::get('tasks', function(Team $team) {
+            return redirect()->route('teams.activities.index', $team);
+        })->name('teams.tasks.index');
         Route::get('tasks/{task}', function(Team $team, $task) {
             $taskId = $task instanceof \App\Models\Task ? $task->id : $task;
             $mapping = \DB::table('activity_task_mapping')->where('task_id', $taskId)->first();
