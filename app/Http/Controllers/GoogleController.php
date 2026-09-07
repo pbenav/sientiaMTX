@@ -414,45 +414,6 @@ class GoogleController extends Controller
                             'assigned_at'    => now(),
                         ]);
 
-                        // Sincronización retroactiva con modelo legacy Task si el tipo elegido es 'task'
-                        if ($chosenType === 'task') {
-                            $orphanTask = \App\Models\Task::where('team_id', $teamId)
-                                ->where(function($q) use ($event, $title, $start) {
-                                    $q->where('google_calendar_event_id', $event->id)
-                                      ->orWhere(function($sub) use ($title, $start) {
-                                          $sub->where('title', $title)
-                                              ->where('scheduled_date', date('Y-m-d H:i:s', strtotime($start)));
-                                      });
-                                })
-                                ->first();
-
-                            $taskId = null;
-                            if ($orphanTask) {
-                                $taskId = $orphanTask->id;
-                            } else {
-                                $createdTask = \App\Models\Task::create([
-                                    'team_id'                  => $teamId,
-                                    'title'                    => $title,
-                                    'description'              => $description,
-                                    'scheduled_date'           => date('Y-m-d H:i:s', strtotime($start)),
-                                    'due_date'                 => $event->getEnd()->getDateTime() ? date('Y-m-d H:i:s', strtotime($event->getEnd()->getDateTime())) : null,
-                                    'created_by_id'            => $user->id,
-                                    'assigned_user_id'         => $user->id,
-                                    'visibility'               => $visibility,
-                                    'priority'                 => 'low',
-                                    'urgency'                  => 'low',
-                                    'status'                   => 'pending',
-                                    'google_calendar_event_id' => $event->id,
-                                ]);
-                                $taskId = $createdTask->id;
-                            }
-
-                            \DB::table('activity_task_mapping')->updateOrInsert(
-                                ['activity_id' => $activity->id],
-                                ['task_id' => $taskId, 'created_at' => now(), 'updated_at' => now()]
-                            );
-                        }
-
                         $syncCount++;
                     }
                 }
@@ -539,49 +500,8 @@ class GoogleController extends Controller
                             'assigned_at'    => now(),
                         ]);
 
-                        // Sincronización con modelo legacy Task si el tipo elegido es 'task'
-                        if ($chosenType === 'task') {
-                            $orphanTask = \App\Models\Task::where('team_id', $teamId)
-                                ->where(function($q) use ($googleId, $title, $due) {
-                                    $q->where('google_task_id', $googleId)
-                                      ->orWhere('google_task_id', 'task:' . $googleId)
-                                      ->orWhere(function($sub) use ($title, $due) {
-                                          $sub->where('title', 'LIKE', $title . '%')
-                                              ->whereDate('scheduled_date', date('Y-m-d', strtotime($due)));
-                                      });
-                                })
-                                ->first();
-
-                            $taskId = null;
-                            if ($orphanTask) {
-                                $taskId = $orphanTask->id;
-                            } else {
-                                $createdTask = \App\Models\Task::create([
-                                    'team_id'             => $teamId,
-                                    'title'               => $title,
-                                    'description'         => $description,
-                                    'scheduled_date'      => date('Y-m-d H:i:s', strtotime($due)),
-                                    'due_date'            => date('Y-m-d H:i:s', strtotime($due)),
-                                    'created_by_id'       => $user->id,
-                                    'assigned_user_id'    => $user->id,
-                                    'visibility'          => $visibility,
-                                    'priority'            => 'low',
-                                    'urgency'             => 'low',
-                                    'status'              => $isCompleted ? 'completed' : 'pending',
-                                    'google_task_id'      => $task->id,
-                                    'google_task_list_id' => '@default',
-                                ]);
-                                $taskId = $createdTask->id;
-                            }
-
-                            \DB::table('activity_task_mapping')->updateOrInsert(
-                                ['activity_id' => $activity->id],
-                                ['task_id' => $taskId, 'created_at' => now(), 'updated_at' => now()]
-                            );
-
-                            if ($isCompleted && $orphanTask) {
-                                $this->awardGamificationPoints($orphanTask);
-                            }
+                        if ($isCompleted) {
+                            $this->awardGamificationPoints($activity);
                         }
 
                         $syncCount++;
