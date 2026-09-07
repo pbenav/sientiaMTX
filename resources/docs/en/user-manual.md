@@ -102,8 +102,9 @@ Visual management through status columns (Pending > In Progress > Completed) wit
 
 ### Gantt Chart (Roadmap)
 Optimized temporal visualization. Task labels are visible even on short bars, allowing for a smooth and fluid reading of the schedule without needing to interact with each element.
-- **⚠️ MANDATORY REQUIREMENT**: For any activity to appear in the Gantt chart, **it must have an assigned due date (`due_date`)**. If an activity is created without a date, the system cannot position it on the timeline and **it will not be shown** in this view.
-- **What it displays**: All types of activities (Tasks, Agreements, Documents, Reminders, Meetings), provided they have a date and are not completed.
+- **Activities with deadline**: Displayed with solid bars and defined boundaries.
+- **Activities without deadline (Open deadline ⏳)**: Represented with **dashed borders and a fading gradient toward the right**, visually projecting that the task is active or open. By dragging the right edge of the bar directly in the Gantt chart, you can set a firm deadline in real time.
+- **What it displays**: All activity types (Tasks, Agreements, Documents, Reminders, Meetings) that are not completed or archived.
 
 ### Active Network
 A real-time widget that shows which team members are connected, their working location, and if they have any active tasks at the moment (green/red indicator).

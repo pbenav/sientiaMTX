@@ -192,12 +192,11 @@ trait ActivityScopes
     }
 
     /**
-     * Filtra actividades para mostrar en vista Gantt (con fecha y no archivadas).
+     * Filtra actividades para mostrar en vista Gantt (no archivadas).
      */
     public function scopeForGantt(Builder $query)
     {
         return $query->whereIn('type', $this->getScopesGanttTypes())
-                      ->whereNotNull('due_date')
                       ->where('is_archived', false);
     }
 

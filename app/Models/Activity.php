@@ -688,13 +688,13 @@ class Activity extends Model
 
     /**
      * Determina si la actividad aparece en el diagrama Gantt.
-     * Solo los tipos en GANTT_TYPES con due_date asignado aparecen.
+     * Solo los tipos en GANTT_TYPES no archivados aparecen.
      *
-     * @return bool True si el tipo está en GANTT_TYPES y tiene due_date
+     * @return bool True si el tipo está en GANTT_TYPES y no está archivada
      */
     public function isInGantt(): bool
     {
-        return in_array($this->type, self::GANTT_TYPES) && $this->due_date !== null;
+        return in_array($this->type, self::GANTT_TYPES) && !$this->is_archived;
     }
 
     /**

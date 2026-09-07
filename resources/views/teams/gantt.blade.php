@@ -56,6 +56,27 @@
             .dark svg.gantt .bar-wrapper.gantt-q{{$q}} rect.bar-progress { fill: {{ $conf['color'] }} !important; }
         @endforeach
 
+        /* Undated / Floating Tasks - Discontinuous Stroke & Fading Gradient */
+        .gantt .bar-wrapper.gantt-undated rect.bar {
+            stroke-dasharray: 6 4 !important;
+            stroke-width: 2px !important;
+        }
+        .gantt .bar-wrapper.gantt-undated rect.bar-progress {
+            opacity: 0.65;
+            stroke-dasharray: 4 2;
+        }
+
+        @foreach($qConfig as $q => $conf)
+            svg.gantt .bar-wrapper.gantt-q{{$q}}.gantt-undated rect.bar {
+                fill: url(#undated-gradient-q{{$q}}) !important;
+                stroke: {{ $conf['color'] }} !important;
+            }
+            .dark svg.gantt .bar-wrapper.gantt-q{{$q}}.gantt-undated rect.bar {
+                fill: url(#undated-gradient-dark-q{{$q}}) !important;
+                stroke: {{ $conf['color'] }} !important;
+            }
+        @endforeach
+
         /* Hover Effect for bars */
         .gantt .bar-wrapper:hover rect.bar { stroke-width: 3px !important; filter: brightness(1.1); }
         .gantt .bar-wrapper { cursor: pointer; }
@@ -85,7 +106,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10M3 14h18M11 18h10M3 6h6" />
                     </svg>
                     <span class="truncate">{{ __('navigation.gantt') }}</span>
-                    <span class="inline-flex items-center text-gray-400 hover:text-violet-500 dark:hover:text-violet-400 transition-colors cursor-help ml-0.5" title="{{ __('tasks.gantt_due_date_requirement') }}">
+                    <span class="inline-flex items-center text-gray-400 hover:text-violet-500 dark:hover:text-violet-400 transition-colors cursor-help ml-0.5" title="{{ __('tasks.gantt_hint_tooltip') }}">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
@@ -314,6 +335,26 @@
         </div>
     </div>
 
+    {{-- SVG Gradients for Undated / Floating Gantt Bars --}}
+    <svg id="gantt-gradient-defs" style="position: absolute; width: 0; height: 0; overflow: hidden;" aria-hidden="true">
+        <defs>
+            @foreach($qConfig as $q => $conf)
+                <!-- Light Mode Undated Gradient -->
+                <linearGradient id="undated-gradient-q{{ $q }}" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="{{ $conf['color'] }}" stop-opacity="0.32" />
+                    <stop offset="65%" stop-color="{{ $conf['color'] }}" stop-opacity="0.12" />
+                    <stop offset="100%" stop-color="{{ $conf['color'] }}" stop-opacity="0.0" />
+                </linearGradient>
+
+                <!-- Dark Mode Undated Gradient -->
+                <linearGradient id="undated-gradient-dark-q{{ $q }}" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="{{ $conf['color'] }}" stop-opacity="0.55" />
+                    <stop offset="65%" stop-color="{{ $conf['color'] }}" stop-opacity="0.22" />
+                    <stop offset="100%" stop-color="{{ $conf['color'] }}" stop-opacity="0.02" />
+                </linearGradient>
+            @endforeach
+        </defs>
+    </svg>
 
     <div id="gantt-tooltip" style="display: none"></div>
 
@@ -365,7 +406,7 @@
                             </svg>
                         </div>
                         <h3 class="text-sm font-bold text-gray-800 dark:text-gray-200 mb-1.5">{{ __('tasks.gantt_no_tasks') }}</h3>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed max-w-sm">{{ __('tasks.gantt_due_date_requirement') }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed max-w-sm">{{ __('tasks.gantt_no_tasks_help') }}</p>
                     </div>
                 `;
                 return;
@@ -421,6 +462,13 @@
                             if(idx!==-1) { 
                                 allTasks[idx].start = payload.scheduled_date; 
                                 allTasks[idx].end = payload.due_date; 
+                                if (allTasks[idx].is_undated) {
+                                    allTasks[idx].is_undated = false;
+                                    if (allTasks[idx].custom_class) {
+                                        allTasks[idx].custom_class = allTasks[idx].custom_class.replace('gantt-undated', '').trim();
+                                    }
+                                    allTasks[idx].name = (allTasks[idx].name || '').replace('⏳ ', '');
+                                }
                                 
                                 // Propagate move to all instances if this was a master task
                                 allTasks.forEach(child => {
@@ -431,6 +479,7 @@
                                 });
 
                                 renderActionWave(); 
+                                refreshGanttDisplay();
                             }
                         } else {
                             if (data.error) {
@@ -446,11 +495,22 @@
                     });
                 }
             });
+            injectGanttGradients();
             setTimeout(() => { 
                 centerToday(); 
                 drawTodayLine(); 
                 truncateLabels();
             }, 500);
+        }
+
+        function injectGanttGradients() {
+            const svg = document.querySelector('#gantt-container svg.gantt');
+            const sourceDefs = document.getElementById('gantt-gradient-defs');
+            if (svg && sourceDefs && !svg.querySelector('#embedded-gantt-defs')) {
+                const defsClone = sourceDefs.querySelector('defs').cloneNode(true);
+                defsClone.id = 'embedded-gantt-defs';
+                svg.insertBefore(defsClone, svg.firstChild);
+            }
         }
 
         function truncateLabels() {
@@ -670,17 +730,36 @@
                     }
                 }
 
+                const isTaskUndated = task.is_undated && !isDragging;
+
                 const typeBadgeEl = document.getElementById('drag-type-badge');
-                if (typeBadgeEl) typeBadgeEl.innerText = type.toUpperCase();
+                if (typeBadgeEl) {
+                    if (isDragging && task.is_undated) {
+                        typeBadgeEl.innerText = 'ASIGNANDO PLAZO';
+                        typeBadgeEl.className = 'px-2 py-0.5 rounded-md bg-amber-600 text-[7px] font-black uppercase tracking-wider text-white';
+                    } else if (isTaskUndated) {
+                        typeBadgeEl.innerText = 'PLAZO ABIERTO';
+                        typeBadgeEl.className = 'px-2 py-0.5 rounded-md bg-amber-500 text-[7px] font-black uppercase tracking-wider text-white';
+                    } else {
+                        typeBadgeEl.innerText = type.toUpperCase();
+                        typeBadgeEl.className = 'px-2 py-0.5 rounded-md bg-violet-600 text-[7px] font-black uppercase tracking-wider text-white';
+                    }
+                }
 
                 const durationEl = document.getElementById('drag-duration-days');
-                if (durationEl) durationEl.innerText = diffDays;
+                if (durationEl) durationEl.innerText = isTaskUndated ? '—' : diffDays;
 
                 const startLabelEl = document.getElementById('drag-start-label');
                 if (startLabelEl) startLabelEl.innerText = fmt(dateStart);
 
                 const endLabelEl = document.getElementById('drag-end-label');
-                if (endLabelEl) endLabelEl.innerText = fmt(dateEnd);
+                if (endLabelEl) {
+                    if (isTaskUndated) {
+                        endLabelEl.innerHTML = '<span class="italic text-amber-500 dark:text-amber-400 font-bold">Sin límite</span>';
+                    } else {
+                        endLabelEl.innerText = fmt(dateEnd);
+                    }
+                }
 
                 const breakdownContainer = document.getElementById('drag-members-breakdown');
                 const membersList = document.getElementById('drag-members-list');
