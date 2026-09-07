@@ -71,7 +71,7 @@
             </div>
             <div x-show="showPreview" x-transition class="mt-4 p-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl">
                 <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">{{ __('Vista Previa Markdown') }}</p>
-                <div x-html="marked(TurndownService ? TurndownService.marked(this.$el.previousElementSibling.value) : this.$el.previousElementSibling.value)" class="text-sm text-gray-700 dark:text-gray-300 prose prose-sm dark:prose-invert max-w-none"></div>
+                <div x-html="typeof marked !== 'undefined' ? marked.parse($el.closest('[x-data]').querySelector('textarea')?.value || '') : ''" class="text-sm text-gray-700 dark:text-gray-300 prose prose-sm dark:prose-invert max-w-none"></div>
             </div>
         </div>
     </div>
