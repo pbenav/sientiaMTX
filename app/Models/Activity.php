@@ -146,6 +146,7 @@ class Activity extends Model
      */
     protected $fillable = [
         'uuid',
+        'team_id',
         'created_by_id',
         'parent_id',
         'expediente_id',
@@ -171,6 +172,8 @@ class Activity extends Model
         'google_calendar_event_id',
         'google_calendar_id',
         'google_synced_at',
+        'converted_from_id',
+        'original_metadata',
     ];
 
     /**

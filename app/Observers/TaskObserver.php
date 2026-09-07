@@ -169,7 +169,7 @@ class TaskObserver
 
             // Datos comunes a mapear
             $activityData = [
-                'team_id'             => $task->team_id,
+                'team_id'             => $task->team_id ?? auth()->user()?->current_team_id ?? auth()->user()?->teams()->first()?->id ?? 1,
                 'created_by_id'       => $task->created_by_id ?? auth()->id() ?? 1,
                 'parent_id'           => $activityParentId,
                 'expediente_id'       => $task->expediente_id,
