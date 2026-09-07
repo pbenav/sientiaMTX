@@ -200,6 +200,8 @@ class ActivityController extends Controller
             $validated['metadata']['is_timeline_locked'] = false;
         }
 
+        $validated['auto_priority'] = $request->boolean('auto_priority');
+
         // Quota check de archivos
         if ($request->hasFile('attachments')) {
             $totalUploadSize = collect($request->file('attachments'))->sum(fn($file) => $file->getSize());
@@ -366,6 +368,12 @@ class ActivityController extends Controller
             $validated['metadata']['is_timeline_locked'] = $request->boolean('is_timeline_locked');
         } else {
             $validated['metadata']['is_timeline_locked'] = false;
+        }
+
+        if ($request->has('auto_priority')) {
+            $validated['auto_priority'] = $request->boolean('auto_priority');
+        } elseif (in_array($activity->type, ['task', 'meeting', 'reminder'])) {
+            $validated['auto_priority'] = false;
         }
 
         if ($request->hasFile('attachments')) {
@@ -738,11 +746,11 @@ class ActivityController extends Controller
         }
 
         if (auth()->user()->cannot('update', $activity)) {
-            return response()->json(['error' => 'No tienes permiso para gestionar invitaciones en esta reunión.'], 403);
+            return response()->json(['error' => 'No tienes permiso para gestionar invitaciones en esta actividad.'], 403);
         }
 
-        if ($activity->type !== 'meeting') {
-            return response()->json(['error' => 'Esta actividad no es de tipo reunión.'], 422);
+        if (!in_array($activity->type, ['meeting', 'reminder'])) {
+            return response()->json(['error' => 'Esta actividad no admite invitaciones a destinatarios externos.'], 422);
         }
 
         $guestEmail = $request->email;
@@ -765,13 +773,14 @@ class ActivityController extends Controller
                 )
             );
 
+            $msgLabel = $activity->type === 'reminder' ? 'Recordatorio enviado' : 'Invitación enviada';
             return response()->json([
                 'success' => true,
-                'message' => "Invitación enviada con éxito a {$guestEmail}."
+                'message' => "{$msgLabel} con éxito a {$guestEmail}."
             ]);
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Failed to resend meeting invitation to {$guestEmail}: " . $e->getMessage());
-            return response()->json(['error' => 'No se pudo enviar el correo de invitación: ' . $e->getMessage()], 500);
+            \Illuminate\Support\Facades\Log::error("Failed to resend guest invitation to {$guestEmail}: " . $e->getMessage());
+            return response()->json(['error' => 'No se pudo enviar el correo: ' . $e->getMessage()], 500);
         }
     }
 }

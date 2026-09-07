@@ -113,6 +113,10 @@ class ActivityService
                 $this->syncDistributedInstances($activity, $assignedUserIds, $data);
             }
 
+            if ($activity->auto_priority && method_exists($activity, 'updateAutoPriority')) {
+                $activity->updateAutoPriority();
+            }
+
             $this->notifyGuests($activity);
 
             return $activity->fresh();
@@ -218,6 +222,10 @@ class ActivityService
                           ->orWhere('metadata->is_occurrence', false);
                     })
                     ->each(fn($c) => $c->delete());
+            }
+
+            if ($activity->auto_priority && method_exists($activity, 'updateAutoPriority')) {
+                $activity->updateAutoPriority();
             }
 
             $this->notifyGuests($activity);

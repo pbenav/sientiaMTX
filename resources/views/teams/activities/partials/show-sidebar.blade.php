@@ -496,8 +496,8 @@
                     </div>
                 </div>
 
-                <!-- Prioridad Automática (tasks y meetings) -->
-                @if (in_array($activity->type, ['task', 'meeting']))
+                <!-- Prioridad Automática (tasks, meetings y reminders) -->
+                @if (in_array($activity->type, ['task', 'meeting', 'reminder']))
                 <div class="pt-2 border-t border-gray-50 dark:border-gray-800/50">
                     <button id="btn-auto-priority" onclick="toggleAutoPriority()" 
                         class="w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all duration-300 {{ $activity->auto_priority ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-800' : 'bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 border border-transparent hover:border-gray-200 dark:hover:border-gray-700' }}">
@@ -513,7 +513,13 @@
                     </button>
                     @if($activity->due_date || $activity->scheduled_date)
                         <p class="text-[9px] text-gray-400 mt-1.5 px-1 italic">
-                            {{ $activity->type === 'meeting' ? __('La prioridad escalará según el tiempo restante hasta la reunión.') : __('La prioridad escalará según el tiempo restante hasta la entrega.') }}
+                            @if($activity->type === 'meeting')
+                                {{ __('La prioridad escalará según el tiempo restante hasta la reunión.') }}
+                            @elseif($activity->type === 'reminder')
+                                {{ __('La prioridad escalará según el tiempo restante hasta la fecha límite del recordatorio.') }}
+                            @else
+                                {{ __('La prioridad escalará según el tiempo restante hasta la entrega.') }}
+                            @endif
                         </p>
                     @endif
                 </div>

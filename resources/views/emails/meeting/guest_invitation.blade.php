@@ -1,7 +1,11 @@
 <x-mail::message>
 # Hola {{ $guestName }},
 
+@if($activity->type === 'reminder')
+Has recibido este recordatorio en **SientiaMTX** por parte de **{{ $inviter->name }}** ({{ $inviter->email }}).
+@else
 Has sido invitado/a a una reunión en **SientiaMTX** por **{{ $inviter->name }}** ({{ $inviter->email }}).
+@endif
 
 @if(!empty($customMessage))
 <x-mail::panel>
@@ -16,6 +20,17 @@ Has sido invitado/a a una reunión en **SientiaMTX** por **{{ $inviter->name }}*
 {{ strip_tags(str()->markdown($activity->description)) }}
 @endif
 
+@if($activity->type === 'reminder')
+**Detalles del Recordatorio:**
+@php
+    $firing = $activity->due_date ?? ($activity->scheduled_date ?? null);
+    $firingFormatted = $firing ? \Carbon\Carbon::parse($firing)->format('d/m/Y H:i') : 'No especificada';
+@endphp
+- **Fecha y Hora:** {{ $firingFormatted }}
+@if($activity->priority)
+- **Prioridad:** {{ ucfirst($activity->priority) }}
+@endif
+@else
 **Detalles de la Convocatoria:**
 @php
     $meta = $activity->metadata ?? [];
@@ -41,6 +56,7 @@ Has sido invitado/a a una reunión en **SientiaMTX** por **{{ $inviter->name }}*
 <x-mail::button :url="$joinUrl">
 {{ str_contains($joinUrl, 'meet.google.com') ? 'Unirse con Google Meet' : 'Unirse a la Reunión' }}
 </x-mail::button>
+@endif
 @endif
 
 Un saludo,<br>

@@ -156,6 +156,32 @@ class TriggerReminderActivities extends Command
                 }
             }
 
+            // Notificar a invitados externos si el canal email está activo
+            $externalGuests = $metadata['guests'] ?? [];
+            if (in_array('email', $channels) && !empty($externalGuests)) {
+                $inviter = $reminder->creator ?? new \App\Models\User(['name' => config('app.name'), 'email' => config('mail.from.address')]);
+                foreach ($externalGuests as $guest) {
+                    if (empty($guest['email']) || empty($guest['notify'])) {
+                        continue;
+                    }
+                    try {
+                        \Illuminate\Support\Facades\Mail::to($guest['email'])->send(
+                            new \App\Mail\MeetingGuestInvitationMail(
+                                $reminder,
+                                $guest['name'] ?? 'Invitado',
+                                $inviter,
+                                $metadata['invitation_message'] ?? null
+                            )
+                        );
+                        $triggeredCount++;
+                        $anySent = true;
+                        $this->line("    [✓] Recordatorio enviado a invitado externo {$guest['email']}");
+                    } catch (\Exception $e) {
+                        Log::error("Failed to send reminder email to guest {$guest['email']}: " . $e->getMessage());
+                    }
+                }
+            }
+
             if ($anySent) {
                 $metadata['notified_at'] = now()->toDateTimeString();
                 $metadata['last_channel_sent'] = $channels;

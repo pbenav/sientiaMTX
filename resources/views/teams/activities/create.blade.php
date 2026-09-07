@@ -401,7 +401,34 @@
                 </div>
                 @endif
 
-
+                <!-- Prioridad Automática -->
+                @if(in_array($type, ['task', 'meeting', 'reminder']))
+                <div class="bg-gray-50/50 dark:bg-gray-800/20 p-5 rounded-3xl border border-gray-150 dark:border-gray-800 flex items-center justify-between shadow-sm hover:border-violet-200 dark:hover:border-violet-800/50 transition-all">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-10 h-10 rounded-2xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-violet-600 dark:text-violet-400 shrink-0 border border-violet-200/50 dark:border-violet-700/30 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white">{{ __('Prioridad Automática') }}</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                @if($type === 'meeting')
+                                    {{ __('La prioridad aumentará automáticamente conforme se acerque la fecha de la reunión.') }}
+                                @elseif($type === 'reminder')
+                                    {{ __('La prioridad aumentará automáticamente conforme se acerque la fecha límite del recordatorio.') }}
+                                @else
+                                    {{ __('La prioridad aumentará automáticamente (Media -> Alta -> Crítica) conforme se acerque la fecha de entrega.') }}
+                                @endif
+                            </span>
+                        </div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer select-none">
+                        <input type="checkbox" name="auto_priority" value="1" {{ old('auto_priority') ? 'checked' : '' }} class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-focus:ring-4 peer-focus:ring-violet-500/20 dark:peer-focus:ring-violet-800/20 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-violet-600"></div>
+                    </label>
+                </div>
+                @endif
 
                 <!-- Dates -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 font-mono"
@@ -507,6 +534,12 @@
                             <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Notificar a una hora específica (HH:MM)</label>
                             <input type="time" name="metadata[notify_at_hour]" value="{{ old('metadata.notify_at_hour') }}" step="60" class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all">
                             <p class="text-[10px] text-gray-400 mt-1">Si se establece, se notifica a esa hora exacta en la fecha de due_date. No se puede usar junto con "minutos antes".</p>
+                        </div>
+
+                        <div class="md:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Destinatarios / Invitados al Recordatorio</label>
+                            <p class="text-[10px] text-gray-500 mb-3 leading-tight">Añade a las personas (individualmente o pegando una lista masiva en formato bulk) que recibirán este recordatorio por correo electrónico.</p>
+                            <x-guest-crud :initialGuests="old('metadata.guests', [])" :initialMessage="old('metadata.invitation_message', '')" />
                         </div>
                     </div>
                 </div>
