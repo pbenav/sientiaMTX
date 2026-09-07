@@ -1,4 +1,4 @@
-@props(['initialGuests' => [], 'initialMessage' => ''])
+@props(['initialGuests' => [], 'initialMessage' => '', 'team' => null, 'mentionsUrl' => null])
 
 <div x-data="guestCrud({{ json_encode($initialGuests) }}, {{ json_encode($initialMessage) }})" class="space-y-4">
     <!-- Barra superior de estado -->
@@ -48,25 +48,21 @@
                  x-transition:leave="transition ease-in duration-150"
                  x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                  x-transition:leave-end="opacity-0 scale-95 translate-y-3"
-                 class="relative bg-white dark:bg-gray-900 rounded-3xl w-full max-w-2xl shadow-2xl border border-gray-100 dark:border-gray-800 flex flex-col max-h-[90vh] overflow-hidden my-auto">
+                 class="relative w-full max-w-2xl bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-2xl border border-gray-200/80 dark:border-gray-800 overflow-hidden flex flex-col max-h-[90vh]">
                 
                 <!-- Modal Header -->
-                <div class="flex items-center justify-between px-6 py-4.5 border-b border-gray-150 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-800/40">
+                <div class="px-6 py-5 bg-gradient-to-r from-violet-600/10 via-indigo-600/10 to-transparent border-b border-gray-150 dark:border-gray-800 flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-violet-500/20 shrink-0">
-                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                            </svg>
+                        <div class="p-2.5 bg-violet-600 text-white rounded-2xl shadow-lg shadow-violet-500/30">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                         </div>
                         <div>
-                            <h3 class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white">Personalizar Mensaje de Invitación</h3>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Se incluirá en el correo de invitación enviado a los asistentes externos.</p>
+                            <h3 class="text-base font-black text-gray-900 dark:text-white tracking-tight">Personalizar Mensaje de Invitación</h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Edición enriquecida con Markdown, menciones y vista previa en vivo</p>
                         </div>
                     </div>
                     <button type="button" @click="showModal = false" class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title="Cerrar (Esc)">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
 
@@ -93,12 +89,15 @@
                     </div>
 
                     <div>
-                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-1.5">
-                            Cuerpo del Mensaje
-                        </label>
-                        <textarea x-ref="customMessageArea" x-model="customMessage" rows="4" 
-                                  class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 rounded-2xl p-4 text-sm text-gray-900 dark:text-white outline-none resize-y transition-all shadow-inner leading-relaxed font-sans" 
-                                  placeholder="Ej. Hola [nombre_invitado], te escribo de parte de [mi_nombre] para convocarte a [titulo_reunion]. Por favor revisa los puntos de la agenda adjunta..."></textarea>
+                        <x-markdown-editor 
+                            name="custom_invitation_message_body" 
+                            label="Cuerpo del Mensaje" 
+                            :value="$initialMessage" 
+                            rows="4" 
+                            placeholder="Ej. Hola [nombre_invitado], te escribo de parte de [mi_nombre] para convocarte a [titulo_reunion]. Por favor revisa los puntos de la agenda adjunta..." 
+                            :mentions-url="$mentionsUrl ?? (isset($team) ? route('teams.mentions', $team) : (request()->route('team') ? route('teams.mentions', request()->route('team')) : null))"
+                            @input="customMessage = $event.detail || $event.target.value"
+                        />
                     </div>
 
                     <!-- Live Email Preview Card -->
@@ -115,7 +114,7 @@
                             <p>Has recibido una convocatoria/aviso en <strong class="text-violet-600 dark:text-violet-400">SientiaMTX</strong> por parte de <strong class="text-gray-900 dark:text-white">{{ auth()->user()->name ?? 'Tu Nombre' }}</strong>.</p>
                             
                             <template x-if="customMessage.trim() !== ''">
-                                <div class="p-3.5 rounded-xl bg-white dark:bg-gray-900 border-l-4 border-violet-500 shadow-sm whitespace-pre-wrap text-gray-800 dark:text-gray-200 text-xs italic leading-relaxed" x-text="previewText"></div>
+                                <div class="p-3.5 rounded-xl bg-white dark:bg-gray-900 border-l-4 border-violet-500 shadow-sm prose prose-sm dark:prose-invert max-w-none text-xs italic leading-relaxed" x-html="previewText"></div>
                             </template>
 
                             <div class="pt-2 border-t border-gray-200/60 dark:border-gray-700/60 text-[11px] space-y-1 text-gray-500 dark:text-gray-400">
@@ -130,7 +129,7 @@
                 <div class="px-6 py-4 bg-gray-50/70 dark:bg-gray-800/40 border-t border-gray-150 dark:border-gray-800 flex items-center justify-between">
                     <div>
                         <template x-if="customMessage.trim().length > 0">
-                            <button type="button" @click="customMessage = ''" class="text-[11px] font-bold text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors">
+                            <button type="button" @click="customMessage = ''; const ta = $el.closest('[x-teleport], body, div').querySelector('textarea'); if(ta) { ta.value = ''; ta.dispatchEvent(new Event('input', { bubbles: true })); }" class="text-[11px] font-bold text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors">
                                 Borrar texto personalizado
                             </button>
                         </template>
@@ -331,10 +330,21 @@
                     let msg = this.customMessage || '';
                     if (!msg.trim()) return '';
                     const title = this.activityTitle;
-                    return msg
+                    let replaced = msg
                         .replace(/\[nombre_invitado\]/gi, 'Juan Pérez')
                         .replace(/\[mi_nombre\]/gi, '{{ auth()->user()->name ?? "Tu Nombre" }}')
                         .replace(/\[titulo_reunion\]/gi, title || '(Título)');
+
+                    if (typeof marked !== 'undefined') {
+                        try {
+                            marked.use({ breaks: true, gfm: true });
+                            const parsed = marked.parse(replaced);
+                            return typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(parsed) : parsed;
+                        } catch(e) {
+                            return replaced;
+                        }
+                    }
+                    return replaced;
                 },
 
                 get parsedBulkGuests() {

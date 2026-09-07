@@ -826,8 +826,12 @@
                 Swal.fire({
                     title: isBulk ? '¿Enviar recordatorio masivo?' : '¿Enviar recordatorio?',
                     html: `
-                        <p class="text-sm text-gray-500 mb-4">${isBulk ? 'Se enviará un recordatorio a todos los miembros seleccionados.' : 'Se enviará un recordatorio al miembro responsable.'}</p>
-                        <textarea id="nudge-message" class="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm focus:ring-violet-500 min-h-[100px] p-3 shadow-inner" placeholder="Escribe un mensaje personalizado del coordinador (opcional)..."></textarea>
+                        <p class="text-sm text-gray-500 mb-3">${isBulk ? 'Se enviará un recordatorio a todos los miembros seleccionados.' : 'Se enviará un recordatorio al miembro responsable.'}</p>
+                        <div class="text-left space-y-1.5">
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Mensaje personalizado (Markdown & menciones @)</label>
+                            <textarea id="nudge-message" class="w-full rounded-2xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:ring-2 focus:ring-violet-500 focus:border-violet-500 min-h-[110px] p-3.5 shadow-inner text-gray-900 dark:text-gray-100 font-sans" placeholder="Escribe un mensaje personalizado del coordinador (opcional)..."></textarea>
+                            <span class="text-[9px] font-bold text-gray-400 dark:text-gray-500 block">Soporta sintaxis Markdown (negrita, cursiva, listas) y menciones a usuarios (@nombre).</span>
+                        </div>
                     `,
                     icon: 'question',
                     showCancelButton: true,

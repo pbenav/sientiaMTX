@@ -15,6 +15,9 @@
     cancelledAt: -1,
     hasJustTypedAt: false,
     init() {
+        this.$watch('content', val => {
+            this.$el.dispatchEvent(new CustomEvent('input', { detail: val, bubbles: true }));
+        });
         this.fetchMentions();
         if (this.content) {
             this.cancelledAt = this.content.lastIndexOf('@');
