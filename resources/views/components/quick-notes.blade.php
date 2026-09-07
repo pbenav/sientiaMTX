@@ -197,8 +197,10 @@
 </div>
 
 <script>
-document.addEventListener('alpine:init', () => {
-    Alpine.data('sientiaQuickNotes', () => ({
+(function() {
+    const initQuickNotes = () => {
+        if (typeof Alpine !== 'undefined' && !Alpine.data('sientiaQuickNotes')) {
+            Alpine.data('sientiaQuickNotes', () => ({
         notes: [],
         activeNoteId: null,
         isDragging: false,
@@ -844,5 +846,13 @@ document.addEventListener('alpine:init', () => {
             }
         }
     }));
-});
+        }
+    };
+
+    if (window.Alpine && window.Alpine.data) {
+        initQuickNotes();
+    } else {
+        document.addEventListener('alpine:init', initQuickNotes);
+    }
+})();
 </script>

@@ -277,177 +277,185 @@
 </div>
 
 <script>
-    document.addEventListener('alpine:init', () => {
-        if (!Alpine.data('guestCrud')) {
-            Alpine.data('guestCrud', (initialGuests, initialMessage) => ({
-                guests: initialGuests || [],
-                customMessage: initialMessage || '',
-                showModal: false,
-                addMode: 'single', // 'single' | 'bulk'
-                newName: '',
-                newEmail: '',
-                newNotify: true,
-                bulkText: '',
-                bulkNotify: true,
-                
-                get isValid() {
-                    return this.newName.trim().length > 0 && this.isValidEmail(this.newEmail);
-                },
-                
-                isValidEmail(string) {
-                    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((string || '').trim());
-                },
+    (function() {
+        const initGuestCrud = () => {
+            if (typeof Alpine !== 'undefined' && !Alpine.data('guestCrud')) {
+                Alpine.data('guestCrud', (initialGuests, initialMessage) => ({
+                    guests: initialGuests || [],
+                    customMessage: initialMessage || '',
+                    showModal: false,
+                    addMode: 'single', // 'single' | 'bulk'
+                    newName: '',
+                    newEmail: '',
+                    newNotify: true,
+                    bulkText: '',
+                    bulkNotify: true,
+                    
+                    get isValid() {
+                        return this.newName.trim().length > 0 && this.isValidEmail(this.newEmail);
+                    },
+                    
+                    isValidEmail(string) {
+                        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((string || '').trim());
+                    },
 
-                guessNameFromEmail(email) {
-                    let part = email.split('@')[0] || '';
-                    part = part.replace(/[._+-]+/g, ' ').trim();
-                    if (!part) return 'Invitado';
-                    return part.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-                },
+                    guessNameFromEmail(email) {
+                        let part = email.split('@')[0] || '';
+                        part = part.replace(/[._+-]+/g, ' ').trim();
+                        if (!part) return 'Invitado';
+                        return part.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                    },
 
-                insertTag(tag) {
-                    const textarea = this.$refs.customMessageArea;
-                    if (textarea) {
-                        const start = textarea.selectionStart || 0;
-                        const end = textarea.selectionEnd || 0;
-                        const text = this.customMessage || '';
-                        this.customMessage = text.substring(0, start) + tag + text.substring(end);
-                        this.$nextTick(() => {
-                            textarea.focus();
-                            textarea.setSelectionRange(start + tag.length, start + tag.length);
-                        });
-                    } else {
-                        this.customMessage = (this.customMessage || '') + ' ' + tag;
-                    }
-                },
-
-                get activityTitle() {
-                    const titleInput = document.querySelector('input[name="title"]');
-                    return titleInput && titleInput.value ? titleInput.value : '';
-                },
-
-                get previewText() {
-                    let msg = this.customMessage || '';
-                    if (!msg.trim()) return '';
-                    const title = this.activityTitle;
-                    let replaced = msg
-                        .replace(/\[nombre_invitado\]/gi, 'Juan Pérez')
-                        .replace(/\[mi_nombre\]/gi, '{{ auth()->user()->name ?? "Tu Nombre" }}')
-                        .replace(/\[titulo_reunion\]/gi, title || '(Título)');
-
-                    if (typeof marked !== 'undefined') {
-                        try {
-                            marked.use({ breaks: true, gfm: true });
-                            const parsed = marked.parse(replaced);
-                            return typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(parsed) : parsed;
-                        } catch(e) {
-                            return replaced;
-                        }
-                    }
-                    return replaced;
-                },
-
-                get parsedBulkGuests() {
-                    if (!this.bulkText || !this.bulkText.trim()) return [];
-                    const lines = this.bulkText.split(/[\r\n]+/);
-                    const results = [];
-                    const seenInBatch = new Set();
-                    const existingEmails = new Set(this.guests.map(g => (g.email || '').toLowerCase().trim()));
-                    const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
-
-                    for (let rawLine of lines) {
-                        let line = rawLine.trim();
-                        if (!line) continue;
-
-                        let entries = [line];
-                        if (line.includes(';') || (line.match(emailRegex) && line.match(emailRegex).length > 1)) {
-                            entries = line.split(/[;,]+/);
-                        }
-
-                        for (let entry of entries) {
-                            entry = entry.trim();
-                            if (!entry) continue;
-
-                            // Formato: Nombre <email@domain.com>
-                            const angleMatch = entry.match(/^(.*?)\s*<([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})>/);
-                            if (angleMatch) {
-                                const name = angleMatch[1].replace(/["']/g, '').trim();
-                                const email = angleMatch[2].toLowerCase().trim();
-                                if (!seenInBatch.has(email) && !existingEmails.has(email)) {
-                                    seenInBatch.add(email);
-                                    results.push({
-                                        name: name || this.guessNameFromEmail(email),
-                                        email: email,
-                                        notify: this.bulkNotify ? 1 : 0
-                                    });
-                                }
-                                continue;
-                            }
-
-                            // Formato simple: extrae email y toma el resto como nombre
-                            const directMatch = entry.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
-                            if (directMatch) {
-                                const email = directMatch[1].toLowerCase().trim();
-                                let name = entry.replace(directMatch[0], '').replace(/[<>,;"']/g, '').trim();
-                                if (!name) {
-                                    name = this.guessNameFromEmail(email);
-                                }
-                                if (!seenInBatch.has(email) && !existingEmails.has(email)) {
-                                    seenInBatch.add(email);
-                                    results.push({
-                                        name: name,
-                                        email: email,
-                                        notify: this.bulkNotify ? 1 : 0
-                                    });
-                                }
-                            }
-                        }
-                    }
-                    return results;
-                },
-
-                get bulkParsedCount() {
-                    return this.parsedBulkGuests.length;
-                },
-                
-                addGuest() {
-                    if (this.isValid) {
-                        const email = this.newEmail.trim().toLowerCase();
-                        if (!this.guests.some(g => (g.email || '').toLowerCase().trim() === email)) {
-                            this.guests.push({
-                                name: this.newName.trim(),
-                                email: email,
-                                notify: this.newNotify ? 1 : 0
+                    insertTag(tag) {
+                        const textarea = this.$refs.customMessageArea;
+                        if (textarea) {
+                            const start = textarea.selectionStart || 0;
+                            const end = textarea.selectionEnd || 0;
+                            const text = this.customMessage || '';
+                            this.customMessage = text.substring(0, start) + tag + text.substring(end);
+                            this.$nextTick(() => {
+                                textarea.focus();
+                                textarea.setSelectionRange(start + tag.length, start + tag.length);
                             });
+                        } else {
+                            this.customMessage = (this.customMessage || '') + ' ' + tag;
                         }
-                        this.newName = '';
-                        this.newEmail = '';
-                        this.newNotify = true;
-                    }
-                },
+                    },
 
-                addBulkGuests() {
-                    const parsed = this.parsedBulkGuests;
-                    if (parsed.length > 0) {
-                        parsed.forEach(item => {
-                            item.notify = this.bulkNotify ? 1 : 0;
-                            this.guests.push(item);
-                        });
-                        this.bulkText = '';
-                        this.addMode = 'single';
-                    }
-                },
-                
-                removeGuest(index) {
-                    this.guests.splice(index, 1);
-                },
+                    get activityTitle() {
+                        const titleInput = document.querySelector('input[name="title"]');
+                        return titleInput && titleInput.value ? titleInput.value : '';
+                    },
 
-                clearAllGuests() {
-                    if (confirm('¿Vaciar todos los invitados de la lista?')) {
-                        this.guests = [];
+                    get previewText() {
+                        let msg = this.customMessage || '';
+                        if (!msg.trim()) return '';
+                        const title = this.activityTitle;
+                        let replaced = msg
+                            .replace(/\[nombre_invitado\]/gi, 'Juan Pérez')
+                            .replace(/\[mi_nombre\]/gi, '{{ auth()->user()->name ?? "Tu Nombre" }}')
+                            .replace(/\[titulo_reunion\]/gi, title || '(Título)');
+
+                        if (typeof marked !== 'undefined') {
+                            try {
+                                marked.use({ breaks: true, gfm: true });
+                                const parsed = marked.parse(replaced);
+                                return typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(parsed) : parsed;
+                            } catch(e) {
+                                return replaced;
+                            }
+                        }
+                        return replaced;
+                    },
+
+                    get parsedBulkGuests() {
+                        if (!this.bulkText || !this.bulkText.trim()) return [];
+                        const lines = this.bulkText.split(/[\r\n]+/);
+                        const results = [];
+                        const seenInBatch = new Set();
+                        const existingEmails = new Set(this.guests.map(g => (g.email || '').toLowerCase().trim()));
+                        const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
+
+                        for (let rawLine of lines) {
+                            let line = rawLine.trim();
+                            if (!line) continue;
+
+                            let entries = [line];
+                            if (line.includes(';') || (line.match(emailRegex) && line.match(emailRegex).length > 1)) {
+                                entries = line.split(/[;,]+/);
+                            }
+
+                            for (let entry of entries) {
+                                entry = entry.trim();
+                                if (!entry) continue;
+
+                                // Formato: Nombre <email@domain.com>
+                                const angleMatch = entry.match(/^(.*?)\s*<([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})>/);
+                                if (angleMatch) {
+                                    const name = angleMatch[1].replace(/["']/g, '').trim();
+                                    const email = angleMatch[2].toLowerCase().trim();
+                                    if (!seenInBatch.has(email) && !existingEmails.has(email)) {
+                                        seenInBatch.add(email);
+                                        results.push({
+                                            name: name || this.guessNameFromEmail(email),
+                                            email: email,
+                                            notify: this.bulkNotify ? 1 : 0
+                                        });
+                                    }
+                                    continue;
+                                }
+
+                                // Formato simple: extrae email y toma el resto como nombre
+                                const directMatch = entry.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+                                if (directMatch) {
+                                    const email = directMatch[1].toLowerCase().trim();
+                                    let name = entry.replace(directMatch[0], '').replace(/[<>,;"']/g, '').trim();
+                                    if (!name) {
+                                        name = this.guessNameFromEmail(email);
+                                    }
+                                    if (!seenInBatch.has(email) && !existingEmails.has(email)) {
+                                        seenInBatch.add(email);
+                                        results.push({
+                                            name: name,
+                                            email: email,
+                                            notify: this.bulkNotify ? 1 : 0
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                        return results;
+                    },
+
+                    get bulkParsedCount() {
+                        return this.parsedBulkGuests.length;
+                    },
+                    
+                    addGuest() {
+                        if (this.isValid) {
+                            const email = this.newEmail.trim().toLowerCase();
+                            if (!this.guests.some(g => (g.email || '').toLowerCase().trim() === email)) {
+                                this.guests.push({
+                                    name: this.newName.trim(),
+                                    email: email,
+                                    notify: this.newNotify ? 1 : 0
+                                });
+                            }
+                            this.newName = '';
+                            this.newEmail = '';
+                            this.newNotify = true;
+                        }
+                    },
+
+                    addBulkGuests() {
+                        const parsed = this.parsedBulkGuests;
+                        if (parsed.length > 0) {
+                            parsed.forEach(item => {
+                                item.notify = this.bulkNotify ? 1 : 0;
+                                this.guests.push(item);
+                            });
+                            this.bulkText = '';
+                            this.addMode = 'single';
+                        }
+                    },
+                    
+                    removeGuest(index) {
+                        this.guests.splice(index, 1);
+                    },
+
+                    clearAllGuests() {
+                        if (confirm('¿Vaciar todos los invitados de la lista?')) {
+                            this.guests = [];
+                        }
                     }
-                }
-            }));
+                }));
+            }
+        };
+
+        if (window.Alpine && window.Alpine.data) {
+            initGuestCrud();
+        } else {
+            document.addEventListener('alpine:init', initGuestCrud);
         }
-    });
+    })();
 </script>
