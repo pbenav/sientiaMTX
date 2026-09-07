@@ -277,7 +277,11 @@
         window.updateColumnColor = window.kanbanUpdateColumnColor = function(columnId, color) {
             kanbanUpdateColumn(columnId, { color: color });
             const col = document.querySelector(`[data-column-id="${columnId}"]`);
-            if (col) col.style.backgroundColor = color;
+            if (col) {
+                col.style.setProperty('--col-accent', color);
+                const accent = col.querySelector('.kanban-column-accent');
+                if (accent) accent.style.backgroundColor = color;
+            }
         };
 
         window.createNewColumn = window.kanbanCreateNewColumn = function() {

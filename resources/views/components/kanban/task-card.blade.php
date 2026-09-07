@@ -9,7 +9,7 @@
          taskId: {{ $task->id }},
          get isWorking() { return Alpine.store('timer').activeTaskId == this.taskId }
      }"
-     :class="isWorking ? 'ring-2 ring-violet-500 shadow-xl shadow-violet-500/20 bg-violet-50/30 dark:bg-violet-900/10' : ({{ ($isTodayCard || !$task->is_archived) && ($task->isCompleted() || $column?->type === 'done') ? 'true' : 'false' }} ? 'bg-gray-50/50 dark:bg-gray-900/50 grayscale-[0.3]' : 'bg-white dark:bg-gray-900')"
+     :class="isWorking ? 'ring-2 ring-violet-500 shadow-xl shadow-violet-500/20 bg-white dark:bg-gray-900' : ({{ ($isTodayCard || !$task->is_archived) && ($task->isCompleted() || $column?->type === 'done') ? 'true' : 'false' }} ? 'bg-gray-50/80 dark:bg-gray-900/80 grayscale-[0.3]' : 'bg-white dark:bg-gray-900')"
      class="backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-md border-l-[5px] sm:border-l-[6px] p-2.5 sm:p-3.5 md:p-4 cursor-grab active:cursor-grabbing hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 group relative animate-card-appear border-t border-r border-b border-gray-100/50 dark:border-gray-800/50"
      data-task-id="{{ $task->id }}"
      {{ ($isTodayCard || !$task->is_archived) && ($task->isCompleted() || $column?->type === 'done') ? 'data-completed=1' : '' }}
