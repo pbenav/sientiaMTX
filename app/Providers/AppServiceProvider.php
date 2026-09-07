@@ -51,11 +51,12 @@ class AppServiceProvider extends ServiceProvider
         $host = $forwardedHost ?: request()->getHost();
         $isIpAddress = filter_var($host, FILTER_VALIDATE_IP) !== false;
         $isLocalhost = in_array($host, ['localhost', '127.0.0.1', '::1']) || str_ends_with($host, '.test') || str_ends_with($host, '.local');
+        $isPrivateIp = $isIpAddress && filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false;
 
-        // Si no es un entorno local, forzamos HTTPS por defecto. 
-        // Los proxies mal configurados a menudo pierden X-Forwarded-Proto, lo que causa bloqueos CSP.
+        // Si es entorno local, localhost o red privada (y no se fuerza HTTPS explícitamente), usamos HTTP.
+        // En producción o dominios externos, forzamos HTTPS por defecto para evitar problemas con CSP.
         $scheme = 'https';
-        if ($isLocalhost && !env('FORCE_HTTPS', false)) {
+        if (($isLocalhost || $isPrivateIp || $this->app->environment('local')) && !env('FORCE_HTTPS', false)) {
             $scheme = 'http';
         }
 
@@ -64,6 +65,7 @@ class AppServiceProvider extends ServiceProvider
             'host' => $host,
             'isIpAddress' => $isIpAddress,
             'isLocalhost' => $isLocalhost,
+            'isPrivateIp' => $isPrivateIp,
             'scheme' => $scheme,
             'FORCE_HTTPS' => env('FORCE_HTTPS'),
             'forwarded_host' => $forwardedHost,
@@ -73,6 +75,10 @@ class AppServiceProvider extends ServiceProvider
             $appUrl = config('app.url');
             if (!empty($appUrl) && $appUrl !== 'http://localhost' && $appUrl !== 'http://localhost:8000') {
                 URL::forceRootUrl($appUrl);
+            } else {
+                $port = request()->getPort();
+                $rootUrl = $scheme . '://' . $host . ($port && (($scheme === 'http' && $port != 80) || ($scheme === 'https' && $port != 443)) ? ':' . $port : '');
+                URL::forceRootUrl($rootUrl);
             }
         } else {
             // Forzar Root URL al dominio actual de la petición para soportar alias de dominios
@@ -82,8 +88,9 @@ class AppServiceProvider extends ServiceProvider
         }
 
         if ($scheme === 'https') {
-            // \Log::info('forceScheme https', ['host' => $host, 'isLocalhost' => $isLocalhost, 'isIpAddress' => $isIpAddress, 'FORCE_HTTPS' => env('FORCE_HTTPS')]);
             URL::forceScheme('https');
+        } else {
+            URL::forceScheme('http');
         }
 
         // Aplicar zona horaria global configurada en el panel de administración
