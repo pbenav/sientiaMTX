@@ -1,20 +1,21 @@
 <x-app-layout maxWidth="max-w-full">
     <style>
         .kanban-column {
-            background-color: rgba(248, 249, 250, 0.85);
+            background: linear-gradient(180deg, color-mix(in srgb, var(--col-accent, #8b5cf6) 16%, rgba(255, 255, 255, 0.96)) 0%, color-mix(in srgb, var(--col-accent, #8b5cf6) 8%, rgba(255, 255, 255, 0.9)) 100%);
+            border-color: color-mix(in srgb, var(--col-accent, #8b5cf6) 28%, rgba(0, 0, 0, 0.08)) !important;
             backdrop-filter: blur(8px);
             transition: all 0.3s ease;
         }
         .dark .kanban-column {
-            background-color: rgba(17, 24, 39, 0.5) !important;
+            background: linear-gradient(180deg, color-mix(in srgb, var(--col-accent, #8b5cf6) 20%, rgba(17, 24, 39, 0.95)) 0%, color-mix(in srgb, var(--col-accent, #8b5cf6) 10%, rgba(17, 24, 39, 0.9)) 100%) !important;
+            border-color: color-mix(in srgb, var(--col-accent, #8b5cf6) 30%, rgba(255, 255, 255, 0.08)) !important;
             backdrop-filter: blur(8px);
-            border-color: rgba(255, 255, 255, 0.08) !important;
         }
         .kanban-column-accent {
-            opacity: 0.95;
+            opacity: 1;
         }
         .dark .kanban-column-accent {
-            opacity: 0.85;
+            opacity: 0.9;
         }
 
         /* Responsive Kanban column widths */
