@@ -8,6 +8,9 @@
         height: 100%;
         width: 100%;
     }
+    .dark .leaflet-layer {
+        filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+    }
     footer {
         display: none !important;
     }
@@ -188,24 +191,20 @@
         
         // Crear mapa
         const map = L.map('map', {
-            zoomControl: false
+            zoomControl: false,
+            maxZoom: 19
         }).setView([defaultLat, defaultLng], 6);
 
         // Control de zoom en la esquina superior derecha
         L.control.zoom({ position: 'topright' }).addTo(map);
 
-        // Tile layer elegante y adaptativo (OpenStreetMap Carto DB)
-        const isDark = document.documentElement.classList.contains('dark');
+        // Tile layer elegante y adaptativo (OpenStreetMap)
         const cartoUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
         const tiles = L.tileLayer(cartoUrl, {
             attribution: '© OpenStreetMap contributors',
-            maxZoom: 20
+            maxZoom: 19
         }).addTo(map);
-
-        if (isDark) {
-            document.querySelector('.leaflet-layer').style.filter = 'invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%)';
-        }
 
         // Icono premium de PIN de mapa
         const pinIcon = L.divIcon({
@@ -257,7 +256,7 @@
             if (members.length > 0) {
                 const bounds = markersGroup.getBounds();
                 if (bounds.isValid()) {
-                    map.fitBounds(bounds, { padding: [50, 50] });
+                    map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
                 }
             }
         }, 250);
@@ -381,12 +380,12 @@
                             // Si falla, volver al comportamiento por defecto (encuadrar todos los marcadores)
                             map.once('locationerror', function(e) {
                                 if (members.length > 0) {
-                                    map.fitBounds(markersGroup.getBounds(), { padding: [50, 50] });
+                                    map.fitBounds(markersGroup.getBounds(), { padding: [50, 50], maxZoom: 14 });
                                 }
                             });
                         } else {
                             if (members.length > 0) {
-                                map.fitBounds(markersGroup.getBounds(), { padding: [50, 50] });
+                                map.fitBounds(markersGroup.getBounds(), { padding: [50, 50], maxZoom: 14 });
                             }
                         }
                     }
