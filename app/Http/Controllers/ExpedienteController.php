@@ -77,15 +77,18 @@ class ExpedienteController extends Controller
     public function store(Request $request, Team $team)
     {
         if (auth()->user()->cannot('view', $team)) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['message' => __('teams.unauthorized_access')], 403);
+            }
             return redirect()->route('teams.dashboard', $team)->with('warning', __('teams.unauthorized_access'));
         }
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'priority' => 'required|in:low,medium,high,critical',
-            'visibility' => 'required|in:public,private',
-            'status' => 'required|in:open,active,on_hold,closed,cancelled',
+            'priority' => 'nullable|in:low,medium,high,critical',
+            'visibility' => 'nullable|in:public,private',
+            'status' => 'nullable|in:open,active,on_hold,closed,cancelled',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'related_ids' => 'nullable|array',
@@ -103,12 +106,12 @@ class ExpedienteController extends Controller
             'created_by_id' => Auth::id(),
             'code' => Expediente::generateUniqueCode(),
             'title' => $validated['title'],
-            'description' => $validated['description'],
-            'priority' => $validated['priority'],
-            'visibility' => $validated['visibility'],
-            'status' => $validated['status'],
-            'start_date' => $validated['start_date'],
-            'end_date' => $validated['end_date'],
+            'description' => $validated['description'] ?? null,
+            'priority' => $validated['priority'] ?? 'medium',
+            'visibility' => $validated['visibility'] ?? 'public',
+            'status' => $validated['status'] ?? 'open',
+            'start_date' => $validated['start_date'] ?? null,
+            'end_date' => $validated['end_date'] ?? null,
             'assigned_user_id' => $validated['assigned_user_id'] ?? null,
         ]);
 
@@ -133,6 +136,19 @@ class ExpedienteController extends Controller
 
         if (!empty($validated['related_ids'])) {
             $this->syncBidirectionalRelations($expediente, $validated['related_ids']);
+        }
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => __('Expediente creado correctamente.'),
+                'expediente' => [
+                    'id' => $expediente->id,
+                    'code' => $expediente->code,
+                    'title' => $expediente->title,
+                    'display_name' => "{$expediente->code} — {$expediente->title}",
+                ],
+            ]);
         }
 
         return redirect()->route('teams.expedientes.show', [$team, $expediente])

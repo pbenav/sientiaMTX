@@ -1056,7 +1056,19 @@
 
                     <!-- Expediente Vinculado -->
                     <div>
-                        <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Expediente Vinculado</label>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400">
+                                {{ __('Expediente Vinculado') }}
+                            </label>
+                            @if(!($activity->parent_id && !$activity->is_template))
+                                <button type="button" onclick="quickCreateExpediente({{ $team->id }})" class="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                    <span>{{ __('Nuevo Expediente') }}</span>
+                                </button>
+                            @endif
+                        </div>
                         @if($activity->parent_id && !$activity->is_template)
                             <div class="flex items-center justify-between bg-gray-50 dark:bg-gray-900 p-3 rounded-xl border border-gray-200 dark:border-gray-700">
                                 <div class="flex items-center gap-3">
@@ -1798,6 +1810,135 @@
                 urgencyEl.addEventListener('change', updatePreview);
                 updatePreview();
             }
+
+            // --- Quick Create Expediente ---
+            window.quickCreateExpediente = function(teamId) {
+                if (typeof Swal === 'undefined') {
+                    alert('Error: SweetAlert2 no está disponible.');
+                    return;
+                }
+
+                Swal.fire({
+                    title: '{{ __("Crear Nuevo Expediente") }}',
+                    html: `
+                        <div class="text-left space-y-4 pt-2">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
+                                    {{ __("Título del Expediente") }} <span class="text-red-500">*</span>
+                                </label>
+                                <input id="swal-exp-title" type="text" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="{{ __("Ej. Expediente de Contratación 2026") }}">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
+                                    {{ __("Descripción (Opcional)") }}
+                                </label>
+                                <textarea id="swal-exp-desc" rows="2" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="{{ __("Resumen o notas sobre este expediente...") }}"></textarea>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
+                                        {{ __("Prioridad") }}
+                                    </label>
+                                    <select id="swal-exp-priority" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                                        <option value="low">{{ __("Baja") }}</option>
+                                        <option value="medium" selected>{{ __("Media") }}</option>
+                                        <option value="high">{{ __("Alta") }}</option>
+                                        <option value="critical">{{ __("Crítica") }}</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
+                                        {{ __("Visibilidad") }}
+                                    </label>
+                                    <select id="swal-exp-visibility" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                                        <option value="public" selected>{{ __("Pública (Equipo)") }}</option>
+                                        <option value="private">{{ __("Privada") }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    `,
+                    focusConfirm: false,
+                    showCancelButton: true,
+                    confirmButtonText: '{{ __("Crear y Asignar") }}',
+                    cancelButtonText: '{{ __("Cancelar") }}',
+                    customClass: {
+                        popup: 'rounded-2xl dark:bg-gray-800 dark:text-white',
+                        confirmButton: 'bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors',
+                        cancelButton: 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 text-gray-700 dark:text-gray-300 font-bold px-4 py-2 rounded-xl text-sm transition-colors mr-2'
+                    },
+                    buttonsStyling: false,
+                    preConfirm: () => {
+                        const title = document.getElementById('swal-exp-title').value.trim();
+                        const description = document.getElementById('swal-exp-desc').value.trim();
+                        const priority = document.getElementById('swal-exp-priority').value;
+                        const visibility = document.getElementById('swal-exp-visibility').value;
+
+                        if (!title) {
+                            Swal.showValidationMessage('{{ __("Por favor, introduce el título del expediente") }}');
+                            return false;
+                        }
+
+                        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+                        return fetch(`/teams/${teamId}/expedientes`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': token
+                            },
+                            body: JSON.stringify({
+                                title: title,
+                                description: description,
+                                priority: priority,
+                                visibility: visibility,
+                                status: 'open'
+                            })
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                return response.json().then(err => {
+                                    throw new Error(err.message || '{{ __("Error al crear el expediente") }}');
+                                });
+                            }
+                            return response.json();
+                        })
+                        .catch(error => {
+                            Swal.showValidationMessage(`Error: ${error.message}`);
+                        });
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed && result.value && result.value.success) {
+                        const exp = result.value.expediente;
+                        const selectEl = document.getElementById('expediente_id_select');
+                        
+                        if (selectEl) {
+                            if (selectEl.tomselect) {
+                                selectEl.tomselect.addOption({
+                                    value: exp.id,
+                                    text: exp.display_name
+                                });
+                                selectEl.tomselect.setValue(exp.id);
+                            } else {
+                                const option = new Option(exp.display_name, exp.id, true, true);
+                                selectEl.add(option);
+                                selectEl.value = exp.id;
+                            }
+                        }
+
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: '{{ __("Expediente creado y vinculado") }}',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true
+                        });
+                    }
+                });
+            };
 
             // --- TomSelect for Expedientes ---
             const expedSelectEl = document.getElementById('expediente_id_select');
