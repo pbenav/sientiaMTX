@@ -324,6 +324,9 @@
                             @endif
 
                             <!-- Google Calendar -->
+                            @php
+                                $isExternalGoogleEvent = data_get($activity->metadata, 'google_is_organizer') === false || data_get($activity->metadata, 'is_external_event') === true;
+                            @endphp
                             <form action="{{ route('google.export_calendar_activity', [$team, $activity]) }}" method="POST">
                                 @csrf
                                 <button type="submit" class="w-full flex items-center gap-4 py-4 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
@@ -333,8 +336,20 @@
                                         </svg>
                                     </div>
                                     <div class="flex flex-col">
-                                        <span class="font-bold text-gray-900 dark:text-white text-sm">Calendario de Google</span>
-                                        <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Gestionar evento en calendario</span>
+                                        <span class="font-bold text-gray-900 dark:text-white text-sm">
+                                            @if($activity->google_calendar_event_id)
+                                                {{ $isExternalGoogleEvent ? 'Desvincular de MTX (Evento Externo)' : 'Eliminar de Google Calendar' }}
+                                            @else
+                                                Calendario de Google
+                                            @endif
+                                        </span>
+                                        <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">
+                                            @if($activity->google_calendar_event_id)
+                                                {{ $isExternalGoogleEvent ? 'Retirar vínculo local sin alterar el evento original' : 'Eliminar cita del calendario remoto' }}
+                                            @else
+                                                Publicar / Sincronizar evento con Google Calendar
+                                            @endif
+                                        </span>
                                     </div>
                                 </button>
                             </form>
@@ -349,7 +364,9 @@
                                         </div>
                                         <div class="flex flex-col">
                                             <span class="font-bold text-gray-900 dark:text-white text-sm">Desconectar Calendario</span>
-                                            <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Romper el vínculo con Google Calendar</span>
+                                            <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">
+                                                {{ $isExternalGoogleEvent ? 'Retirar vínculo local sin alterar el evento original' : 'Romper el vínculo con Google Calendar' }}
+                                            </span>
                                         </div>
                                     </button>
                                 </form>

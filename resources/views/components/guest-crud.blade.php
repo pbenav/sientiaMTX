@@ -84,10 +84,16 @@
                 <input type="hidden" :name="'metadata[guests][' + index + '][name]'" :value="guest.name">
                 <input type="hidden" :name="'metadata[guests][' + index + '][email]'" :value="guest.email">
                 <input type="hidden" :name="'metadata[guests][' + index + '][notify]'" :value="guest.notify ? 1 : 0">
+                <template x-if="guest.response_status">
+                    <input type="hidden" :name="'metadata[guests][' + index + '][response_status]'" :value="guest.response_status">
+                </template>
             </div>
         </template>
     </div>
     
+    <!-- Sentinel input: si la lista queda vacía, envía valor vacío para vaciar metadata.guests en el servidor -->
+    <input type="hidden" name="metadata[guests]" value="" x-bind:disabled="guests.length > 0">
+
     <div x-show="guests.length === 0" class="text-center p-6 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl bg-gray-50/50 dark:bg-gray-800/30" x-cloak>
         <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">No hay invitados externos añadidos</p>
     </div>

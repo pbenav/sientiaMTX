@@ -35,6 +35,16 @@ class CheckUrgentTasks extends Command
 
         // 0. Procesar prioridades automáticas
         $this->info('Actualizando prioridades automáticas...');
+        Activity::where('auto_priority', true)
+            ->where(function ($q) {
+                $q->whereNotNull('due_date')->orWhereNotNull('scheduled_date');
+            })
+            ->chunk(100, function ($activities) {
+                foreach ($activities as $activity) {
+                    $activity->updateAutoPriority();
+                }
+            });
+
         Task::where('auto_priority', true)
             ->whereIn('status', ['pending', 'in_progress'])
             ->whereNotNull('due_date')

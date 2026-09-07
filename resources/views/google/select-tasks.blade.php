@@ -164,6 +164,12 @@
                                                     Google Meet
                                                 </a>
                                             @endif
+                                            @if(!empty($event['attendees_count']))
+                                                <span class="inline-flex items-center gap-1 text-[10px] font-medium text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 px-2 py-0.5 rounded-md" title="{{ $event['attendees_count'] }} participantes registrados">
+                                                    <svg class="w-3 h-3 text-violet-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                                                    {{ $event['attendees_count'] }} {{ $event['attendees_count'] === 1 ? 'asistente' : 'asistentes' }}
+                                                </span>
+                                            @endif
                                         </div>
                                     @endif
 

@@ -279,6 +279,9 @@ Route::middleware('auth')->group(function () {
 
         // Private Notes
         Route::post('activities/{activity}/private-notes', [\App\Http\Controllers\ActivityNoteController::class, 'updatePrivateNote'])->name('teams.activities.private-notes.update');
+
+        // Reenvío de invitaciones a reuniones
+        Route::post('activities/{activity}/resend-meeting-invitation', [\App\Http\Controllers\ActivityController::class, 'resendMeetingInvitation'])->name('teams.activities.resend_meeting_invitation');
     });
 
     // Legacy Task routes - all redirect to Activity equivalents

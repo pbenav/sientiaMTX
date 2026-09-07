@@ -195,7 +195,23 @@ class GoogleController extends Controller
             $end = $event->getEnd()->getDateTime() ?: $event->getEnd()->getDate();
             $title = $event->getSummary() ?: 'Evento sin título';
             $location = $event->getLocation();
+            
+            // Extraer enlace de Google Meet (hangoutLink o conferenceData)
             $hangoutLink = $event->getHangoutLink();
+            if (!$hangoutLink && $event->getConferenceData()) {
+                $entryPoints = $event->getConferenceData()->getEntryPoints();
+                if (!empty($entryPoints)) {
+                    foreach ($entryPoints as $ep) {
+                        if ($ep->getEntryPointType() === 'video' || $ep->getUri()) {
+                            $hangoutLink = $ep->getUri();
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Attendees count
+            $attendeesCount = count($event->getAttendees() ?: []);
 
             // Calculate duration in minutes if datetime is present
             $durationMinutes = 60;
@@ -224,6 +240,7 @@ class GoogleController extends Controller
                 'end'                   => $end,
                 'location'              => $location,
                 'hangout_link'          => $hangoutLink,
+                'attendees_count'       => $attendeesCount,
                 'duration_minutes'      => $durationMinutes,
                 'exists'                => $exists,
                 'type'                  => 'calendar',
@@ -348,7 +365,21 @@ class GoogleController extends Controller
 
                     if (!$existing) {
                         $location = $event->getLocation();
-                        $hangoutLink = $event->getHangoutLink();
+
+                        // Extraer enlace de Google Meet (hangoutLink o conferenceData)
+                        $meetUri = $event->getHangoutLink();
+                        if (!$meetUri && $event->getConferenceData()) {
+                            $entryPoints = $event->getConferenceData()->getEntryPoints();
+                            if (!empty($entryPoints)) {
+                                foreach ($entryPoints as $ep) {
+                                    if ($ep->getEntryPointType() === 'video' || $ep->getUri()) {
+                                        $meetUri = $ep->getUri();
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
                         $durationMinutes = 60;
                         if ($event->getStart()->getDateTime() && $event->getEnd()->getDateTime()) {
                             $startTs = strtotime($event->getStart()->getDateTime());
@@ -360,12 +391,23 @@ class GoogleController extends Controller
                         $metadata = [];
                         $statusValue = 'pending';
 
+                        $hasPhysicalLocation = !empty($location) && !filter_var($location, FILTER_VALIDATE_URL);
+
                         if ($chosenType === 'meeting') {
                             $statusValue = 'scheduled';
+                            $modality = 'remote';
+                            if ($meetUri && $hasPhysicalLocation) {
+                                $modality = 'hybrid';
+                            } elseif ($hasPhysicalLocation) {
+                                $modality = 'presential';
+                            }
+
                             $metadata = [
-                                'location'         => $location ?: ($hangoutLink ?: null),
+                                'location'         => $location ?: ($meetUri ?: null),
+                                'join_url'         => $meetUri ?: (filter_var($location, FILTER_VALIDATE_URL) ? $location : null),
+                                'google_meet_url'  => $meetUri ?: null,
                                 'duration_minutes' => $durationMinutes,
-                                'modality'         => $hangoutLink ? 'remote' : ($location ? 'presential' : 'remote'),
+                                'modality'         => $modality,
                             ];
                         } elseif ($chosenType === 'task') {
                             $statusValue = 'pending';
@@ -385,6 +427,49 @@ class GoogleController extends Controller
                             ];
                         } elseif ($chosenType === 'document') {
                             $statusValue = 'draft';
+                        }
+
+                        // Detectar organizador del evento en Google Calendar
+                        $organizer = $event->getOrganizer();
+                        $isOrganizer = $organizer ? ($organizer->getSelf() || strcasecmp($organizer->getEmail() ?? '', $user->email) === 0) : true;
+                        $organizerEmail = $organizer ? $organizer->getEmail() : null;
+                        $organizerName = $organizer ? ($organizer->getDisplayName() ?: $organizer->getEmail()) : null;
+
+                        $metadata['google_is_organizer']   = $isOrganizer;
+                        $metadata['google_organizer_email'] = $organizerEmail;
+                        $metadata['google_organizer_name']  = $organizerName;
+                        $metadata['is_external_event']      = !$isOrganizer;
+
+                        if ($event->getHtmlLink()) {
+                            $metadata['google_html_link'] = $event->getHtmlLink();
+                        }
+
+                        // Recopilar asistentes: miembros del equipo como internos, terceros como externos
+                        $team = \App\Models\Team::find($teamId);
+                        $teamMembers = $team ? $team->members()->get() : collect();
+
+                        $guests = [];
+                        $internalMemberIds = [];
+                        $rawAttendees = $event->getAttendees() ?: [];
+                        foreach ($rawAttendees as $att) {
+                            $attEmail = $att->getEmail();
+                            // Omitir al propio usuario actual
+                            if ($attEmail && strcasecmp($attEmail, $user->email) !== 0) {
+                                $matchedMember = $teamMembers->first(fn($m) => strcasecmp($m->email, $attEmail) === 0);
+                                if ($matchedMember) {
+                                    $internalMemberIds[] = $matchedMember->id;
+                                } else {
+                                    $guests[] = [
+                                        'name'            => $att->getDisplayName() ?: explode('@', $attEmail)[0],
+                                        'email'           => $attEmail,
+                                        'notify'          => false,
+                                        'response_status' => $att->getResponseStatus() ?: 'needsAction',
+                                    ];
+                                }
+                            }
+                        }
+                        if (!empty($guests)) {
+                            $metadata['guests'] = $guests;
                         }
 
                         $activity = \App\Models\Activity::create([
@@ -413,6 +498,19 @@ class GoogleController extends Controller
                             'assigned_by_id' => $user->id,
                             'assigned_at'    => now(),
                         ]);
+
+                        // Asignar también a miembros del equipo que asistirán a la reunión
+                        foreach ($internalMemberIds as $memberId) {
+                            if ($memberId !== $user->id) {
+                                \App\Models\ActivityAssignment::firstOrCreate([
+                                    'activity_id' => $activity->id,
+                                    'user_id'     => $memberId,
+                                ], [
+                                    'assigned_by_id' => $user->id,
+                                    'assigned_at'    => now(),
+                                ]);
+                            }
+                        }
 
                         $syncCount++;
                     }
@@ -582,7 +680,10 @@ class GoogleController extends Controller
                 }
             }
 
-            if ($task->google_calendar_event_id) {
+            $isExternalEvent = data_get($task->metadata, 'google_is_organizer') === false 
+                || data_get($task->metadata, 'is_external_event') === true;
+
+            if ($task->google_calendar_event_id && !$isExternalEvent) {
                 try {
                     $this->googleService->deleteEvent($task->google_calendar_event_id, $task->google_calendar_id ?? 'primary');
                 } catch (\Exception $e) {
@@ -590,6 +691,9 @@ class GoogleController extends Controller
                 }
             }
         }
+
+        $isExternalEvent = data_get($task->metadata, 'google_is_organizer') === false 
+            || data_get($task->metadata, 'is_external_event') === true;
 
         $task->update([
             'google_task_id' => null,
@@ -599,7 +703,9 @@ class GoogleController extends Controller
             'google_synced_at' => null
         ]);
 
-        return redirect()->back()->with('success', 'Actividad desconectada y eliminada de Google correctamente.');
+        return redirect()->back()->with('success', $isExternalEvent 
+            ? 'Vínculo local con Google Calendar retirado. El evento original no ha sido alterado.' 
+            : 'Actividad desconectada y eliminada de Google correctamente.');
     }
 
     /**
@@ -805,8 +911,21 @@ class GoogleController extends Controller
             return redirect()->route('google.auth', ['team_id' => $team->id])->with('info', __('google.connect_account_first'));
         }
 
+        $isExternalEvent = data_get($task->metadata, 'google_is_organizer') === false 
+            || data_get($task->metadata, 'is_external_event') === true;
+
         // Toggle: If already exported, delete it
         if ($task->google_calendar_event_id) {
+            // Protección: Si el usuario NO es el organizador original en Google Calendar,
+            // NUNCA debemos borrar el evento en Google para no afectar al organizador y al resto de participantes.
+            if ($isExternalEvent) {
+                $task->update([
+                    'google_calendar_event_id' => null,
+                    'google_calendar_id' => null,
+                ]);
+                return back()->with('info', __('Vínculo local retirado. El evento original de Google Calendar no ha sido alterado porque pertenecía a otro organizador.'));
+            }
+
             try {
                 if ($this->googleService->deleteEvent($task->google_calendar_event_id)) {
                     $task->update([
@@ -846,6 +965,16 @@ class GoogleController extends Controller
         $description .= __('google.details_team') . ": " . $team->name . "\n";
         $description .= __('google.details_link') . ": " . route('teams.tasks.show', [$team, $task]);
 
+        $agenda = data_get($task->metadata, 'agenda');
+        if (!empty($agenda)) {
+            $description .= "\n\n--- AGENDA DE LA REUNIÓN ---\n" . trim($agenda);
+        }
+
+        $invitationMessage = data_get($task->metadata, 'invitation_message');
+        if (!empty($invitationMessage)) {
+            $description .= "\n\n--- MENSAJE DEL ORGANIZADOR ---\n" . trim($invitationMessage);
+        }
+
         $data = [
             'summary' => $task->title,
             'description' => trim($description),
@@ -859,21 +988,49 @@ class GoogleController extends Controller
             ],
         ];
 
-        // Recopilar asistentes para enviar invitaciones de Google Calendar
+        $location = data_get($task->metadata, 'location');
+        if (!empty($location)) {
+            $data['location'] = $location;
+        }
+
+        $optParams = ['sendUpdates' => 'all'];
+
+        // Si es reunión o modalidad remota/híbrida, solicitar a Google Calendar la generación de sala Google Meet
+        $isMeetingOrRemote = $task->type === 'meeting' 
+            || in_array(data_get($task->metadata, 'modality'), ['remote', 'hybrid'])
+            || (!empty($location) && str_contains($location, 'meet.google.com'));
+
+        if ($isMeetingOrRemote) {
+            $data['conferenceData'] = [
+                'createRequest' => [
+                    'requestId'             => 'mtx-meet-' . $task->id . '-' . uniqid(),
+                    'conferenceSolutionKey' => ['type' => 'hangoutsMeet'],
+                ],
+            ];
+            $optParams['conferenceDataVersion'] = 1;
+        }
+
+        // Recopilar asistentes para enviar convocatorias de Google Calendar
         $attendees = [];
         
         // Asignados internos
         foreach ($task->assignedTo as $member) {
-            if ($member->email !== $user->email) { // El user actual es el organizador por defecto
-                $attendees[] = ['email' => $member->email];
+            if (strcasecmp($member->email, $user->email) !== 0) { // El user actual es el organizador por defecto
+                $attendees[] = [
+                    'email'       => $member->email,
+                    'displayName' => $member->name,
+                ];
             }
         }
         
         // Invitados externos
         $guests = data_get($task->metadata, 'guests', []);
         foreach ($guests as $guest) {
-            if (!empty($guest['email'])) {
-                $attendees[] = ['email' => $guest['email']];
+            if (!empty($guest['email']) && strcasecmp($guest['email'], $user->email) !== 0) {
+                $attendees[] = [
+                    'email'       => $guest['email'],
+                    'displayName' => $guest['name'] ?? null,
+                ];
             }
         }
 
@@ -882,14 +1039,54 @@ class GoogleController extends Controller
         }
 
         try {
-            // sendUpdates = 'all' hace que Google envíe un email nativo a los attendees
-            $eventId = $this->googleService->createEvent($data, 'primary', ['sendUpdates' => 'all']);
-            if ($eventId) {
+            // sendUpdates = 'all' hace que Google envíe un email nativo a todos los participantes
+            // conferenceDataVersion = 1 genera el enlace de Google Meet
+            $createdEvent = $this->googleService->createCalendarEvent($data, 'primary', $optParams);
+            if ($createdEvent && $createdEvent->getId()) {
+                $meta = $task->metadata ?? [];
+                $meta['google_is_organizer'] = true;
+                $meta['is_external_event'] = false;
+                $meta['google_organizer_email'] = $user->email;
+                $meta['google_organizer_name'] = $user->name;
+
+                // Extraer el enlace de Google Meet generado si aplica
+                $generatedMeetUrl = $createdEvent->getHangoutLink();
+                if (!$generatedMeetUrl && $createdEvent->getConferenceData()) {
+                    $entryPoints = $createdEvent->getConferenceData()->getEntryPoints();
+                    if (!empty($entryPoints)) {
+                        foreach ($entryPoints as $ep) {
+                            if ($ep->getEntryPointType() === 'video' || $ep->getUri()) {
+                                $generatedMeetUrl = $ep->getUri();
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if ($generatedMeetUrl) {
+                    $meta['google_meet_url'] = $generatedMeetUrl;
+                    $meta['join_url'] = $generatedMeetUrl;
+                    if (empty($meta['location']) || $meta['location'] === $generatedMeetUrl) {
+                        $meta['location'] = $generatedMeetUrl;
+                    }
+                }
+
+                if ($createdEvent->getHtmlLink()) {
+                    $meta['google_html_link'] = $createdEvent->getHtmlLink();
+                }
+
                 $task->update([
-                    'google_calendar_event_id' => $eventId,
-                    'google_calendar_id' => 'primary',
+                    'google_calendar_event_id' => $createdEvent->getId(),
+                    'google_calendar_id'       => 'primary',
+                    'google_synced_at'         => now(),
+                    'metadata'                 => $meta,
                 ]);
-                return back()->with('success', __('google.calendar_export_success'));
+
+                $successMsg = $generatedMeetUrl
+                    ? 'Reunión exportada a Google Calendar con sala Google Meet y convocatorias enviadas a los asistentes.'
+                    : __('google.calendar_export_success');
+
+                return back()->with('success', $successMsg);
             }
             return back()->with('error', __('google.calendar_export_failed'));
         } catch (\Exception $e) {

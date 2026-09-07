@@ -609,7 +609,7 @@ class TaskActionController extends Controller
                 'success' => true,
                 'auto_priority' => $task->auto_priority,
                 'priority' => $task->priority,
-                'priority_label' => __('tasks.priorities.' . $task->priority)
+                'priority_label' => __('activities.priorities.' . $task->priority)
             ]);
         } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
             \Log::error("Toggle AutoPriority AUTH FAILED: " . $e->getMessage());

@@ -611,8 +611,8 @@ class Activity extends Model
      * Actualiza la prioridad de forma automática basándose en el tiempo restante.
      *
      * Reglas:
-     * - Si no tiene auto_priority habilitado, due_date, o ya está completada: no hace nada
-     * - Si la fecha de vencimiento ya pasó: priority = 'critical'
+     * - Si no tiene auto_priority habilitado, fecha objetivo, o ya está completada: no hace nada
+     * - Si la fecha ya pasó: priority = 'critical'
      * - Si queda menos del 10% del tiempo: 'critical'
      * - Si queda menos del 25%: 'high'
      * - Si queda menos del 50%: 'medium'
@@ -621,19 +621,26 @@ class Activity extends Model
      */
     public function updateAutoPriority()
     {
-        if (!$this->auto_priority || !$this->due_date || $this->status === 'completed') {
+        $targetDate = $this->type === 'meeting'
+            ? ($this->scheduled_date ?: $this->due_date)
+            : ($this->due_date ?: $this->scheduled_date);
+
+        if (!$this->auto_priority || !$targetDate || $this->isCompleted()) {
             return;
         }
 
-        $start = $this->scheduled_date ?: $this->created_at;
         $now = now();
-        $due = $this->due_date;
+        $due = $targetDate;
 
         if ($now->gt($due)) {
             $this->priority = 'critical';
             $this->save();
             return;
         }
+
+        $start = ($this->scheduled_date && $this->due_date && $this->scheduled_date->lt($this->due_date) && $this->type !== 'meeting')
+            ? $this->scheduled_date
+            : ($this->created_at ?: $now);
 
         $totalDuration = $start->diffInSeconds($due);
         if ($totalDuration <= 0) return;

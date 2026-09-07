@@ -59,6 +59,16 @@ class AppServiceProvider extends ServiceProvider
             $scheme = 'http';
         }
 
+        // Debug: log the scheme decision
+        \Log::channel('daily')->info('AppServiceProvider boot', [
+            'host' => $host,
+            'isIpAddress' => $isIpAddress,
+            'isLocalhost' => $isLocalhost,
+            'scheme' => $scheme,
+            'FORCE_HTTPS' => env('FORCE_HTTPS'),
+            'forwarded_host' => $forwardedHost,
+        ]);
+
         if ($isIpAddress) {
             $appUrl = config('app.url');
             if (!empty($appUrl) && $appUrl !== 'http://localhost' && $appUrl !== 'http://localhost:8000') {
@@ -66,10 +76,13 @@ class AppServiceProvider extends ServiceProvider
             }
         } else {
             // Forzar Root URL al dominio actual de la petición para soportar alias de dominios
-            URL::forceRootUrl($scheme . '://' . $host);
+            $port = request()->getPort();
+            $rootUrl = $scheme . '://' . $host . ($port && (($scheme === 'http' && $port != 80) || ($scheme === 'https' && $port != 443)) ? ':' . $port : '');
+            URL::forceRootUrl($rootUrl);
         }
 
         if ($scheme === 'https') {
+            // \Log::info('forceScheme https', ['host' => $host, 'isLocalhost' => $isLocalhost, 'isIpAddress' => $isIpAddress, 'FORCE_HTTPS' => env('FORCE_HTTPS')]);
             URL::forceScheme('https');
         }
 

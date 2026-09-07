@@ -40,9 +40,32 @@
                 <input type="hidden" name="type" value="{{ $activity->type }}">
                 <input type="hidden" name="tab" :value="activeTab">
 
-                
-    
-                <div>
+                @php
+                    $isAnotherUserCreator = $activity->created_by_id && $activity->created_by_id !== auth()->id();
+                    $isExternalEvent = data_get($activity->metadata, 'is_external_event', false) 
+                        || data_get($activity->metadata, 'google_is_organizer') === false;
+                    $originalOwnerName = $isExternalEvent 
+                        ? (data_get($activity->metadata, 'google_organizer_name') ?: data_get($activity->metadata, 'google_organizer_email', 'un organizador externo'))
+                        : ($activity->creator?->name ?? 'otro usuario');
+                @endphp
+
+                @if ($isAnotherUserCreator || $isExternalEvent)
+                    <div class="mb-6 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 rounded-2xl p-4 flex items-center gap-3">
+                        <div class="shrink-0 p-2 bg-amber-100 dark:bg-amber-800/40 text-amber-600 dark:text-amber-300 rounded-xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-bold text-amber-900 dark:text-amber-200">
+                                {{ $isExternalEvent ? 'Evento de organizador externo (Google Calendar)' : 'Actividad programada por otra persona' }}
+                            </p>
+                            <p class="text-[11px] text-amber-700 dark:text-amber-300/80 mt-0.5">
+                                Esta actividad fue convocada originalmente por <strong>{{ $originalOwnerName }}</strong>. Al guardar cambios podrás elegir entre modificar la original o <strong>crear una actividad paralela</strong> para la misma fecha y hora sin alterar la de otra persona.
+                            </p>
+                        </div>
+                    </div>
+                @endif
                     <!-- Tabs Nav -->
                     <div class="flex gap-4 border-b border-gray-200 dark:border-gray-800 pb-2 mb-6 overflow-x-auto">
                         <button type="button" @click="activeTab = 'general'" :class="activeTab === 'general' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">General</button>
@@ -227,20 +250,20 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Modalidad</label>
-                                <select name="modality" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none cursor-pointer">
-                                    <option value="remote" {{ old('modality', data_get($activity->metadata, 'modality')) == 'remote' ? 'selected' : '' }}>💻 En remoto / Online</option>
-                                    <option value="presential" {{ old('modality', data_get($activity->metadata, 'modality', 'presential')) == 'presential' ? 'selected' : '' }}>🏢 Presencial</option>
-                                    <option value="hybrid" {{ old('modality', data_get($activity->metadata, 'modality')) == 'hybrid' ? 'selected' : '' }}>🤝 Híbrido</option>
+                                <select name="metadata[modality]" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none cursor-pointer">
+                                    <option value="remote" {{ old('metadata.modality', data_get($activity->metadata, 'modality')) == 'remote' ? 'selected' : '' }}>💻 En remoto / Online</option>
+                                    <option value="presential" {{ old('metadata.modality', data_get($activity->metadata, 'modality', 'presential')) == 'presential' ? 'selected' : '' }}>🏢 Presencial</option>
+                                    <option value="hybrid" {{ old('metadata.modality', data_get($activity->metadata, 'modality')) == 'hybrid' ? 'selected' : '' }}>🤝 Híbrido</option>
                                 </select>
                             </div>
 
                             <div>
                                 <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Duración (Minutos)</label>
-                                <input type="number" name="duration_minutes" value="{{ old('duration_minutes', data_get($activity->metadata, 'duration_minutes', 60)) }}" min="1" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none">
+                                <input type="number" name="metadata[duration_minutes]" value="{{ old('metadata.duration_minutes', data_get($activity->metadata, 'duration_minutes', 60)) }}" min="1" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none">
                             </div>
 
                             <div class="md:col-span-2" x-data="{
-                                link: '{{ old('location', data_get($activity->metadata, 'location')) }}',
+                                link: '{{ old('metadata.location', data_get($activity->metadata, 'location')) }}',
                                 generateJitsi() {
                                     this.link = 'https://meet.jit.si/SientiaMTX-' + Math.random().toString(36).substring(2, 12);
                                 },
@@ -292,7 +315,7 @@
                                         </button>
                                     </div>
                                 </div>
-                                <input type="text" name="location" x-model="link" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none" placeholder="Ej. Sala de juntas principal o Enlace de Google Meet/Teams">
+                                <input type="text" name="metadata[location]" x-model="link" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none" placeholder="Ej. Sala de juntas principal o Enlace de Google Meet/Teams">
                             </div>
                             <div class="md:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700">
                                 <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Invitados Externos a la Reunión</label>
@@ -1321,9 +1344,18 @@
         
                 </div>
 <!-- Botones de Acción -->
-                <div class="flex justify-end gap-3 pt-6 border-t border-gray-100 dark:border-gray-800 order-[20]">
+                <div class="flex flex-wrap items-center justify-end gap-3 pt-6 border-t border-gray-100 dark:border-gray-800 order-[20]">
                     <a href="{{ route('teams.activities.show', [$team, $activity]) }}"
-                        class="text-sm text-gray-500 hover:text-gray-900 px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 transition-all font-medium">Cancelar</a>
+                        class="text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 transition-all font-medium">Cancelar</a>
+                    
+                    @if ($isAnotherUserCreator || $isExternalEvent)
+                        <button type="button" id="btn-create-parallel"
+                            class="text-sm bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-lg hover:shadow-emerald-500/25 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
+                            Crear como Paralela
+                        </button>
+                    @endif
+
                     <button type="submit"
                         class="text-sm bg-violet-600 hover:bg-violet-500 text-white px-8 py-2.5 rounded-xl font-bold transition-all shadow-lg hover:shadow-violet-500/25">
                         Guardar Cambios
@@ -1607,6 +1639,84 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            // --- Confirmación Consciente para Actividades Ajenas o Externas ---
+            const editForm = document.getElementById('edit-activity-form');
+            if (editForm) {
+                const isAnotherUser = @json($isAnotherUserCreator);
+                const isExternal = @json($isExternalEvent);
+                const ownerName = @json($originalOwnerName);
+
+                if (isAnotherUser || isExternal) {
+                    let userConfirmed = false;
+
+                    const submitAsParallel = () => {
+                        let parallelInput = document.createElement('input');
+                        parallelInput.type = 'hidden';
+                        parallelInput.name = 'create_as_parallel';
+                        parallelInput.value = '1';
+                        editForm.appendChild(parallelInput);
+                        userConfirmed = true;
+                        editForm.submit();
+                    };
+
+                    const btnParallel = document.getElementById('btn-create-parallel');
+                    if (btnParallel) {
+                        btnParallel.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            submitAsParallel();
+                        });
+                    }
+
+                    editForm.addEventListener('submit', function(e) {
+                        if (userConfirmed) return;
+                        e.preventDefault();
+
+                        const isDark = document.documentElement.classList.contains('dark');
+                        Swal.fire({
+                            title: '⚠️ ¿Modificar actividad ajena?',
+                            html: `
+                                <div class="text-left mt-2 text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                                    <p class="mb-3">
+                                        Esta actividad fue programada originalmente por <strong class="text-gray-900 dark:text-white font-black">${ownerName}</strong>.
+                                    </p>
+                                    <p class="text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 p-3 rounded-2xl border border-amber-200 dark:border-amber-800 leading-normal mb-3">
+                                        <strong>Atención:</strong> Si modificas la original, alterarás el evento o tarea que pertenece a otra persona.
+                                    </p>
+                                    <p class="text-xs text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 p-3 rounded-2xl border border-emerald-200 dark:border-emerald-800 leading-normal">
+                                        <strong>Opción paralela:</strong> Puedes <strong>crear una actividad paralela</strong> para la misma fecha y hora con los datos actuales, de tu propiedad y sin modificar la original.
+                                    </p>
+                                </div>
+                            `,
+                            icon: 'warning',
+                            showCancelButton: true,
+                            showDenyButton: true,
+                            confirmButtonText: 'Modificar original',
+                            denyButtonText: 'Crear actividad paralela',
+                            cancelButtonText: 'Cancelar',
+                            confirmButtonColor: '#7c3aed',
+                            denyButtonColor: '#059669',
+                            cancelButtonColor: '#6b7280',
+                            background: isDark ? '#0f172a' : '#ffffff',
+                            color: isDark ? '#f1f5f9' : '#1e293b',
+                            customClass: {
+                                popup: 'rounded-[2rem]',
+                                actions: 'flex flex-wrap gap-2 justify-center',
+                                confirmButton: 'rounded-xl font-black uppercase text-xs tracking-wider px-4 py-3',
+                                denyButton: 'rounded-xl font-black uppercase text-xs tracking-wider px-4 py-3 bg-emerald-600 hover:bg-emerald-700',
+                                cancelButton: 'rounded-xl font-black uppercase text-xs tracking-wider px-4 py-3'
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                userConfirmed = true;
+                                editForm.submit();
+                            } else if (result.isDenied) {
+                                submitAsParallel();
+                            }
+                        });
+                    });
+                }
+            }
+
             // --- Eisenhower Matrix Preview ---
             const quadrantData = {
                 1: { label: 'Urgente e Importante', description: 'Hacer de inmediato' },

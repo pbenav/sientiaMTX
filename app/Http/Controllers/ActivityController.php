@@ -349,8 +349,14 @@ class ActivityController extends Controller
             return redirect()->route('teams.dashboard', $team)->with('warning', __('activities.not_found'));
         }
 
-        if (auth()->user()->cannot('update', $activity)) {
+        $isParallel = $request->boolean('create_as_parallel');
+
+        if (!$isParallel && auth()->user()->cannot('update', $activity)) {
             abort(403, 'No tienes permiso para modificar esta actividad.');
+        }
+
+        if ($isParallel && auth()->user()->cannot('create', [Activity::class, $team])) {
+            abort(403, 'No tienes permiso para crear actividades en este equipo.');
         }
 
         $validated = $request->validated();
@@ -367,6 +373,49 @@ class ActivityController extends Controller
             if (!$team->hasAvailableQuota($totalUploadSize)) {
                 return back()->withInput()->withErrors(['attachments' => '⚠️ El equipo ha alcanzado su límite de almacenamiento.']);
             }
+        }
+
+        // Si se solicitó crear como actividad paralela:
+        if ($isParallel) {
+            if (isset($validated['metadata'])) {
+                unset(
+                    $validated['metadata']['is_external_event'],
+                    $validated['metadata']['google_is_organizer'],
+                    $validated['metadata']['google_organizer_email'],
+                    $validated['metadata']['google_organizer_name'],
+                    $validated['metadata']['google_calendar_event_id'],
+                    $validated['metadata']['google_calendar_id'],
+                    $validated['metadata']['google_html_link'],
+                    $validated['metadata']['google_synced_at'],
+                    $validated['metadata']['google_meet_url'],
+                    $validated['metadata']['google_task_id'],
+                    $validated['metadata']['google_task_list_id']
+                );
+            }
+
+            // Registrar referencia a la actividad de origen
+            $validated['metadata']['parallel_of_activity_id'] = $activity->id;
+
+            $type = $validated['type'] ?? $activity->type;
+
+            // Mantener fechas originales si no vinieron en la petición
+            if (empty($validated['scheduled_date']) && $activity->scheduled_date) {
+                $validated['scheduled_date'] = $activity->scheduled_date;
+            }
+            if (empty($validated['due_date']) && $activity->due_date) {
+                $validated['due_date'] = $activity->due_date;
+            }
+
+            $newActivity = $this->activityService->create(
+                $team,
+                $type,
+                $validated,
+                $request->file('attachments') ?? [],
+                $request->input('drive_attachments')
+            );
+
+            return redirect()->route('teams.activities.show', ['team' => $team, 'activity' => $newActivity])
+                ->with('success', '✨ Actividad paralela creada con éxito para la misma fecha y hora sin modificar la original.');
         }
 
         // Protección de integridad: si el acuerdo ya tiene firmas,
@@ -669,5 +718,62 @@ class ActivityController extends Controller
 
         return back()->with('success', 'Metadatos y configuraciones de la versión original restaurados correctamente.');
     }
+
+    /**
+     * Reenvía el correo de invitación a un invitado externo de una reunión.
+     *
+     * @param  Request  $request
+     * @param  Team     $team
+     * @param  Activity $activity
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function resendMeetingInvitation(Request $request, Team $team, Activity $activity)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        if ($activity->team_id !== $team->id) {
+            return response()->json(['error' => __('activities.not_found')], 404);
+        }
+
+        if (auth()->user()->cannot('update', $activity)) {
+            return response()->json(['error' => 'No tienes permiso para gestionar invitaciones en esta reunión.'], 403);
+        }
+
+        if ($activity->type !== 'meeting') {
+            return response()->json(['error' => 'Esta actividad no es de tipo reunión.'], 422);
+        }
+
+        $guestEmail = $request->email;
+        $meta = $activity->metadata ?? [];
+        $guests = $meta['guests'] ?? [];
+
+        $guest = collect($guests)->firstWhere('email', $guestEmail);
+
+        if (!$guest) {
+            return response()->json(['error' => 'Invitado no encontrado en la lista.'], 404);
+        }
+
+        try {
+            \Illuminate\Support\Facades\Mail::to($guestEmail)->send(
+                new \App\Mail\MeetingGuestInvitationMail(
+                    $activity,
+                    $guest['name'] ?? 'Invitado',
+                    auth()->user(),
+                    $meta['invitation_message'] ?? null
+                )
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => "Invitación enviada con éxito a {$guestEmail}."
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Failed to resend meeting invitation to {$guestEmail}: " . $e->getMessage());
+            return response()->json(['error' => 'No se pudo enviar el correo de invitación: ' . $e->getMessage()], 500);
+        }
+    }
 }
+
 

@@ -20,6 +20,10 @@ class StoreActivityRequest extends FormRequest
         $team = $this->route('team');
         $activity = $this->route('activity');
 
+        if ($this->boolean('create_as_parallel')) {
+            return auth()->user()->can('view', $team) && auth()->user()->can('create', [Activity::class, $team]);
+        }
+
         if ($activity) {
             return auth()->user()->can('view', $team) && auth()->user()->can('update', $activity);
         }
@@ -36,6 +40,7 @@ class StoreActivityRequest extends FormRequest
         $activityTypes = array_keys(Activity::SUBTYPES);
 
         $rules = [
+            'create_as_parallel' => 'nullable|boolean',
             'type' => [
                 $this->isMethod('post') ? 'required' : 'nullable',
                 'string',
