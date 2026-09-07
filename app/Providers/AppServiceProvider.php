@@ -48,33 +48,18 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(\App\Models\ActivityAttachment::class, \App\Policies\ActivityAttachmentPolicy::class);
 
         if (!$this->app->runningInConsole()) {
-            $rawHost = request()->header('Host');
-            if ($rawHost && str_contains($rawHost, ':')) {
-                $rawHost = trim(explode(':', $rawHost)[0]);
+            $forwardedHost = request()->header('X-Forwarded-Host');
+            $host = $forwardedHost ?: request()->getHost();
+            if ($host && str_contains($host, ',')) {
+                $host = trim(explode(',', $host)[0]);
+            }
+            if ($host && str_contains($host, ':')) {
+                $host = trim(explode(':', $host)[0]);
             }
 
-            $rawIsIp = filter_var($rawHost, FILTER_VALIDATE_IP) !== false;
-            $rawIsPrivateIp = $rawIsIp && filter_var($rawHost, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false;
-            $rawIsLocalhost = in_array($rawHost, ['localhost', '127.0.0.1', '::1']) || str_ends_with($rawHost, '.test') || str_ends_with($rawHost, '.local');
-
-            if ($rawIsLocalhost || $rawIsPrivateIp) {
-                $host = $rawHost;
-                $isIpAddress = $rawIsIp;
-                $isLocalhost = $rawIsLocalhost;
-                $isPrivateIp = $rawIsPrivateIp;
-            } else {
-                $forwardedHost = request()->header('X-Forwarded-Host');
-                $host = $forwardedHost ?: request()->getHost();
-                if ($host && str_contains($host, ',')) {
-                    $host = trim(explode(',', $host)[0]);
-                }
-                if ($host && str_contains($host, ':')) {
-                    $host = trim(explode(':', $host)[0]);
-                }
-                $isIpAddress = filter_var($host, FILTER_VALIDATE_IP) !== false;
-                $isLocalhost = in_array($host, ['localhost', '127.0.0.1', '::1']) || str_ends_with($host, '.test') || str_ends_with($host, '.local');
-                $isPrivateIp = $isIpAddress && filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false;
-            }
+            $isIpAddress = filter_var($host, FILTER_VALIDATE_IP) !== false;
+            $isLocalhost = in_array($host, ['localhost', '127.0.0.1', '::1']) || str_ends_with($host, '.test') || str_ends_with($host, '.local');
+            $isPrivateIp = $isIpAddress && filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false;
 
             // Si es entorno local, localhost o red privada (y no se fuerza HTTPS explícitamente), usamos HTTP salvo que la petición venga explícitamente por HTTPS.
             // En producción o dominios externos, forzamos HTTPS por defecto para evitar problemas con CSP y mixed-content.
