@@ -47,40 +47,60 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(\App\Models\Activity::class, \App\Policies\ActivityPolicy::class);
         Gate::policy(\App\Models\ActivityAttachment::class, \App\Policies\ActivityAttachmentPolicy::class);
 
-        $forwardedHost = request()->header('X-Forwarded-Host');
-        $host = $forwardedHost ?: request()->getHost();
-        $isIpAddress = filter_var($host, FILTER_VALIDATE_IP) !== false;
-        $isLocalhost = in_array($host, ['localhost', '127.0.0.1', '::1']) || str_ends_with($host, '.test') || str_ends_with($host, '.local');
-        $isPrivateIp = $isIpAddress && filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false;
-
-        // Si es entorno local, localhost o red privada (y no se fuerza HTTPS explícitamente), usamos HTTP.
-        // En producción o dominios externos, forzamos HTTPS por defecto para evitar problemas con CSP.
-        $scheme = 'https';
-        if (($isLocalhost || $isPrivateIp || $this->app->environment('local')) && !env('FORCE_HTTPS', false)) {
-            $scheme = 'http';
-        }
-
-
-        if ($isIpAddress) {
-            $appUrl = config('app.url');
-            if (!empty($appUrl) && $appUrl !== 'http://localhost' && $appUrl !== 'http://localhost:8000') {
-                URL::forceRootUrl($appUrl);
-            } else {
-                $port = request()->getPort();
-                $rootUrl = $scheme . '://' . $host . ($port && (($scheme === 'http' && $port != 80) || ($scheme === 'https' && $port != 443)) ? ':' . $port : '');
-                URL::forceRootUrl($rootUrl);
+        if (!$this->app->runningInConsole()) {
+            $rawHost = request()->header('Host');
+            if ($rawHost && str_contains($rawHost, ':')) {
+                $rawHost = trim(explode(':', $rawHost)[0]);
             }
-        } else {
-            // Forzar Root URL al dominio actual de la petición para soportar alias de dominios
-            $port = request()->getPort();
-            $rootUrl = $scheme . '://' . $host . ($port && (($scheme === 'http' && $port != 80) || ($scheme === 'https' && $port != 443)) ? ':' . $port : '');
-            URL::forceRootUrl($rootUrl);
-        }
 
-        if ($scheme === 'https') {
-            URL::forceScheme('https');
+            $rawIsIp = filter_var($rawHost, FILTER_VALIDATE_IP) !== false;
+            $rawIsPrivateIp = $rawIsIp && filter_var($rawHost, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false;
+            $rawIsLocalhost = in_array($rawHost, ['localhost', '127.0.0.1', '::1']) || str_ends_with($rawHost, '.test') || str_ends_with($rawHost, '.local');
+
+            if ($rawIsLocalhost || $rawIsPrivateIp) {
+                $host = $rawHost;
+                $isIpAddress = $rawIsIp;
+                $isLocalhost = $rawIsLocalhost;
+                $isPrivateIp = $rawIsPrivateIp;
+            } else {
+                $forwardedHost = request()->header('X-Forwarded-Host');
+                $host = $forwardedHost ?: request()->getHost();
+                if ($host && str_contains($host, ',')) {
+                    $host = trim(explode(',', $host)[0]);
+                }
+                if ($host && str_contains($host, ':')) {
+                    $host = trim(explode(':', $host)[0]);
+                }
+                $isIpAddress = filter_var($host, FILTER_VALIDATE_IP) !== false;
+                $isLocalhost = in_array($host, ['localhost', '127.0.0.1', '::1']) || str_ends_with($host, '.test') || str_ends_with($host, '.local');
+                $isPrivateIp = $isIpAddress && filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false;
+            }
+
+            // Si es entorno local, localhost o red privada (y no se fuerza HTTPS explícitamente), usamos HTTP salvo que la petición venga explícitamente por HTTPS.
+            // En producción o dominios externos, forzamos HTTPS por defecto para evitar problemas con CSP y mixed-content.
+            $scheme = 'https';
+            if (($isLocalhost || $isPrivateIp || $this->app->environment('local')) && !env('FORCE_HTTPS', false)) {
+                $scheme = (request()->header('X-Forwarded-Proto') === 'https' || request()->server('HTTP_X_FORWARDED_PROTO') === 'https' || request()->isSecure()) ? 'https' : 'http';
+            }
+
+            $forwardedPort = request()->header('X-Forwarded-Port');
+            $port = (int) ($forwardedPort ?: request()->getPort());
+            $portSuffix = '';
+            if ($port && !in_array($port, [80, 443], true)) {
+                $portSuffix = ':' . $port;
+            }
+
+            $rootUrl = $scheme . '://' . $host . $portSuffix;
+            URL::forceRootUrl($rootUrl);
+            URL::forceScheme($scheme);
         } else {
-            URL::forceScheme('http');
+            $appUrl = config('app.url');
+            if (!empty($appUrl)) {
+                URL::forceRootUrl($appUrl);
+                if (str_starts_with($appUrl, 'https://')) {
+                    URL::forceScheme('https');
+                }
+            }
         }
 
         // Aplicar zona horaria global configurada en el panel de administración
