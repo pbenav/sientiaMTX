@@ -47,13 +47,18 @@ All your tasks are automatically classified into four quadrants:
 
 ## 📑 3. Creating and Managing Tasks
 
+### Expedientes and Deep Privacy
+**Expedientes** act as container projects to group related tasks.
+- **Public Expedientes**: Available for any team member to collaborate.
+- **Private Expedientes (Deep Privacy)**: A private expediente is strictly confidential. **Only the creator and explicitly assigned members** can see it. Thanks to the *Deep Privacy* policy, not even Team Admins or Coordinators can browse private expedientes or tasks they do not participate in.
+
 ### Create a task
 
-1. Inside a team, click the **"+ New Task"** button.
+1. Inside a team or an Expediente, click the **"+ New Task"** button.
 2. Fill in: title, description, priority, and urgency.
 3. Choose **visibility**:
    - **Public**: The entire team will see it.
-   - **Private**: Only visible to you (the creator).
+   - **Private**: Only visible to the creator and assigned members. Preserves Deep Privacy regardless of administrative hierarchy.
 4. Assign a **deadline** to activate the reminder system.
 
 ### Task Statuses
@@ -78,14 +83,27 @@ The Team Forum allows for structured and deep communication:
 
 ## 📊 5. Views and Visualization
 
+SientiaMTX supports different types of activities (Tasks, Documents, Agreements, Reminders, Meetings), and each view is specialized in displaying only the information relevant to its purpose:
+
+### Activity List
+The traditional table format view.
+- **What it displays**: Depends on the active filter (by default, it usually shows only "Tasks"). You can toggle the dropdown selector in the top right corner to view Documents or Agreements.
+- **Ideal use**: Quick searches, comprehensive list reviews, and specific filtering.
+
 ### Eisenhower Board (Matrix)
-Main view for daily priority review.
+Main view for daily priority review. It is based exclusively on urgency and importance, so it does not require activities to have assigned dates.
+- **What it displays**: Tasks and Agreements.
+- **What it DOES NOT display**: Documents, Reminders, or Meetings (these items do not fit matrix-based prioritization).
 
 ### Kanban Board
-Visual management using columns with full **Drag & Drop** support.
+Visual management through status columns (Pending > In Progress > Completed) with full **Drag & Drop** support. It represents the work lifecycle.
+- **What it displays**: Tasks, Documents, and Agreements.
+- **What it DOES NOT display**: Reminders or Meetings (since they do not have a sustained multi-state lifecycle).
 
 ### Gantt Chart (Roadmap)
-Optimized temporal visualization. Task labels are visible even on short bars, allowing for a fluid reading of the schedule without needing to interact with each element.
+Optimized temporal visualization. Task labels are visible even on short bars, allowing for a smooth and fluid reading of the schedule without needing to interact with each element.
+- **⚠️ MANDATORY REQUIREMENT**: For any activity to appear in the Gantt chart, **it must have an assigned due date (`due_date`)**. If an activity is created without a date, the system cannot position it on the timeline and **it will not be shown** in this view.
+- **What it displays**: All types of activities (Tasks, Agreements, Documents, Reminders, Meetings), provided they have a date and are not completed.
 
 ### Active Network
 A real-time widget that shows which team members are connected, their working location, and if they have any active tasks at the moment (green/red indicator).

@@ -85,6 +85,11 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10M3 14h18M11 18h10M3 6h6" />
                     </svg>
                     <span class="truncate">{{ __('navigation.gantt') }}</span>
+                    <span class="inline-flex items-center text-gray-400 hover:text-violet-500 dark:hover:text-violet-400 transition-colors cursor-help ml-0.5" title="{{ __('tasks.gantt_due_date_requirement') }}">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </span>
                 </h1>
             </div>
             <div class="flex items-center gap-2 shrink-0">
@@ -352,7 +357,17 @@
             console.log("Gantt Data Loaded:", allTasks);
             
             if (allTasks.length === 0) {
-                document.getElementById('gantt-container').innerHTML = '<div class="p-20 text-center text-gray-500 font-bold">Sin tareas.</div>';
+                document.getElementById('gantt-container').innerHTML = `
+                    <div class="py-16 px-4 text-center max-w-md mx-auto flex flex-col items-center justify-center">
+                        <div class="w-12 h-12 mb-3 rounded-2xl bg-violet-50 dark:bg-violet-950/40 border border-violet-100 dark:border-violet-800/50 flex items-center justify-center text-violet-500 shadow-sm">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-sm font-bold text-gray-800 dark:text-gray-200 mb-1.5">{{ __('tasks.gantt_no_tasks') }}</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed max-w-sm">{{ __('tasks.gantt_due_date_requirement') }}</p>
+                    </div>
+                `;
                 return;
             }
 

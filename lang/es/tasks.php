@@ -160,6 +160,8 @@ return [
     'view_members' => 'Ver miembros',
     'eisenhower_matrix' => 'Matriz de Eisenhower',
     'view_gantt' => 'Ver Gantt',
+    'gantt_no_tasks' => 'Sin tareas en el cronograma',
+    'gantt_due_date_requirement' => 'Para que una actividad se proyecte en el diagrama de Gantt, debe tener asignada una fecha límite.',
     'dependency' => 'Dependencia (Actividad Padre)',
     'no_dependency' => 'Sin dependencia',
     'roadmap' => 'Hoja de Ruta',

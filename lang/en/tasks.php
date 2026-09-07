@@ -138,6 +138,8 @@ return [
     'view_members' => 'View Members',
     'eisenhower_matrix' => 'Eisenhower Matrix',
     'view_gantt' => 'View Gantt',
+    'gantt_no_tasks' => 'No tasks in the roadmap',
+    'gantt_due_date_requirement' => 'For an activity to appear on the Gantt chart, it must have an assigned due date.',
     'dependency' => 'Dependency (Parent Task)',
     'no_dependency' => 'No dependency',
     'roadmap' => 'Roadmap',
