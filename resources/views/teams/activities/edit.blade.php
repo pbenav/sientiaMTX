@@ -108,10 +108,6 @@
         </div>
     </div>
 
-    
-                    </div>
-        
-                    <div x-show="activeTab === 'general'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                         <!-- BLOCK: Descripción -->
     <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-2">
         <div class="absolute top-0 right-0 p-8 opacity-5">
@@ -143,10 +139,6 @@
         </div>
     </div>
 
-    
-                    </div>
-        
-                    <div x-show="activeTab === 'general'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                         <!-- BLOCK: Información Específica -->
     @if (in_array($activity->type, ['document', 'link', 'agreement', 'meeting']))
     <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-4">
@@ -316,9 +308,6 @@
         </div>
     </div>
     @endif
-    </div>
-
-    <div x-show="activeTab === 'general'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                         <!-- BLOCK: Nivel de Visibilidad -->
     <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-7">
         <div class="absolute top-0 right-0 p-8 opacity-5">
@@ -379,9 +368,6 @@
                     </div>
                 </div>
         </div>
-    </div>
-        
-                    <div x-show="activeTab === 'general'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                         <!-- BLOCK: Observaciones -->
     <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-5">
         <div class="absolute top-0 right-0 p-8 opacity-5">
@@ -536,10 +522,98 @@
                 <x-guest-crud :initialGuests="old('metadata.guests', data_get($activity->metadata, 'guests', []))" :initialMessage="old('metadata.invitation_message', data_get($activity->metadata, 'invitation_message', ''))" />
             </div>
         </div>
-    </div>
 
-    
+        <!-- BLOCK: Gamificación, Impacto y Bienestar -->
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-12">
+            <div class="absolute top-0 right-0 p-8 opacity-5">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            </div>
+            <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800 relative z-10">
+                <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-400 shadow-inner border border-amber-100/50 dark:border-amber-500/10 group-hover:scale-110 transition-transform duration-300">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
+                        Gamificación, Impacto y Bienestar
+                    </h3>
+                    <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Métricas humanas, resiliencia y esfuerzo mental</p>
+                </div>
+            </div>
+            <div class="space-y-8 relative z-10">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Columna 1: Impacto Humano y Gamificación -->
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">
+                                Impacto Social / Humano (Puntos)
+                            </label>
+                            <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-3">Valor externo generado para la ciudadanía</p>
+                            <input type="number" name="metadata[impact_human_metric]" value="{{ old('metadata.impact_human_metric', data_get($activity->metadata, 'impact_human_metric', 0)) }}" min="0" max="100" class="w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all shadow-inner">
+                        </div>
+                        
+                        <div class="flex flex-col gap-3">
+                            <label class="relative flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-violet-300 dark:hover:border-violet-500/50 transition-all group shadow-inner">
+                                <input type="checkbox" name="metadata[is_out_of_skill_tree]" value="1" {{ old('metadata.is_out_of_skill_tree', data_get($activity->metadata, 'is_out_of_skill_tree', false)) ? 'checked' : '' }} class="accent-violet-600 rounded w-5 h-5 focus:ring-violet-500/20">
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Fuera de mi Skill Tree</span>
+                                    <span class="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-0.5">+ Puntos de Resiliencia</span>
+                                </div>
+                            </label>
+                            
+                            <label class="relative flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-emerald-300 dark:hover:border-emerald-500/50 transition-all group shadow-inner">
+                                <input type="checkbox" name="metadata[is_backstage]" value="1" {{ old('metadata.is_backstage', data_get($activity->metadata, 'is_backstage', false)) ? 'checked' : '' }} class="accent-emerald-600 rounded w-5 h-5 focus:ring-emerald-500/20">
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Backstage / Preparación</span>
+                                    <span class="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-0.5">Visibiliza el esfuerzo invisible</span>
+                                </div>
+                            </label>
+                        </div>
                     </div>
+
+                    <!-- Columna 2: Skills -->
+                    <div x-data="{ selectedSkills: {{ json_encode(old('skills', $activity->skills->pluck('id')->toArray())) }} }">
+                        <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                            Árbol de Capacidades
+                        </label>
+                        <select name="skills[]" multiple class="w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all text-gray-900 dark:text-white h-64 resize-y shadow-inner">
+                            @foreach($skills as $skill)
+                                <option value="{{ $skill->id }}" :selected="selectedSkills.includes({{ $skill->id }})">
+                                    {{ $skill->name }} ({{ $skill->category }})
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-2 flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Mantén presionado Ctrl (o Cmd) para selección múltiple
+                        </p>
+                    </div>
+
+                    <!-- Columna 3: Carga Cognitiva -->
+                    <div x-data="{ load: {{ old('metadata.cognitive_load', data_get($activity->metadata, 'cognitive_load', 1)) }} }">
+                        <label class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center justify-between">
+                            <span>Carga Cognitiva (Drenaje de Energía)</span>
+                            <span :class="{
+                                'text-emerald-500': load <= 3,
+                                'text-blue-500': load > 3 && load <= 6,
+                                'text-amber-500': load > 6 && load <= 8,
+                                'text-red-500': load > 8
+                            }" class="font-black tabular-nums transition-colors text-lg" x-text="load"></span>
+                        </label>
+                        <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-3 -mt-3">Coste de esfuerzo interno y desgaste mental</p>
+                        <div class="relative pt-2">
+                            <input type="range" name="metadata[cognitive_load]" min="1" max="10" step="1" x-model="load"
+                                class="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-amber-500 shadow-inner">
+                            <div class="flex justify-between text-[10px] text-gray-400 mt-3 font-black uppercase tracking-tighter">
+                                <span>Baja (1)</span>
+                                <span>Media (5)</span>
+                                <span>Extrema (10)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
         
         
                     <div x-show="activeTab === 'planning'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
@@ -658,12 +732,6 @@
                     </div>
                 </div>
         </div>
-    </div>
-
-    
-                    </div>
-        
-                    <div x-show="activeTab === 'planning'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                         <!-- BLOCK: Fechas y Bloqueo -->
     <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-9">
         <div class="absolute top-0 right-0 p-8 opacity-5">
@@ -806,12 +874,6 @@
                     @endif
                 </div>
         </div>
-    </div>
-
-    
-                    </div>
-        
-                    <div x-show="activeTab === 'planning'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                         <!-- BLOCK: Autoprogramación -->
     <div id="recurrence-block" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-10">
         <div class="absolute top-0 right-0 p-8 opacity-5">
@@ -1127,105 +1189,6 @@
     
                     </div>
         
-                    <div x-show="activeTab === 'team'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
-                        <!-- BLOCK: Gamificación, Impacto y Bienestar -->
-    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-12">
-        <div class="absolute top-0 right-0 p-8 opacity-5">
-            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-        </div>
-        <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800 relative z-10">
-            <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-400 shadow-inner border border-amber-100/50 dark:border-amber-500/10 group-hover:scale-110 transition-transform duration-300">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-            </div>
-            <div>
-                <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
-                    Gamificación, Impacto y Bienestar
-                </h3>
-                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Métricas humanas, resiliencia y esfuerzo mental</p>
-            </div>
-        </div>
-        <div class="space-y-8 relative z-10">
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                
-                <!-- Columna 1: Impacto Humano y Gamificación -->
-                <div class="space-y-6">
-                    <div>
-                        <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">
-                            Impacto Social / Humano (Puntos)
-                        </label>
-                        <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-3">Valor externo generado para la ciudadanía</p>
-                        <input type="number" name="metadata[impact_human_metric]" value="{{ old('metadata.impact_human_metric', data_get($activity->metadata, 'impact_human_metric', 0)) }}" min="0" max="100" class="w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all shadow-inner">
-                    </div>
-                    
-                    <div class="flex flex-col gap-3">
-                        <label class="relative flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-violet-300 dark:hover:border-violet-500/50 transition-all group shadow-inner">
-                            <input type="checkbox" name="metadata[is_out_of_skill_tree]" value="1" {{ old('metadata.is_out_of_skill_tree', data_get($activity->metadata, 'is_out_of_skill_tree', false)) ? 'checked' : '' }} class="accent-violet-600 rounded w-5 h-5 focus:ring-violet-500/20">
-                            <div class="flex flex-col">
-                                <span class="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Fuera de mi Skill Tree</span>
-                                <span class="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-0.5">+ Puntos de Resiliencia</span>
-                            </div>
-                        </label>
-                        
-                        <label class="relative flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-emerald-300 dark:hover:border-emerald-500/50 transition-all group shadow-inner">
-                            <input type="checkbox" name="metadata[is_backstage]" value="1" {{ old('metadata.is_backstage', data_get($activity->metadata, 'is_backstage', false)) ? 'checked' : '' }} class="accent-emerald-600 rounded w-5 h-5 focus:ring-emerald-500/20">
-                            <div class="flex flex-col">
-                                <span class="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Backstage / Preparación</span>
-                                <span class="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-0.5">Visibiliza el esfuerzo invisible</span>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Columna 2: Skills -->
-                <div x-data="{ selectedSkills: {{ json_encode(old('skills', $activity->skills->pluck('id')->toArray())) }} }">
-                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
-                        Árbol de Capacidades
-                    </label>
-                    <select name="skills[]" multiple class="w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all text-gray-900 dark:text-white h-64 resize-y shadow-inner">
-                        @foreach($skills as $skill)
-                            <option value="{{ $skill->id }}" :selected="selectedSkills.includes({{ $skill->id }})">
-                                {{ $skill->name }} ({{ $skill->category }})
-                            </option>
-                        @endforeach
-                    </select>
-                    <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-2 flex items-center gap-1">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        Mantén presionado Ctrl (o Cmd) para selección múltiple
-                    </p>
-                </div>
-
-                <!-- Columna 3: Carga Cognitiva -->
-                <div x-data="{ load: {{ old('metadata.cognitive_load', data_get($activity->metadata, 'cognitive_load', 1)) }} }">
-                    <label class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center justify-between">
-                        <span>Carga Cognitiva (Drenaje de Energía)</span>
-                        <span :class="{
-                            'text-emerald-500': load <= 3,
-                            'text-blue-500': load > 3 && load <= 6,
-                            'text-amber-500': load > 6 && load <= 8,
-                            'text-red-500': load > 8
-                        }" class="font-black tabular-nums transition-colors text-lg" x-text="load"></span>
-                    </label>
-                    <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-3 -mt-3">Coste de esfuerzo interno y desgaste mental</p>
-                    <div class="relative pt-2">
-                        <input type="range" name="metadata[cognitive_load]" min="1" max="10" step="1" x-model="load"
-                            class="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-amber-500 shadow-inner">
-                        <div class="flex justify-between text-[10px] text-gray-400 mt-3 font-black uppercase tracking-tighter">
-                            <span>Baja (1)</span>
-                            <span>Media (5)</span>
-                            <span>Extrema (10)</span>
-                        </div>
-                    </div>
-                </div>
-                
-            </div>
-            
-        </div>
-    </div>
-
-    
-                    </div>
-        
                     <div x-show="activeTab === 'attachments'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                         <!-- BLOCK: Archivos Adjuntos -->
     <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-[13]">
@@ -1384,8 +1347,7 @@
     </div>
 
                     </div>
-        
-                </div>
+
 <!-- Botones de Acción -->
                 <div class="flex flex-wrap items-center justify-end gap-3 pt-6 border-t border-gray-100 dark:border-gray-800 order-[20]">
                     <a href="{{ route('teams.activities.show', [$team, $activity]) }}"
