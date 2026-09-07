@@ -29,8 +29,14 @@ class SecurityHeadersMiddleware
             // Referrer-Policy (M-06): Evita fuga de URLs y tokens a terceros
             $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
-            // Strict-Transport-Security (H-24): HSTS obligatorio por 1 año
-            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+            // Strict-Transport-Security (H-24): Solo en conexiones HTTPS de producción, nunca en localhost/desarrollo local
+            $host = $request->getHost();
+            $isLocal = in_array($host, ['localhost', '127.0.0.1', '::1']) || str_ends_with($host, '.test') || str_ends_with($host, '.local') || app()->environment('local');
+            if ($request->isSecure() && !$isLocal) {
+                $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+            } else {
+                $response->headers->remove('Strict-Transport-Security');
+            }
 
             $onlyOfficeUrl = rtrim(config('onlyoffice.url', 'https://office.sientia.com'), '/');
 
