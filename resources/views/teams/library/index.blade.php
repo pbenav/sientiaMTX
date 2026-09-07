@@ -151,7 +151,8 @@
                                         search: @js(request('q', '')),
                                         init() {
                                             $nextTick(() => {
-                                                const decoded = decodeURIComponent(escape(window.atob(this.content)));
+                                                const decodeB64 = (s) => { try { return new TextDecoder().decode(Uint8Array.from(atob(s), c => c.charCodeAt(0))); } catch(_) { try { return decodeURIComponent(escape(atob(s))); } catch(e) { return atob(s); } } };
+                                                const decoded = decodeB64(this.content);
                                                 let html = typeof marked !== 'undefined' ? marked.parse(decoded, {breaks: true, gfm: true}) : decoded;
                                                 this.$refs.descContainer.innerHTML = html;
                                                 if (this.search && this.search.trim() !== '') {
@@ -202,7 +203,8 @@
                                     search: @js(request('q', '')),
                                     init() {
                                         $nextTick(() => {
-                                            const decoded = decodeURIComponent(escape(window.atob(this.rawNotes)));
+                                            const decodeB64 = (s) => { try { return new TextDecoder().decode(Uint8Array.from(atob(s), c => c.charCodeAt(0))); } catch(_) { try { return decodeURIComponent(escape(atob(s))); } catch(e) { return atob(s); } } };
+                                            const decoded = decodeB64(this.rawNotes);
                                             let html = typeof marked !== 'undefined' ? marked.parse(decoded, {breaks: true, gfm: true}) : decoded;
                                             this.$refs.notesContainer.innerHTML = html;
                                             if (this.search && this.search.trim() !== '') {
@@ -348,7 +350,8 @@
                                             rawContent: `{{ base64_encode($chapter['content'] ?? '') }}`,
                                             decodedContent: '',
                                             init() {
-                                                this.decodedContent = decodeURIComponent(escape(window.atob(this.rawContent)));
+                                                const decodeB64 = (s) => { try { return new TextDecoder().decode(Uint8Array.from(atob(s), c => c.charCodeAt(0))); } catch(_) { try { return decodeURIComponent(escape(atob(s))); } catch(e) { return atob(s); } } };
+                                                this.decodedContent = decodeB64(this.rawContent);
                                                 if (this.search && this.search.trim() !== '' && this.isMatch) {
                                                     this.open = true;
                                                 }
