@@ -64,7 +64,7 @@
                                 placeholder="{{ __('google.search_placeholder') }}">
                         </div>
                     </div>
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-3 flex-wrap">
                         <div class="flex items-center gap-2">
                             <label for="filter-mode" class="text-[10px] font-bold uppercase text-gray-400">
                                 {{ __('google.filter_mode') }}:
@@ -74,6 +74,24 @@
                                 <option value="include">{{ __('google.filter_include') }}</option>
                                 <option value="exclude">{{ __('google.filter_exclude') }}</option>
                             </select>
+                        </div>
+                        <div class="h-4 w-px bg-gray-200 dark:bg-gray-700 mx-1"></div>
+                        <div class="flex items-center gap-1.5">
+                            <label for="bulk-type-select" class="text-[10px] font-bold uppercase text-gray-400 hidden sm:inline">
+                                Tipo:
+                            </label>
+                            <select id="bulk-type-select"
+                                class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-[11px] font-bold text-gray-700 dark:text-gray-300 focus:ring-violet-500 focus:border-violet-500 py-1 px-2 cursor-pointer">
+                                <option value="meeting">🎥 Reunión / Cita</option>
+                                <option value="task">📋 Tarea</option>
+                                <option value="reminder">🔔 Recordatorio</option>
+                                <option value="note">📝 Nota</option>
+                                <option value="document">📄 Documento</option>
+                            </select>
+                            <button type="button" id="apply-bulk-type"
+                                class="text-[10px] font-bold px-2.5 py-1 bg-violet-50 hover:bg-violet-100 dark:bg-violet-900/30 dark:hover:bg-violet-900/50 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-800/50 rounded-lg uppercase tracking-tighter transition-all">
+                                Aplicar
+                            </button>
                         </div>
                         <div class="h-4 w-px bg-gray-200 dark:bg-gray-700 mx-1"></div>
                         <button type="button" id="select-all"
@@ -91,8 +109,8 @@
                             data-title="{{ strtolower($event['title']) }}"
                             data-description="{{ strtolower($event['description'] ?? '') }}"
                             onclick="toggleCheckbox('checkbox-{{ $event['id'] }}')">
-                            <div class="flex items-start gap-6">
-                                <div class="mt-1">
+                            <div class="flex items-start gap-5">
+                                <div class="mt-1 shrink-0">
                                     <input type="checkbox" name="events[]" value="{{ $event['id'] }}"
                                         id="checkbox-{{ $event['id'] }}"
                                         class="w-5 h-5 rounded-lg border-gray-300 dark:border-gray-700 text-violet-600 focus:ring-violet-500 bg-white dark:bg-gray-800 transition-all pointer-events-none"
@@ -125,23 +143,65 @@
                                             {{ date('d M, H:i', strtotime($event['start'])) }}
                                         </span>
                                     </div>
+
+                                    @if (!empty($event['duration_minutes']) || !empty($event['location']) || !empty($event['hangout_link']))
+                                        <div class="flex flex-wrap items-center gap-2 mt-1.5">
+                                            @if(!empty($event['duration_minutes']))
+                                                <span class="inline-flex items-center gap-1 text-[10px] font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-md">
+                                                    <svg class="w-3 h-3 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                    {{ $event['duration_minutes'] }} min
+                                                </span>
+                                            @endif
+                                            @if(!empty($event['location']))
+                                                <span class="inline-flex items-center gap-1 text-[10px] font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-md truncate max-w-xs" title="{{ $event['location'] }}">
+                                                    <svg class="w-3 h-3 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                                    {{ $event['location'] }}
+                                                </span>
+                                            @endif
+                                            @if(!empty($event['hangout_link']))
+                                                <a href="{{ $event['hangout_link'] }}" target="_blank" onclick="event.stopPropagation()" class="inline-flex items-center gap-1 text-[10px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-md hover:underline">
+                                                    <svg class="w-3 h-3 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                                    Google Meet
+                                                </a>
+                                            @endif
+                                        </div>
+                                    @endif
+
                                     @if ($event['description'])
-                                        <p class="text-xs text-gray-500 dark:text-gray-500 line-clamp-1 mt-0.5">
+                                        <p class="text-xs text-gray-500 dark:text-gray-500 line-clamp-1 mt-1">
                                             {{ $event['description'] }}
                                         </p>
                                     @endif
-                                    @if ($event['exists'])
-                                        <span
-                                            class="inline-flex items-center gap-1 mt-2 text-[9px] font-bold text-emerald-500 uppercase tracking-tighter">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20"
-                                                fill="currentColor">
-                                                <path fill-rule="evenodd"
-                                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                                    clip-rule="evenodd" />
-                                            </svg>
-                                            {{ __('google.already_sync') }}
-                                        </span>
-                                    @endif
+
+                                    <div class="mt-3 pt-2 border-t border-gray-100/80 dark:border-gray-800/80 flex items-center justify-between gap-3 flex-wrap" onclick="event.stopPropagation()">
+                                        <div class="flex items-center gap-2">
+                                            <label for="type-{{ $event['id'] }}" class="text-[11px] font-bold text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                                <span>Tipo:</span>
+                                            </label>
+                                            <select name="types[{{ $event['id'] }}]" id="type-{{ $event['id'] }}"
+                                                class="activity-type-select text-xs font-semibold py-1 px-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:text-white transition-all cursor-pointer shadow-sm"
+                                                {{ $event['exists'] ? 'disabled' : '' }}>
+                                                <option value="meeting" {{ ($event['default_activity_type'] ?? '') === 'meeting' ? 'selected' : '' }}>🎥 Reunión / Cita</option>
+                                                <option value="task" {{ ($event['default_activity_type'] ?? '') === 'task' ? 'selected' : '' }}>📋 Tarea</option>
+                                                <option value="reminder">🔔 Recordatorio</option>
+                                                <option value="note">📝 Nota</option>
+                                                <option value="document">📄 Documento</option>
+                                            </select>
+                                        </div>
+
+                                        @if ($event['exists'])
+                                            <span
+                                                class="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full uppercase tracking-tighter border border-emerald-200 dark:border-emerald-800/50">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20"
+                                                    fill="currentColor">
+                                                    <path fill-rule="evenodd"
+                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                        clip-rule="evenodd" />
+                                                </svg>
+                                                {{ __('google.already_sync') }}
+                                            </span>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -253,6 +313,35 @@
                 visibleCheckboxes.forEach(cb => cb.checked = !allChecked);
                 updateButtonState();
             });
+
+            // Bulk type application
+            const applyBulkTypeBtn = document.getElementById('apply-bulk-type');
+            if (applyBulkTypeBtn) {
+                applyBulkTypeBtn.addEventListener('click', function() {
+                    const bulkType = document.getElementById('bulk-type-select').value;
+                    const currentTab = document.getElementById('import-form').getAttribute('data-current-tab');
+                    const checkedCheckboxes = document.querySelectorAll(
+                        '.event-item[data-tab="' + currentTab + '"]:not(.hidden) input[name="events[]"]:checked'
+                    );
+
+                    if (checkedCheckboxes.length === 0) {
+                        // Si no hay ninguno marcado con checkbox, aplicar a todos los visibles de la pestaña activa
+                        const visibleSelects = document.querySelectorAll(
+                            '.event-item[data-tab="' + currentTab + '"]:not(.hidden) .activity-type-select:not(:disabled)'
+                        );
+                        visibleSelects.forEach(s => s.value = bulkType);
+                    } else {
+                        // Aplicar solo a los ítems marcados
+                        checkedCheckboxes.forEach(cb => {
+                            const item = cb.closest('.event-item');
+                            if (item) {
+                                const select = item.querySelector('.activity-type-select:not(:disabled)');
+                                if (select) select.value = bulkType;
+                            }
+                        });
+                    }
+                });
+            }
 
             // Initial state
             updateButtonState();

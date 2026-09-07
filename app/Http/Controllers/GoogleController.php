@@ -192,22 +192,42 @@ class GoogleController extends Controller
         $events = $this->googleService->listEvents(50);
         $eventsData = collect($events)->map(function($event) use ($teamId, $user) {
             $start = $event->getStart()->getDateTime() ?: $event->getStart()->getDate();
-            $title = $event->getSummary();
-            
-            $exists = \App\Models\Task::where('team_id', $teamId)
-                ->where('created_by_id', $user->id)
-                ->where('title', $title)
-                ->where('scheduled_date', date('Y-m-d H:i:s', strtotime($start)))
+            $end = $event->getEnd()->getDateTime() ?: $event->getEnd()->getDate();
+            $title = $event->getSummary() ?: 'Evento sin título';
+            $location = $event->getLocation();
+            $hangoutLink = $event->getHangoutLink();
+
+            // Calculate duration in minutes if datetime is present
+            $durationMinutes = 60;
+            if ($event->getStart()->getDateTime() && $event->getEnd()->getDateTime()) {
+                $startTs = strtotime($event->getStart()->getDateTime());
+                $endTs = strtotime($event->getEnd()->getDateTime());
+                $durationMinutes = max(1, round(($endTs - $startTs) / 60));
+            }
+
+            // Check existence in Activity table (direct or via google_calendar_event_id)
+            $exists = \App\Models\Activity::where('team_id', $teamId)
+                ->where(function($q) use ($event, $title, $start) {
+                    $q->where('google_calendar_event_id', $event->id)
+                      ->orWhere(function($sub) use ($title, $start) {
+                          $sub->where('title', $title)
+                              ->where('scheduled_date', date('Y-m-d H:i:s', strtotime($start)));
+                      });
+                })
                 ->exists();
 
             return [
-                'id' => 'cal:' . $event->id,
-                'title' => $title,
-                'description' => $event->getDescription() ?: '',
-                'start' => $start,
-                'end' => $event->getEnd()->getDateTime() ?: $event->getEnd()->getDate(),
-                'exists' => $exists,
-                'type' => 'calendar'
+                'id'                    => 'cal:' . $event->id,
+                'title'                 => $title,
+                'description'           => $event->getDescription() ?: '',
+                'start'                 => $start,
+                'end'                   => $end,
+                'location'              => $location,
+                'hangout_link'          => $hangoutLink,
+                'duration_minutes'      => $durationMinutes,
+                'exists'                => $exists,
+                'type'                  => 'calendar',
+                'default_activity_type' => 'meeting',
             ];
         });
 
@@ -215,17 +235,19 @@ class GoogleController extends Controller
         $tasks = $this->googleService->listTasks(50);
         $tasksData = collect($tasks)->map(function($task) use ($teamId, $user) {
             $due = $task->getDue() ?: now()->toIso8601String();
-            $title = $task->getTitle();
+            $title = $task->getTitle() ?: 'Tarea sin título';
             
             // Remove Google Space/Doc context brackets e.g. "[Space Name] Task Title" -> "Task Title"
             $title = preg_replace('/^\[.*?\]\s*/', '', $title);
             
             $googleId = 'task:' . $task->id;
+            $rawId = $task->id;
             
-            // Robust matching: prioritized by google_task_id, then by title+date (ignoring exact time)
-            $exists = \App\Models\Task::where('team_id', $teamId)
-                ->where(function($q) use ($googleId, $title, $due) {
+            // Robust matching: prioritized by google_task_id, then by title+date
+            $exists = \App\Models\Activity::where('team_id', $teamId)
+                ->where(function($q) use ($googleId, $rawId, $title, $due) {
                     $q->where('google_task_id', $googleId)
+                      ->orWhere('google_task_id', $rawId)
                       ->orWhere(function($sub) use ($title, $due) {
                           $sub->where('title', 'LIKE', $title . '%')
                               ->whereDate('scheduled_date', date('Y-m-d', strtotime($due)));
@@ -234,13 +256,17 @@ class GoogleController extends Controller
                 ->exists();
 
             return [
-                'id' => $googleId,
-                'title' => $title,
-                'description' => ($task->getNotes() ?: '') . ($task->listTitle ? " [" . $task->listTitle . "]" : ""),
-                'start' => $due,
-                'end' => $due,
-                'exists' => $exists,
-                'type' => 'task'
+                'id'                    => $googleId,
+                'title'                 => $title,
+                'description'           => ($task->getNotes() ?: '') . ($task->listTitle ? " [" . $task->listTitle . "]" : ""),
+                'start'                 => $due,
+                'end'                   => $due,
+                'location'              => null,
+                'hangout_link'          => null,
+                'duration_minutes'      => null,
+                'exists'                => $exists,
+                'type'                  => 'task',
+                'default_activity_type' => 'task',
             ];
         });
 
@@ -259,11 +285,9 @@ class GoogleController extends Controller
     }
 
     /**
-     * Importa eventos de calendario y tareas seleccionadas desde Google.
+     * Importa eventos de calendario y tareas seleccionadas desde Google creando Actividades directamente.
      *
-     * Procesa IDs de tipo 'cal:*' (eventos de calendario) y 'task:*' (tareas de Google Tasks),
-     * creando registros locales de Task para los que no existen. Asigna visibilidad, prioridad
-     * baja y al usuario autenticado como asignado.
+     * Permite especificar el tipo de actividad para cada ítem importado (meeting, task, reminder, note, document).
      *
      * @param  Request  $request
      * @return \Illuminate\Http\RedirectResponse
@@ -274,6 +298,7 @@ class GoogleController extends Controller
         $teamId = $request->input('team_id');
         $selectedEventIds = $request->input('events', []);
         $visibility = $request->input('visibility', 'private');
+        $activityTypes = $request->input('types', []);
 
         if (empty($selectedEventIds)) {
             return back()->with('error', __('google.no_tasks_selected'));
@@ -284,15 +309,25 @@ class GoogleController extends Controller
         }
 
         $syncCount = 0;
+        $allowedTypes = array_keys(\App\Models\Activity::SUBTYPES);
 
         // Process Calendar Events
-        $calendarIds = collect($selectedEventIds)->filter(fn($id) => str_starts_with($id, 'cal:'))->map(fn($id) => str_replace('cal:', '', $id))->toArray();
+        $calendarIds = collect($selectedEventIds)
+            ->filter(fn($id) => str_starts_with($id, 'cal:'))
+            ->map(fn($id) => str_replace('cal:', '', $id))
+            ->toArray();
+
         if (!empty($calendarIds)) {
             $allEvents = $this->googleService->listEvents(100);
             foreach ($allEvents as $event) {
                 if (in_array($event->id, $calendarIds)) {
+                    $chosenType = $activityTypes['cal:' . $event->id] ?? 'meeting';
+                    if (!in_array($chosenType, $allowedTypes)) {
+                        $chosenType = 'meeting';
+                    }
+
                     $start = $event->getStart()->getDateTime() ?: $event->getStart()->getDate();
-                    $fullTitle = $event->getSummary();
+                    $fullTitle = $event->getSummary() ?: 'Evento sin título';
                     $title = mb_strlen($fullTitle) > 250 ? mb_substr($fullTitle, 0, 247) . '...' : $fullTitle;
                     
                     $description = $event->getDescription() ?: '';
@@ -300,27 +335,124 @@ class GoogleController extends Controller
                         $description = "Título original: " . $fullTitle . "\n\n" . $description;
                     }
 
-                    $existing = \App\Models\Task::where('team_id', $teamId)
-                        ->where('created_by_id', $user->id)
-                        ->where('title', $title)
-                        ->where('scheduled_date', date('Y-m-d H:i:s', strtotime($start)))
+                    // Check if Activity already exists
+                    $existing = \App\Models\Activity::where('team_id', $teamId)
+                        ->where(function($q) use ($event, $title, $start) {
+                            $q->where('google_calendar_event_id', $event->id)
+                              ->orWhere(function($sub) use ($title, $start) {
+                                  $sub->where('title', $title)
+                                      ->where('scheduled_date', date('Y-m-d H:i:s', strtotime($start)));
+                              });
+                        })
                         ->first();
 
                     if (!$existing) {
-                        $taskModel = \App\Models\Task::create([
-                            'team_id' => $teamId,
-                            'title' => $title,
-                            'description' => $description,
-                            'scheduled_date' => date('Y-m-d H:i:s', strtotime($start)),
-                            'due_date' => $event->getEnd()->getDateTime() ? date('Y-m-d H:i:s', strtotime($event->getEnd()->getDateTime())) : null,
-                            'created_by_id' => $user->id,
-                            'assigned_user_id' => $user->id,
-                            'visibility' => $visibility,
-                            'priority' => 'low',
-                            'urgency' => 'low',
-                            'status' => 'pending',
+                        $location = $event->getLocation();
+                        $hangoutLink = $event->getHangoutLink();
+                        $durationMinutes = 60;
+                        if ($event->getStart()->getDateTime() && $event->getEnd()->getDateTime()) {
+                            $startTs = strtotime($event->getStart()->getDateTime());
+                            $endTs = strtotime($event->getEnd()->getDateTime());
+                            $durationMinutes = max(1, round(($endTs - $startTs) / 60));
+                        }
+
+                        // Metadatos y estado según subtipo
+                        $metadata = [];
+                        $statusValue = 'pending';
+
+                        if ($chosenType === 'meeting') {
+                            $statusValue = 'scheduled';
+                            $metadata = [
+                                'location'         => $location ?: ($hangoutLink ?: null),
+                                'duration_minutes' => $durationMinutes,
+                                'modality'         => $hangoutLink ? 'remote' : ($location ? 'presential' : 'remote'),
+                            ];
+                        } elseif ($chosenType === 'task') {
+                            $statusValue = 'pending';
+                            $metadata = [
+                                'urgency'        => 'low',
+                                'cognitive_load' => 1,
+                            ];
+                        } elseif ($chosenType === 'reminder') {
+                            $statusValue = 'pending';
+                            $metadata = [
+                                'channels' => ['email'],
+                            ];
+                        } elseif ($chosenType === 'note') {
+                            $statusValue = 'draft';
+                            $metadata = [
+                                'format' => 'markdown',
+                            ];
+                        } elseif ($chosenType === 'document') {
+                            $statusValue = 'draft';
+                        }
+
+                        $activity = \App\Models\Activity::create([
+                            'team_id'                  => $teamId,
+                            'created_by_id'            => $user->id,
+                            'type'                     => $chosenType,
+                            'title'                    => $title,
+                            'description'              => $description,
+                            'scheduled_date'           => date('Y-m-d H:i:s', strtotime($start)),
+                            'due_date'                 => $event->getEnd()->getDateTime() ? date('Y-m-d H:i:s', strtotime($event->getEnd()->getDateTime())) : null,
+                            'original_due_date'        => $event->getEnd()->getDateTime() ? date('Y-m-d H:i:s', strtotime($event->getEnd()->getDateTime())) : null,
+                            'visibility'               => $visibility,
+                            'priority'                 => 'low',
+                            'auto_priority'            => false,
+                            'progress_percentage'      => 0,
+                            'status'                   => ['value' => $statusValue],
+                            'metadata'                 => $metadata,
                             'google_calendar_event_id' => $event->id,
+                            'google_synced_at'         => now(),
                         ]);
+
+                        // Asignación directa al usuario creador
+                        \App\Models\ActivityAssignment::create([
+                            'activity_id'    => $activity->id,
+                            'user_id'        => $user->id,
+                            'assigned_by_id' => $user->id,
+                            'assigned_at'    => now(),
+                        ]);
+
+                        // Sincronización retroactiva con modelo legacy Task si el tipo elegido es 'task'
+                        if ($chosenType === 'task') {
+                            $orphanTask = \App\Models\Task::where('team_id', $teamId)
+                                ->where(function($q) use ($event, $title, $start) {
+                                    $q->where('google_calendar_event_id', $event->id)
+                                      ->orWhere(function($sub) use ($title, $start) {
+                                          $sub->where('title', $title)
+                                              ->where('scheduled_date', date('Y-m-d H:i:s', strtotime($start)));
+                                      });
+                                })
+                                ->first();
+
+                            $taskId = null;
+                            if ($orphanTask) {
+                                $taskId = $orphanTask->id;
+                            } else {
+                                $createdTask = \App\Models\Task::create([
+                                    'team_id'                  => $teamId,
+                                    'title'                    => $title,
+                                    'description'              => $description,
+                                    'scheduled_date'           => date('Y-m-d H:i:s', strtotime($start)),
+                                    'due_date'                 => $event->getEnd()->getDateTime() ? date('Y-m-d H:i:s', strtotime($event->getEnd()->getDateTime())) : null,
+                                    'created_by_id'            => $user->id,
+                                    'assigned_user_id'         => $user->id,
+                                    'visibility'               => $visibility,
+                                    'priority'                 => 'low',
+                                    'urgency'                  => 'low',
+                                    'status'                   => 'pending',
+                                    'google_calendar_event_id' => $event->id,
+                                ]);
+                                $taskId = $createdTask->id;
+                            }
+
+                            \DB::table('activity_task_mapping')->updateOrInsert(
+                                ['activity_id' => $activity->id],
+                                ['task_id' => $taskId, 'created_at' => now(), 'updated_at' => now()]
+                            );
+                        }
+
                         $syncCount++;
                     }
                 }
@@ -328,17 +460,25 @@ class GoogleController extends Controller
         }
 
         // Process Google Tasks
-        $taskIds = collect($selectedEventIds)->filter(fn($id) => str_starts_with($id, 'task:'))->map(fn($id) => str_replace('task:', '', $id))->toArray();
+        $taskIds = collect($selectedEventIds)
+            ->filter(fn($id) => str_starts_with($id, 'task:'))
+            ->map(fn($id) => str_replace('task:', '', $id))
+            ->toArray();
+
         if (!empty($taskIds)) {
             $allTasks = $this->googleService->listTasks(100);
             foreach ($allTasks as $task) {
                 if (in_array($task->id, $taskIds)) {
+                    $chosenType = $activityTypes['task:' . $task->id] ?? 'task';
+                    if (!in_array($chosenType, $allowedTypes)) {
+                        $chosenType = 'task';
+                    }
+
                     $due = $task->getDue() ?: now()->toIso8601String();
-                    $fullTitle = $task->getTitle();
+                    $fullTitle = $task->getTitle() ?: 'Tarea sin título';
                     
                     // Remove Google Space/Doc context brackets e.g. "[Space Name] Task Title" -> "Task Title"
                     $fullTitle = preg_replace('/^\[.*?\]\s*/', '', $fullTitle);
-                    
                     $title = mb_strlen($fullTitle) > 250 ? mb_substr($fullTitle, 0, 247) . '...' : $fullTitle;
 
                     $description = ($task->getNotes() ?: '');
@@ -347,31 +487,101 @@ class GoogleController extends Controller
                     }
                     $description .= ($task->listTitle ? " [" . $task->listTitle . "]" : "");
 
-                    $existing = \App\Models\Task::where('team_id', $teamId)
-                        ->where('created_by_id', $user->id)
-                        ->where('title', $title)
-                        ->where('scheduled_date', date('Y-m-d H:i:s', strtotime($due)))
+                    $googleId = $task->id;
+                    $existing = \App\Models\Activity::where('team_id', $teamId)
+                        ->where(function($q) use ($googleId, $title, $due) {
+                            $q->where('google_task_id', $googleId)
+                              ->orWhere('google_task_id', 'task:' . $googleId)
+                              ->orWhere(function($sub) use ($title, $due) {
+                                  $sub->where('title', 'LIKE', $title . '%')
+                                      ->whereDate('scheduled_date', date('Y-m-d', strtotime($due)));
+                              });
+                        })
                         ->first();
 
                     if (!$existing) {
-                        $taskModel = \App\Models\Task::create([
-                            'team_id' => $teamId,
-                            'title' => $title,
-                            'description' => $description,
-                            'scheduled_date' => date('Y-m-d H:i:s', strtotime($due)),
-                            'due_date' => date('Y-m-d H:i:s', strtotime($due)),
-                            'created_by_id' => $user->id,
-                            'assigned_user_id' => $user->id,
-                            'visibility' => $visibility,
-                            'priority' => 'low',
-                            'urgency' => 'low',
-                            'status' => $task->getStatus() === 'completed' ? 'completed' : 'pending',
-                            'google_task_id' => $task->id,
+                        $isCompleted = $task->getStatus() === 'completed';
+                        $statusValue = $isCompleted ? 'completed' : 'pending';
+                        if ($chosenType === 'meeting' && !$isCompleted) {
+                            $statusValue = 'scheduled';
+                        } elseif (in_array($chosenType, ['note', 'document']) && !$isCompleted) {
+                            $statusValue = 'draft';
+                        }
+
+                        $activity = \App\Models\Activity::create([
+                            'team_id'             => $teamId,
+                            'created_by_id'       => $user->id,
+                            'type'                => $chosenType,
+                            'title'               => $title,
+                            'description'         => $description,
+                            'scheduled_date'      => date('Y-m-d H:i:s', strtotime($due)),
+                            'due_date'            => date('Y-m-d H:i:s', strtotime($due)),
+                            'original_due_date'   => date('Y-m-d H:i:s', strtotime($due)),
+                            'visibility'          => $visibility,
+                            'priority'            => 'low',
+                            'auto_priority'       => false,
+                            'progress_percentage' => $isCompleted ? 100 : 0,
+                            'status'              => ['value' => $statusValue],
+                            'metadata'            => [
+                                'urgency'        => 'low',
+                                'cognitive_load' => 1,
+                            ],
+                            'google_task_id'      => $task->id,
                             'google_task_list_id' => '@default',
+                            'google_synced_at'    => now(),
                         ]);
 
-                        if ($taskModel->status === 'completed') {
-                            $this->awardGamificationPoints($taskModel);
+                        // Asignación directa al usuario creador
+                        \App\Models\ActivityAssignment::create([
+                            'activity_id'    => $activity->id,
+                            'user_id'        => $user->id,
+                            'assigned_by_id' => $user->id,
+                            'assigned_at'    => now(),
+                        ]);
+
+                        // Sincronización con modelo legacy Task si el tipo elegido es 'task'
+                        if ($chosenType === 'task') {
+                            $orphanTask = \App\Models\Task::where('team_id', $teamId)
+                                ->where(function($q) use ($googleId, $title, $due) {
+                                    $q->where('google_task_id', $googleId)
+                                      ->orWhere('google_task_id', 'task:' . $googleId)
+                                      ->orWhere(function($sub) use ($title, $due) {
+                                          $sub->where('title', 'LIKE', $title . '%')
+                                              ->whereDate('scheduled_date', date('Y-m-d', strtotime($due)));
+                                      });
+                                })
+                                ->first();
+
+                            $taskId = null;
+                            if ($orphanTask) {
+                                $taskId = $orphanTask->id;
+                            } else {
+                                $createdTask = \App\Models\Task::create([
+                                    'team_id'             => $teamId,
+                                    'title'               => $title,
+                                    'description'         => $description,
+                                    'scheduled_date'      => date('Y-m-d H:i:s', strtotime($due)),
+                                    'due_date'            => date('Y-m-d H:i:s', strtotime($due)),
+                                    'created_by_id'       => $user->id,
+                                    'assigned_user_id'    => $user->id,
+                                    'visibility'          => $visibility,
+                                    'priority'            => 'low',
+                                    'urgency'             => 'low',
+                                    'status'              => $isCompleted ? 'completed' : 'pending',
+                                    'google_task_id'      => $task->id,
+                                    'google_task_list_id' => '@default',
+                                ]);
+                                $taskId = $createdTask->id;
+                            }
+
+                            \DB::table('activity_task_mapping')->updateOrInsert(
+                                ['activity_id' => $activity->id],
+                                ['task_id' => $taskId, 'created_at' => now(), 'updated_at' => now()]
+                            );
+
+                            if ($isCompleted && $orphanTask) {
+                                $this->awardGamificationPoints($orphanTask);
+                            }
                         }
 
                         $syncCount++;
