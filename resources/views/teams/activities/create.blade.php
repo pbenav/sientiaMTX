@@ -155,7 +155,6 @@
                                 <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Fecha del Acuerdo</label>
                                 <input type="date" name="metadata[agreement_date]" value="{{ old('metadata.agreement_date', now()->format('Y-m-d')) }}" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none">
                             </div>
-                            </div>
                         </div>
                     </div>
                 @elseif ($type === 'meeting')
