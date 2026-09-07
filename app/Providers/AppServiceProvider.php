@@ -60,16 +60,6 @@ class AppServiceProvider extends ServiceProvider
             $scheme = 'http';
         }
 
-        // Debug: log the scheme decision
-        \Log::channel('daily')->info('AppServiceProvider boot', [
-            'host' => $host,
-            'isIpAddress' => $isIpAddress,
-            'isLocalhost' => $isLocalhost,
-            'isPrivateIp' => $isPrivateIp,
-            'scheme' => $scheme,
-            'FORCE_HTTPS' => env('FORCE_HTTPS'),
-            'forwarded_host' => $forwardedHost,
-        ]);
 
         if ($isIpAddress) {
             $appUrl = config('app.url');
