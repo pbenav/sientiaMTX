@@ -11,6 +11,7 @@ use App\Models\AppointmentVisitor;
 use App\Models\User;
 use App\Rules\DniNie;
 use App\Services\AppointmentAvailabilityService;
+use App\Services\EmailValidationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,10 @@ use Illuminate\Support\Facades\Cache;
 
 class PublicAppointmentController extends Controller
 {
-    public function __construct(private AppointmentAvailabilityService $availability) {}
+    public function __construct(
+        private AppointmentAvailabilityService $availability,
+        private EmailValidationService $emailValidation,
+    ) {}
 
     /**
      * Normaliza un email eliminando los puntos del alias y todo lo que haya después del '+'
@@ -330,6 +334,17 @@ class PublicAppointmentController extends Controller
             'first_name' => $firstName,
             'last_name' => $lastName,
         ]);
+
+        // Validación avanzada de email si se proporciona (después de la validación de formato)
+        if (!empty($data['email'])) {
+            $validationResult = $this->emailValidation->verify($data['email']);
+            
+            if (!$validationResult['valid']) {
+                return back()
+                    ->withErrors(['email' => 'El correo electrónico no parece existir. Por favor, verifica que sea correcto.'])
+                    ->withInput();
+            }
+        }
 
         if (!empty($data['dni'])) {
             $existingDniVisitor = \App\Models\AppointmentVisitor::where('dni', $data['dni'])->first();
@@ -841,6 +856,17 @@ class PublicAppointmentController extends Controller
             'first_name' => $firstName,
             'last_name' => $lastName,
         ]);
+
+        // Validación avanzada de email si se proporciona y cambió
+        if (!empty($data['email']) && $data['email'] !== $appointment->visitor->email) {
+            $validationResult = $this->emailValidation->verify($data['email']);
+            
+            if (!$validationResult['valid']) {
+                return back()
+                    ->withErrors(['email' => 'El correo electrónico no parece existir. Por favor, verifica que sea correcto.'])
+                    ->withInput();
+            }
+        }
 
         if (!empty($data['dni'])) {
             $existingDniVisitor = \App\Models\AppointmentVisitor::where('dni', $data['dni'])
