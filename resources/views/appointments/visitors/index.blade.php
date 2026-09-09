@@ -218,7 +218,7 @@
                                         </a>
                                         @if(auth()->user()->is_admin)
                                         <form method="POST" action="{{ route('appointments.visitors.destroy', [$team, $visitor]) }}"
-                                              onsubmit="return confirm('¿Eliminar a esta persona?\n\nEsta acción es IRREVERSIBLE y eliminará:\n\n- Todos los datos personales (nombre, DNI, email, teléfono, dirección)\n- TODAS las citas asociadas, sin importar la fecha (pasado, presente o futuro)\n- Cualquier evidencia relacionada con este usuario\n\nNo se puede deshacer.');
+                                              onsubmit="return confirm(function() { var m = []; m.push('¿Eliminar a esta persona?'); m.push(''); m.push('Esta acción es IRREVERSIBLE y eliminará:'); m.push(''); m.push('- Todos los datos personales (nombre, DNI, email, teléfono, dirección)'); m.push('- TODAS las citas asociadas, sin importar la fecha (pasado, presente o futuro)'); m.push('- Cualquier evidencia relacionada con este usuario'); m.push(''); m.push('No se puede deshacer.'); return m.join('\n'); }());">
                                             @csrf @method('DELETE')
                                             <button type="submit" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all" title="Eliminar persona">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
