@@ -854,70 +854,69 @@
         }
 
         // --- Email ---
-        let emailValidated = false;
-        let emailValidationPending = false;
         const emailInput = document.getElementById('input-email');
         const emailHint  = document.getElementById('hint-email');
         if (emailInput && emailHint) {
-            function validateEmailServer() {
-                const v = emailInput.value.trim();
-                if (!v) {
-                    emailValidated = false;
-                    clearHint(emailHint, emailInput);
-                    return;
-                }
-                const validFormat = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
-                if (!validFormat) {
-                    emailValidated = false;
-                    setHint(emailHint, emailInput, '✗ Formato de correo incorrecto', true);
-                    checkSubmitState();
-                    return;
-                }
-                emailValidationPending = true;
-                setHint(emailHint, emailInput, '⏳ Verificando correo...', false);
-                
-                fetch('/citas/validate-email', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSR-Token': document.querySelector('input[name="_token"]').value
-                    },
-                    body: JSON.stringify({ email: v })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    emailValidationPending = false;
-                    if (data.valid) {
-                        emailValidated = true;
-                        setHint(emailHint, emailInput, '✓ Correo verificado', false);
-                        checkSubmitState();
-                    } else {
-                        emailValidated = false;
-                        setHint(emailHint, emailInput, '✗ ' + (data.reason || 'Correo no válido'), true);
-                        checkSubmitState();
-                    }
-                })
-                .catch(() => {
-                    emailValidationPending = false;
-                    // Si falla la validación del servidor, permitir el envío de todos modos
-                    emailValidated = true;
-                    setHint(emailHint, emailInput, '✓ Correo válido', false);
-                    checkSubmitState();
-                });
-            }
-            
             emailInput.addEventListener('blur', function () {
                 const v = this.value.trim();
-                if (!v) { 
-                    emailValidated = false;
-                    clearHint(emailHint, emailInput); 
-                    return; 
+                if (!v) { clearHint(emailHint, emailInput); return; }
+                const valid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+                if (valid) {
+                    setHint(emailHint, emailInput, '✓ Correo válido', false);
+                    
+                    // Buscar si ya existe el visitante
+                    fetch('/citas/visitor-by-email', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSR-Token': document.querySelector('input[name="_token"]').value
+                        },
+                        body: JSON.stringify({ email: v })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.found) {
+                            setHint(emailHint, emailInput, '✓ Datos de usuario localizados y autocompletados', false);
+                            
+                            const firstNameEl = document.getElementById('input-first-name');
+                            const lastNameEl  = document.getElementById('input-last-name');
+                            const dniEl       = document.getElementById('input-dni');
+                            const phoneEl     = document.getElementById('input-phone');
+                            const cityEl      = document.getElementById('input-city');
+                            const postalEl    = document.getElementById('input-postal');
+                            
+                            if (firstNameEl) {
+                                firstNameEl.value = data.first_name || '';
+                                firstNameEl.readOnly = true;
+                                firstNameEl.classList.add('bg-emerald-50/50', 'dark:bg-emerald-950/10', 'border-emerald-250');
+                            }
+                            if (lastNameEl) {
+                                lastNameEl.value = data.last_name || '';
+                                lastNameEl.readOnly = true;
+                                lastNameEl.classList.add('bg-emerald-50/50', 'dark:bg-emerald-950/10', 'border-emerald-250');
+                            }
+                            // DNI se deja intocable para que lo rellene manualmente el usuario
+                            if (phoneEl) {
+                                phoneEl.value = data.phone || '';
+                                if (data.phone) {
+                                    phoneEl.readOnly = true;
+                                    phoneEl.classList.add('bg-emerald-50/50', 'dark:bg-emerald-950/10', 'border-emerald-250');
+                                }
+                            }
+                            if (cityEl) {
+                                cityEl.value = data.city || '';
+                            }
+                            if (postalEl) {
+                                postalEl.value = data.postal_code || '';
+                            }
+                        }
+                    });
+                } else {
+                    setHint(emailHint, emailInput, '✗ Formato de correo incorrecto', true);
                 }
-                validateEmailServer();
             });
             emailInput.addEventListener('input', function () {
                 if (!this.value.trim()) {
-                    emailValidated = false;
                     clearHint(emailHint, emailInput);
                     
                     const firstNameEl = document.getElementById('input-first-name');
@@ -932,9 +931,6 @@
                             el.classList.remove('bg-emerald-50/50', 'dark:bg-emerald-950/10', 'border-emerald-250');
                         }
                     });
-                } else {
-                    emailValidated = false;
-                    validateEmailServer();
                 }
             });
         }
