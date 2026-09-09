@@ -863,6 +863,7 @@
                 const valid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
                 if (valid) {
                     setHint(emailHint, emailInput, '✓ Correo válido', false);
+                    checkSubmitState();
                     
                     // Buscar si ya existe el visitante
                     fetch('/citas/visitor-by-email', {
@@ -909,6 +910,7 @@
                             if (postalEl) {
                                 postalEl.value = data.postal_code || '';
                             }
+                            checkSubmitState();
                         }
                     });
                 } else {
@@ -932,6 +934,7 @@
                         }
                     });
                 }
+                checkSubmitState();
             });
         }
 
