@@ -216,7 +216,8 @@
 
                 <div class="md:col-span-12">
                     <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Correo Electrónico') }} *</label>
-                    <input type="email" id="input-email" name="email" value="{{ old('email') }}" required oninput="this.value = this.value.toLowerCase()" autocomplete="off"
+                    <input type="email" name="email_fake" tabindex="-1" autocomplete="off" style="display:none" readonly>
+                    <input type="email" id="input-email" name="email" value="{{ old('email') }}" required oninput="this.value = this.value.toLowerCase()" autocomplete="new-password"
                             class="w-full lowercase bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all"
                             placeholder="nombre@ejemplo.com">
                     <p class="text-[10px] text-cyan-600 dark:text-cyan-400 mt-1 font-semibold">
@@ -949,6 +950,25 @@
             });
             phoneInput.addEventListener('input', function () {
                 if (!this.value.trim()) clearHint(phoneHint, phoneInput);
+            });
+        }
+    })();
+</script>
+
+<script>
+    // Prevenir autocompletado del navegador en el email justo antes del submit
+    (function () {
+        const form = document.querySelector('#appointment-booking-form');
+        const emailInput = document.getElementById('input-email');
+        if (form && emailInput) {
+            form.addEventListener('submit', function (e) {
+                const currentValue = emailInput.value.trim();
+                if (!currentValue) {
+                    e.preventDefault();
+                    emailInput.setCustomValidity('El correo electrónico es obligatorio');
+                    emailInput.reportValidity();
+                    emailInput.setCustomValidity('');
+                }
             });
         }
     })();

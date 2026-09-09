@@ -339,6 +339,14 @@ class PublicAppointmentController extends Controller
         if (!empty($data['email'])) {
             $validationResult = $this->emailValidation->verify($data['email']);
             
+            \Log::info('Public appointment email validation', [
+                'email' => $data['email'],
+                'valid' => $validationResult['valid'],
+                'reason' => $validationResult['reason'] ?? null,
+                'method' => $validationResult['method'] ?? null,
+                'ip' => $request->ip(),
+            ]);
+            
             if (!$validationResult['valid']) {
                 return back()
                     ->withErrors(['email' => 'El correo electrónico no parece existir. Por favor, verifica que sea correcto.'])
@@ -458,6 +466,7 @@ class PublicAppointmentController extends Controller
                         'first_name'    => $firstName,
                         'last_name'     => $lastName,
                         'dni'           => $data['dni'] ?? $visitor->dni,
+                        'email'         => $data['email'] ?? $visitor->email,
                         'phone'         => $data['phone'] ?? $visitor->phone,
                         'city'          => $data['city'] ?? $visitor->city,
                         'postal_code'   => $data['postal_code'] ?? $visitor->postal_code,
