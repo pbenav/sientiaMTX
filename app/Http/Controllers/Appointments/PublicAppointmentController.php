@@ -1032,6 +1032,20 @@ class PublicAppointmentController extends Controller
         return response()->json(['found' => false]);
     }
 
+    public function validateEmail(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email'
+        ]);
+
+        $result = $this->emailValidation->verify($request->email);
+
+        return response()->json([
+            'valid' => $result['valid'],
+            'reason' => $result['valid'] ? null : ($result['reason'] ?? 'El correo electrónico no parece existir.'),
+        ]);
+    }
+
     /**
      * Helper to add a Latin transliteration to Arabic names.
      */
