@@ -22,8 +22,9 @@
         }
 
         // Get private notes
-        $privateNote = \App\Models\TaskPrivateNote::where('task_id', $activity->id)
+        $privateNote = \App\Models\ActivityNote::where('activity_id', $activity->id)
             ->where('user_id', auth()->id())
+            ->where('visibility', 'private')
             ->first();
     @endphp
 

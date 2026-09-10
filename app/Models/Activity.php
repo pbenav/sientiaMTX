@@ -480,13 +480,14 @@ class Activity extends Model
 
     /**
      * Obtiene la nota privada del usuario autenticado actual.
-     * Compatibilidad con Task.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne<\App\Models\TaskPrivateNote, $this>
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne<\App\Models\ActivityNote, $this>
      */
     public function currentPrivateNote()
     {
-        return $this->hasOne(\App\Models\TaskPrivateNote::class, 'task_id')->where('user_id', auth()->id());
+        return $this->hasOne(ActivityNote::class, 'activity_id')
+            ->where('user_id', auth()->id())
+            ->where('visibility', 'private');
     }
 
     /**
