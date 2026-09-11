@@ -19,7 +19,7 @@ class DocumentationController extends Controller
     {
         $lang = app()->getLocale();
         $fallbackLang = 'es';
-        
+
         $path = resource_path("docs/{$lang}/{$slug}.md");
 
         // Fallback to default lang if not found in current lang
@@ -33,10 +33,10 @@ class DocumentationController extends Controller
         }
 
         $contentMd = File::get($path);
-        
+
         // Convert Markdown to HTML using Laravel's built-in Str::markdown (powered by CommonMark)
         $contentHtml = Str::markdown($contentMd, ['html_input' => 'strip']);
-        $contentHtml = preg_replace('/(\p{Extended_Pictographic}(?:\u{FE0F}|\u{FE0E})?)/u', '<span class="emoji-icon">$1</span>', $contentHtml);
+        $contentHtml = preg_replace('/([\x{1F300}-\x{1FAFF}\x{2600}-\x{26FF}\x{2700}-\x{27BF}\x{1F900}-\x{1F9FF}\x{1F600}-\x{1F64F}\x{1F680}-\x{1F6FF}\x{2B50}\x{2B55}\x{231A}-\x{231B}\x{23ED}-\x{23EF}\x{23F0}\x{23F3}\x{25FD}-\x{25FE}\x{2B05}-\x{2B07}\x{2B1B}-\x{2B1C}\x{3297}\x{3299}\x{3030}\x{303D}\x{00A9}\x{00AE}\x{2122}\x{2139}]|\p{Extended_Pictographic})(?:\x{FE0F}|\x{FE0E})?/u', '<span class="emoji-icon">$1</span>', $contentHtml);
 
         // Define the menu structure
         $menu = [
@@ -101,7 +101,7 @@ class DocumentationController extends Controller
         }
 
         $contentHtml = Str::markdown(File::get($path), ['html_input' => 'strip']);
-        $contentHtml = preg_replace('/(\p{Extended_Pictographic}(?:\u{FE0F}|\u{FE0E})?)/u', '<span class="emoji-icon">$1</span>', $contentHtml);
+        $contentHtml = preg_replace('/([\x{1F300}-\x{1FAFF}\x{2600}-\x{26FF}\x{2700}-\x{27BF}\x{1F900}-\x{1F9FF}\x{1F600}-\x{1F64F}\x{1F680}-\x{1F6FF}\x{2B50}\x{2B55}\x{231A}-\x{231B}\x{23ED}-\x{23EF}\x{23F0}\x{23F3}\x{25FD}-\x{25FE}\x{2B05}-\x{2B07}\x{2B1B}-\x{2B1C}\x{3297}\x{3299}\x{3030}\x{303D}\x{00A9}\x{00AE}\x{2122}\x{2139}]|\p{Extended_Pictographic})(?:\x{FE0F}|\x{FE0E})?/u', '<span class="emoji-icon">$1</span>', $contentHtml);
 
         $titles = [
             'es' => [

@@ -1080,27 +1080,62 @@
                                         padding: 0.125rem 0.25rem;
                                         border-radius: 0.25rem;
                                     }
-                                    .watermark {
-                                        position: fixed;
-                                        bottom: 20px;
-                                        right: 20px;
-                                        font-size: 80px;
-                                        font-weight: 900;
-                                        color: rgba(99, 102, 241, 0.04);
-                                        pointer-events: none;
-                                        z-index: 0;
-                                    }
-                                </style>
-                            </head>
-                            <body>
-                                ${headerHtml}
-                                <div class="content">${content}</div>
-                                ${withHeaders ? '<div class="watermark">Sientia.</div>' : ''}
-                            </body>
-                        </html>
-                    `);
-                    printWin.document.close();
-                    printWin.onload = () => { printWin.print(); };
+                                     .watermark {
+                                         position: fixed;
+                                         bottom: 20px;
+                                         right: 20px;
+                                         font-size: 80px;
+                                         font-weight: 900;
+                                         color: rgba(99, 102, 241, 0.04);
+                                         pointer-events: none;
+                                         z-index: 0;
+                                     }
+                                     .emoji-icon {
+                                         display: inline-block !important;
+                                         width: 1.35em !important;
+                                         min-width: 1.35em !important;
+                                         height: 1.35em !important;
+                                         line-height: 1.35em !important;
+                                         vertical-align: -0.15em !important;
+                                         margin-right: 0.35em !important;
+                                         text-align: center !important;
+                                         overflow: visible !important;
+                                         font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+                                     }
+                                 </style>
+                             </head>
+                             <body>
+                                 ${headerHtml}
+                                 <div class="content">${content}</div>
+                                 ${withHeaders ? '<div class="watermark">Sientia.</div>' : ''}
+                             </body>
+                         </html>
+                     `);
+                     printWin.document.close();
+                     printWin.onload = () => {
+                         function wrapEmojisInElement(element) {
+                             if (!element) return;
+                             const emojiRegex = /([\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2B50}\u{2B55}\u{231A}-\u{231B}\u{23ED}-\u{23EF}\u{23F0}\u{23F3}\u{25FD}-\u{25FE}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{3297}\u{3299}\u{3030}\u{303D}\u{00A9}\u{00AE}\u{2122}\u{2139}]|\p{Extended_Pictographic})(?:\uFE0F|\uFE0E)?/gu;
+                             const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
+                             const nodesToReplace = [];
+                             let node;
+                             while (node = walker.nextNode()) {
+                                 if (node.parentElement && node.parentElement.closest('.emoji-icon, script, style, textarea')) continue;
+                                 if (emojiRegex.test(node.nodeValue)) nodesToReplace.push(node);
+                             }
+                             nodesToReplace.forEach(textNode => {
+                                 const parent = textNode.parentNode;
+                                 if (!parent) return;
+                                 const html = textNode.nodeValue.replace(/([\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2B50}\u{2B55}\u{231A}-\u{231B}\u{23ED}-\u{23EF}\u{23F0}\u{23F3}\u{25FD}-\u{25FE}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{3297}\u{3299}\u{3030}\u{303D}\u{00A9}\u{00AE}\u{2122}\u{2139}]|\p{Extended_Pictographic})(?:\uFE0F|\uFE0E)?/gu, '<span class="emoji-icon">$1</span>');
+                                 const temp = document.createElement('span');
+                                 temp.innerHTML = html;
+                                 while (temp.firstChild) parent.insertBefore(temp.firstChild, textNode);
+                                 parent.removeChild(textNode);
+                             });
+                         }
+                         wrapEmojisInElement(printWin.document.body);
+                         printWin.print();
+                     };
                 }
 
                 async function printPrivateNotes() {
@@ -1273,6 +1308,18 @@
                                         pointer-events: none;
                                         z-index: 0;
                                     }
+                                    .emoji-icon {
+                                        display: inline-block !important;
+                                        width: 1.35em !important;
+                                        min-width: 1.35em !important;
+                                        height: 1.35em !important;
+                                        line-height: 1.35em !important;
+                                        vertical-align: -0.15em !important;
+                                        margin-right: 0.35em !important;
+                                        text-align: center !important;
+                                        overflow: visible !important;
+                                        font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+                                    }
                                 </style>
                             </head>
                             <body>
@@ -1283,7 +1330,30 @@
                         </html>
                     `);
                     printWin.document.close();
-                    printWin.onload = () => { printWin.print(); };
+                    printWin.onload = () => {
+                        function wrapEmojisInElement(element) {
+                            if (!element) return;
+                            const emojiRegex = /([\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2B50}\u{2B55}\u{231A}-\u{231B}\u{23ED}-\u{23EF}\u{23F0}\u{23F3}\u{25FD}-\u{25FE}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{3297}\u{3299}\u{3030}\u{303D}\u{00A9}\u{00AE}\u{2122}\u{2139}]|\p{Extended_Pictographic})(?:\uFE0F|\uFE0E)?/gu;
+                            const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
+                            const nodesToReplace = [];
+                            let node;
+                            while (node = walker.nextNode()) {
+                                if (node.parentElement && node.parentElement.closest('.emoji-icon, script, style, textarea')) continue;
+                                if (emojiRegex.test(node.nodeValue)) nodesToReplace.push(node);
+                            }
+                            nodesToReplace.forEach(textNode => {
+                                const parent = textNode.parentNode;
+                                if (!parent) return;
+                                const html = textNode.nodeValue.replace(/([\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2B50}\u{2B55}\u{231A}-\u{231B}\u{23ED}-\u{23EF}\u{23F0}\u{23F3}\u{25FD}-\u{25FE}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{3297}\u{3299}\u{3030}\u{303D}\u{00A9}\u{00AE}\u{2122}\u{2139}]|\p{Extended_Pictographic})(?:\uFE0F|\uFE0E)?/gu, '<span class="emoji-icon">$1</span>');
+                                const temp = document.createElement('span');
+                                temp.innerHTML = html;
+                                while (temp.firstChild) parent.insertBefore(temp.firstChild, textNode);
+                                parent.removeChild(textNode);
+                            });
+                        }
+                        wrapEmojisInElement(printWin.document.body);
+                        printWin.print();
+                    };
                 }
 
                     async function printFullTask() {
@@ -1378,7 +1448,8 @@
                             '      .signature-box { flex: 1; border-top: 1px solid #f1f5f9; padding-top: 4px; min-height: 30px; }',
                             '      .signature-label { font-size: 7px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; }',
                             '      .footer { margin-top: 15px; padding-top: 8px; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; font-size: 6.5px; font-weight: 600; color: #cbd5e1; text-transform: uppercase; clear: both; }',
-                            '      @media print { html, body { height: auto; } .sheet { border: none; height: auto; min-height: 0; } .content-layout { display: block; } .sidebar-content { float: right; width: 180px; margin-left: 20px; margin-bottom: 15px; } .main-content { display: block; } .content-layout::after { content: ""; display: table; clear: both; } }',
+                            '      .emoji-icon { display: inline-block !important; width: 1.35em !important; min-width: 1.35em !important; height: 1.35em !important; line-height: 1.35em !important; vertical-align: -0.15em !important; margin-right: 0.35em !important; text-align: center !important; overflow: visible !important; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important; }',
+                            '      @media print { html, body { height: auto; } .sheet { border: none; height: auto; min-height: 0; } .content-layout { display: block; } .sidebar-content { float: right; width: 180px; margin-left: 20px; margin-bottom: 15px; } .main-content { display: block; } .content-layout::after { content: ""; display: table; clear: both; } .emoji-icon { display: inline-block !important; width: 1.35em !important; min-width: 1.35em !important; height: 1.35em !important; line-height: 1.35em !important; vertical-align: -0.15em !important; margin-right: 0.35em !important; text-align: center !important; overflow: visible !important; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important; } }',
                             '    </style>',
                             '  </head>',
                             '  <body>',
@@ -1420,7 +1491,27 @@
                             '      <footer class="footer"><span>Sientia MTX Ecosystem &bull; v0.9.5</span><span>' + new Date().toLocaleString() + '</span></footer>',
                             '    </div>',
                             '    <script>' +
-                            '      window.onload = function() { setTimeout(function() { window.print(); setTimeout(function() { window.close(); }, 500); }, 300); };' +
+                            '      function wrapEmojisInElement(element) {' +
+                            '        if (!element) return;' +
+                            '        const emojiRegex = /([\\u{1F300}-\\u{1FAFF}\\u{2600}-\\u{26FF}\\u{2700}-\\u{27BF}\\u{1F900}-\\u{1F9FF}\\u{1F600}-\\u{1F64F}\\u{1F680}-\\u{1F6FF}\\u{2B50}\\u{2B55}\\u{231A}-\\u{231B}\\u{23ED}-\\u{23EF}\\u{23F0}\\u{23F3}\\u{25FD}-\\u{25FE}\\u{2B05}-\\u{2B07}\\u{2B1B}-\\u{2B1C}\\u{3297}\\u{3299}\\u{3030}\\u{303D}\\u{00A9}\\u{00AE}\\u{2122}\\u{2139}]|\\p{Extended_Pictographic})(?:\\uFE0F|\\uFE0E)?/gu;' +
+                            '        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);' +
+                            '        const nodesToReplace = [];' +
+                            '        let node;' +
+                            '        while (node = walker.nextNode()) {' +
+                            '          if (node.parentElement && node.parentElement.closest(".emoji-icon, script, style, textarea")) continue;' +
+                            '          if (emojiRegex.test(node.nodeValue)) nodesToReplace.push(node);' +
+                            '        }' +
+                            '        nodesToReplace.forEach(textNode => {' +
+                            '          const parent = textNode.parentNode;' +
+                            '          if (!parent) return;' +
+                            '          const html = textNode.nodeValue.replace(/([\\u{1F300}-\\u{1FAFF}\\u{2600}-\\u{26FF}\\u{2700}-\\u{27BF}\\u{1F900}-\\u{1F9FF}\\u{1F600}-\\u{1F64F}\\u{1F680}-\\u{1F6FF}\\u{2B50}\\u{2B55}\\u{231A}-\\u{231B}\\u{23ED}-\\u{23EF}\\u{23F0}\\u{23F3}\\u{25FD}-\\u{25FE}\\u{2B05}-\\u{2B07}\\u{2B1B}-\\u{2B1C}\\u{3297}\\u{3299}\\u{3030}\\u{303D}\\u{00A9}\\u{00AE}\\u{2122}\\u{2139}]|\\p{Extended_Pictographic})(?:\\uFE0F|\\uFE0E)?/gu, "<span class=\\"emoji-icon\\">$1</span>");' +
+                            '          const temp = document.createElement("span");' +
+                            '          temp.innerHTML = html;' +
+                            '          while (temp.firstChild) parent.insertBefore(temp.firstChild, textNode);' +
+                            '          parent.removeChild(textNode);' +
+                            '        });' +
+                            '      }' +
+                            '      window.onload = function() { wrapEmojisInElement(document.body); setTimeout(function() { window.print(); setTimeout(function() { window.close(); }, 500); }, 300); };' +
                             '<' + '/script>',
                             '  </body>',
                             '</html>'

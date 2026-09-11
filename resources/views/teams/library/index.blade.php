@@ -573,6 +573,40 @@ function printDocumentBook() {
                     .chapter-body { color: #334155; }
                     .chapter-body p { margin-bottom: 1.5rem; }
                     .chapter-body h1, .chapter-body h2, .chapter-body h3 { font-family: 'Outfit', sans-serif; color: #0f172a; margin-top: 2.5rem; margin-bottom: 1rem; font-weight: 700; }
+
+                    .emoji-icon {
+                        display: inline-block !important;
+                        width: 1.35em !important;
+                        min-width: 1.35em !important;
+                        height: 1.35em !important;
+                        line-height: 1.35em !important;
+                        vertical-align: -0.15em !important;
+                        margin-right: 0.35em !important;
+                        text-align: center !important;
+                        overflow: visible !important;
+                        font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+                    }
+
+                    @media print {
+                        body, h1, h2, h3, h4, h5, h6, p, li, span, div {
+                            font-family: 'Merriweather', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", serif !important;
+                        }
+                        h1, h2, h3, h4, h5, h6, .outfit {
+                            font-family: 'Outfit', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+                        }
+                        .emoji-icon {
+                            display: inline-block !important;
+                            width: 1.35em !important;
+                            min-width: 1.35em !important;
+                            height: 1.35em !important;
+                            line-height: 1.35em !important;
+                            vertical-align: -0.15em !important;
+                            margin-right: 0.35em !important;
+                            text-align: center !important;
+                            overflow: visible !important;
+                            font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+                        }
+                    }
                 </style>
             </head>
             <body>
@@ -591,7 +625,34 @@ function printDocumentBook() {
                 ${chaptersHtml}
                 
                 <script>
+                    function wrapEmojisInElement(element) {
+                        if (!element) return;
+                        const emojiRegex = /([\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2B50}\u{2B55}\u{231A}-\u{231B}\u{23ED}-\u{23EF}\u{23F0}\u{23F3}\u{25FD}-\u{25FE}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{3297}\u{3299}\u{3030}\u{303D}\u{00A9}\u{00AE}\u{2122}\u{2139}]|\p{Extended_Pictographic})(?:\uFE0F|\uFE0E)?/gu;
+                        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
+                        const nodesToReplace = [];
+                        let node;
+                        while (node = walker.nextNode()) {
+                            if (node.parentElement && node.parentElement.closest('.emoji-icon, script, style, textarea')) {
+                                continue;
+                            }
+                            if (emojiRegex.test(node.nodeValue)) {
+                                nodesToReplace.push(node);
+                            }
+                        }
+                        nodesToReplace.forEach(textNode => {
+                            const parent = textNode.parentNode;
+                            if (!parent) return;
+                            const html = textNode.nodeValue.replace(/([\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2B50}\u{2B55}\u{231A}-\u{231B}\u{23ED}-\u{23EF}\u{23F0}\u{23F3}\u{25FD}-\u{25FE}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{3297}\u{3299}\u{3030}\u{303D}\u{00A9}\u{00AE}\u{2122}\u{2139}]|\p{Extended_Pictographic})(?:\uFE0F|\uFE0E)?/gu, '<span class="emoji-icon">$1</span>');
+                            const temp = document.createElement('span');
+                            temp.innerHTML = html;
+                            while (temp.firstChild) {
+                                parent.insertBefore(temp.firstChild, textNode);
+                            }
+                            parent.removeChild(textNode);
+                        });
+                    }
                     window.onload = () => {
+                        wrapEmojisInElement(document.body);
                         setTimeout(() => window.print(), 500);
                     };
                 <\/script>

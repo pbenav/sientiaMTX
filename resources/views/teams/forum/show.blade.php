@@ -874,13 +874,35 @@
                                 .msg-body pre { background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.6rem; border-radius: 6px; font-size: 10px; overflow-x: auto; break-inside: avoid; page-break-inside: avoid; }
                                 .print-attachments { margin-top: 0.6rem; padding-top: 0.4rem; border-top: 1px dashed #cbd5e1; font-size: 10px; color: #475569; break-inside: avoid; page-break-inside: avoid; }
                                 .print-attachments ul { margin: 0.2rem 0 0 1rem; padding: 0; }
+                                .emoji-icon { display: inline-block !important; width: 1.35em !important; min-width: 1.35em !important; height: 1.35em !important; line-height: 1.35em !important; vertical-align: -0.15em !important; margin-right: 0.35em !important; text-align: center !important; overflow: visible !important; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important; }
                             </style>
                         </head>
                         <body>
                             ${headerHtml}
                             ${messagesHtml || '<p style="color:#94a3b8; font-style:italic;">No se encontró contenido para imprimir.</p>'}
                             <script>
+                                function wrapEmojisInElement(element) {
+                                    if (!element) return;
+                                    const emojiRegex = /([\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2B50}\u{2B55}\u{231A}-\u{231B}\u{23ED}-\u{23EF}\u{23F0}\u{23F3}\u{25FD}-\u{25FE}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{3297}\u{3299}\u{3030}\u{303D}\u{00A9}\u{00AE}\u{2122}\u{2139}]|\p{Extended_Pictographic})(?:\uFE0F|\uFE0E)?/gu;
+                                    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
+                                    const nodesToReplace = [];
+                                    let node;
+                                    while (node = walker.nextNode()) {
+                                        if (node.parentElement && node.parentElement.closest('.emoji-icon, script, style, textarea')) continue;
+                                        if (emojiRegex.test(node.nodeValue)) nodesToReplace.push(node);
+                                    }
+                                    nodesToReplace.forEach(textNode => {
+                                        const parent = textNode.parentNode;
+                                        if (!parent) return;
+                                        const html = textNode.nodeValue.replace(/([\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2B50}\u{2B55}\u{231A}-\u{231B}\u{23ED}-\u{23EF}\u{23F0}\u{23F3}\u{25FD}-\u{25FE}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{3297}\u{3299}\u{3030}\u{303D}\u{00A9}\u{00AE}\u{2122}\u{2139}]|\p{Extended_Pictographic})(?:\uFE0F|\uFE0E)?/gu, '<span class="emoji-icon">$1</span>');
+                                        const temp = document.createElement('span');
+                                        temp.innerHTML = html;
+                                        while (temp.firstChild) parent.insertBefore(temp.firstChild, textNode);
+                                        parent.removeChild(textNode);
+                                    });
+                                }
                                 window.onload = () => {
+                                    wrapEmojisInElement(document.body);
                                     setTimeout(() => {
                                         window.print();
                                     }, 350);
