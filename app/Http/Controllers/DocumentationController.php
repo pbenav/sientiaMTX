@@ -36,6 +36,7 @@ class DocumentationController extends Controller
         
         // Convert Markdown to HTML using Laravel's built-in Str::markdown (powered by CommonMark)
         $contentHtml = Str::markdown($contentMd, ['html_input' => 'strip']);
+        $contentHtml = preg_replace('/(\p{Extended_Pictographic}(?:\u{FE0F}|\u{FE0E})?)/u', '<span class="emoji-icon">$1</span>', $contentHtml);
 
         // Define the menu structure
         $menu = [
@@ -100,6 +101,7 @@ class DocumentationController extends Controller
         }
 
         $contentHtml = Str::markdown(File::get($path), ['html_input' => 'strip']);
+        $contentHtml = preg_replace('/(\p{Extended_Pictographic}(?:\u{FE0F}|\u{FE0E})?)/u', '<span class="emoji-icon">$1</span>', $contentHtml);
 
         $titles = [
             'es' => [

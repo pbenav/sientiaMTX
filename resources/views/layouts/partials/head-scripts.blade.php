@@ -905,8 +905,55 @@
             padding: 0 !important;
             box-shadow: none !important;
         }
+        .emoji-icon {
+            display: inline-block !important;
+            min-width: 1.25em !important;
+            height: auto !important;
+            vertical-align: -0.15em !important;
+            margin-right: 0.25em !important;
+            text-align: center !important;
+            font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+        }
+
+        /* FIX: Prevent SweetAlert2 Toasts from blocking app interaction */
+        body.swal2-toast-shown .swal2-container {
+            pointer-events: none !important;
+        }
+        body.swal2-toast-shown .swal2-container .swal2-popup {
+            pointer-events: auto !important;
+        }
+
         /* Sientia Global Print Overrides */
         @media print {
+            *, body, h1, h2, h3, h4, h5, h6, p, li, span, div, code, td, th {
+                font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+            }
+            .emoji-icon {
+                display: inline-block !important;
+                min-width: 1.25em !important;
+                height: auto !important;
+                vertical-align: -0.15em !important;
+                margin-right: 0.25em !important;
+                text-align: center !important;
+                font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+            }
+            .markdown-content img.emoji, .prose img.emoji, img.emoji, .emoji {
+                display: inline-block !important;
+                width: 1.2em !important;
+                height: 1.2em !important;
+                vertical-align: -0.15em !important;
+                margin: 0 0.25em 0 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+                border-radius: 0 !important;
+                background: transparent !important;
+            }
+            .markdown-content svg, .prose svg, svg {
+                max-width: 1.5em !important;
+                height: auto !important;
+                display: inline-block !important;
+                vertical-align: middle !important;
+            }
             body.print-clean-mode nav,
             body.print-clean-mode header,
             body.print-clean-mode footer,
@@ -928,12 +975,35 @@
                 flex: 1 1 100% !important;
             }
         }
-        
-        /* FIX: Prevent SweetAlert2 Toasts from blocking app interaction */
-        body.swal2-toast-shown .swal2-container {
-            pointer-events: none !important;
-        }
-        body.swal2-toast-shown .swal2-container .swal2-popup {
-            pointer-events: auto !important;
-        }
     </style>
+    <script>
+        window.wrapEmojisInElement = function(element) {
+            if (!element) return;
+            const emojiRegex = /(\p{Extended_Pictographic}(?:\uFE0F|\uFE0E)?)/gu;
+            const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
+            const nodesToReplace = [];
+            let node;
+            while (node = walker.nextNode()) {
+                if (node.parentElement && node.parentElement.closest('.emoji-icon, script, style, textarea')) {
+                    continue;
+                }
+                if (emojiRegex.test(node.nodeValue)) {
+                    nodesToReplace.push(node);
+                }
+            }
+            nodesToReplace.forEach(textNode => {
+                const parent = textNode.parentNode;
+                if (!parent) return;
+                const html = textNode.nodeValue.replace(/(\p{Extended_Pictographic}(?:\uFE0F|\uFE0E)?)/gu, '<span class="emoji-icon">$1</span>');
+                const temp = document.createElement('span');
+                temp.innerHTML = html;
+                while (temp.firstChild) {
+                    parent.insertBefore(temp.firstChild, textNode);
+                }
+                parent.removeChild(textNode);
+            });
+        };
+        window.addEventListener('beforeprint', function() {
+            window.wrapEmojisInElement(document.body);
+        });
+    </script>

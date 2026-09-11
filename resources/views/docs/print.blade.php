@@ -179,8 +179,30 @@
         }
         .print-btn:hover { background: #6d28d9; }
 
+        .emoji-icon {
+            display: inline-block !important;
+            min-width: 1.25em !important;
+            height: auto !important;
+            vertical-align: -0.15em !important;
+            margin-right: 0.25em !important;
+            text-align: center !important;
+            font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+        }
+
         /* ── Print media ─────────────────────────────────────────────── */
         @media print {
+            *, body, h1, h2, h3, h4, h5, h6, p, li, span, div, code, td, th {
+                font-family: 'Outfit', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+            }
+            .emoji-icon {
+                display: inline-block !important;
+                min-width: 1.25em !important;
+                height: auto !important;
+                vertical-align: -0.15em !important;
+                margin-right: 0.25em !important;
+                text-align: center !important;
+                font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+            }
             .print-btn { display: none !important; }
             body { font-size: 12.5px; }
             .page { padding: 0; max-width: 100%; }
@@ -231,8 +253,38 @@
     </button>
 
     <script>
+        window.wrapEmojisInElement = function(element) {
+            if (!element) return;
+            const emojiRegex = /(\p{Extended_Pictographic}(?:\uFE0F|\uFE0E)?)/gu;
+            const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
+            const nodesToReplace = [];
+            let node;
+            while (node = walker.nextNode()) {
+                if (node.parentElement && node.parentElement.closest('.emoji-icon, script, style, textarea')) {
+                    continue;
+                }
+                if (emojiRegex.test(node.nodeValue)) {
+                    nodesToReplace.push(node);
+                }
+            }
+            nodesToReplace.forEach(textNode => {
+                const parent = textNode.parentNode;
+                if (!parent) return;
+                const html = textNode.nodeValue.replace(/(\p{Extended_Pictographic}(?:\uFE0F|\uFE0E)?)/gu, '<span class="emoji-icon">$1</span>');
+                const temp = document.createElement('span');
+                temp.innerHTML = html;
+                while (temp.firstChild) {
+                    parent.insertBefore(temp.firstChild, textNode);
+                }
+                parent.removeChild(textNode);
+            });
+        };
+        window.addEventListener('beforeprint', function() {
+            window.wrapEmojisInElement(document.body);
+        });
         // Auto-lanzar impresión al cargar la página
         window.addEventListener('load', function () {
+            window.wrapEmojisInElement(document.body);
             setTimeout(function () { window.print(); }, 400);
         });
     </script>

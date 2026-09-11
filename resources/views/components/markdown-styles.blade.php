@@ -206,11 +206,31 @@
         background: transparent !important;
     }
 
+    .emoji-icon {
+        display: inline-block !important;
+        min-width: 1.25em !important;
+        height: auto !important;
+        vertical-align: -0.15em !important;
+        margin-right: 0.25em !important;
+        text-align: center !important;
+        font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+    }
+
     @media print {
         .markdown-content *, .prose * {
             font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
         }
         
+        .emoji-icon {
+            display: inline-block !important;
+            min-width: 1.25em !important;
+            height: auto !important;
+            vertical-align: -0.15em !important;
+            margin-right: 0.25em !important;
+            text-align: center !important;
+            font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+        }
+
         .markdown-content img.emoji, .prose img.emoji {
             width: 1em !important;
             height: 1em !important;
