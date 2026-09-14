@@ -43,14 +43,14 @@
         @endif
     </x-slot>
 
-    <div class="py-8 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900 min-h-screen" 
+    <div class="py-8 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900 min-h-screen"
          x-data="surveyManager()">
         <div class="max-w-[1600px] mx-auto">
 
             <form action="{{ route($routePrefix . 'update', $contextTeam ? [$contextTeam, $survey] : [$survey]) }}" method="POST" id="survey-edit-form">
                 @csrf
                 @method('PATCH')
-                
+
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <!-- Main Content -->
                     <div class="lg:col-span-2 space-y-8">
@@ -135,17 +135,17 @@
                         <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
                             <h2 class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">{{ __('Constructor de Preguntas') }}</h2>
                             <div class="flex items-center gap-2">
-                                <button type="button" @click="previewSurvey()" 
+                                <button type="button" @click="previewSurvey()"
                                         class="inline-flex items-center px-4 py-2 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-100 transition-all gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                     {{ __('Previsualizar') }}
                                 </button>
-                                <button type="button" @click="selectImportSource()" 
+                                <button type="button" @click="selectImportSource()"
                                         class="inline-flex items-center px-4 py-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-100 transition-all gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a2 2 0 002 2h12a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
                                     {{ __('Añadir desde JSON') }}
                                 </button>
-                                <button type="button" @click="downloadExampleJSON()" 
+                                <button type="button" @click="downloadExampleJSON()"
                                         class="inline-flex items-center px-3 py-2 text-[9px] font-bold text-gray-400 hover:text-indigo-500 transition-colors gap-1.5 group">
                                     <svg class="w-3.5 h-3.5 opacity-50 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                     {{ __('Descargar Ejemplo') }}
@@ -159,7 +159,7 @@
                             <template x-for="(question, qIndex) in questions" :key="question.id">
                                 <div class="group relative bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-xl shadow-indigo-500/5 border border-gray-100 dark:border-gray-800 animate-fade-in">
                                     <!-- Delete Question Button -->
-                                    <button type="button" @click="removeQuestion(qIndex)" 
+                                    <button type="button" @click="removeQuestion(qIndex)"
                                             class="absolute -top-3 -right-3 w-10 h-10 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 hover:text-white shadow-lg border border-red-100 dark:border-red-900/30">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
                                     </button>
@@ -178,7 +178,7 @@
                                                      <input type="text" :name="`questions[${qIndex}][title]`" x-model="question.title" required
                                                             class="w-full bg-transparent border-b-2 border-gray-100 dark:border-gray-800 focus:border-indigo-500 px-0 py-2 text-lg font-black text-gray-900 dark:text-white placeholder-gray-300 transition-all"
                                                             placeholder="{{ __('Escribe tu pregunta aquí...') }}">
-                                                     
+
                                                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                          <div>
                                                              <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">{{ __('Descripción (Opcional)') }}</label>
@@ -218,14 +218,14 @@
                                             </div>
 
                                             <!-- Options Section (only for choices) -->
-                                            <div x-show="question.type === 'single_choice' || question.type === 'multiple_choice'" 
+                                            <div x-show="question.type === 'single_choice' || question.type === 'multiple_choice'"
                                                  x-transition:enter="transition ease-out duration-300"
                                                  x-transition:enter-start="opacity-0 -translate-y-4"
                                                  x-transition:enter-end="opacity-100 translate-y-0"
                                                  class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-                                                
+
                                                 <label class="block text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-2 ml-1">{{ __('Opciones de Respuesta') }}</label>
-                                                
+
                                                 <div class="space-y-3">
                                                     <template x-for="(option, oIndex) in question.options" :key="oIndex">
                                                         <div class="flex items-center gap-3 group/opt">
@@ -234,7 +234,7 @@
                                                             <input type="text" :name="`questions[${qIndex}][options][${oIndex}][label]`" x-model="option.label"
                                                                    class="flex-grow bg-gray-50 dark:bg-gray-800/30 border-2 border-transparent focus:border-indigo-500/30 focus:bg-white dark:focus:bg-gray-800 rounded-xl px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 transition-all"
                                                                    placeholder="{{ __('Escribe una opción...') }}">
-                                                            <button type="button" @click="removeOption(qIndex, oIndex)" 
+                                                            <button type="button" @click="removeOption(qIndex, oIndex)"
                                                                     class="p-2 text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover/opt:opacity-100"
                                                                     x-show="question.options.length > 2">
                                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -242,8 +242,8 @@
                                                         </div>
                                                     </template>
                                                 </div>
-                                                
-                                                <button type="button" @click="addOption(qIndex)" 
+
+                                                <button type="button" @click="addOption(qIndex)"
                                                         class="inline-flex items-center px-4 py-2 text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-xl transition-all gap-2">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
                                                     {{ __('Añadir Opción') }}
@@ -271,7 +271,7 @@
                             </template>
 
                             <!-- Add Question Button -->
-                            <button type="button" @click="addQuestion()" 
+                            <button type="button" @click="addQuestion()"
                                     class="w-full py-8 border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-[2.5rem] text-gray-400 hover:border-indigo-500 hover:text-indigo-600 hover:bg-indigo-50/30 dark:hover:bg-indigo-500/5 transition-all flex flex-col items-center justify-center gap-3 group">
                                 <div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-lg">
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"/></svg>
@@ -299,7 +299,7 @@
                                     <div class="pt-4 space-y-4">
                                         <label class="flex items-center group cursor-pointer">
                                             <div class="relative">
-                                                
+
                                                 <input type="checkbox" name="show_results_before_voting" value="1" {{ old('show_results_before_voting', $survey->show_results_before_voting) ? 'checked' : '' }} class="sr-only peer">
                                                 <div class="w-10 h-5 bg-gray-200 dark:bg-gray-700 rounded-full peer-checked:bg-indigo-600 transition-colors after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-5"></div>
                                             </div>
@@ -308,7 +308,7 @@
 
                                         <label class="flex items-center group cursor-pointer">
                                             <div class="relative">
-                                                
+
                                                 <input type="checkbox" name="is_public" value="1" {{ old('is_public', $survey->is_public) ? 'checked' : '' }} class="sr-only peer">
                                                 <div class="w-10 h-5 bg-gray-200 dark:bg-gray-700 rounded-full peer-checked:bg-fuchsia-600 transition-colors after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-5"></div>
                                             </div>
@@ -317,7 +317,7 @@
 
                                         <label class="flex items-center group cursor-pointer">
                                             <div class="relative">
-                                                
+
                                                 <input type="checkbox" name="allow_multiple_votes" value="1" {{ old('allow_multiple_votes', $survey->allow_multiple_votes) ? 'checked' : '' }} class="sr-only peer">
                                                 <div class="w-10 h-5 bg-gray-200 dark:bg-gray-700 rounded-full peer-checked:bg-emerald-600 transition-colors after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-5"></div>
                                             </div>
@@ -326,7 +326,7 @@
 
                                         <label class="flex items-center group cursor-pointer">
                                             <div class="relative">
-                                                
+
                                                 <input type="checkbox" name="is_active" value="1" {{ old('is_active', $survey->is_active) ? 'checked' : '' }} class="sr-only peer">
                                                 <div class="w-10 h-5 bg-gray-200 dark:bg-gray-700 rounded-full peer-checked:bg-indigo-600 transition-colors after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-5"></div>
                                             </div>
@@ -336,7 +336,7 @@
                                 </div>
                             </div>
 
-                            <button type="submit" 
+                            <button type="submit"
                                     class="w-full group relative inline-flex items-center justify-center px-8 py-5 font-black text-white tracking-widest uppercase transition-all duration-500 ease-in-out transform bg-indigo-600 rounded-[2rem] hover:scale-105 active:scale-95 shadow-[0_20px_50px_rgba(79,70,229,0.3)] hover:shadow-[0_20px_50px_rgba(79,70,229,0.5)] overflow-hidden">
                                 <div class="absolute inset-0 w-full h-full bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-700"></div>
                                 <span class="relative flex items-center gap-3">
@@ -351,7 +351,7 @@
         </div>
     </div>
 
-    <div id="survey-edit-floating-bar" 
+    <div id="survey-edit-floating-bar"
          x-data="floatingDraggable"
          @mousedown="startDrag"
          @touchstart.passive="startDrag"
@@ -434,50 +434,50 @@
                     startY: 0,
                     initialLeft: 0,
                     initialBottom: 0,
-                    
+
                     startDrag(e) {
                         if (e.target.closest('button') || e.target.closest('a')) return;
-                        
+
                         this.isDragging = true;
                         const touch = e.type.includes('touch') ? e.touches[0] : e;
                         this.startX = touch.clientX;
                         this.startY = touch.clientY;
-                        
+
                         const rect = this.$el.getBoundingClientRect();
                         this.initialLeft = rect.left;
                         this.initialBottom = window.innerHeight - rect.bottom;
-                        
+
                         this.$el.style.transform = 'none';
                         this.$el.style.left = this.initialLeft + 'px';
                         this.$el.style.bottom = this.initialBottom + 'px';
                     },
-                    
+
                     drag(e) {
                         if (!this.isDragging) return;
-                        
+
                         const touch = e.type.includes('touch') ? e.touches[0] : e;
                         const deltaX = touch.clientX - this.startX;
                         const deltaY = touch.clientY - this.startY;
-                        
+
                         const newLeft = this.initialLeft + deltaX;
                         const newBottom = this.initialBottom - deltaY;
-                        
+
                         const maxX = window.innerWidth - this.$el.offsetWidth;
                         const minX = 0;
                         const boundedLeft = Math.max(minX, Math.min(newLeft, maxX));
-                        
+
                         const maxBottom = window.innerHeight - this.$el.offsetHeight;
                         const minBottom = 0;
                         const boundedBottom = Math.max(minBottom, Math.min(newBottom, maxBottom));
-                        
+
                         this.$el.style.left = boundedLeft + 'px';
                         this.$el.style.bottom = boundedBottom + 'px';
-                        
+
                         if (e.type.includes('touch')) {
                             e.preventDefault();
                         }
                     },
-                    
+
                     stopDrag() {
                         this.isDragging = false;
                     }
@@ -581,8 +581,8 @@
                         `,
                         didOpen: (el) => {
                             el.querySelector('#import-btn-file').onclick = () => { Swal.close(); this.$refs.jsonInput.click(); };
-                            el.querySelector('#import-btn-clipboard').onclick = async () => { 
-                                Swal.close(); 
+                            el.querySelector('#import-btn-clipboard').onclick = async () => {
+                                Swal.close();
                                 Swal.fire({
                                     title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">{{ __("Pegar JSON") }}</span>',
                                     html: `
@@ -623,13 +623,13 @@
                                     }
                                 });
                             };
-                            el.querySelector('#import-btn-drive').onclick = () => { 
-                                Swal.close(); 
-                                window.dispatchEvent(new CustomEvent('open-drive-picker', { 
-                                    detail: { 
+                            el.querySelector('#import-btn-drive').onclick = () => {
+                                Swal.close();
+                                window.dispatchEvent(new CustomEvent('open-drive-picker', {
+                                    detail: {
                                         mode: 'collect',
-                                        type: 'survey_import' 
-                                    } 
+                                        type: 'survey_import'
+                                    }
                                 }));
                             };
                         }
@@ -670,7 +670,7 @@
                             "is_required": false
                         }
                     ];
-                    
+
                     const blob = new Blob([JSON.stringify(example, null, 4)], { type: 'application/json' });
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
@@ -718,20 +718,20 @@
                                 instructions: q.instructions || '',
                                 type: q.type || 'single_choice',
                                 is_required: q.is_required !== undefined ? q.is_required : true,
-                                options: Array.isArray(q.options) 
+                                options: Array.isArray(q.options)
                                     ? q.options.map(opt => ({ db_id: null, label: opt }))
                                     : [{ db_id: null, label: '' }, { db_id: null, label: '' }]
                             }));
 
                             const isDark = document.documentElement.classList.contains('dark');
-                            
+
                             // Generate Preview HTML
                             let previewHtml = `
                                 <div class="text-left mt-4 mb-6">
                                     <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">{{ __("Vista Previa de Preguntas") }}</div>
                                     <div class="space-y-2 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
                             `;
-                            
+
                             validated.forEach((q, index) => {
                                 const typeNames = {
                                     'single_choice': 'Única',
@@ -749,9 +749,9 @@
                                     </div>
                                 `;
                             });
-                            
+
                             previewHtml += `</div></div>`;
-                            
+
                             Swal.fire({
                                 title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">{{ __("¿Importar preguntas?") }}</span>',
                                 html: `
@@ -797,7 +797,7 @@
                     const isDark = document.documentElement.classList.contains('dark');
                     const title = document.getElementById('title').value || '{{ __("Sin título") }}';
                     const description = document.getElementById('description').value || '';
-                    
+
                     let questionsHtml = '';
                     this.questions.forEach((q, index) => {
                         let optionsHtml = '';

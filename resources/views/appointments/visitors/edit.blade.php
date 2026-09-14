@@ -46,7 +46,7 @@
                             @error('last_name') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
                     </div>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="dni">DNI/NIE</label>
@@ -192,41 +192,41 @@
                 startY: 0,
                 initialLeft: 0,
                 initialBottom: 0,
-                
+
                 startDrag(e) {
                     if (e.target.closest('button') || e.target.closest('a')) return;
-                    
+
                     this.isDragging = true;
                     const touch = e.type.includes('touch') ? e.touches[0] : e;
                     this.startX = touch.clientX;
                     this.startY = touch.clientY;
-                    
+
                     const rect = this.$el.getBoundingClientRect();
                     this.initialLeft = rect.left;
                     this.initialBottom = window.innerHeight - rect.bottom;
-                    
+
                     this.$el.style.transform = 'none';
                     this.$el.style.left = this.initialLeft + 'px';
                     this.$el.style.bottom = this.initialBottom + 'px';
                 },
-                
+
                 drag(e) {
                     if (!this.isDragging) return;
-                    
+
                     const touch = e.type.includes('touch') ? e.touches[0] : e;
                     const deltaX = touch.clientX - this.startX;
                     const deltaY = touch.clientY - this.startY;
-                    
+
                     const newLeft = this.initialLeft + deltaX;
                     const newBottom = this.initialBottom - deltaY;
-                    
+
                     const maxX = window.innerWidth - this.$el.offsetWidth;
                     const maxBottom = window.innerHeight - this.$el.offsetHeight;
-                    
+
                     this.$el.style.left = Math.max(0, Math.min(newLeft, maxX)) + 'px';
                     this.$el.style.bottom = Math.max(0, Math.min(newBottom, maxBottom)) + 'px';
                 },
-                
+
                 stopDrag() {
                     this.isDragging = false;
                 }

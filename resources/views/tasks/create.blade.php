@@ -105,7 +105,7 @@
                             class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white transition-all cursor-pointer">
                             <option value="">{{ __('(Ningún expediente)') }}</option>
                             @foreach ($expedientes as $exp)
-                                <option value="{{ $exp->id }}" 
+                                <option value="{{ $exp->id }}"
                                     data-code="{{ $exp->code }}"
                                     {{ (old('expediente_id', $selectedExpedienteId) == $exp->id) ? 'selected' : '' }}>
                                     {{ $exp->code }} — {{ $exp->title }}
@@ -138,13 +138,13 @@
                             <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-2">
                                 {{ __('Dependencia de Servicio') }}
                             </label>
-                            <select name="service_id" 
+                            <select name="service_id"
                                 class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
                                 <option value="">{{ __('Sin dependencia externa') }}</option>
                                 @foreach ($services as $service)
-                                    <option value="{{ $service->id }}" 
+                                    <option value="{{ $service->id }}"
                                         {{ old('service_id') == $service->id ? 'selected' : '' }}>
-                                        {{ $service->icon }} {{ $service->name }} 
+                                        {{ $service->icon }} {{ $service->name }}
                                         ({{ $service->getStatusLabel() }})
                                     </option>
                                 @endforeach
@@ -155,8 +155,8 @@
 
                 <!-- Description -->
                 <div>
-                    <x-markdown-editor 
-                        name="description" 
+                    <x-markdown-editor
+                        name="description"
                         id="description"
                         :value="old('description')"
                         :label="__('tasks.description')"
@@ -168,8 +168,8 @@
 
                 <!-- Observations (Markdown) -->
                 <div>
-                    <x-markdown-editor 
-                        name="observations" 
+                    <x-markdown-editor
+                        name="observations"
                         id="observations"
                         :value="old('observations')"
                         :label="__('tasks.observations')"
@@ -309,7 +309,7 @@
                 </div>
 
                 <!-- Autoprogrammable (Recurrence) -->
-                <div x-data="{ 
+                <div x-data="{
                     isAutoprogrammable: {{ old('is_autoprogrammable', 0) ? 'true' : 'false' }},
                     frequency: '{{ old('autoprogram_settings.frequency', 'daily') }}',
                     monthlyType: '{{ old('autoprogram_settings.monthly_type', 'date') }}',
@@ -332,15 +332,15 @@
                                 <span class="text-[11px] text-gray-500 dark:text-gray-400">{{ __('tasks.autoprogrammable_hint') }}</span>
                             </div>
                         </div>
-                        
+
                         <!-- Segmented Control -->
                         <div class="flex p-1 bg-gray-200 dark:bg-gray-950/50 rounded-xl w-fit self-start sm:self-center border border-transparent dark:border-gray-800">
-                            <button type="button" @click="isAutoprogrammable = false" 
+                            <button type="button" @click="isAutoprogrammable = false"
                                 :class="!isAutoprogrammable ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
                                 class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-200">
                                 {{ __('tasks.disabled') }}
                             </button>
-                            <button type="button" @click="isAutoprogrammable = true" 
+                            <button type="button" @click="isAutoprogrammable = true"
                                 :class="isAutoprogrammable ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/20' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
                                 class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-200">
                                 {{ __('tasks.active') }}
@@ -375,7 +375,7 @@
                                 <div class="flex flex-wrap gap-2">
                                     @foreach(['1' => 'L', '2' => 'M', '3' => 'X', '4' => 'J', '5' => 'V', '6' => 'S', '7' => 'D'] as $val => $label)
                                         <label class="relative cursor-pointer">
-                                            <input type="checkbox" name="autoprogram_settings[days][]" value="{{ $val }}" 
+                                            <input type="checkbox" name="autoprogram_settings[days][]" value="{{ $val }}"
                                                 {{ in_array($val, old('autoprogram_settings.days', [])) ? 'checked' : '' }}
                                                 class="peer sr-only">
                                             <div class="w-9 h-9 rounded-xl border-2 border-gray-100 dark:border-gray-800 flex items-center justify-center text-xs font-black text-gray-400 peer-checked:border-violet-500 peer-checked:bg-violet-50 dark:peer-checked:bg-violet-900/30 peer-checked:text-violet-600 transition-all hover:border-violet-200 shadow-sm">
@@ -411,7 +411,7 @@
                                         <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('Un día específico de la semana') }}</span>
                                     </label>
                                 </div>
-                                
+
                                 <div x-show="monthlyType === 'ordinal'" class="flex items-center gap-2 mt-3" x-transition>
                                     <span class="text-sm text-gray-500">{{ __('El') }}</span>
                                     <select name="autoprogram_settings[monthly_ordinal]" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-3 py-1.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
@@ -768,35 +768,35 @@
             cursor: pointer !important;
             transition: all 0.2s ease !important;
         }
-        .ts-control input { 
-            font-size: 14px !important; 
-            padding: 0 !important; 
-            margin: 0 !important; 
-            background: transparent !important; 
-            border: none !important; 
-            outline: none !important; 
+        .ts-control input {
+            font-size: 14px !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            background: transparent !important;
+            border: none !important;
+            outline: none !important;
             box-shadow: none !important;
             line-height: 1 !important;
             height: auto !important;
         }
         .ts-control input::placeholder { color: #9ca3af !important; font-weight: 500 !important; }
-        
+
         .dark .ts-control {
             background-color: #1f2937 !important;
             border-color: #374151 !important;
             color: #f3f4f6 !important;
         }
-        
+
         .ts-wrapper.focus .ts-control {
             border-color: #7c3aed !important;
             box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2) !important;
         }
-        
+
         /* Clear Button Esthetic */
-        .ts-wrapper .clear-button { 
-            right: 1rem !important; 
-            top: 50% !important; 
-            transform: translateY(-50%) !important; 
+        .ts-wrapper .clear-button {
+            right: 1rem !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
             font-size: 1.25rem !important;
             color: #9ca3af !important;
             opacity: 0.7 !important;
@@ -804,32 +804,32 @@
         }
         .ts-wrapper .clear-button:hover { opacity: 1 !important; color: #ef4444 !important; }
         .ts-wrapper .ts-control { padding-right: 2.5rem !important; }
-        
-        .ts-dropdown { 
-            border-radius: 1rem !important; 
+
+        .ts-dropdown {
+            border-radius: 1rem !important;
             border: 1px solid #e5e7eb !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important; 
-            margin-top: 6px !important; 
-            padding: 0.5rem !important; 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+            margin-top: 6px !important;
+            padding: 0.5rem !important;
             z-index: 9999 !important;
         }
         .dark .ts-dropdown { background-color: #111827 !important; border-color: #374151 !important; }
-        
-        .ts-dropdown .option { 
-            padding: 0.625rem 0.75rem !important; 
-            border-radius: 0.6rem !important; 
-            margin-bottom: 2px !important; 
+
+        .ts-dropdown .option {
+            padding: 0.625rem 0.75rem !important;
+            border-radius: 0.6rem !important;
+            margin-bottom: 2px !important;
             transition: all 0.15s ease !important;
             color: #374151 !important;
         }
         .dark .ts-dropdown .option { color: #e5e7eb !important; }
-        
-        .ts-dropdown .active { 
-            background-color: #f5f3ff !important; 
-            color: #4f46e5 !important; 
+
+        .ts-dropdown .active {
+            background-color: #f5f3ff !important;
+            color: #4f46e5 !important;
         }
         .dark .ts-dropdown .active { background-color: #4f46e5 !important; color: #ffffff !important; }
-        
+
         /* Ocultar el select original para evitar duplicidad si TomSelect tarda un instante */
         #parent_id_select, #expediente_id_select { display: none; }
     </style>
@@ -843,10 +843,10 @@
                     throw new Error('El formato no es un JSON de Sientia MTX válido.');
                 }
                 const task = data.task;
-                
+
                 // Title
                 document.querySelector('[name="title"]').value = task.title || '';
-                
+
                 // Description (Rich Editor)
                 const descEl = document.getElementById('description');
                 if (descEl) {
@@ -866,10 +866,10 @@
                         obsEl.value = task.observations || '';
                     }
                 }
-                
+
                 if (task.priority) document.querySelector('[name="priority"]').value = task.priority;
                 if (task.urgency) document.querySelector('[name="urgency"]').value = task.urgency;
-                
+
                 // Visibility
                 const visRadio = document.querySelector(`input[name="visibility"][value="${task.visibility}"]`);
                 if (visRadio) visRadio.checked = true;
@@ -884,7 +884,7 @@
                 // Checkboxes
                 if (document.querySelector('[name="is_out_of_skill_tree"]'))
                     document.querySelector('[name="is_out_of_skill_tree"]').checked = !!task.is_out_of_skill_tree;
-                
+
                 if (document.querySelector('[name="is_backstage"]'))
                     document.querySelector('[name="is_backstage"]').checked = !!task.is_backstage;
 
@@ -1022,15 +1022,15 @@
                                 '</div>' +
                                 '<div class="flex flex-col min-w-0">' +
                                     '<span class="font-bold text-gray-900 dark:text-white truncate text-xs">' + escape(data.text) + '</span>' +
-                                    '<span class="text-[10px] text-gray-700 dark:text-gray-200 font-black uppercase tracking-widest mt-0.5 flex items-center gap-1.5">' + 
+                                    '<span class="text-[10px] text-gray-700 dark:text-gray-200 font-black uppercase tracking-widest mt-0.5 flex items-center gap-1.5">' +
                                         '<span class="w-1.5 h-1.5 rounded-full bg-violet-400"></span>' +
-                                        escape(data.assignee) + 
+                                        escape(data.assignee) +
                                     '</span>' +
                                 '</div>' +
                             '</div>';
                         },
                         item: function(data, escape) {
-                            return '<div class="flex items-center gap-2">' + 
+                            return '<div class="flex items-center gap-2">' +
                                 '<span class="text-[10px] font-mono font-bold text-violet-500 bg-violet-50 dark:bg-violet-900/30 px-1.5 py-0.5 rounded">#' + escape(data.value) + '</span>' +
                                 '<span class="font-medium text-gray-900 dark:text-white">' + escape(data.text) + '</span>' +
                                 '<span class="text-[9px] text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 font-black uppercase tracking-tighter">@' + escape(data.assignee) + '</span>' +
@@ -1073,7 +1073,7 @@
         function loadDriveFolder(folderId) {
             const container = document.getElementById('drive-contents');
             const teamId = '{{ $team->id }}';
-            
+
             fetch(`{{ route('google.drive.list') }}?team_id=${teamId}&folderId=${folderId}`)
                 .then(response => response.json())
                 .then(data => {
@@ -1083,7 +1083,7 @@
                     }
 
                     container.innerHTML = '';
-                    
+
                     if (folderId !== 'root') {
                         const backBtn = document.createElement('button');
                         backBtn.className = 'p-2 text-blue-600 font-bold text-sm mb-2';
@@ -1141,7 +1141,7 @@
 
         function renderFiles() {
             const list = document.getElementById('file-list-preview');
-            // Note: This won't show the local files again if we cleared it, 
+            // Note: This won't show the local files again if we cleared it,
             // so we should handle local files and drive files together.
             // I'll update updateFileList to also call renderFiles.
         }
@@ -1185,7 +1185,7 @@
                     const isImage = file.type.startsWith('image/');
                     const div = document.createElement('div');
                     div.className = 'flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700/50';
-                    
+
                     let imagePreview = '';
                     if (isImage) {
                         const objectUrl = URL.createObjectURL(file);
@@ -1326,7 +1326,7 @@
                 targetScroll = e.target.scrollTop || 0;
             }
             const currentScroll = Math.max(windowScroll, targetScroll);
-            
+
             if (currentScroll > 150) {
                 bar.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
                 bar.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');

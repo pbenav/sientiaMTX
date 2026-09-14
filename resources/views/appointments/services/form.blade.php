@@ -83,8 +83,8 @@
                         <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="description">
                             Descripción <span class="text-[9px] font-bold text-cyan-500 normal-case tracking-normal ml-1">Markdown</span>
                         </label>
-                        <x-markdown-editor 
-                            name="description" 
+                        <x-markdown-editor
+                            name="description"
                             id="description"
                             :value="old('description', $service->description ?? '')"
                             rows="5"
@@ -156,9 +156,9 @@
                                 <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Servicio activo y visible</span>
                             </label>
                         </div>
-                        
+
                         <div class="flex flex-col gap-4 justify-center mt-2 sm:mt-0">
-                            
+
                             <label class="flex items-center gap-3 cursor-pointer group">
                                 <div class="relative">
                                     <input type="hidden" name="sync_to_google_calendar" value="0">
@@ -213,19 +213,19 @@
                     <div x-show="fields.length === 0" class="text-center py-6">
                         <p class="text-sm text-gray-500 dark:text-gray-400">No hay campos personalizados configurados.</p>
                     </div>
-                    
+
                     <div class="space-y-3">
                         <template x-for="(field, index) in fields" :key="field.id">
                             <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-150 dark:border-gray-800">
-                                
+
                                 <input type="hidden" :name="'custom_fields['+index+'][id]'" :value="field.id">
-                                
+
                                 <div class="w-full sm:flex-1">
                                     <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-1">Nombre del Campo *</label>
                                     <input type="text" :name="'custom_fields['+index+'][name]'" x-model="field.name" required placeholder="Ej: Código de paciente"
                                            class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all">
                                 </div>
-                                
+
                                 <div class="w-full sm:w-48">
                                     <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-1">Tipo *</label>
                                     <select :name="'custom_fields['+index+'][type]'" x-model="field.type" required
@@ -236,7 +236,7 @@
                                         <option value="date">Fecha</option>
                                     </select>
                                 </div>
-                                
+
                                 <div class="flex items-center gap-3 mt-4 sm:mt-0 sm:pt-5">
                                     <label class="flex items-center gap-2 cursor-pointer group shrink-0">
                                         <input type="hidden" :name="'custom_fields['+index+'][is_required]'" value="0">
@@ -244,14 +244,14 @@
                                                class="w-4 h-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500 dark:border-gray-600 dark:bg-gray-700 transition-colors">
                                         <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Obligatorio</span>
                                     </label>
-                                    
+
                                     <button type="button" @click="removeField(index)"
                                             class="p-2 text-red-500 hover:text-red-600 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/25 rounded-xl transition-all active:scale-90"
                                             title="Eliminar campo">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                     </button>
                                 </div>
-                                
+
                             </div>
                         </template>
                     </div>
@@ -333,7 +333,7 @@
                 foreach ($days as $num => $name) {
                     $daySchedules = $schedulesMap->get($num) ?: collect();
                     $isActive = $isEdit ? $daySchedules->isNotEmpty() : in_array($num, [1, 2, 3, 4, 5]); // Por defecto de Lunes a Viernes
-                    
+
                     $tramos = [];
                     if ($daySchedules->isNotEmpty()) {
                         foreach ($daySchedules as $ds) {
@@ -348,7 +348,7 @@
                             'end_time' => '14:00',
                         ];
                     }
-                    
+
                     $initialSchedulesJS[$num] = [
                         'active' => $isActive,
                         'tramos' => $tramos,
@@ -374,7 +374,7 @@
                         const lunes = this.schedules[1];
                         const copia = JSON.parse(JSON.stringify(lunes.tramos));
                         const estado = lunes.active;
-                        
+
                         // Copiar el estado y tramos del lunes a todos los días de martes a domingo
                         [2, 3, 4, 5, 6, 0].forEach(day => {
                             this.schedules[day].tramos = JSON.parse(JSON.stringify(copia));
@@ -546,45 +546,45 @@
             startY: 0,
             initialLeft: 0,
             initialBottom: 0,
-            
+
             startDrag(e) {
                 // Ignore clicks on buttons/links inside the bar
                 if (e.target.closest('button') || e.target.closest('a')) return;
-                
+
                 this.isDragging = true;
                 const touch = e.type.includes('touch') ? e.touches[0] : e;
                 this.startX = touch.clientX;
                 this.startY = touch.clientY;
-                
+
                 const rect = this.$el.getBoundingClientRect();
                 this.initialLeft = rect.left;
                 this.initialBottom = window.innerHeight - rect.bottom;
-                
+
                 // Remove center transform during drag for absolute positioning
                 this.$el.style.transform = 'none';
                 this.$el.style.left = this.initialLeft + 'px';
                 this.$el.style.bottom = this.initialBottom + 'px';
             },
-            
+
             drag(e) {
                 if (!this.isDragging) return;
-                
+
                 const touch = e.type.includes('touch') ? e.touches[0] : e;
                 const deltaX = touch.clientX - this.startX;
                 const deltaY = touch.clientY - this.startY;
-                
+
                 // Update position (inverted Y since we use bottom)
                 const newLeft = this.initialLeft + deltaX;
                 const newBottom = this.initialBottom - deltaY;
-                
+
                 // Simple bounds checking
                 const maxX = window.innerWidth - this.$el.offsetWidth;
                 const maxBottom = window.innerHeight - this.$el.offsetHeight;
-                
+
                 this.$el.style.left = Math.max(0, Math.min(newLeft, maxX)) + 'px';
                 this.$el.style.bottom = Math.max(0, Math.min(newBottom, maxBottom)) + 'px';
             },
-            
+
             stopDrag() {
                 this.isDragging = false;
             }

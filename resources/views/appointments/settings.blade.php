@@ -87,7 +87,7 @@
                          x-data="appointmentSettingsGPS()"
                          x-init="initComponent()">
                         <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">📍 Ubicación Geográfica (Coordenadas GPS)</label>
-                        
+
                         <!-- Buscador por dirección Nominatim -->
                         <div class="relative">
                             <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Buscador GPS / Dirección</label>
@@ -103,7 +103,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            
+
                             <!-- Search Results Dropdown -->
                             <div x-show="searchResults.length > 0" class="absolute z-[1000] w-full mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto">
                                 <template x-for="res in searchResults" :key="res.place_id">
@@ -232,7 +232,7 @@
                             <option value="meet.ffmuc.net" {{ old('jitsi_domain', $settings->jitsi_domain ?? 'meet.jit.si') === 'meet.ffmuc.net' ? 'selected' : '' }}>meet.ffmuc.net (Abierto - Sin límite incrustado - Falla en Firefox)</option>
                         </select>
                         <p class="text-[10px] text-gray-400 mt-2">
-                            El servidor <span class="font-bold">meet.jit.si</span> limita las llamadas incrustadas a 5 minutos, pero funciona bien para apertura externa. 
+                            El servidor <span class="font-bold">meet.jit.si</span> limita las llamadas incrustadas a 5 minutos, pero funciona bien para apertura externa.
                             El servidor <span class="font-bold">meet.ffmuc.net</span> permite incrustación sin límite, pero Firefox bloquea la ventana por seguridad. ¡Elige el que mejor se adapte a ti!
                         </p>
                     </div>
@@ -319,7 +319,7 @@
             },
             initMap() {
                 if (this.mapInstance) return;
-                
+
                 const lat = parseFloat(this.latVal) || 37.17;
                 const lng = parseFloat(this.lngVal) || -3.60;
 
@@ -465,41 +465,41 @@
                 startY: 0,
                 initialLeft: 0,
                 initialBottom: 0,
-                
+
                 startDrag(e) {
                     if (e.target.closest('button') || e.target.closest('a')) return;
-                    
+
                     this.isDragging = true;
                     const touch = e.type.includes('touch') ? e.touches[0] : e;
                     this.startX = touch.clientX;
                     this.startY = touch.clientY;
-                    
+
                     const rect = this.$el.getBoundingClientRect();
                     this.initialLeft = rect.left;
                     this.initialBottom = window.innerHeight - rect.bottom;
-                    
+
                     this.$el.style.transform = 'none';
                     this.$el.style.left = this.initialLeft + 'px';
                     this.$el.style.bottom = this.initialBottom + 'px';
                 },
-                
+
                 drag(e) {
                     if (!this.isDragging) return;
-                    
+
                     const touch = e.type.includes('touch') ? e.touches[0] : e;
                     const deltaX = touch.clientX - this.startX;
                     const deltaY = touch.clientY - this.startY;
-                    
+
                     const newLeft = this.initialLeft + deltaX;
                     const newBottom = this.initialBottom - deltaY;
-                    
+
                     const maxX = window.innerWidth - this.$el.offsetWidth;
                     const maxBottom = window.innerHeight - this.$el.offsetHeight;
-                    
+
                     this.$el.style.left = Math.max(0, Math.min(newLeft, maxX)) + 'px';
                     this.$el.style.bottom = Math.max(0, Math.min(newBottom, maxBottom)) + 'px';
                 },
-                
+
                 stopDrag() {
                     this.isDragging = false;
                 }

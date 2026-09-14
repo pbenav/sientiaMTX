@@ -2285,110 +2285,15 @@
         }
 
         function printDocumentBook() {
-            const printWin = window.open('', '_blank');
-            const title = @json($activity->title);
-            const teamName = @json($team->name);
-            const docVersion = @json($activity->metadata['version'] ?? '1.0.0');
-            const chapters = @json($activity->metadata['chapters'] ?? []);
-
-            let chaptersHtml = '';
-            let tocHtml = '';
-
-            chapters.forEach((chap, idx) => {
-                tocHtml += `
-                    <div class="toc-item">
-                        <span class="toc-title">${idx + 1}. ${chap.title}</span>
-                        <span class="toc-dots"></span>
-                        <span class="toc-page">Capítulo ${idx + 1}</span>
-                    </div>
-                `;
-
-                chaptersHtml += `
-                    <div class="chapter-page">
-                        <div class="chapter-header">
-                            <span class="chapter-num">CAPÍTULO ${idx + 1}</span>
-                            <h2 class="chapter-title">${chap.title}</h2>
-                            <div class="chapter-meta">Por ${chap.author_name || 'Autor'} • ${chap.updated_at}</div>
-                        </div>
-                        <div class="chapter-body">${marked.parse ? marked.parse(chap.content) : chap.content}</div>
-                    </div>
-                `;
-            SientiaPrint.printDocumentBook({
-                title: @json($activity->title),
-                teamName: @json($team->name),
-                version: @json($activity->metadata['version'] ?? '1.0.0'),
-                chapters: @json($activity->metadata['chapters'] ?? [])
-            });
-
-            printWin.document.write(`
-                <!DOCTYPE html>
-                <html>
-                    <head>
-                        <title>${title} - Libro Digital</title>
-                        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
-                        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"><\/script>
-                        <style>
-                            @page { size: A4; margin: 2.5cm 2cm; }
-                            body { font-family: 'Merriweather', serif; color: #1e293b; line-height: 1.8; margin: 0; padding: 0; font-size: 14px; }
-                            h1, h2, h3, h4, h5, h6, .outfit { font-family: 'Outfit', sans-serif; }
-
-                            /* Portada */
-                            .cover-page { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; page-break-after: always; padding: 2rem; box-sizing: border-box; }
-                            .cover-team { font-size: 16px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 2rem; font-family: 'Outfit', sans-serif; }
-                            .cover-title { font-size: 42px; font-weight: 900; color: #0f172a; line-height: 1.2; margin-bottom: 2rem; font-family: 'Outfit', sans-serif; }
-                            .cover-badge { display: inline-block; background: #f1f5f9; color: #475569; padding: 8px 24px; border-radius: 50px; font-size: 14px; font-weight: 700; margin-bottom: 4rem; font-family: 'Outfit', sans-serif; border: 1px solid #e2e8f0; }
-                            .cover-footer { margin-top: auto; font-size: 14px; color: #64748b; font-family: 'Outfit', sans-serif; }
-
-                            /* Índice */
-                            .toc-page { page-break-after: always; padding: 2rem 0; }
-                            .toc-main-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 3rem; font-family: 'Outfit', sans-serif; border-bottom: 2px solid #e2e8f0; padding-bottom: 1rem; }
-                            .toc-item { display: flex; align-items: baseline; margin-bottom: 1.5rem; font-family: 'Outfit', sans-serif; font-size: 16px; }
-                            .toc-title { font-weight: 600; color: #334155; }
-                            .toc-dots { flex: 1; border-bottom: 1px dotted #cbd5e1; margin: 0 12px; }
-                            .toc-page { font-weight: 700; color: #64748b; font-size: 14px; }
-
-                            /* Capítulos */
-                            .chapter-page { page-break-before: always; padding: 2rem 0; }
-                            .chapter-header { margin-bottom: 3rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 2rem; }
-                            .chapter-num { font-size: 14px; font-weight: 800; color: #8b5cf6; text-transform: uppercase; letter-spacing: 3px; font-family: 'Outfit', sans-serif; display: block; margin-bottom: 0.5rem; }
-                            .chapter-title { font-size: 32px; font-weight: 800; color: #0f172a; margin: 0 0 1rem 0; font-family: 'Outfit', sans-serif; line-height: 1.2; }
-                            .chapter-meta { font-size: 13px; color: #64748b; font-family: 'Outfit', sans-serif; }
-                            .chapter-body { color: #334155; }
-                            .chapter-body p { margin-bottom: 1.5rem; }
-                            .chapter-body h1, .chapter-body h2, .chapter-body h3 { font-family: 'Outfit', sans-serif; color: #0f172a; margin-top: 2.5rem; margin-bottom: 1rem; font-weight: 700; }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="cover-page">
-                            <div class="cover-team">${teamName}</div>
-                            <h1 class="cover-title">${title}</h1>
-                            <div class="cover-badge">DOCUMENTO VERSIÓN ${docVersion}</div>
-                            <div class="cover-footer">Sientia MTX • Exportado el ${new Date().toLocaleDateString('es-ES')}</div>
-                        </div>
-
-                        <div class="toc-page">
-                            <h2 class="toc-main-title">Índice General</h2>
-                            ${tocHtml}
-                        </div>
-
-                        ${chaptersHtml}
-
-                        <script>
-                            window.onload = () => {
-                                setTimeout(() => window.print(), 500);
-                            };
-                        <\/script>
-                    </body>
-                </html>
-            `);
-            printWin.document.close();
             if (window.SientiaPrint && window.SientiaPrint.printDocumentBook) {
-                SientiaPrint.printDocumentBook({
-                    title: @json($activity->title),
-                    teamName: @json($team->name),
+                window.SientiaPrint.printDocumentBook({
+                    title: @json($activity->title ?? ''),
+                    teamName: @json($team->name ?? ''),
                     version: @json($activity->metadata['version'] ?? '1.0.0'),
                     chapters: @json($activity->metadata['chapters'] ?? [])
                 });
+            } else {
+                console.error('SientiaPrint.printDocumentBook is not available');
             }
         }
     </script>
