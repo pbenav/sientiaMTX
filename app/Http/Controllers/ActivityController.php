@@ -200,6 +200,16 @@ class ActivityController extends Controller
             $validated['metadata']['is_timeline_locked'] = false;
         }
 
+        if ($request->has('is_autoprogrammable')) {
+            $validated['metadata']['is_autoprogrammable'] = $request->boolean('is_autoprogrammable');
+        } else {
+            $validated['metadata']['is_autoprogrammable'] = false;
+        }
+
+        if ($request->has('autoprogram_settings')) {
+            $validated['metadata']['autoprogram_settings'] = $request->input('autoprogram_settings');
+        }
+
         $validated['auto_priority'] = $request->boolean('auto_priority');
 
         // Quota check de archivos
@@ -368,6 +378,14 @@ class ActivityController extends Controller
             $validated['metadata']['is_timeline_locked'] = $request->boolean('is_timeline_locked');
         } else {
             $validated['metadata']['is_timeline_locked'] = false;
+        }
+
+        if ($request->has('is_autoprogrammable')) {
+            $validated['metadata']['is_autoprogrammable'] = $request->boolean('is_autoprogrammable');
+        }
+
+        if ($request->has('autoprogram_settings')) {
+            $validated['metadata']['autoprogram_settings'] = $request->input('autoprogram_settings');
         }
 
         if ($request->has('auto_priority')) {

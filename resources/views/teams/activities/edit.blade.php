@@ -892,9 +892,9 @@
         </div>
         <div class="space-y-6 relative z-10">
             @php
-                            $hasAutoprogram = data_get($activity->metadata, 'autoprogram_settings') !== null;
-                            $autoSettings = data_get($activity->metadata, 'autoprogram_settings', []);
-                        @endphp
+                $hasAutoprogram = (bool) $activity->is_autoprogrammable;
+                $autoSettings = data_get($activity->metadata, 'autoprogram_settings', []);
+            @endphp
                         <div x-data="{ 
                             isAutoprogrammable: {{ old('is_autoprogrammable', $hasAutoprogram ? 1 : 0) ? 'true' : 'false' }},
                             frequency: '{{ old('autoprogram_settings.frequency', $autoSettings['frequency'] ?? 'daily') }}',
