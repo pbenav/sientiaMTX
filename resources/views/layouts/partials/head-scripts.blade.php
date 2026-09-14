@@ -1177,6 +1177,11 @@
                 window.SientiaPrint.wrapEmojis(element);
             }
         };
+        window.printDocumentBook = function(docData) {
+            if (window.SientiaPrint && window.SientiaPrint.printDocumentBook) {
+                window.SientiaPrint.printDocumentBook(docData || {});
+            }
+        };
         window.addEventListener('beforeprint', function() {
             window.wrapEmojisInElement(document.body);
         });

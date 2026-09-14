@@ -1219,12 +1219,10 @@
                         '      <footer class="footer"><span>Sientia MTX Ecosystem &bull; v0.9.5</span><span>' + new Date().toLocaleString() + '</span></footer>',
                         '    </div>',
                         '    <script>' +
-                        '      window.onload = function() {' +
-                        '        if (window.opener && window.opener.SientiaPrint && window.opener.SientiaPrint.wrapEmojis) {' +
-                        '          window.opener.SientiaPrint.wrapEmojis(document.body);' +
-                        '        }' +
-                        '        setTimeout(function() { window.print(); setTimeout(function() { window.close(); }, 500); }, 300);' +
-                        '      };' +
+                        '      if (window.opener && window.opener.SientiaPrint && window.opener.SientiaPrint.wrapEmojis) {' +
+                        '        window.opener.SientiaPrint.wrapEmojis(document.body);' +
+                        '      }' +
+                        '      window.onload = function() { setTimeout(function() { window.print(); setTimeout(function() { window.close(); }, 500); }, 300); };' +
                         '    <' + '/script>',
                         '  </body>',
                         '</html>'
@@ -1234,12 +1232,14 @@
                 }
 
                 function printDocumentBook() {
-                    SientiaPrint.printDocumentBook({
-                        title: @json($activity->title),
-                        teamName: @json($team->name),
-                        version: @json($activity->metadata['version'] ?? '1.0.0'),
-                        chapters: @json($activity->metadata['chapters'] ?? [])
-                    });
+                    if (window.SientiaPrint && window.SientiaPrint.printDocumentBook) {
+                        SientiaPrint.printDocumentBook({
+                            title: @json($activity->title),
+                            teamName: @json($team->name),
+                            version: @json($activity->metadata['version'] ?? '1.0.0'),
+                            chapters: @json($activity->metadata['chapters'] ?? [])
+                        });
+                    }
                 }
             </script>
 

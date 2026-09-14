@@ -504,12 +504,14 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function printDocumentBook() {
-    SientiaPrint.printDocumentBook({
-        title: @json($activeDocument->title),
-        teamName: @json($team->name),
-        version: @json($activeDocument->metadata['version'] ?? '1.0.0'),
-        chapters: @json($activeDocument->metadata['chapters'] ?? [])
-    });
+    if (window.SientiaPrint && window.SientiaPrint.printDocumentBook) {
+        SientiaPrint.printDocumentBook({
+            title: @json($activeDocument->title),
+            teamName: @json($team->name),
+            version: @json($activeDocument->metadata['version'] ?? '1.0.0'),
+            chapters: @json($activeDocument->metadata['chapters'] ?? [])
+        });
+    }
 }
 </script>
 @endif
