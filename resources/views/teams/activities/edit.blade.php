@@ -2212,6 +2212,7 @@
         <div style="width:1px;height:1.25rem;background:#e5e7eb;flex-shrink:0"></div>
 
         <button type="button"
+                onclick="document.getElementById('edit-activity-form').submit()"
                 onclick="const f = document.getElementById('edit-activity-form'); if (f) { typeof f.requestSubmit === 'function' ? f.requestSubmit() : f.submit(); }"
            style="display:flex;align-items:center;gap:0.375rem;font-size:0.75rem;font-weight:700;color:#fff;background:#7c3aed;padding:0.375rem 0.75rem;border-radius:0.625rem;text-decoration:none;transition:background 0.15s ease;border:none;cursor:pointer;"
            onmouseover="this.style.background='#6d28d9'"
@@ -2261,7 +2262,7 @@
             setTimeout(checkScroll, 1000);
         })();
 
-        function printSection(sectionLabel, contentId) {
+        window.printSection = function(sectionLabel, contentId) {
             const el = document.getElementById(contentId);
             if (!el) {
                 console.error('Print section element not found:', contentId);
@@ -2269,45 +2270,59 @@
             }
             const content = el.innerHTML;
             const activityTitle = @json($activity->title);
-            if (typeof SientiaPrint === 'undefined' || typeof SientiaPrint.print === 'undefined') {
+            if (typeof SientiaPrint !== 'undefined' && typeof SientiaPrint.print === 'function') {
+                SientiaPrint.print(activityTitle, content, { brand: 'Sientia MTX • ' + sectionLabel });
+            } else {
                 console.warn('SientiaPrint not available, using fallback print');
                 const printWin = window.open('', '_blank', 'width=850,height=900');
-                printWin.document.write('<!DOCTYPE html><html><head><title>' + activityTitle + '</title><style>body{font-family:system-ui,sans-serif;padding:2rem;line-height:1.6;color:#1e293b}h1,h2,h3{margin-top:1.5rem;margin-bottom:.75rem}img{max-width:100%}table{border-collapse:collapse;width:100%}td,th{border:1px solid #e2e8f0;padding:.5rem}pre{background:#f1f5f9;padding:1rem;border-radius:.5rem;overflow-x:auto}code{background:#f1f5f9;padding:.125rem .25rem;border-radius:.25rem}</style></head><body>' + content + '</body></html>');
-                printWin.document.close();
-                setTimeout(() => { printWin.print(); }, 500);
-                return;
+                if (printWin) {
+                    printWin.document.write('<!DOCTYPE html><html><head><title>' + activityTitle + '</title><style>body{font-family:system-ui,sans-serif;padding:2rem;line-height:1.6;color:#1e293b}h1,h2,h3{margin-top:1.5rem;margin-bottom:.75rem}img{max-width:100%}table{border-collapse:collapse;width:100%}td,th{border:1px solid #e2e8f0;padding:.5rem}pre{background:#f1f5f9;padding:1rem;border-radius:.5rem;overflow-x:auto}code{background:#f1f5f9;padding:.125rem .25rem;border-radius:.25rem}</style></head><body><h1>' + activityTitle + ' - ' + sectionLabel + '</h1><hr>' + content + '</body></html>');
+                    printWin.document.close();
+                    setTimeout(() => { printWin.print(); }, 500);
+                }
             }
-            SientiaPrint.print(activityTitle, content, { brand: 'Sientia MTX • ' + sectionLabel });
-        }
+        };
 
-        function printPrivateNotes() {
+        window.printPrivateNotes = function() {
             const editor = document.getElementById('reply-content-private');
             let rawContent = editor ? editor.value : '';
             const activityTitle = @json($activity->title);
-            if (typeof SientiaPrint === 'undefined' || typeof SientiaPrint.print === 'undefined') {
-                const printWin = window.open('', '_blank', 'width=850,height=900');
-                let htmlContent = typeof marked !== 'undefined' ? marked.parse(rawContent) : rawContent.replace(/\n/g, '<br>');
-                printWin.document.write('<!DOCTYPE html><html><head><title>' + activityTitle + '</title><style>body{font-family:system-ui,sans-serif;padding:2rem;line-height:1.6;color:#1e293b}h1,h2,h3{margin-top:1.5rem;margin-bottom:.75rem}img{max-width:100%}</style></head><body>' + htmlContent + '</body></html>');
-                printWin.document.close();
-                setTimeout(() => { printWin.print(); }, 500);
-                return;
-            }
             let htmlContent = typeof marked !== 'undefined' ? marked.parse(rawContent) : rawContent.replace(/\n/g, '<br>');
-            SientiaPrint.print(activityTitle, htmlContent, { brand: 'Sientia MTX • Notas Privadas' });
-        }
-
-        function printDocumentBook() {
-            if (window.SientiaPrint && window.SientiaPrint.printDocumentBook) {
-                window.SientiaPrint.printDocumentBook({
-                    title: @json($activity->title ?? ''),
-                    teamName: @json($team->name ?? ''),
-                    version: @json($activity->metadata['version'] ?? '1.0.0'),
-                    chapters: @json($activity->metadata['chapters'] ?? [])
-                });
+            if (typeof SientiaPrint !== 'undefined' && typeof SientiaPrint.print === 'function') {
+                SientiaPrint.print(activityTitle, htmlContent, { brand: 'Sientia MTX • Notas Privadas' });
             } else {
-                console.error('SientiaPrint.printDocumentBook is not available');
+                const printWin = window.open('', '_blank', 'width=850,height=900');
+                if (printWin) {
+                    printWin.document.write('<!DOCTYPE html><html><head><title>' + activityTitle + '</title><style>body{font-family:system-ui,sans-serif;padding:2rem;line-height:1.6;color:#1e293b}h1,h2,h3{margin-top:1.5rem;margin-bottom:.75rem}img{max-width:100%}</style></head><body><h1>' + activityTitle + ' - Notas Privadas</h1><hr>' + htmlContent + '</body></html>');
+                    printWin.document.close();
+                    setTimeout(() => { printWin.print(); }, 500);
+                }
             }
-        }
+        };
+
+        window.printDocumentBook = function() {
+            const docData = {
+                title: @json($activity->title ?? ''),
+                teamName: @json($team->name ?? ''),
+                version: @json($activity->metadata['version'] ?? '1.0.0'),
+                chapters: @json($activity->metadata['chapters'] ?? [])
+            };
+            if (window.SientiaPrint && typeof window.SientiaPrint.printDocumentBook === 'function') {
+                window.SientiaPrint.printDocumentBook(docData);
+            } else {
+                console.warn('SientiaPrint.printDocumentBook not available, using fallback print');
+                let fullHtml = '<h1>' + (docData.title || 'Documento') + '</h1><p><em>' + (docData.teamName || '') + ' • v' + (docData.version || '1.0.0') + '</em></p><hr>';
+                (docData.chapters || []).forEach((chap, idx) => {
+                    fullHtml += '<div style="page-break-after:always; margin-bottom: 2rem;"><h2>' + (idx + 1) + '. ' + (chap.title || '') + '</h2><div>' + (typeof marked !== 'undefined' ? marked.parse(chap.content || '') : (chap.content || '')) + '</div></div>';
+                });
+                const printWin = window.open('', '_blank', 'width=850,height=900');
+                if (printWin) {
+                    printWin.document.write('<!DOCTYPE html><html><head><title>' + (docData.title || 'Documento') + '</title><style>body{font-family:system-ui,sans-serif;padding:2rem;line-height:1.6;color:#1e293b}h1,h2,h3{margin-top:1.5rem;margin-bottom:.75rem}img{max-width:100%}table{border-collapse:collapse;width:100%}td,th{border:1px solid #e2e8f0;padding:.5rem}</style></head><body>' + fullHtml + '</body></html>');
+                    printWin.document.close();
+                    setTimeout(() => { printWin.print(); }, 500);
+                }
+            }
+        };
     </script>
 
     <!-- MODAL DE AÑADIR CAPÍTULO A DOCUMENTO -->
