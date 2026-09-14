@@ -47,6 +47,8 @@
                     $originalOwnerName = $isExternalEvent
                         ? (data_get($activity->metadata, 'google_organizer_name') ?: data_get($activity->metadata, 'google_organizer_email', 'un organizador externo'))
                         : ($activity->creator?->name ?? 'otro usuario');
+                    $hasAutoprogram = (bool) $activity->is_autoprogrammable;
+                    $autoSettings = data_get($activity->metadata, 'autoprogram_settings', []);
                 @endphp
 
                 @if ($isAnotherUserCreator || $isExternalEvent)
@@ -891,10 +893,6 @@
             </div>
         </div>
         <div class="space-y-6 relative z-10">
-            @php
-                $hasAutoprogram = (bool) $activity->is_autoprogrammable;
-                $autoSettings = data_get($activity->metadata, 'autoprogram_settings', []);
-            @endphp
                         <div x-data="{
                             isAutoprogrammable: {{ old('is_autoprogrammable', $hasAutoprogram ? 1 : 0) ? 'true' : 'false' }},
                             frequency: '{{ old('autoprogram_settings.frequency', $autoSettings['frequency'] ?? 'daily') }}',
