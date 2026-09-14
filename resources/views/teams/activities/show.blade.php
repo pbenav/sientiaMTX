@@ -15,7 +15,7 @@
             $instance = $activity->instances()
                 ->whereHas('assignedTo', fn($q) => $q->where('users.id', auth()->id()))
                 ->first();
-            
+
             if ($instance) {
                 $personalInstance = $instance;
             }
@@ -53,7 +53,7 @@
                 {{-- Actions --}}
             </div>
         </div>
-        
+
         <div class="mt-2">
             <x-demo-hint>
                 La ficha técnica de la actividad centraliza toda la ejecución: permite el registro de tiempos (Time-tracking), subdividir el trabajo mediante el desglose, sincronizar fechas con Google Calendar/Activities y gestionar archivos asociados. Además, facilita la clonación y exportación de actividades (Portabilidad JSON).
@@ -290,7 +290,7 @@
                         <div class="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-gray-400 border-b border-gray-50 dark:border-gray-700/50 mb-1">
                             Google Workspace
                         </div>
-                        
+
                         @can('update', $activity)
                             <!-- Sincronización Google Activities -->
                             <form action="{{ route('google.sync_activity', [$team, $activity]) }}" method="POST">
@@ -598,7 +598,7 @@
                             const form = document.createElement('form');
                             form.method = 'POST';
                             form.action = "{{ route('teams.activities.merge-deprecated', [$team, $activity]) }}";
-                            
+
                             const token = document.createElement('input');
                             token.type = 'hidden';
                             token.name = '_token';
@@ -625,7 +625,7 @@
                     }
                     const content = el.innerHTML;
                     const isDark = document.documentElement.classList.contains('dark');
-                    
+
                     const result = await Swal.fire({
                         title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Imprimir Sección</span>',
                         background: isDark ? '#0f172a' : '#ffffff',
@@ -670,7 +670,7 @@
                     const brandLabel = 'Sientia MTX • ' + sectionLabel;
                     const now = new Date();
                     const dateStr = now.toLocaleDateString() + ' a las ' + now.toLocaleTimeString();
-                    
+
                     const headerHtml = withHeaders ? `
                         <div class="print-header">
                             <div class="title-container">
@@ -812,6 +812,7 @@
                         </html>
                     `);
                     printWin.document.close();
+                    printWin.onload = () => { printWin.print(); };
                     printWin.onload = () => {
                         function wrapEmojisInElement(element) {
                             if (!element) return;
@@ -888,7 +889,7 @@
                     const brandLabel = 'Sientia MTX • Notas Privadas';
                     const now = new Date();
                     const dateStr = now.toLocaleDateString() + ' a las ' + now.toLocaleTimeString();
-                    
+
                     const headerHtml = withHeaders ? `
                         <div class="print-header">
                             <div class="title-container">
@@ -1030,6 +1031,7 @@
                         </html>
                     `);
                     printWin.document.close();
+                    printWin.onload = () => { printWin.print(); };
                     printWin.onload = () => {
                         function wrapEmojisInElement(element) {
                             if (!element) return;
@@ -1058,7 +1060,7 @@
 
                 async function printFullTask() {
                     const isDark = document.documentElement.classList.contains('dark');
-                    
+
                     const result = await Swal.fire({
                         title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Imprimir Ficha Técnica</span>',
                         background: isDark ? '#0f172a' : '#ffffff',
@@ -1110,10 +1112,10 @@
                     const due = @json($activity->due_date?->format('d/m/y H:i') ?? '—');
                     const teamName = @json($team->name);
                     const creator = @json($activity->creator?->name ?? '—');
-                    
+
                     const description = document.getElementById('description-content')?.innerHTML ?? '—';
                     const observations = document.getElementById('observations-content')?.innerHTML ?? '—';
-                    
+
                     const members = @json($activity->assignedTo->pluck('name')->toArray());
                     const skills = @json($activity->skills->map(fn($s) => $s->name)->toArray());
 
@@ -1161,6 +1163,7 @@
                         '      .signature-box { flex: 1; border-top: 1px solid #f1f5f9; padding-top: 4px; min-height: 30px; }',
                         '      .signature-label { font-size: 7px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; }',
                         '      .footer { margin-top: 15px; padding-top: 8px; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; font-size: 6.5px; font-weight: 600; color: #cbd5e1; text-transform: uppercase; clear: both; }',
+                        '      @media print { html, body { height: auto; } .sheet { border: none; height: auto; min-height: 0; } .content-layout { display: block; } .sidebar-content { float: right; width: 180px; margin-left: 20px; margin-bottom: 15px; } .main-content { display: block; } .content-layout::after { content: ""; display: table; clear: both; } }',
                         '      .emoji-icon { display: inline-block !important; width: 1.35em !important; min-width: 1.35em !important; height: 1.35em !important; line-height: 1.35em !important; vertical-align: -0.15em !important; margin-right: 0.35em !important; text-align: center !important; overflow: visible !important; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important; }',
                         '      @media print { html, body { height: auto; } .sheet { border: none; height: auto; min-height: 0; } .content-layout { display: block; } .sidebar-content { float: right; width: 180px; margin-left: 20px; margin-bottom: 15px; } .main-content { display: block; } .content-layout::after { content: ""; display: table; clear: both; } .emoji-icon { display: inline-block !important; width: 1.35em !important; min-width: 1.35em !important; height: 1.35em !important; line-height: 1.35em !important; vertical-align: -0.15em !important; margin-right: 0.35em !important; text-align: center !important; overflow: visible !important; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important; } }',
                         '    </style>',
@@ -1204,6 +1207,7 @@
                         '      <footer class="footer"><span>Sientia MTX Ecosystem &bull; v0.9.5</span><span>' + new Date().toLocaleString() + '</span></footer>',
                         '    </div>',
                         '    <script>' +
+                        '      window.onload = function() { setTimeout(function() { window.print(); setTimeout(function() { window.close(); }, 500); }, 300); };' +
                         '      function wrapEmojisInElement(element) {' +
                         '        if (!element) return;' +
                         '        const emojiRegex = /([\\u{1F300}-\\u{1FAFF}\\u{2600}-\\u{26FF}\\u{2700}-\\u{27BF}\\u{1F900}-\\u{1F9FF}\\u{1F600}-\\u{1F64F}\\u{1F680}-\\u{1F6FF}\\u{2B50}\\u{2B55}\\u{231A}-\\u{231B}\\u{23ED}-\\u{23EF}\\u{23F0}\\u{23F3}\\u{25FD}-\\u{25FE}\\u{2B05}-\\u{2B07}\\u{2B1B}-\\u{2B1C}\\u{3297}\\u{3299}\\u{3030}\\u{303D}\\u{00A9}\\u{00AE}\\u{2122}\\u{2139}]|\\p{Extended_Pictographic})(?:\\uFE0F|\\uFE0E)?/gu;' +
@@ -1239,10 +1243,10 @@
                     const teamName = @json($team->name);
                     const docVersion = @json($activity->metadata['version'] ?? '1.0.0');
                     const chapters = @json($activity->metadata['chapters'] ?? []);
-                    
+
                     let chaptersHtml = '';
                     let tocHtml = '';
-                    
+
                     chapters.forEach((chap, idx) => {
                         tocHtml += `
                             <div class="toc-item">
@@ -1251,7 +1255,7 @@
                                 <span class="toc-page">Capítulo ${idx + 1}</span>
                             </div>
                         `;
-                        
+
                         chaptersHtml += `
                             <div class="chapter-page">
                                 <div class="chapter-header">
@@ -1311,6 +1315,7 @@
                         '    </div>',
                         chaptersHtml,
                         '    <script>' +
+                        '      window.onload = function() { setTimeout(function() { window.print(); }, 500); };' +
                         '      function wrapEmojisInElement(element) {' +
                         '        if (!element) return;' +
                         '        const emojiRegex = /([\\u{1F300}-\\u{1FAFF}\\u{2600}-\\u{26FF}\\u{2700}-\\u{27BF}\\u{1F900}-\\u{1F9FF}\\u{1F600}-\\u{1F64F}\\u{1F680}-\\u{1F6FF}\\u{2B50}\\u{2B55}\\u{231A}-\\u{231B}\\u{23ED}-\\u{23EF}\\u{23F0}\\u{23F3}\\u{25FD}-\\u{25FE}\\u{2B05}-\\u{2B07}\\u{2B1B}-\\u{2B1C}\\u{3297}\\u{3299}\\u{3030}\\u{303D}\\u{00A9}\\u{00AE}\\u{2122}\\u{2139}]|\\p{Extended_Pictographic})(?:\\uFE0F|\\uFE0E)?/gu;' +
@@ -1396,7 +1401,7 @@
         $isUserObjMgr = $team->isManager($userObj);
         $taskIds = $activity->children()->getQuery()->visibleTo($userObj, $isUserObjMgr)->pluck('activities.id')->push($activity->id);
         $allLogs = \App\Models\TimeLog::whereIn('task_id', $taskIds)->with('user')->get();
-        
+
         $activeUserIds = $allLogs->whereNull('end_at')->pluck('user_id')->unique()->toArray();
 
         $timeStats = $allLogs->groupBy('user_id')
@@ -1500,7 +1505,7 @@
             </div>
 
             @include('teams.activities.types.' . $activity->type . '.show-content')
-            
+
             <!-- Attachments Section (For all types) -->
             @include('teams.activities.partials.activity-attachments')
         </div>
@@ -1577,7 +1582,7 @@
         const content = document.getElementById('reply-content-private').value;
         const button = event.currentTarget;
         const originalText = button.innerHTML;
-        
+
         button.disabled = true;
         button.innerHTML = '<svg class="animate-spin h-3 w-3 mr-2 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> GUARDANDO...';
 
@@ -1630,7 +1635,7 @@
                 } else {
                     scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
                 }
-                
+
                 if (scrollY > 150) {
                     bar.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
                     bar.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
@@ -1641,7 +1646,7 @@
             };
 
             window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
-            
+
             setTimeout(() => checkScroll(), 100);
         })();
     </script>
@@ -1649,8 +1654,8 @@
 
     @if(isset($activity) && $activity)
     <!-- MODAL DE CONVERSIÓN DE ACTIVIDAD -->
-    <div x-data="{ 
-        show: false, 
+    <div x-data="{
+        show: false,
         targetType: 'activity',
         types: [
             { id: 'activity', label: 'Tarea General', icon: '📝', desc: 'Actividad estándar con seguimiento de urgencia, carga cognitiva y gestión de progreso.' },
@@ -1671,7 +1676,7 @@
         x-transition:leave-end="opacity-0"
         x-cloak
         @click.self="show = false">
-        
+
         <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl border border-gray-100 dark:border-gray-800 transform transition-all text-left flex flex-col max-h-[90vh]"
             x-transition:enter="transition ease-out duration-300 transform"
             x-transition:enter-start="opacity-0 scale-95"
@@ -1679,7 +1684,7 @@
             x-transition:leave="transition ease-in duration-200 transform"
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95">
-            
+
             <div class="px-8 py-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-violet-50/50 dark:bg-violet-950/20">
                 <div>
                     <div class="flex items-center gap-2 mb-1">
@@ -1702,7 +1707,7 @@
             <form action="{{ route('teams.activities.convert', [$team, $activity]) }}" method="POST" class="flex flex-col flex-1 overflow-hidden m-0">
                 @csrf
                 <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
-                    
+
                     <div class="mb-6 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50">
                         <div class="flex gap-3">
                             <div class="text-amber-500 mt-0.5">
@@ -1727,12 +1732,12 @@
                         <template x-for="type in types" :key="type.id">
                             <label class="relative flex cursor-pointer rounded-2xl border bg-white dark:bg-gray-800/50 p-4 shadow-sm focus:outline-none transition-all group hover:border-violet-300 dark:hover:border-violet-700"
                                 :class="targetType === type.id ? 'border-violet-500 ring-2 ring-violet-500/20 bg-violet-50/30 dark:bg-violet-900/10' : 'border-gray-200 dark:border-gray-700'">
-                                
+
                                 <input type="radio" name="type" :value="type.id" x-model="targetType" class="sr-only">
-                                
+
                                 <div class="flex w-full items-start justify-between gap-4">
                                     <div class="flex items-start gap-4">
-                                        <div class="text-2xl mt-1 p-2 rounded-xl bg-gray-50 dark:bg-gray-800 group-hover:scale-110 transition-transform" 
+                                        <div class="text-2xl mt-1 p-2 rounded-xl bg-gray-50 dark:bg-gray-800 group-hover:scale-110 transition-transform"
                                              :class="targetType === type.id ? 'bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400' : ''"
                                              x-text="type.icon">
                                         </div>
@@ -1741,7 +1746,7 @@
                                             <span class="text-[10px] text-gray-500 dark:text-gray-400 font-medium leading-relaxed" x-text="type.desc"></span>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="shrink-0 text-violet-500" x-show="targetType === type.id">
                                         <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                                             <circle cx="12" cy="12" r="10" stroke-opacity="0.2" fill="currentColor" fill-opacity="0.1"/>

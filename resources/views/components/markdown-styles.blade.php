@@ -208,11 +208,14 @@
 
     .emoji-icon {
         display: inline-block !important;
+        min-width: 1.25em !important;
+        height: auto !important;
         width: 1.35em !important;
         min-width: 1.35em !important;
         height: 1.35em !important;
         line-height: 1.35em !important;
         vertical-align: -0.15em !important;
+        margin-right: 0.25em !important;
         margin-right: 0.35em !important;
         text-align: center !important;
         overflow: visible !important;
@@ -226,11 +229,14 @@
 
         .emoji-icon {
             display: inline-block !important;
+            min-width: 1.25em !important;
+            height: auto !important;
             width: 1.35em !important;
             min-width: 1.35em !important;
             height: 1.35em !important;
             line-height: 1.35em !important;
             vertical-align: -0.15em !important;
+            margin-right: 0.25em !important;
             margin-right: 0.35em !important;
             text-align: center !important;
             overflow: visible !important;
