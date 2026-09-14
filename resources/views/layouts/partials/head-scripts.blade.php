@@ -1170,8 +1170,7 @@
                 `;
 
                 this.printWindow(`${title} - Libro Digital`, bodyHtml, extraStyles);
-            }
-        },
+            },
 
         /**
          * Unified print entry point.
