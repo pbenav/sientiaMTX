@@ -2212,7 +2212,7 @@
         <div style="width:1px;height:1.25rem;background:#e5e7eb;flex-shrink:0"></div>
 
         <button type="button"
-                onclick="document.getElementById('edit-activity-form').submit()"
+                onclick="const f = document.getElementById('edit-activity-form'); if (f) { typeof f.requestSubmit === 'function' ? f.requestSubmit() : f.submit(); }"
            style="display:flex;align-items:center;gap:0.375rem;font-size:0.75rem;font-weight:700;color:#fff;background:#7c3aed;padding:0.375rem 0.75rem;border-radius:0.625rem;text-decoration:none;transition:background 0.15s ease;border:none;cursor:pointer;"
            onmouseover="this.style.background='#6d28d9'"
            onmouseout="this.style.background='#7c3aed'">
@@ -2225,28 +2225,40 @@
 
     <script>
         (function() {
-            const bar = document.getElementById('activity-edit-floating-bar');
-            if (bar) {
-                const checkScroll = (e) => {
-                    const windowScroll = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-                    let targetScroll = 0;
-                    if (e && e.target && e.target !== document && e.target !== window && typeof e.target.scrollTop === 'number') {
-                        targetScroll = e.target.scrollTop || 0;
-                    }
-                    const currentScroll = Math.max(windowScroll, targetScroll);
+            const checkScroll = (e) => {
+                const bar = document.getElementById('activity-edit-floating-bar');
+                if (!bar) return;
 
-                    if (currentScroll > 150) {
-                        bar.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
-                        bar.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
-                    } else {
-                        bar.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
-                        bar.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
-                    }
-                };
-                window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
-                checkScroll();
-                setTimeout(checkScroll, 200);
-            }
+                const windowScroll = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+                let targetScroll = 0;
+                if (e && e.target && e.target !== document && e.target !== window && typeof e.target.scrollTop === 'number') {
+                    targetScroll = e.target.scrollTop || 0;
+                }
+                const currentScroll = Math.max(windowScroll, targetScroll);
+
+                if (currentScroll > 50) {
+                    bar.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+                    bar.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                    bar.style.opacity = '1';
+                    bar.style.pointerEvents = 'auto';
+                    bar.style.visibility = 'visible';
+                } else {
+                    bar.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+                    bar.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                    bar.style.opacity = '0';
+                    bar.style.pointerEvents = 'none';
+                    bar.style.visibility = 'hidden';
+                }
+            };
+            window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
+            document.addEventListener('scroll', checkScroll, { passive: true, capture: true });
+            window.addEventListener('resize', checkScroll, { passive: true });
+            document.addEventListener('DOMContentLoaded', checkScroll);
+            checkScroll();
+            setTimeout(checkScroll, 50);
+            setTimeout(checkScroll, 200);
+            setTimeout(checkScroll, 500);
+            setTimeout(checkScroll, 1000);
         })();
 
         function printSection(sectionLabel, contentId) {
