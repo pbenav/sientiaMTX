@@ -382,6 +382,8 @@ class ActivityController extends Controller
 
         if ($request->has('is_autoprogrammable')) {
             $validated['metadata']['is_autoprogrammable'] = $request->boolean('is_autoprogrammable');
+        } else {
+            $validated['metadata']['is_autoprogrammable'] = false;
         }
 
         if ($request->has('autoprogram_settings')) {
