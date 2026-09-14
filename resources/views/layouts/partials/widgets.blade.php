@@ -733,7 +733,7 @@
 
     <!-- 🖨️ Sientia MTX Global Premium Print Utility 🖨️ -->
     <script>
-        window.SientiaPrint = {
+        Object.assign(window.SientiaPrint || {}, {
             async print(title, htmlContent, options = {}) {
                 const isDark = document.documentElement.classList.contains('dark');
 
@@ -936,6 +936,6 @@
                     }, 1000);
                 }, 200);
             }
-        };
+        });
     </script>
 
