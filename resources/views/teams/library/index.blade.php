@@ -504,26 +504,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function printDocumentBook() {
-    const docData = {
-        title: @json($activeDocument->title ?? ''),
+    SientiaPrint.printDocumentBook({
+        title:    @json($activeDocument->title ?? ''),
         teamName: @json($team->name ?? ''),
-        version: @json($activeDocument->metadata['version'] ?? '1.0.0'),
+        version:  @json($activeDocument->metadata['version'] ?? '1.0.0'),
         chapters: @json($activeDocument->metadata['chapters'] ?? [])
-    };
-    if (window.SientiaPrint && typeof window.SientiaPrint.printDocumentBook === 'function') {
-        window.SientiaPrint.printDocumentBook(docData);
-    } else {
-        let fullHtml = '<h1>' + (docData.title || 'Documento') + '</h1><p><em>' + (docData.teamName || '') + ' • v' + (docData.version || '1.0.0') + '</em></p><hr>';
-        (docData.chapters || []).forEach((chap, idx) => {
-            fullHtml += '<div style="page-break-after:always; margin-bottom: 2rem;"><h2>' + (idx + 1) + '. ' + (chap.title || '') + '</h2><div>' + (typeof marked !== 'undefined' ? marked.parse(chap.content || '') : (chap.content || '')) + '</div></div>';
-        });
-        const printWin = window.open('', '_blank', 'width=850,height=900');
-        if (printWin) {
-            printWin.document.write('<!DOCTYPE html><html><head><title>' + (docData.title || 'Documento') + '</title><style>body{font-family:system-ui,sans-serif;padding:2rem;line-height:1.6;color:#1e293b}h1,h2,h3{margin-top:1.5rem;margin-bottom:.75rem}img{max-width:100%}table{border-collapse:collapse;width:100%}td,th{border:1px solid #e2e8f0;padding:.5rem}</style></head><body>' + fullHtml + '</body></html>');
-            printWin.document.close();
-            setTimeout(() => { printWin.print(); }, 500);
-        }
-    }
+    });
 }
 </script>
-@endif

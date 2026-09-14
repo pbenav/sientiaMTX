@@ -2233,82 +2233,51 @@
                 if (s > 50) {
                     bar.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
                     bar.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
-                    bar.style.opacity = '1';
-                    bar.style.pointerEvents = 'auto';
-                    bar.style.visibility = 'visible';
+                    bar.style.opacity = '1'; bar.style.pointerEvents = 'auto'; bar.style.visibility = 'visible';
                 } else {
                     bar.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
                     bar.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
-                    bar.style.opacity = '0';
-                    bar.style.pointerEvents = 'none';
-                    bar.style.visibility = 'hidden';
+                    bar.style.opacity = '0'; bar.style.pointerEvents = 'none'; bar.style.visibility = 'hidden';
                 }
             }
             window.addEventListener('scroll', checkScroll, { passive: true });
             document.addEventListener('scroll', checkScroll, { passive: true });
             window.addEventListener('resize', checkScroll, { passive: true });
             checkScroll();
-            setTimeout(checkScroll, 50);
-            setTimeout(checkScroll, 200);
-            setTimeout(checkScroll, 500);
-            setTimeout(checkScroll, 1000);
+            setTimeout(checkScroll, 50); setTimeout(checkScroll, 200);
+            setTimeout(checkScroll, 500); setTimeout(checkScroll, 1000);
         })();
 
-        window.printSection = function(sectionLabel, contentId) {
+        window.printSection = async function(sectionLabel, contentId) {
             var el = document.getElementById(contentId);
             if (!el) { console.error('printSection: element not found:', contentId); return; }
-            var content = el.innerHTML;
-            var activityTitle = @json($activity->title);
-            if (typeof SientiaPrint !== 'undefined' && typeof SientiaPrint.print === 'function') {
-                SientiaPrint.print(activityTitle, content, { brand: 'Sientia MTX • ' + sectionLabel });
-            } else {
-                var w = window.open('', '_blank', 'width=850,height=900');
-                if (w) {
-                    w.document.write('<!DOCTYPE html><html><head><title>' + activityTitle + '</title><style>body{font-family:system-ui,sans-serif;padding:2rem;line-height:1.6;color:#1e293b}h1,h2,h3{margin-top:1.5rem;margin-bottom:.75rem}img{max-width:100%}table{border-collapse:collapse;width:100%}td,th{border:1px solid #e2e8f0;padding:.5rem}pre{background:#f1f5f9;padding:1rem;border-radius:.5rem;overflow-x:auto}code{background:#f1f5f9;padding:.125rem .25rem;border-radius:.25rem}</style></head><body><h1>' + activityTitle + ' — ' + sectionLabel + '</h1><hr>' + content + '</body></html>');
-                    w.document.close();
-                    setTimeout(function() { w.print(); }, 500);
-                }
-            }
+            await SientiaPrint.print(
+                @json($activity->title),
+                el.innerHTML,
+                { brand: 'Sientia MTX \u2022 ' + sectionLabel }
+            );
         };
 
-        window.printPrivateNotes = function() {
+        window.printPrivateNotes = async function() {
             var editor = document.getElementById('reply-content-private');
-            var rawContent = editor ? editor.value : '';
-            var activityTitle = @json($activity->title);
-            var htmlContent = (typeof marked !== 'undefined') ? marked.parse(rawContent) : rawContent.replace(/\n/g, '<br>');
-            if (typeof SientiaPrint !== 'undefined' && typeof SientiaPrint.print === 'function') {
-                SientiaPrint.print(activityTitle, htmlContent, { brand: 'Sientia MTX • Notas Privadas' });
-            } else {
-                var w = window.open('', '_blank', 'width=850,height=900');
-                if (w) {
-                    w.document.write('<!DOCTYPE html><html><head><title>' + activityTitle + '</title><style>body{font-family:system-ui,sans-serif;padding:2rem;line-height:1.6;color:#1e293b}h1,h2,h3{margin-top:1.5rem;margin-bottom:.75rem}img{max-width:100%}</style></head><body><h1>' + activityTitle + ' — Notas Privadas</h1><hr>' + htmlContent + '</body></html>');
-                    w.document.close();
-                    setTimeout(function() { w.print(); }, 500);
-                }
-            }
+            var raw    = editor ? editor.value : '';
+            var html   = typeof marked !== 'undefined'
+                ? marked.parse(raw, { breaks: true, gfm: true })
+                : raw.replace(/\n/g, '<br>');
+            await SientiaPrint.print(
+                @json($activity->title),
+                html,
+                { brand: 'Sientia MTX \u2022 Notas Privadas' }
+            );
         };
 
         window.printDocumentBook = function() {
-            var docData = {
-                title: @json($activity->title ?? ''),
+            SientiaPrint.printDocumentBook({
+                title:    @json($activity->title ?? ''),
                 teamName: @json($team->name ?? ''),
-                version: @json($activity->metadata['version'] ?? '1.0.0'),
+                version:  @json($activity->metadata['version'] ?? '1.0.0'),
                 chapters: @json($activity->metadata['chapters'] ?? [])
-            };
-            if (window.SientiaPrint && typeof window.SientiaPrint.printDocumentBook === 'function') {
-                window.SientiaPrint.printDocumentBook(docData);
-            } else {
-                var fullHtml = '<h1>' + (docData.title || 'Documento') + '</h1><p><em>' + (docData.teamName || '') + ' • v' + (docData.version || '1.0.0') + '</em></p><hr>';
-                (docData.chapters || []).forEach(function(chap, idx) {
-                    fullHtml += '<div style="page-break-after:always;margin-bottom:2rem"><h2>' + (idx + 1) + '. ' + (chap.title || '') + '</h2><div>' + (typeof marked !== 'undefined' ? marked.parse(chap.content || '') : (chap.content || '')) + '</div></div>';
-                });
-                var w = window.open('', '_blank', 'width=850,height=900');
-                if (w) {
-                    w.document.write('<!DOCTYPE html><html><head><title>' + (docData.title || 'Documento') + '</title><style>body{font-family:system-ui,sans-serif;padding:2rem;line-height:1.6;color:#1e293b}h1,h2,h3{margin-top:1.5rem;margin-bottom:.75rem}img{max-width:100%}table{border-collapse:collapse;width:100%}td,th{border:1px solid #e2e8f0;padding:.5rem}</style></head><body>' + fullHtml + '</body></html>');
-                    w.document.close();
-                    setTimeout(function() { w.print(); }, 500);
-                }
-            }
+            });
         };
     </script>
 

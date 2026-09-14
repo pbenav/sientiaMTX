@@ -1171,6 +1171,80 @@
 
                 this.printWindow(`${title} - Libro Digital`, bodyHtml, extraStyles);
             }
+        },
+
+        /**
+         * Unified print entry point.
+         * Shows a "Con cabecera / Sin cabecera" SweetAlert2 dialog, then opens
+         * a formatted print window via SientiaPrint.printWindow().
+         *
+         * @param {string} title       - Document / activity title
+         * @param {string} content     - HTML content to print
+         * @param {Object} [opts]
+         * @param {string} [opts.brand='Sientia MTX']  - Brand label shown in header
+         * @param {boolean} [opts.withHeaders=true]    - Skip dialog, force headers on/off
+         */
+        print: async function(title, content, opts) {
+            opts = opts || {};
+            var brand    = opts.brand || 'Sientia MTX';
+            var now      = new Date();
+            var dateStr  = now.toLocaleDateString('es-ES') + ' a las ' + now.toLocaleTimeString('es-ES');
+            var isDark   = document.documentElement.classList.contains('dark');
+            var withHeaders = true;
+
+            // Show Con/Sin cabecera dialog when Swal is available
+            if (typeof Swal !== 'undefined') {
+                var dialogClosed = false;
+                await Swal.fire({
+                    title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Opciones de Impresión</span>',
+                    background: isDark ? '#0f172a' : '#ffffff',
+                    color:      isDark ? '#f3f4f6' : '#1f2937',
+                    showConfirmButton: false,
+                    showCloseButton: true,
+                    customClass: { popup: 'rounded-[2.5rem] shadow-2xl border border-gray-200 dark:border-gray-800 p-6' },
+                    html: '<div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-6 text-center px-4">' +
+                              '¿Cómo deseas imprimir <strong>' + (brand || title) + '</strong>?' +
+                          '</div>' +
+                          '<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-2">' +
+                              '<button type="button" id="_sp_with" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-indigo-100 dark:border-indigo-950 bg-indigo-50/50 dark:bg-indigo-950/30 hover:border-indigo-600 transition-all text-center group">' +
+                                  '<div class="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform shadow-sm">' +
+                                      '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>' +
+                                  '</div>' +
+                                  '<div class="font-black text-[10px] uppercase tracking-widest text-indigo-700 dark:text-indigo-300">Con Cabecera</div>' +
+                                  '<div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Estilo oficial</div>' +
+                              '</button>' +
+                              '<button type="button" id="_sp_without" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-slate-900 hover:border-gray-600 transition-all text-center group">' +
+                                  '<div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 group-hover:scale-110 transition-transform shadow-sm">' +
+                                      '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>' +
+                                  '</div>' +
+                                  '<div class="font-black text-[10px] uppercase tracking-widest text-gray-700 dark:text-gray-300">Sin Cabecera</div>' +
+                                  '<div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Ficha limpia</div>' +
+                              '</button>' +
+                          '</div>',
+                    didOpen: function(popup) {
+                        popup.querySelector('#_sp_with').onclick    = function() { withHeaders = true;  dialogClosed = true; Swal.close(); };
+                        popup.querySelector('#_sp_without').onclick = function() { withHeaders = false; dialogClosed = true; Swal.close(); };
+                    }
+                });
+                if (!dialogClosed) return; // user closed without choosing
+            }
+
+            var headerHtml = withHeaders
+                ? '<div style="border-bottom:4px solid #4f46e5;margin-bottom:40px;padding-bottom:20px">' +
+                      '<span style="font-weight:900;font-size:10px;text-transform:uppercase;letter-spacing:.3em;color:#6366f1;display:block;margin-bottom:6px">' + brand + '</span>' +
+                      '<h1 style="font-size:26px;font-weight:900;color:#0f172a;letter-spacing:-.03em;line-height:1.1;margin:0 0 6px">' + title + '</h1>' +
+                      '<div style="font-size:11px;color:#94a3b8;font-weight:500">Generado el ' + dateStr + '</div>' +
+                  '</div>'
+                : '<h1 style="font-size:22px;font-weight:800;color:#0f172a;border-bottom:2px solid #e2e8f0;padding-bottom:12px;margin-bottom:30px;letter-spacing:-.02em">' + title + '</h1>';
+
+            var watermark = withHeaders
+                ? '<div style="position:fixed;bottom:20px;right:20px;font-size:80px;font-weight:900;color:rgba(99,102,241,.04);pointer-events:none;z-index:0">Sientia.</div>'
+                : '';
+
+            var bodyHtml = headerHtml + '<div class="content">' + content + '</div>' + watermark;
+            this.printWindow(title, bodyHtml);
+        }
+
         };
 
         window.wrapEmojisInElement = function(element) {
