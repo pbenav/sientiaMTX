@@ -1518,6 +1518,33 @@
                             '        window.opener.SientiaPrint.wrapEmojis(document.body);' +
                             '      }' +
                             '      window.onload = function() { setTimeout(function() { window.print(); setTimeout(function() { window.close(); }, 500); }, 300); };' +
+                            '      function wrapEmojisInElement(element) {' +
+                            '        if (!element) return;' +
+                            '        const emojiRegex = /([\\u{1F300}-\\u{1FAFF}\\u{2600}-\\u{26FF}\\u{2700}-\\u{27BF}\\u{1F900}-\\u{1F9FF}\\u{1F600}-\\u{1F64F}\\u{1F680}-\\u{1F6FF}\\u{2B50}\\u{2B55}\\u{231A}-\\u{231B}\\u{23ED}-\\u{23EF}\\u{23F0}\\u{23F3}\\u{25FD}-\\u{25FE}\\u{2B05}-\\u{2B07}\\u{2B1B}-\\u{2B1C}\\u{3297}\\u{3299}\\u{3030}\\u{303D}\\u{00A9}\\u{00AE}\\u{2122}\\u{2139}]|\\p{Extended_Pictographic})(?:\\uFE0F|\\uFE0E)?/gu;' +
+                            '        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);' +
+                            '        const nodesToReplace = [];' +
+                            '        let node;' +
+                            '        while (node = walker.nextNode()) {' +
+                            '          if (node.parentElement && node.parentElement.closest(".emoji-icon, script, style, textarea")) continue;' +
+                            '          if (emojiRegex.test(node.nodeValue)) nodesToReplace.push(node);' +
+                            '      window.onload = function() {' +
+                            '        if (window.opener && window.opener.SientiaPrint && window.opener.SientiaPrint.wrapEmojis) {' +
+                            '          window.opener.SientiaPrint.wrapEmojis(document.body);' +
+                            '        }' +
+                            '        nodesToReplace.forEach(textNode => {' +
+                            '          const parent = textNode.parentNode;' +
+                            '          if (!parent) return;' +
+                            '          const html = textNode.nodeValue.replace(/([\\u{1F300}-\\u{1FAFF}\\u{2600}-\\u{26FF}\\u{2700}-\\u{27BF}\\u{1F900}-\\u{1F9FF}\\u{1F600}-\\u{1F64F}\\u{1F680}-\\u{1F6FF}\\u{2B50}\\u{2B55}\\u{231A}-\\u{231B}\\u{23ED}-\\u{23EF}\\u{23F0}\\u{23F3}\\u{25FD}-\\u{25FE}\\u{2B05}-\\u{2B07}\\u{2B1B}-\\u{2B1C}\\u{3297}\\u{3299}\\u{3030}\\u{303D}\\u{00A9}\\u{00AE}\\u{2122}\\u{2139}]|\\p{Extended_Pictographic})(?:\\uFE0F|\\uFE0E)?/gu, "<span class=\\"emoji-icon\\">$1</span>");' +
+                            '          const temp = document.createElement("span");' +
+                            '          temp.innerHTML = html;' +
+                            '          while (temp.firstChild) parent.insertBefore(temp.firstChild, textNode);' +
+                            '          parent.removeChild(textNode);' +
+                            '        });' +
+                            '      }' +
+                            '      window.onload = function() { wrapEmojisInElement(document.body); setTimeout(function() { window.print(); setTimeout(function() { window.close(); }, 500); }, 300); };' +
+                            '<' + '/script>',
+                            '        setTimeout(function() { window.print(); setTimeout(function() { window.close(); }, 500); }, 300);' +
+                            '      };' +
                             '    <' + '/script>',
                             '  </body>',
                             '</html>'
