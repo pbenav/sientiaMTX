@@ -1219,34 +1219,12 @@
                         '      <footer class="footer"><span>Sientia MTX Ecosystem &bull; v0.9.5</span><span>' + new Date().toLocaleString() + '</span></footer>',
                         '    </div>',
                         '    <script>' +
-                        '      window.onload = function() { setTimeout(function() { window.print(); setTimeout(function() { window.close(); }, 500); }, 300); };' +
-                        '      function wrapEmojisInElement(element) {' +
-                        '        if (!element) return;' +
-                        '        const emojiRegex = /([\\u{1F300}-\\u{1FAFF}\\u{2600}-\\u{26FF}\\u{2700}-\\u{27BF}\\u{1F900}-\\u{1F9FF}\\u{1F600}-\\u{1F64F}\\u{1F680}-\\u{1F6FF}\\u{2B50}\\u{2B55}\\u{231A}-\\u{231B}\\u{23ED}-\\u{23EF}\\u{23F0}\\u{23F3}\\u{25FD}-\\u{25FE}\\u{2B05}-\\u{2B07}\\u{2B1B}-\\u{2B1C}\\u{3297}\\u{3299}\\u{3030}\\u{303D}\\u{00A9}\\u{00AE}\\u{2122}\\u{2139}]|\\p{Extended_Pictographic})(?:\\uFE0F|\\uFE0E)?/gu;' +
-                        '        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);' +
-                        '        const nodesToReplace = [];' +
-                        '        let node;' +
-                        '        while (node = walker.nextNode()) {' +
-                        '          if (node.parentElement && node.parentElement.closest(".emoji-icon, script, style, textarea")) continue;' +
-                        '          if (emojiRegex.test(node.nodeValue)) nodesToReplace.push(node);' +
+                        '      window.onload = function() {' +
+                        '        if (window.opener && window.opener.SientiaPrint && window.opener.SientiaPrint.wrapEmojis) {' +
+                        '          window.opener.SientiaPrint.wrapEmojis(document.body);' +
                         '        }' +
-                        '        nodesToReplace.forEach(textNode => {' +
-                        '          const parent = textNode.parentNode;' +
-                        '          if (!parent) return;' +
-                        '          const html = textNode.nodeValue.replace(/([\\u{1F300}-\\u{1FAFF}\\u{2600}-\\u{26FF}\\u{2700}-\\u{27BF}\\u{1F900}-\\u{1F9FF}\\u{1F600}-\\u{1F64F}\\u{1F680}-\\u{1F6FF}\\u{2B50}\\u{2B55}\\u{231A}-\\u{231B}\\u{23ED}-\\u{23EF}\\u{23F0}\\u{23F3}\\u{25FD}-\\u{25FE}\\u{2B05}-\\u{2B07}\\u{2B1B}-\\u{2B1C}\\u{3297}\\u{3299}\\u{3030}\\u{303D}\\u{00A9}\\u{00AE}\\u{2122}\\u{2139}]|\\p{Extended_Pictographic})(?:\\uFE0F|\\uFE0E)?/gu, "<span class=\\"emoji-icon\\">$1</span>");' +
-                        '          const temp = document.createElement("span");' +
-                        '          temp.innerHTML = html;' +
-                        '          while (temp.firstChild) parent.insertBefore(temp.firstChild, textNode);' +
-                        '          parent.removeChild(textNode);' +
-                        '        });' +
-                        '      }' +
-                        '      window.onload = function() { wrapEmojisInElement(document.body); setTimeout(function() { window.print(); setTimeout(function() { window.close(); }, 500); }, 300); };' +
-                        '<' + '/script>',
-                        '    <script>',
-                        '      if (window.opener && window.opener.SientiaPrint && window.opener.SientiaPrint.wrapEmojis) {',
-                        '        window.opener.SientiaPrint.wrapEmojis(document.body);',
-                        '      }',
-                        '      window.onload = function() { setTimeout(function() { window.print(); setTimeout(function() { window.close(); }, 500); }, 300); };',
+                        '        setTimeout(function() { window.print(); setTimeout(function() { window.close(); }, 500); }, 300);' +
+                        '      };' +
                         '    <' + '/script>',
                         '  </body>',
                         '</html>'
@@ -1256,116 +1234,12 @@
                 }
 
                 function printDocumentBook() {
-                    const printWin = window.open('', '_blank');
-                    const title = @json($activity->title);
-                    const teamName = @json($team->name);
-                    const docVersion = @json($activity->metadata['version'] ?? '1.0.0');
-                    const chapters = @json($activity->metadata['chapters'] ?? []);
-
-                    let chaptersHtml = '';
-                    let tocHtml = '';
-
-                    chapters.forEach((chap, idx) => {
-                        tocHtml += `
-                            <div class="toc-item">
-                                <span class="toc-title">${idx + 1}. ${chap.title}</span>
-                                <span class="toc-dots"></span>
-                                <span class="toc-page">Capítulo ${idx + 1}</span>
-                            </div>
-                        `;
-
-                        chaptersHtml += `
-                            <div class="chapter-page">
-                                <div class="chapter-header">
-                                    <span class="chapter-num">CAPÍTULO ${idx + 1}</span>
-                                    <h2 class="chapter-title">${chap.title}</h2>
-                                    <div class="chapter-meta">Por ${chap.author_name || 'Autor'} • ${chap.updated_at || ''}</div>
-                                </div>
-                                <div class="chapter-body">${marked.parse ? marked.parse(chap.content || '') : (chap.content || '')}</div>
-                            </div>
-                        `;
                     SientiaPrint.printDocumentBook({
                         title: @json($activity->title),
                         teamName: @json($team->name),
                         version: @json($activity->metadata['version'] ?? '1.0.0'),
                         chapters: @json($activity->metadata['chapters'] ?? [])
                     });
-
-                    const bookHtml = [
-                        '<!DOCTYPE html>',
-                        '<html>',
-                        '  <head>',
-                        '    <title>' + title + ' - Libro Digital</title>',
-                        '    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">',
-                        '    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"><' + '/script>',
-                        '    <style>',
-                        '      @page { size: A4; margin: 2.5cm 2cm; }',
-                        '      body { font-family: \'Merriweather\', serif; color: #1e293b; line-height: 1.8; margin: 0; padding: 0; font-size: 14px; }',
-                        '      h1, h2, h3, h4, h5, h6, .outfit { font-family: \'Outfit\', sans-serif; }',
-                        '      .cover-page { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; page-break-after: always; padding: 2rem; box-sizing: border-box; }',
-                        '      .cover-team { font-size: 16px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 2rem; font-family: \'Outfit\', sans-serif; }',
-                        '      .cover-title { font-size: 42px; font-weight: 900; color: #0f172a; line-height: 1.2; margin-bottom: 2rem; font-family: \'Outfit\', sans-serif; }',
-                        '      .cover-badge { display: inline-block; background: #f1f5f9; color: #475569; padding: 8px 24px; border-radius: 50px; font-size: 14px; font-weight: 700; margin-bottom: 4rem; font-family: \'Outfit\', sans-serif; border: 1px solid #e2e8f0; }',
-                        '      .cover-footer { margin-top: auto; font-size: 14px; color: #64748b; font-family: \'Outfit\', sans-serif; }',
-                        '      .toc-page { page-break-after: always; padding: 2rem 0; }',
-                        '      .toc-main-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 3rem; font-family: \'Outfit\', sans-serif; border-bottom: 2px solid #e2e8f0; padding-bottom: 1rem; }',
-                        '      .toc-item { display: flex; align-items: baseline; margin-bottom: 1.5rem; font-family: \'Outfit\', sans-serif; font-size: 16px; }',
-                        '      .toc-title { font-weight: 600; color: #334155; }',
-                        '      .toc-dots { flex: 1; border-bottom: 1px dotted #cbd5e1; margin: 0 12px; }',
-                        '      .toc-page { font-weight: 700; color: #64748b; font-size: 14px; }',
-                        '      .chapter-page { page-break-before: always; padding: 2rem 0; }',
-                        '      .chapter-header { margin-bottom: 3rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 2rem; }',
-                        '      .chapter-num { font-size: 14px; font-weight: 800; color: #8b5cf6; text-transform: uppercase; letter-spacing: 3px; font-family: \'Outfit\', sans-serif; display: block; margin-bottom: 0.5rem; }',
-                        '      .chapter-title { font-size: 32px; font-weight: 800; color: #0f172a; margin: 0 0 1rem 0; font-family: \'Outfit\', sans-serif; line-height: 1.2; }',
-                        '      .chapter-meta { font-size: 13px; color: #64748b; font-family: \'Outfit\', sans-serif; }',
-                        '      .chapter-body { color: #334155; }',
-                        '      .chapter-body p { margin-bottom: 1.5rem; }',
-                        '      .chapter-body h1, .chapter-body h2, .chapter-body h3 { font-family: \'Outfit\', sans-serif; color: #0f172a; margin-top: 2.5rem; margin-bottom: 1rem; font-weight: 700; }',
-                        '      .emoji-icon { display: inline-block !important; width: 1.35em !important; min-width: 1.35em !important; height: 1.35em !important; line-height: 1.35em !important; vertical-align: -0.15em !important; margin-right: 0.35em !important; text-align: center !important; overflow: visible !important; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important; }',
-                        '      @media print { body, h1, h2, h3, h4, h5, h6, p, li, span, div { font-family: \'Merriweather\', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", serif !important; } h1, h2, h3, h4, h5, h6, .outfit { font-family: \'Outfit\', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important; } .emoji-icon { display: inline-block !important; width: 1.35em !important; min-width: 1.35em !important; height: 1.35em !important; line-height: 1.35em !important; vertical-align: -0.15em !important; margin-right: 0.35em !important; text-align: center !important; overflow: visible !important; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important; } }',
-                        '    </style>',
-                        '  </head>',
-                        '  <body>',
-                        '    <div class="cover-page">',
-                        '      <div class="cover-team">' + teamName + '</div>',
-                        '      <h1 class="cover-title">' + title + '</h1>',
-                        '      <div class="cover-badge">DOCUMENTO VERSIÓN ' + docVersion + '</div>',
-                        '      <div class="cover-footer">Sientia MTX • Exportado el ' + new Date().toLocaleDateString('es-ES') + '</div>',
-                        '    </div>',
-                        '    <div class="toc-page">',
-                        '      <h2 class="toc-main-title">Índice General</h2>',
-                        tocHtml,
-                        '    </div>',
-                        chaptersHtml,
-                        '    <script>' +
-                        '      window.onload = function() { setTimeout(function() { window.print(); }, 500); };' +
-                        '      function wrapEmojisInElement(element) {' +
-                        '        if (!element) return;' +
-                        '        const emojiRegex = /([\\u{1F300}-\\u{1FAFF}\\u{2600}-\\u{26FF}\\u{2700}-\\u{27BF}\\u{1F900}-\\u{1F9FF}\\u{1F600}-\\u{1F64F}\\u{1F680}-\\u{1F6FF}\\u{2B50}\\u{2B55}\\u{231A}-\\u{231B}\\u{23ED}-\\u{23EF}\\u{23F0}\\u{23F3}\\u{25FD}-\\u{25FE}\\u{2B05}-\\u{2B07}\\u{2B1B}-\\u{2B1C}\\u{3297}\\u{3299}\\u{3030}\\u{303D}\\u{00A9}\\u{00AE}\\u{2122}\\u{2139}]|\\p{Extended_Pictographic})(?:\\uFE0F|\\uFE0E)?/gu;' +
-                        '        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);' +
-                        '        const nodesToReplace = [];' +
-                        '        let node;' +
-                        '        while (node = walker.nextNode()) {' +
-                        '          if (node.parentElement && node.parentElement.closest(".emoji-icon, script, style, textarea")) continue;' +
-                        '          if (emojiRegex.test(node.nodeValue)) nodesToReplace.push(node);' +
-                        '        }' +
-                        '        nodesToReplace.forEach(textNode => {' +
-                        '          const parent = textNode.parentNode;' +
-                        '          if (!parent) return;' +
-                        '          const html = textNode.nodeValue.replace(/([\\u{1F300}-\\u{1FAFF}\\u{2600}-\\u{26FF}\\u{2700}-\\u{27BF}\\u{1F900}-\\u{1F9FF}\\u{1F600}-\\u{1F64F}\\u{1F680}-\\u{1F6FF}\\u{2B50}\\u{2B55}\\u{231A}-\\u{231B}\\u{23ED}-\\u{23EF}\\u{23F0}\\u{23F3}\\u{25FD}-\\u{25FE}\\u{2B05}-\\u{2B07}\\u{2B1B}-\\u{2B1C}\\u{3297}\\u{3299}\\u{3030}\\u{303D}\\u{00A9}\\u{00AE}\\u{2122}\\u{2139}]|\\p{Extended_Pictographic})(?:\\uFE0F|\\uFE0E)?/gu, "<span class=\\"emoji-icon\\">$1</span>");' +
-                        '          const temp = document.createElement("span");' +
-                        '          temp.innerHTML = html;' +
-                        '          while (temp.firstChild) parent.insertBefore(temp.firstChild, textNode);' +
-                        '          parent.removeChild(textNode);' +
-                        '        });' +
-                        '      }' +
-                        '      window.onload = function() { wrapEmojisInElement(document.body); setTimeout(function() { window.print(); }, 500); };' +
-                        '<' + '/script>',
-                        '  </body>',
-                        '</html>'
-                    ].join('');
-                    printWin.document.write(bookHtml);
-                    printWin.document.close();
                 }
             </script>
 
