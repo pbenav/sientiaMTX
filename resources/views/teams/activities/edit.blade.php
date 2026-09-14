@@ -14,7 +14,7 @@
                 @include('teams.partials.breadcrumb')
                 <div class="flex items-center gap-4">
                     <h1 class="text-xl font-bold text-gray-900 dark:text-white heading truncate">
-                        Editar Actividad: {{ $activity->title }} 
+                        Editar Actividad: {{ $activity->title }}
                         <span class="ml-2 text-sm font-medium text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400 px-2 py-1 rounded-md">
                             @if ($activity->is_template)
                                 @if(isset($activity->metadata['assignment_mode']) && $activity->metadata['assignment_mode'] === 'shared')
@@ -42,9 +42,9 @@
 
                 @php
                     $isAnotherUserCreator = $activity->created_by_id && $activity->created_by_id !== auth()->id();
-                    $isExternalEvent = data_get($activity->metadata, 'is_external_event', false) 
+                    $isExternalEvent = data_get($activity->metadata, 'is_external_event', false)
                         || data_get($activity->metadata, 'google_is_organizer') === false;
-                    $originalOwnerName = $isExternalEvent 
+                    $originalOwnerName = $isExternalEvent
                         ? (data_get($activity->metadata, 'google_organizer_name') ?: data_get($activity->metadata, 'google_organizer_email', 'un organizador externo'))
                         : ($activity->creator?->name ?? 'otro usuario');
                 @endphp
@@ -77,7 +77,7 @@
                         <button type="button" @click="activeTab = 'context'" :class="activeTab === 'context' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">Contexto y Vinculaciones</button>
                         <button type="button" @click="activeTab = 'attachments'" :class="activeTab === 'attachments' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">Adjuntos</button>
                     </div>
-    
+
                     <div x-show="activeTab === 'general'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                         <!-- BLOCK: Título de la Actividad -->
     <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-1">
@@ -126,8 +126,8 @@
         </div>
         <div class="space-y-6 relative z-10">
             <div>
-                    <x-markdown-editor 
-                        name="description" 
+                    <x-markdown-editor
+                        name="description"
                         id="description"
                         :value="old('description', $activity->description)"
                         :label="__('Descripción o Contenido')"
@@ -211,8 +211,8 @@
                                         {!! str(data_get($activity->metadata, 'terms', ''))->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
                                     </div>
                                 @else
-                                    <x-markdown-editor 
-                                        name="metadata[terms]" 
+                                    <x-markdown-editor
+                                        name="metadata[terms]"
                                         id="metadata_terms"
                                         :value="old('metadata.terms', data_get($activity->metadata, 'terms', ''))"
                                         label="Términos del Acuerdo (Documento a Firmar)"
@@ -353,7 +353,7 @@
                             </label>
                         </div>
                     </div>
-                    
+
                     <div class="flex flex-col justify-center">
                         <label class="relative flex items-center gap-3 cursor-pointer group w-full bg-violet-50/50 dark:bg-violet-900/10 border border-violet-100/50 dark:border-violet-800/50 rounded-2xl p-4 transition-all">
                             <input type="hidden" name="metadata[is_ephemeral]" value="0">
@@ -384,8 +384,8 @@
         </div>
         <div class="space-y-6 relative z-10">
             <div>
-                    <x-markdown-editor 
-                        name="metadata[observations]" 
+                    <x-markdown-editor
+                        name="metadata[observations]"
                         id="observations"
                         :value="old('metadata.observations', data_get($activity->metadata, 'observations'))"
                         :label="__('tasks.observations')"
@@ -397,9 +397,9 @@
         </div>
     </div>
 
-    
+
                     </div>
-        
+
                     </div>
                     <div x-show="activeTab === 'team'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                         <!-- BLOCK: Miembros Asignados -->
@@ -549,7 +549,7 @@
                             <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-3">Valor externo generado para la ciudadanía</p>
                             <input type="number" name="metadata[impact_human_metric]" value="{{ old('metadata.impact_human_metric', data_get($activity->metadata, 'impact_human_metric', 0)) }}" min="0" max="100" class="w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all shadow-inner">
                         </div>
-                        
+
                         <div class="flex flex-col gap-3">
                             <label class="relative flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-violet-300 dark:hover:border-violet-500/50 transition-all group shadow-inner">
                                 <input type="checkbox" name="metadata[is_out_of_skill_tree]" value="1" {{ old('metadata.is_out_of_skill_tree', data_get($activity->metadata, 'is_out_of_skill_tree', false)) ? 'checked' : '' }} class="accent-violet-600 rounded w-5 h-5 focus:ring-violet-500/20">
@@ -558,7 +558,7 @@
                                     <span class="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-0.5">+ Puntos de Resiliencia</span>
                                 </div>
                             </label>
-                            
+
                             <label class="relative flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-emerald-300 dark:hover:border-emerald-500/50 transition-all group shadow-inner">
                                 <input type="checkbox" name="metadata[is_backstage]" value="1" {{ old('metadata.is_backstage', data_get($activity->metadata, 'is_backstage', false)) ? 'checked' : '' }} class="accent-emerald-600 rounded w-5 h-5 focus:ring-emerald-500/20">
                                 <div class="flex flex-col">
@@ -613,8 +613,8 @@
             </div>
         </div>
     </div>
-        
-        
+
+
                     </div>
                     <div x-show="activeTab === 'planning'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                         <!-- BLOCK: Prioridad, Urgencia y Estado -->
@@ -826,8 +826,8 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="md:col-span-2">
                                 <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Canales de Notificación</label>
-                                @php 
-                                    $channels = data_get($activity->metadata, 'channels', ['email']); 
+                                @php
+                                    $channels = data_get($activity->metadata, 'channels', ['email']);
                                     $isWhatsappEnabled = config('services.whatsapp.enabled', true) && ($team->settings['has_whatsapp'] ?? false);
                                 @endphp
                                 <div class="flex flex-wrap gap-4 mt-2">
@@ -840,8 +840,8 @@
                                         <span class="text-sm text-gray-700 dark:text-gray-300"> Notificación en la App (Push/Nudge)</span>
                                     </label>
                                     <label class="flex items-center gap-2 {{ !$isWhatsappEnabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer' }}">
-                                        <input type="checkbox" name="metadata[channels][]" value="whatsapp" 
-                                               {{ in_array('whatsapp', $channels) ? 'checked' : '' }} 
+                                        <input type="checkbox" name="metadata[channels][]" value="whatsapp"
+                                               {{ in_array('whatsapp', $channels) ? 'checked' : '' }}
                                                {{ !$isWhatsappEnabled ? 'disabled' : '' }}
                                                class="accent-violet-600 rounded disabled:opacity-50">
                                         <span class="text-sm text-gray-700 dark:text-gray-300"> WhatsApp
@@ -892,10 +892,13 @@
         </div>
         <div class="space-y-6 relative z-10">
             @php
+                            $hasAutoprogram = data_get($activity->metadata, 'autoprogram_settings') !== null;
+                            $autoSettings = data_get($activity->metadata, 'autoprogram_settings', []);
+                        @endphp
                 $hasAutoprogram = (bool) $activity->is_autoprogrammable;
                 $autoSettings = data_get($activity->metadata, 'autoprogram_settings', []);
             @endphp
-                        <div x-data="{ 
+                        <div x-data="{
                             isAutoprogrammable: {{ old('is_autoprogrammable', $hasAutoprogram ? 1 : 0) ? 'true' : 'false' }},
                             frequency: '{{ old('autoprogram_settings.frequency', $autoSettings['frequency'] ?? 'daily') }}',
                             monthlyType: '{{ old('autoprogram_settings.monthly_type', $autoSettings['monthly_type'] ?? 'date') }}',
@@ -918,14 +921,14 @@
                                         <span class="text-[11px] text-gray-500 dark:text-gray-400">Permite que esta actividad se duplique automáticamente según el patrón definido.</span>
                                     </div>
                                 </div>
-                                
+
                                 <div class="flex p-1 bg-gray-200 dark:bg-gray-950/50 rounded-xl w-fit self-start sm:self-center border border-transparent dark:border-gray-800">
-                                    <button type="button" @click="isAutoprogrammable = false" 
+                                    <button type="button" @click="isAutoprogrammable = false"
                                         :class="!isAutoprogrammable ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
                                         class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-200">
                                         Desactivado
                                     </button>
-                                    <button type="button" @click="isAutoprogrammable = true" 
+                                    <button type="button" @click="isAutoprogrammable = true"
                                         :class="isAutoprogrammable ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/20' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
                                         class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-200">
                                         Activo
@@ -966,7 +969,7 @@
                                             @php $selectedDays = $autoSettings['days'] ?? []; @endphp
                                             @foreach(['1' => 'L', '2' => 'M', '3' => 'X', '4' => 'J', '5' => 'V', '6' => 'S', '7' => 'D'] as $val => $label)
                                                 <label class="relative cursor-pointer">
-                                                    <input type="checkbox" name="autoprogram_settings[days][]" value="{{ $val }}" 
+                                                    <input type="checkbox" name="autoprogram_settings[days][]" value="{{ $val }}"
                                                         {{ in_array($val, old('autoprogram_settings.days', $selectedDays)) ? 'checked' : '' }}
                                                         class="peer sr-only">
                                                     <div class="w-9 h-9 rounded-xl border-2 border-gray-100 dark:border-gray-800 flex items-center justify-center text-xs font-black text-gray-400 peer-checked:border-violet-500 peer-checked:bg-violet-50 dark:peer-checked:bg-violet-900/30 peer-checked:text-violet-600 transition-all hover:border-violet-200 shadow-sm">
@@ -997,7 +1000,7 @@
                                                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Un día específico de la semana</span>
                                             </label>
                                         </div>
-                                        
+
                                         <div x-show="monthlyType === 'ordinal'" class="flex items-center gap-2 mt-3" x-transition>
                                             <span class="text-sm text-gray-500">El</span>
                                             <select name="autoprogram_settings[monthly_ordinal]" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-3 py-1.5 text-sm text-gray-900 dark:text-white outline-none">
@@ -1075,9 +1078,9 @@
         </div>
     </div>
 
-    
+
                     </div>
-        
+
                     </div>
                     </div>
                     <div x-show="activeTab === 'context'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
@@ -1105,7 +1108,7 @@
                             </svg>
                         </div>
                         <div>
-                            
+
                             <p class="text-[10px] text-gray-500 dark:text-gray-400">Asocia esta actividad a un expediente o dependencias.</p>
                         </div>
                     </div>
@@ -1188,9 +1191,9 @@
         </div>
     </div>
 
-    
+
                     </div>
-        
+
                     <div x-show="activeTab === 'attachments'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                         <!-- BLOCK: Archivos Adjuntos -->
     <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-[13]">
@@ -1308,7 +1311,7 @@
                                                 <span class="text-[9px] text-gray-400">{{ number_format($attach->file_size / 1024, 1) }} KB</span>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="flex items-center gap-1">
                                             @if($attach->is_office_compatible)
                                                 <a href="{{ route('onlyoffice.activity.edit', $attach) }}" target="_blank" rel="noopener noreferrer"
@@ -1319,7 +1322,7 @@
                                                     </svg>
                                                 </a>
                                             @endif
-                                            
+
                                             <a href="{{ route('teams.activities.attachments.download', [$team, $activity, $attach]) }}"
                                                class="text-gray-500 hover:text-violet-600 p-1 hover:bg-violet-50 dark:hover:bg-violet-950/20 rounded-lg transition-all"
                                                title="Descargar">
@@ -1354,7 +1357,7 @@
                 <div class="flex flex-wrap items-center justify-end gap-3 pt-6 border-t border-gray-100 dark:border-gray-800 order-[20]">
                     <a href="{{ route('teams.activities.show', [$team, $activity]) }}"
                         class="text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 transition-all font-medium">Cancelar</a>
-                    
+
                     @if ($isAnotherUserCreator || $isExternalEvent)
                         <button type="button" id="btn-create-parallel"
                             class="text-sm bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-lg hover:shadow-emerald-500/25 flex items-center gap-2">
@@ -1487,8 +1490,8 @@
                                     </div>
                                     <div style="height: 220px; max-height: none; overflow-y: auto;" class="resize-y min-h-[150px] overflow-y-auto custom-scrollbar border border-gray-100 dark:border-gray-800 rounded-2xl p-2 bg-white dark:bg-gray-900 shadow-sm">
                                         <label class="block text-[10px] uppercase font-bold text-gray-400 mb-1">Contenido (Markdown)</label>
-                                        <x-markdown-editor 
-                                            name="chapter_content" 
+                                        <x-markdown-editor
+                                            name="chapter_content"
                                             id="edit-chap-{{ $chapter['id'] }}"
                                             :value="$chapter['content'] ?? ''"
                                             :label="null"
@@ -1544,13 +1547,13 @@
             cursor: pointer !important;
             transition: all 0.2s ease !important;
         }
-        .ts-control input { 
-            font-size: 14px !important; 
-            padding: 0 !important; 
-            margin: 0 !important; 
-            background: transparent !important; 
-            border: none !important; 
-            outline: none !important; 
+        .ts-control input {
+            font-size: 14px !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            background: transparent !important;
+            border: none !important;
+            outline: none !important;
             box-shadow: none !important;
             line-height: 1 !important;
             height: auto !important;
@@ -1559,22 +1562,22 @@
         }
         .ts-control input::placeholder { color: #9ca3af !important; font-weight: 500 !important; }
         .ts-control.has-items input::placeholder { color: transparent !important; }
-        
+
         .dark .ts-control {
             background-color: #1f2937 !important;
             border-color: #374151 !important;
             color: #f3f4f6 !important;
         }
-        
+
         .ts-wrapper.focus .ts-control {
             border-color: #7c3aed !important;
             box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2) !important;
         }
-        
-        .ts-wrapper .clear-button { 
-            right: 1rem !important; 
-            top: 50% !important; 
-            transform: translateY(-50%) !important; 
+
+        .ts-wrapper .clear-button {
+            right: 1rem !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
             font-size: 1.25rem !important;
             color: #9ca3af !important;
             opacity: 0.7 !important;
@@ -1582,29 +1585,29 @@
         }
         .ts-wrapper .clear-button:hover { opacity: 1 !important; color: #ef4444 !important; }
         .ts-wrapper .ts-control { padding-right: 2.5rem !important; }
-        
-        .ts-dropdown { 
-            border-radius: 1rem !important; 
+
+        .ts-dropdown {
+            border-radius: 1rem !important;
             border: 1px solid #e5e7eb !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important; 
-            margin-top: 6px !important; 
-            padding: 0.5rem !important; 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+            margin-top: 6px !important;
+            padding: 0.5rem !important;
             z-index: 9999 !important;
         }
         .dark .ts-dropdown { background-color: #111827 !important; border-color: #374151 !important; }
-        
-        .ts-dropdown .option { 
-            padding: 0.625rem 0.75rem !important; 
-            border-radius: 0.6rem !important; 
-            margin-bottom: 2px !important; 
+
+        .ts-dropdown .option {
+            padding: 0.625rem 0.75rem !important;
+            border-radius: 0.6rem !important;
+            margin-bottom: 2px !important;
             transition: all 0.15s ease !important;
             color: #374151 !important;
         }
         .dark .ts-dropdown .option { color: #e5e7eb !important; }
-        
-        .ts-dropdown .active { 
-            background-color: #f5f3ff !important; 
-            color: #4f46e5 !important; 
+
+        .ts-dropdown .active {
+            background-color: #f5f3ff !important;
+            color: #4f46e5 !important;
         }
         .dark .ts-dropdown .active { background-color: #4f46e5 !important; color: #ffffff !important; }
     </style>
@@ -1868,7 +1871,7 @@
                     if (result.isConfirmed && result.value && result.value.success) {
                         const exp = result.value.expediente;
                         const selectEl = document.getElementById('expediente_id_select');
-                        
+
                         if (selectEl) {
                             if (selectEl.tomselect) {
                                 selectEl.tomselect.addOption({
@@ -1945,15 +1948,15 @@
                                 '</div>' +
                                 '<div class="flex flex-col min-w-0">' +
                                     '<span class="font-bold text-gray-900 dark:text-white truncate text-xs">' + escape(data.text) + '</span>' +
-                                    '<span class="text-[10px] text-gray-700 dark:text-gray-200 font-black uppercase tracking-widest mt-0.5 flex items-center gap-1.5">' + 
+                                    '<span class="text-[10px] text-gray-700 dark:text-gray-200 font-black uppercase tracking-widest mt-0.5 flex items-center gap-1.5">' +
                                         '<span class="w-1.5 h-1.5 rounded-full bg-violet-400"></span>' +
-                                        escape(data.assignee) + 
+                                        escape(data.assignee) +
                                     '</span>' +
                                 '</div>' +
                             '</div>';
                         },
                         item: function(data, escape) {
-                            return '<div class="flex items-center gap-2">' + 
+                            return '<div class="flex items-center gap-2">' +
                                 '<span class="text-[10px] font-mono font-bold text-violet-500 bg-violet-50 dark:bg-violet-900/30 px-1.5 py-0.5 rounded">#' + escape(data.value) + '</span>' +
                                 '<span class="font-medium text-gray-900 dark:text-white">' + escape(data.text) + '</span>' +
                                 '<span class="text-[9px] text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 font-black uppercase tracking-tighter">@' + escape(data.assignee) + '</span>' +
@@ -1996,7 +1999,7 @@
         function loadDriveFolder(folderId) {
             const container = document.getElementById('drive-contents');
             const teamId = '{{ $team->id }}';
-            
+
             fetch(`{{ route('google.drive.list') }}?team_id=${teamId}&folderId=${folderId}`)
                 .then(response => response.json())
                 .then(data => {
@@ -2006,7 +2009,7 @@
                     }
 
                     container.innerHTML = '';
-                    
+
                     if (folderId !== 'root') {
                         const backBtn = document.createElement('button');
                         backBtn.className = 'p-2 text-blue-600 font-bold text-sm mb-2';
@@ -2096,7 +2099,7 @@
                     const isImage = file.type.startsWith('image/');
                     const div = document.createElement('div');
                     div.className = 'flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700/50';
-                    
+
                     let imagePreview = '';
                     if (isImage) {
                         const objectUrl = URL.createObjectURL(file);
@@ -2229,7 +2232,7 @@
                     const target = e.target === document ? document.documentElement : e.target;
                     const scrollY = target.scrollTop || 0;
                     const finalScroll = scrollY || window.scrollY || 0;
-                    
+
                     if (finalScroll > 150) {
                         bar.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
                         bar.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
@@ -2278,98 +2281,12 @@
         }
 
         function printDocumentBook() {
-            const printWin = window.open('', '_blank');
-            const title = @json($activity->title);
-            const teamName = @json($team->name);
-            const docVersion = @json($activity->metadata['version'] ?? '1.0.0');
-            const chapters = @json($activity->metadata['chapters'] ?? []);
-            
-            let chaptersHtml = '';
-            let tocHtml = '';
-            
-            chapters.forEach((chap, idx) => {
-                tocHtml += `
-                    <div class="toc-item">
-                        <span class="toc-title">${idx + 1}. ${chap.title}</span>
-                        <span class="toc-dots"></span>
-                        <span class="toc-page">Capítulo ${idx + 1}</span>
-                    </div>
-                `;
-                
-                chaptersHtml += `
-                    <div class="chapter-page">
-                        <div class="chapter-header">
-                            <span class="chapter-num">CAPÍTULO ${idx + 1}</span>
-                            <h2 class="chapter-title">${chap.title}</h2>
-                            <div class="chapter-meta">Por ${chap.author_name || 'Autor'} • ${chap.updated_at}</div>
-                        </div>
-                        <div class="chapter-body">${marked.parse ? marked.parse(chap.content) : chap.content}</div>
-                    </div>
-                `;
+            SientiaPrint.printDocumentBook({
+                title: @json($activity->title),
+                teamName: @json($team->name),
+                version: @json($activity->metadata['version'] ?? '1.0.0'),
+                chapters: @json($activity->metadata['chapters'] ?? [])
             });
-
-            printWin.document.write(`
-                <!DOCTYPE html>
-                <html>
-                    <head>
-                        <title>${title} - Libro Digital</title>
-                        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
-                        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"><\/script>
-                        <style>
-                            @page { size: A4; margin: 2.5cm 2cm; }
-                            body { font-family: 'Merriweather', serif; color: #1e293b; line-height: 1.8; margin: 0; padding: 0; font-size: 14px; }
-                            h1, h2, h3, h4, h5, h6, .outfit { font-family: 'Outfit', sans-serif; }
-                            
-                            /* Portada */
-                            .cover-page { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; page-break-after: always; padding: 2rem; box-sizing: border-box; }
-                            .cover-team { font-size: 16px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 2rem; font-family: 'Outfit', sans-serif; }
-                            .cover-title { font-size: 42px; font-weight: 900; color: #0f172a; line-height: 1.2; margin-bottom: 2rem; font-family: 'Outfit', sans-serif; }
-                            .cover-badge { display: inline-block; background: #f1f5f9; color: #475569; padding: 8px 24px; border-radius: 50px; font-size: 14px; font-weight: 700; margin-bottom: 4rem; font-family: 'Outfit', sans-serif; border: 1px solid #e2e8f0; }
-                            .cover-footer { margin-top: auto; font-size: 14px; color: #64748b; font-family: 'Outfit', sans-serif; }
-                            
-                            /* Índice */
-                            .toc-page { page-break-after: always; padding: 2rem 0; }
-                            .toc-main-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 3rem; font-family: 'Outfit', sans-serif; border-bottom: 2px solid #e2e8f0; padding-bottom: 1rem; }
-                            .toc-item { display: flex; align-items: baseline; margin-bottom: 1.5rem; font-family: 'Outfit', sans-serif; font-size: 16px; }
-                            .toc-title { font-weight: 600; color: #334155; }
-                            .toc-dots { flex: 1; border-bottom: 1px dotted #cbd5e1; margin: 0 12px; }
-                            .toc-page { font-weight: 700; color: #64748b; font-size: 14px; }
-                            
-                            /* Capítulos */
-                            .chapter-page { page-break-before: always; padding: 2rem 0; }
-                            .chapter-header { margin-bottom: 3rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 2rem; }
-                            .chapter-num { font-size: 14px; font-weight: 800; color: #8b5cf6; text-transform: uppercase; letter-spacing: 3px; font-family: 'Outfit', sans-serif; display: block; margin-bottom: 0.5rem; }
-                            .chapter-title { font-size: 32px; font-weight: 800; color: #0f172a; margin: 0 0 1rem 0; font-family: 'Outfit', sans-serif; line-height: 1.2; }
-                            .chapter-meta { font-size: 13px; color: #64748b; font-family: 'Outfit', sans-serif; }
-                            .chapter-body { color: #334155; }
-                            .chapter-body p { margin-bottom: 1.5rem; }
-                            .chapter-body h1, .chapter-body h2, .chapter-body h3 { font-family: 'Outfit', sans-serif; color: #0f172a; margin-top: 2.5rem; margin-bottom: 1rem; font-weight: 700; }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="cover-page">
-                            <div class="cover-team">${teamName}</div>
-                            <h1 class="cover-title">${title}</h1>
-                            <div class="cover-badge">DOCUMENTO VERSIÓN ${docVersion}</div>
-                            <div class="cover-footer">Sientia MTX • Exportado el ${new Date().toLocaleDateString('es-ES')}</div>
-                        </div>
-                        
-                        <div class="toc-page">
-                            <h2 class="toc-main-title">Índice General</h2>
-                            ${tocHtml}
-                        </div>
-
-                        ${chaptersHtml}
-                        
-                        <script>
-                            window.onload = () => {
-                                setTimeout(() => window.print(), 500);
-                            };
-                        <\/script>
-                    </body>
-                </html>
-            `);
-            printWin.document.close();
         }
     </script>
 
@@ -2386,7 +2303,7 @@
         x-transition:leave-end="opacity-0"
         x-cloak
         @click.self="show = false">
-        
+
         <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl border border-gray-100 dark:border-gray-800 transform transition-all text-left flex flex-col max-h-[90vh]"
             x-transition:enter="transition ease-out duration-300 transform"
             x-transition:enter-start="opacity-0 scale-95"
@@ -2394,7 +2311,7 @@
             x-transition:leave="transition ease-in duration-200 transform"
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95">
-            
+
             <div class="px-8 py-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-violet-50/50 dark:bg-violet-955/20">
                 <div>
                     <div class="flex items-center gap-2 mb-1">
@@ -2428,8 +2345,8 @@
                         <label class="block text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">
                             Contenido (Markdown)
                         </label>
-                        <x-markdown-editor 
-                            name="chapter_content" 
+                        <x-markdown-editor
+                            name="chapter_content"
                             id="new-chap-content"
                             :value="''"
                             :label="null"

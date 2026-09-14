@@ -19,6 +19,7 @@ trait ActivityAccessors
      */
     public function getIsAutoprogrammableAttribute(): bool
     {
+        return data_get($this->metadata, 'is_autoprogrammable', false);
         return (bool) data_get($this->metadata, 'is_autoprogrammable', false);
     }
 
