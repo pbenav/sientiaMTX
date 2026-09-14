@@ -952,16 +952,26 @@
             const bar = document.getElementById('survey-floating-bar');
             if (!bar) return;
 
-            window.addEventListener('scroll', () => {
-                const scrollY = window.scrollY || document.documentElement.scrollTop;
-                if (scrollY > 150) {
+            const checkScroll = (e) => {
+                const windowScroll = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+                let targetScroll = 0;
+                if (e && e.target && e.target !== document && e.target !== window && typeof e.target.scrollTop === 'number') {
+                    targetScroll = e.target.scrollTop || 0;
+                }
+                const currentScroll = Math.max(windowScroll, targetScroll);
+
+                if (currentScroll > 150) {
                     bar.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
                     bar.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
                 } else {
                     bar.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
                     bar.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
                 }
-            }, { passive: true });
+            };
+
+            window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
+            checkScroll();
+            setTimeout(checkScroll, 200);
         })();
     </script>
     @if ($isGlobal)

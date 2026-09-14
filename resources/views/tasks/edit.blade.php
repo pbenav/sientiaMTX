@@ -1829,15 +1829,17 @@
 <script>
     (function() {
         const bar = document.getElementById('task-edit-floating-bar');
-        let visible = false;
+        if (!bar) return;
 
-        // Catch scroll on any container (Universal listener with capture phase)
         const checkScroll = (e) => {
-            const target = e.target === document ? document.documentElement : e.target;
-            const scrollY = target.scrollTop || 0;
-            const finalScroll = scrollY || window.scrollY || 0;
+            const windowScroll = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+            let targetScroll = 0;
+            if (e && e.target && e.target !== document && e.target !== window && typeof e.target.scrollTop === 'number') {
+                targetScroll = e.target.scrollTop || 0;
+            }
+            const currentScroll = Math.max(windowScroll, targetScroll);
             
-            if (finalScroll > 150) {
+            if (currentScroll > 150) {
                 bar.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
                 bar.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
             } else {
@@ -1847,6 +1849,8 @@
         };
 
         window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
+        checkScroll();
+        setTimeout(checkScroll, 200);
     })();
 </script>
 </x-app-layout>
