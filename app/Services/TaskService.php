@@ -251,11 +251,11 @@ class TaskService
                 'progress_percentage' => array_key_exists('progress_percentage', $validated) ? $validated['progress_percentage'] : $task->progress_percentage,
                 'created_by_id' => array_key_exists('created_by_id', $validated) ? $validated['created_by_id'] : $task->created_by_id,
                 'visibility' => $validated['visibility'] ?? $task->visibility,
-                'is_autoprogrammable' => $validated['is_autoprogrammable'] ?? $task->is_autoprogrammable,
+                'is_autoprogrammable' => array_key_exists('is_autoprogrammable', $validated) ? (bool) $validated['is_autoprogrammable'] : $task->is_autoprogrammable,
                 'autoprogram_settings' => $validated['autoprogram_settings'] ?? $task->autoprogram_settings,
                 'service_id' => array_key_exists('service_id', $validated) ? $validated['service_id'] : $task->service_id,
                 'expediente_id' => array_key_exists('expediente_id', $validated) ? $validated['expediente_id'] : $task->expediente_id,
-                'is_timeline_locked' => $validated['is_timeline_locked'] ?? $task->is_timeline_locked,
+                'is_timeline_locked' => array_key_exists('is_timeline_locked', $validated) ? (bool) $validated['is_timeline_locked'] : $task->is_timeline_locked,
             ]);
 
             $skillIds = $requestInputs['skills'] ?? ($requestInputs['skill_id'] ?? null ? [$requestInputs['skill_id']] : []);

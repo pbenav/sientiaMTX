@@ -106,6 +106,8 @@ class ActivityObserver
                             'matrix_order'        => $activity->matrix_order ?? 0,
                             'is_archived'         => $activity->is_archived ?? false,
                             'is_template'         => $activity->is_template ?? false,
+                            'is_autoprogrammable' => (bool) data_get($activity->metadata, 'is_autoprogrammable', false),
+                            'is_timeline_locked'  => (bool) data_get($activity->metadata, 'is_timeline_locked', false),
                             'google_task_id'      => $activity->google_task_id,
                             'google_task_list_id' => $activity->google_task_list_id,
                             'google_calendar_event_id' => $activity->google_calendar_event_id,

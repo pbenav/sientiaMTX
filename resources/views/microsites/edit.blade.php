@@ -34,7 +34,7 @@
 
     <div class="pt-12 pb-32 px-4">
         <div class="max-w-5xl mx-auto">
-            
+
             @if ($errors->any())
                 <div class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
                     <div class="flex items-center gap-2 text-red-600 dark:text-red-400 font-bold mb-2">
@@ -205,22 +205,44 @@
     <script>
         (function() {
             const bar = document.getElementById('microsite-edit-floating-bar');
+            if (!bar) return;
+            const checkScroll = (e) => {
+                const bar = document.getElementById('microsite-edit-floating-bar');
+                if (!bar) return;
 
             const checkScroll = (e) => {
-                const target = e.target === document ? document.documentElement : e.target;
-                const scrollY = target.scrollTop || 0;
-                const finalScroll = scrollY || window.scrollY || 0;
-                
-                if (finalScroll > 150) {
+                const windowScroll = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+                let targetScroll = 0;
+                if (e && e.target && e.target !== document && e.target !== window && typeof e.target.scrollTop === 'number') {
+                    targetScroll = e.target.scrollTop || 0;
+                }
+                const currentScroll = Math.max(windowScroll, targetScroll);
+
+                if (currentScroll > 150) {
+                if (currentScroll > 50) {
                     bar.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
                     bar.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                    bar.style.opacity = '1';
+                    bar.style.pointerEvents = 'auto';
+                    bar.style.visibility = 'visible';
                 } else {
                     bar.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
                     bar.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                    bar.style.opacity = '0';
+                    bar.style.pointerEvents = 'none';
+                    bar.style.visibility = 'hidden';
                 }
             };
 
             window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
+            document.addEventListener('scroll', checkScroll, { passive: true, capture: true });
+            window.addEventListener('resize', checkScroll, { passive: true });
+            document.addEventListener('DOMContentLoaded', checkScroll);
+            checkScroll();
+            setTimeout(checkScroll, 50);
+            setTimeout(checkScroll, 200);
+            setTimeout(checkScroll, 500);
+            setTimeout(checkScroll, 1000);
         })();
     </script>
 </x-app-layout>

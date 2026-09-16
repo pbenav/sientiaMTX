@@ -39,3 +39,5 @@ mkdocs.yml
 
 # Opencode AI agent files
 .opencode/
+INFORME_AUDITORIA.md
+resources/views/teams/activities/types/document/show-content.blade.php

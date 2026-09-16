@@ -15,7 +15,7 @@
             $instance = $task->instances()
                 ->where('assigned_user_id', auth()->id())
                 ->first();
-            
+
             if ($instance) {
                 $personalInstance = $instance;
             }
@@ -243,7 +243,7 @@
                         <div class="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-gray-400 border-b border-gray-50 dark:border-gray-700/50 mb-1">
                             Google Workspace
                         </div>
-                        
+
                         @can('update', $task)
                             <!-- Sincronización Google Tasks -->
                             <form action="{{ route('google.sync_task', [$team, $task]) }}" method="POST">
@@ -444,7 +444,7 @@
                                     data.forEach(t => {
                                         options += `<option value="${t.id}">${t.text}</option>`;
                                     });
-                                    
+
                                     Swal.fire({
                                         title: '¿Fusionar esta tarea?',
                                         html: `
@@ -489,7 +489,7 @@
                                             const form = document.createElement('form');
                                             form.method = 'POST';
                                             form.action = "{{ route('teams.activities.bulk-merge', [$team, $task]) }}";
-                                            
+
                                             const token = document.createElement('input');
                                             token.type = 'hidden';
                                             token.name = '_token';
@@ -567,7 +567,7 @@
         $isUserObjMgr = $team->isManager($userObj);
         $taskIds = $task->children()->getQuery()->visibleTo($userObj, $isUserObjMgr)->pluck('tasks.id')->push($task->id);
         $allLogs = \App\Models\TimeLog::whereIn('task_id', $taskIds)->with('user')->get();
-        
+
         $activeUserIds = $allLogs->whereNull('end_at')->pluck('user_id')->unique()->toArray();
 
         $timeStats = $allLogs->groupBy('user_id')
@@ -636,7 +636,7 @@
                                     </span>
                                 </div>
                                 <p class="text-xs text-gray-600 dark:text-gray-300 font-medium leading-relaxed">
-                                    Esta tarea ya ha sido convertida y unificada en el nuevo sistema de Actividades. 
+                                    Esta tarea ya ha sido convertida y unificada en el nuevo sistema de Actividades.
                                 </p>
                                 <a href="{{ route('teams.activities.show', [$team, $mappedActivity]) }}" class="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-violet-600 hover:bg-violet-500 px-4 py-2 rounded-xl mt-3 transition-colors shadow-sm">
                                     Ir a la nueva ficha de Actividad
@@ -653,7 +653,7 @@
                 @include('tasks.partials.task-info')
                 @include('tasks.partials.task-instances')
                         <!-- Bulk Actions Bar -->
-                        <div x-show="selectedMembers.length > 0" 
+                        <div x-show="selectedMembers.length > 0"
                              x-transition:enter="transition ease-out duration-300"
                              x-transition:enter-start="opacity-0 -translate-y-4"
                              x-transition:enter-end="opacity-100 translate-y-0"
@@ -663,7 +663,7 @@
                                     <span x-text="selectedMembers.length"></span> {{ __('seleccionados') }}
                                 </span>
                             </div>
-                            <button type="button" @click.prevent.stop="nudgeUser(selectedMembers)" 
+                            <button type="button" @click.prevent.stop="nudgeUser(selectedMembers)"
                                     x-show="selectedMembers.length > 0"
                                     class="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-md flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
@@ -679,8 +679,8 @@
                                 <tr>
                                     @if($team->isCoordinator(auth()->user()) || (isset($instances) && count($instances) > 1))
                                     <th class="px-4 py-3 w-10">
-                                        <input type="checkbox" 
-                                               @click="toggleAll()" 
+                                        <input type="checkbox"
+                                               @click="toggleAll()"
                                                :checked="selectedMembers.length > 0 && selectedMembers.length === document.querySelectorAll('.member-checkbox:not(:disabled)').length"
                                                class="rounded border-gray-300 dark:border-gray-700 text-violet-600 focus:ring-violet-500 bg-white dark:bg-gray-900 cursor-pointer">
                                     </th>
@@ -725,7 +725,7 @@
                                         $instSeconds = (int) $inst->timeLogs->sum(fn($l) => $l->start_at->diffInSeconds($l->end_at ?: now()));
                                         $instFormatted = (floor($instSeconds / 3600) > 0 ? floor($instSeconds / 3600) . "h " : "") . floor(($instSeconds % 3600) / 60) . "m";
                                         $isInstActive = $inst->timeLogs->whereNull('end_at')->isNotEmpty();
-                                        
+
                                         // Team membership date
                                         $teamMember = $instMember ? $team->members()->where('users.id', $instMember->id)->first() : null;
                                         $joinedAt = $teamMember?->pivot?->joined_at;
@@ -734,7 +734,7 @@
                                         $subtasksCount = $isSimulated ? 0 : $inst->children()->count();
                                         $subtasksDone = $isSimulated ? 0 : $inst->children()->where('status', 'completed')->count();
                                     @endphp
-                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer group" 
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer group"
                                         data-name="{{ strtolower($instMemberName) }}"
                                         data-taskname="{{ strtolower($inst->name) }}"
                                         data-status="{{ $inst->status }}"
@@ -742,12 +742,12 @@
                                         x-show="(roadmapQuery === '' || $el.dataset.name.includes(roadmapQuery.toLowerCase()) || $el.dataset.taskname.includes(roadmapQuery.toLowerCase())) && (roadmapStatus === '' || (roadmapStatus === 'completed' && $el.dataset.status === 'completed') || (roadmapStatus === 'pending' && $el.dataset.status !== 'completed'))"
                                         x-transition
                                         @if(!$isSimulated) onclick="if(!event.target.closest('button, select, a, input')) window.location='{{ route('teams.tasks.show', [$team->id, $inst->id]) }}'" @endif>
-                                        
+
                                         @if($team->isCoordinator(auth()->user()) || (isset($instances) && count($instances) > 1))
                                         <td class="px-4 py-4" onclick="event.stopPropagation()">
-                                            <input type="checkbox" 
-                                                   value="{{ ($isSimulated ? $task->id : $inst->id) . ':' . ($isSimulated ? $inst->user_id : ($inst->assigned_user_id ?? '')) }}" 
-                                                   x-model="selectedMembers" 
+                                            <input type="checkbox"
+                                                   value="{{ ($isSimulated ? $task->id : $inst->id) . ':' . ($isSimulated ? $inst->user_id : ($inst->assigned_user_id ?? '')) }}"
+                                                   x-model="selectedMembers"
                                                    class="member-checkbox rounded border-gray-300 dark:border-gray-700 text-violet-600 focus:ring-violet-500 bg-white dark:bg-gray-900 cursor-pointer"
                                                    {{ $inst->status === 'completed' ? 'disabled' : '' }}>
                                         </td>
@@ -756,7 +756,7 @@
                                         <td class="px-4 py-4 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors" onclick="event.stopPropagation()">
                                             <div class="flex items-center gap-4">
                                                     <div class="relative">
-                                                        <img src="{{ $instMember ? $instMember->profile_photo_url : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF' }}" 
+                                                        <img src="{{ $instMember ? $instMember->profile_photo_url : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF' }}"
                                                             alt="{{ $instMemberName }}"
                                                             class="w-10 h-10 rounded-2xl object-cover shadow-inner border border-white dark:border-gray-800 {{ $isInstActive ? 'ring-2 ring-red-500 ring-offset-2 dark:ring-offset-gray-900 animate-pulse' : '' }}">
                                                         @if($isInstActive)
@@ -893,12 +893,12 @@
                             </button>
                         </div>
                     </div>
-                    
+
                     <form action="{{ route('teams.activities.private-notes.update', [$team, $personalInstance]) }}" method="POST" id="private-notes-form">
                         @csrf
                         <div style="max-height: 400px; overflow-y: auto;" class="max-h-[500px] overflow-y-auto custom-scrollbar">
-                            <x-markdown-editor 
-                                name="content" 
+                            <x-markdown-editor
+                                name="content"
                                 id="reply-content-private"
                                 :value="old('content', $personalInstance->currentPrivateNote?->content)"
                                 :label="null"
@@ -970,7 +970,7 @@
                     const brandLabel = 'Sientia MTX • ' + sectionLabel;
                     const now = new Date();
                     const dateStr = now.toLocaleDateString() + ' a las ' + now.toLocaleTimeString();
-                    
+
                     const headerHtml = withHeaders ? `
                         <div class="print-header">
                             <div class="title-container">
@@ -1101,6 +1101,62 @@
                     `);
                     printWin.document.close();
                     printWin.onload = () => { printWin.print(); };
+                                     .watermark {
+                                         position: fixed;
+                                         bottom: 20px;
+                                         right: 20px;
+                                         font-size: 80px;
+                                         font-weight: 900;
+                                         color: rgba(99, 102, 241, 0.04);
+                                         pointer-events: none;
+                                         z-index: 0;
+                                     }
+                                     .emoji-icon {
+                                         display: inline-block !important;
+                                         width: 1.35em !important;
+                                         min-width: 1.35em !important;
+                                         height: 1.35em !important;
+                                         line-height: 1.35em !important;
+                                         vertical-align: -0.15em !important;
+                                         margin-right: 0.35em !important;
+                                         text-align: center !important;
+                                         overflow: visible !important;
+                                         font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+                                     }
+                                 </style>
+                             </head>
+                             <body>
+                                 ${headerHtml}
+                                 <div class="content">${content}</div>
+                                 ${withHeaders ? '<div class="watermark">Sientia.</div>' : ''}
+                             </body>
+                         </html>
+                     `);
+                     printWin.document.close();
+                     printWin.onload = () => {
+                         function wrapEmojisInElement(element) {
+                             if (!element) return;
+                             const emojiRegex = /([\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2B50}\u{2B55}\u{231A}-\u{231B}\u{23ED}-\u{23EF}\u{23F0}\u{23F3}\u{25FD}-\u{25FE}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{3297}\u{3299}\u{3030}\u{303D}\u{00A9}\u{00AE}\u{2122}\u{2139}]|\p{Extended_Pictographic})(?:\uFE0F|\uFE0E)?/gu;
+                             const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
+                             const nodesToReplace = [];
+                             let node;
+                             while (node = walker.nextNode()) {
+                                 if (node.parentElement && node.parentElement.closest('.emoji-icon, script, style, textarea')) continue;
+                                 if (emojiRegex.test(node.nodeValue)) nodesToReplace.push(node);
+                             }
+                             nodesToReplace.forEach(textNode => {
+                                 const parent = textNode.parentNode;
+                                 if (!parent) return;
+                                 const html = textNode.nodeValue.replace(/([\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2B50}\u{2B55}\u{231A}-\u{231B}\u{23ED}-\u{23EF}\u{23F0}\u{23F3}\u{25FD}-\u{25FE}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{3297}\u{3299}\u{3030}\u{303D}\u{00A9}\u{00AE}\u{2122}\u{2139}]|\p{Extended_Pictographic})(?:\uFE0F|\uFE0E)?/gu, '<span class="emoji-icon">$1</span>');
+                                 const temp = document.createElement('span');
+                                 temp.innerHTML = html;
+                                 while (temp.firstChild) parent.insertBefore(temp.firstChild, textNode);
+                                 parent.removeChild(textNode);
+                             });
+                         }
+                         wrapEmojisInElement(printWin.document.body);
+                         printWin.print();
+                     };
                 }
 
                 async function printPrivateNotes() {
@@ -1153,7 +1209,7 @@
                     const brandLabel = 'Sientia MTX • Notas Privadas';
                     const now = new Date();
                     const dateStr = now.toLocaleDateString() + ' a las ' + now.toLocaleTimeString();
-                    
+
                     const headerHtml = withHeaders ? `
                         <div class="print-header">
                             <div class="title-container">
@@ -1273,6 +1329,18 @@
                                         pointer-events: none;
                                         z-index: 0;
                                     }
+                                    .emoji-icon {
+                                        display: inline-block !important;
+                                        width: 1.35em !important;
+                                        min-width: 1.35em !important;
+                                        height: 1.35em !important;
+                                        line-height: 1.35em !important;
+                                        vertical-align: -0.15em !important;
+                                        margin-right: 0.35em !important;
+                                        text-align: center !important;
+                                        overflow: visible !important;
+                                        font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+                                    }
                                 </style>
                             </head>
                             <body>
@@ -1284,12 +1352,36 @@
                     `);
                     printWin.document.close();
                     printWin.onload = () => { printWin.print(); };
+                    printWin.onload = () => {
+                        function wrapEmojisInElement(element) {
+                            if (!element) return;
+                            const emojiRegex = /([\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2B50}\u{2B55}\u{231A}-\u{231B}\u{23ED}-\u{23EF}\u{23F0}\u{23F3}\u{25FD}-\u{25FE}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{3297}\u{3299}\u{3030}\u{303D}\u{00A9}\u{00AE}\u{2122}\u{2139}]|\p{Extended_Pictographic})(?:\uFE0F|\uFE0E)?/gu;
+                            const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
+                            const nodesToReplace = [];
+                            let node;
+                            while (node = walker.nextNode()) {
+                                if (node.parentElement && node.parentElement.closest('.emoji-icon, script, style, textarea')) continue;
+                                if (emojiRegex.test(node.nodeValue)) nodesToReplace.push(node);
+                            }
+                            nodesToReplace.forEach(textNode => {
+                                const parent = textNode.parentNode;
+                                if (!parent) return;
+                                const html = textNode.nodeValue.replace(/([\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2B50}\u{2B55}\u{231A}-\u{231B}\u{23ED}-\u{23EF}\u{23F0}\u{23F3}\u{25FD}-\u{25FE}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{3297}\u{3299}\u{3030}\u{303D}\u{00A9}\u{00AE}\u{2122}\u{2139}]|\p{Extended_Pictographic})(?:\uFE0F|\uFE0E)?/gu, '<span class="emoji-icon">$1</span>');
+                                const temp = document.createElement('span');
+                                temp.innerHTML = html;
+                                while (temp.firstChild) parent.insertBefore(temp.firstChild, textNode);
+                                parent.removeChild(textNode);
+                            });
+                        }
+                        wrapEmojisInElement(printWin.document.body);
+                        printWin.print();
+                    };
                 }
 
                     async function printFullTask() {
                         console.log('printFullTask called');
                         const isDark = document.documentElement.classList.contains('dark');
-                        
+
                         const result = await Swal.fire({
                             title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Imprimir Ficha Técnica</span>',
                             background: isDark ? '#0f172a' : '#ffffff',
@@ -1327,10 +1419,10 @@
                         const due = @json($task->due_date?->format('d/m/y H:i') ?? '—');
                         const teamName = @json($team->name);
                         const creator = @json($task->creator?->name ?? '—');
-                        
+
                         const description = document.getElementById('description-content')?.innerHTML ?? '—';
                         const observations = document.getElementById('observations-content')?.innerHTML ?? '—';
-                        
+
                         const members = @json($task->assignedTo->pluck('name')->toArray());
                         const skills = @json($task->skills->map(fn($s) => $s->name)->toArray());
 
@@ -1379,6 +1471,8 @@
                             '      .signature-label { font-size: 7px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; }',
                             '      .footer { margin-top: 15px; padding-top: 8px; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; font-size: 6.5px; font-weight: 600; color: #cbd5e1; text-transform: uppercase; clear: both; }',
                             '      @media print { html, body { height: auto; } .sheet { border: none; height: auto; min-height: 0; } .content-layout { display: block; } .sidebar-content { float: right; width: 180px; margin-left: 20px; margin-bottom: 15px; } .main-content { display: block; } .content-layout::after { content: ""; display: table; clear: both; } }',
+                            '      .emoji-icon { display: inline-block !important; width: 1.35em !important; min-width: 1.35em !important; height: 1.35em !important; line-height: 1.35em !important; vertical-align: -0.15em !important; margin-right: 0.35em !important; text-align: center !important; overflow: visible !important; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important; }',
+                            '      @media print { html, body { height: auto; } .sheet { border: none; height: auto; min-height: 0; } .content-layout { display: block; } .sidebar-content { float: right; width: 180px; margin-left: 20px; margin-bottom: 15px; } .main-content { display: block; } .content-layout::after { content: ""; display: table; clear: both; } .emoji-icon { display: inline-block !important; width: 1.35em !important; min-width: 1.35em !important; height: 1.35em !important; line-height: 1.35em !important; vertical-align: -0.15em !important; margin-right: 0.35em !important; text-align: center !important; overflow: visible !important; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important; } }',
                             '    </style>',
                             '  </head>',
                             '  <body>',
@@ -1420,8 +1514,38 @@
                             '      <footer class="footer"><span>Sientia MTX Ecosystem &bull; v0.9.5</span><span>' + new Date().toLocaleString() + '</span></footer>',
                             '    </div>',
                             '    <script>' +
+                            '      if (window.opener && window.opener.SientiaPrint && window.opener.SientiaPrint.wrapEmojis) {' +
+                            '        window.opener.SientiaPrint.wrapEmojis(document.body);' +
+                            '      }' +
                             '      window.onload = function() { setTimeout(function() { window.print(); setTimeout(function() { window.close(); }, 500); }, 300); };' +
+                            '      function wrapEmojisInElement(element) {' +
+                            '        if (!element) return;' +
+                            '        const emojiRegex = /([\\u{1F300}-\\u{1FAFF}\\u{2600}-\\u{26FF}\\u{2700}-\\u{27BF}\\u{1F900}-\\u{1F9FF}\\u{1F600}-\\u{1F64F}\\u{1F680}-\\u{1F6FF}\\u{2B50}\\u{2B55}\\u{231A}-\\u{231B}\\u{23ED}-\\u{23EF}\\u{23F0}\\u{23F3}\\u{25FD}-\\u{25FE}\\u{2B05}-\\u{2B07}\\u{2B1B}-\\u{2B1C}\\u{3297}\\u{3299}\\u{3030}\\u{303D}\\u{00A9}\\u{00AE}\\u{2122}\\u{2139}]|\\p{Extended_Pictographic})(?:\\uFE0F|\\uFE0E)?/gu;' +
+                            '        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);' +
+                            '        const nodesToReplace = [];' +
+                            '        let node;' +
+                            '        while (node = walker.nextNode()) {' +
+                            '          if (node.parentElement && node.parentElement.closest(".emoji-icon, script, style, textarea")) continue;' +
+                            '          if (emojiRegex.test(node.nodeValue)) nodesToReplace.push(node);' +
+                            '      window.onload = function() {' +
+                            '        if (window.opener && window.opener.SientiaPrint && window.opener.SientiaPrint.wrapEmojis) {' +
+                            '          window.opener.SientiaPrint.wrapEmojis(document.body);' +
+                            '        }' +
+                            '        nodesToReplace.forEach(textNode => {' +
+                            '          const parent = textNode.parentNode;' +
+                            '          if (!parent) return;' +
+                            '          const html = textNode.nodeValue.replace(/([\\u{1F300}-\\u{1FAFF}\\u{2600}-\\u{26FF}\\u{2700}-\\u{27BF}\\u{1F900}-\\u{1F9FF}\\u{1F600}-\\u{1F64F}\\u{1F680}-\\u{1F6FF}\\u{2B50}\\u{2B55}\\u{231A}-\\u{231B}\\u{23ED}-\\u{23EF}\\u{23F0}\\u{23F3}\\u{25FD}-\\u{25FE}\\u{2B05}-\\u{2B07}\\u{2B1B}-\\u{2B1C}\\u{3297}\\u{3299}\\u{3030}\\u{303D}\\u{00A9}\\u{00AE}\\u{2122}\\u{2139}]|\\p{Extended_Pictographic})(?:\\uFE0F|\\uFE0E)?/gu, "<span class=\\"emoji-icon\\">$1</span>");' +
+                            '          const temp = document.createElement("span");' +
+                            '          temp.innerHTML = html;' +
+                            '          while (temp.firstChild) parent.insertBefore(temp.firstChild, textNode);' +
+                            '          parent.removeChild(textNode);' +
+                            '        });' +
+                            '      }' +
+                            '      window.onload = function() { wrapEmojisInElement(document.body); setTimeout(function() { window.print(); setTimeout(function() { window.close(); }, 500); }, 300); };' +
                             '<' + '/script>',
+                            '        setTimeout(function() { window.print(); setTimeout(function() { window.close(); }, 500); }, 300);' +
+                            '      };' +
+                            '    <' + '/script>',
                             '  </body>',
                             '</html>'
                         ].join('');

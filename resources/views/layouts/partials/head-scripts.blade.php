@@ -905,8 +905,67 @@
             padding: 0 !important;
             box-shadow: none !important;
         }
+        .emoji-icon {
+            display: inline-block !important;
+            min-width: 1.25em !important;
+            height: auto !important;
+            width: 1.35em !important;
+            min-width: 1.35em !important;
+            height: 1.35em !important;
+            line-height: 1.35em !important;
+            vertical-align: -0.15em !important;
+            margin-right: 0.25em !important;
+            margin-right: 0.35em !important;
+            text-align: center !important;
+            overflow: visible !important;
+            font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+        }
+
+        /* FIX: Prevent SweetAlert2 Toasts from blocking app interaction */
+        body.swal2-toast-shown .swal2-container {
+            pointer-events: none !important;
+        }
+        body.swal2-toast-shown .swal2-container .swal2-popup {
+            pointer-events: auto !important;
+        }
+
         /* Sientia Global Print Overrides */
         @media print {
+            *, body, h1, h2, h3, h4, h5, h6, p, li, span, div, code, td, th {
+                font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+            }
+            .emoji-icon {
+                display: inline-block !important;
+                min-width: 1.25em !important;
+                height: auto !important;
+                width: 1.35em !important;
+                min-width: 1.35em !important;
+                height: 1.35em !important;
+                line-height: 1.35em !important;
+                vertical-align: -0.15em !important;
+                margin-right: 0.25em !important;
+                margin-right: 0.35em !important;
+                text-align: center !important;
+                overflow: visible !important;
+                font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+            }
+            .markdown-content img.emoji, .prose img.emoji, img.emoji, .emoji {
+                display: inline-block !important;
+                width: 1.2em !important;
+                height: 1.2em !important;
+                vertical-align: -0.15em !important;
+                margin: 0 0.25em 0 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+                border-radius: 0 !important;
+                background: transparent !important;
+            }
+            .markdown-content svg, .prose svg, svg {
+                max-width: 1.5em !important;
+                height: auto !important;
+                display: inline-block !important;
+                vertical-align: middle !important;
+            }
             body.print-clean-mode nav,
             body.print-clean-mode header,
             body.print-clean-mode footer,
@@ -928,12 +987,276 @@
                 flex: 1 1 100% !important;
             }
         }
-        
-        /* FIX: Prevent SweetAlert2 Toasts from blocking app interaction */
-        body.swal2-toast-shown .swal2-container {
-            pointer-events: none !important;
-        }
-        body.swal2-toast-shown .swal2-container .swal2-popup {
-            pointer-events: auto !important;
-        }
     </style>
+    <script>
+        const emojiRegex = /([\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2B50}\u{2B55}\u{231A}-\u{231B}\u{23ED}-\u{23EF}\u{23F0}\u{23F3}\u{25FD}-\u{25FE}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{3297}\u{3299}\u{3030}\u{303D}\u{00A9}\u{00AE}\u{2122}\u{2139}]|\p{Extended_Pictographic})(?:\uFE0F|\uFE0E)?/gu;
+
+        window.SientiaPrint = {
+            wrapEmojis: function(element) {
+                if (!element) return;
+                const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
+                const nodesToReplace = [];
+                let node;
+                while (node = walker.nextNode()) {
+                    if (node.parentElement && node.parentElement.closest('.emoji-icon, script, style, textarea')) {
+                        continue;
+                    }
+                    if (emojiRegex.test(node.nodeValue)) {
+                        nodesToReplace.push(node);
+                    }
+                }
+                nodesToReplace.forEach(textNode => {
+                    const parent = textNode.parentNode;
+                    if (!parent) return;
+                    const html = textNode.nodeValue.replace(emojiRegex, '<span class="emoji-icon">$1</span>');
+                    const temp = document.createElement('span');
+                    temp.innerHTML = html;
+                    while (temp.firstChild) {
+                        parent.insertBefore(temp.firstChild, textNode);
+                    }
+                    parent.removeChild(textNode);
+                });
+            },
+
+            printWindow: function(title, bodyHtml, headExtraHtml = '') {
+                const printWin = window.open('', '_blank', 'width=900,height=900');
+                if (!printWin) return;
+
+                printWin.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                        <head>
+                            <title>${title}</title>
+                            <meta charset="utf-8">
+                            <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Merriweather:wght@300;400;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+                            <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"><\/script>
+                            <style>
+                                @page { size: A4; margin: 2cm; }
+                                body { font-family: 'Merriweather', serif; color: #1e293b; line-height: 1.8; margin: 0; padding: 0; font-size: 14px; }
+                                h1, h2, h3, h4, h5, h6, .outfit { font-family: 'Outfit', sans-serif; }
+
+                                .emoji-icon {
+                                    display: inline-block !important;
+                                    width: 1.35em !important;
+                                    min-width: 1.35em !important;
+                                    height: 1.35em !important;
+                                    line-height: 1.35em !important;
+                                    vertical-align: -0.15em !important;
+                                    margin-right: 0.35em !important;
+                                    text-align: center !important;
+                                    overflow: visible !important;
+                                    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+                                }
+
+                                @media print {
+                                    body, h1, h2, h3, h4, h5, h6, p, li, span, div {
+                                        font-family: 'Merriweather', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", serif !important;
+                                    }
+                                    h1, h2, h3, h4, h5, h6, .outfit {
+                                        font-family: 'Outfit', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+                                    }
+                                    .emoji-icon {
+                                        display: inline-block !important;
+                                        width: 1.35em !important;
+                                        min-width: 1.35em !important;
+                                        height: 1.35em !important;
+                                        line-height: 1.35em !important;
+                                        vertical-align: -0.15em !important;
+                                        margin-right: 0.35em !important;
+                                        text-align: center !important;
+                                        overflow: visible !important;
+                                        font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+                                    }
+                                }
+                            </style>
+                            ${headExtraHtml}
+                        </head>
+                        <body>
+                            ${bodyHtml}
+                        </body>
+                    </html>
+                `);
+                printWin.document.close();
+
+                const runPrint = () => {
+                    if (window.SientiaPrint && window.SientiaPrint.wrapEmojis) {
+                        window.SientiaPrint.wrapEmojis(printWin.document.body);
+                    }
+                    setTimeout(() => {
+                        printWin.print();
+                    }, 400);
+                };
+
+                if (printWin.document.readyState === 'complete') {
+                    runPrint();
+                } else {
+                    printWin.onload = runPrint;
+                }
+            },
+
+            printDocumentBook: function(docData) {
+                const title = docData.title || 'Documento';
+                const teamName = docData.teamName || '';
+                const docVersion = docData.version || '1.0.0';
+                const chapters = docData.chapters || [];
+
+                let chaptersHtml = '';
+                let tocHtml = '';
+
+                chapters.forEach((chap, idx) => {
+                    let rawContent = chap.content || '';
+                    let parsedHtml = typeof marked !== 'undefined' ? marked.parse(rawContent, {breaks: true, gfm: true}) : rawContent;
+
+                    tocHtml += `
+                        <div class="toc-item">
+                            <span class="toc-title">${idx + 1}. ${chap.title}</span>
+                            <span class="toc-dots"></span>
+                            <span class="toc-page">Capítulo ${idx + 1}</span>
+                        </div>
+                    `;
+
+                    chaptersHtml += `
+                        <div class="chapter-page">
+                            <div class="chapter-header">
+                                <span class="chapter-num">CAPÍTULO ${idx + 1}</span>
+                                <h2 class="chapter-title">${chap.title}</h2>
+                                <div class="chapter-meta">Por ${chap.author_name || 'Autor'} • ${chap.updated_at || ''}</div>
+                            </div>
+                            <div class="chapter-body markdown-body">${parsedHtml}</div>
+                        </div>
+                    `;
+                });
+
+                const extraStyles = `
+                    <style>
+                        .cover-page { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; page-break-after: always; padding: 2rem; box-sizing: border-box; }
+                        .cover-team { font-size: 16px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 2rem; font-family: 'Outfit', sans-serif; }
+                        .cover-title { font-size: 42px; font-weight: 900; color: #0f172a; line-height: 1.2; margin-bottom: 2rem; font-family: 'Outfit', sans-serif; }
+                        .cover-badge { display: inline-block; background: #f1f5f9; color: #475569; padding: 8px 24px; border-radius: 50px; font-size: 14px; font-weight: 700; margin-bottom: 4rem; font-family: 'Outfit', sans-serif; border: 1px solid #e2e8f0; }
+                        .cover-footer { margin-top: auto; font-size: 14px; color: #64748b; font-family: 'Outfit', sans-serif; }
+
+                        .toc-page { page-break-after: always; padding: 2rem 0; }
+                        .toc-main-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 3rem; font-family: 'Outfit', sans-serif; border-bottom: 2px solid #e2e8f0; padding-bottom: 1rem; }
+                        .toc-item { display: flex; align-items: baseline; margin-bottom: 1.5rem; font-family: 'Outfit', sans-serif; font-size: 16px; }
+                        .toc-title { font-weight: 600; color: #334155; }
+                        .toc-dots { flex: 1; border-bottom: 1px dotted #cbd5e1; margin: 0 12px; }
+                        .toc-page { font-weight: 700; color: #64748b; font-size: 14px; }
+
+                        .chapter-page { page-break-before: always; padding: 2rem 0; }
+                        .chapter-header { margin-bottom: 3rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 2rem; }
+                        .chapter-num { font-size: 14px; font-weight: 800; color: #8b5cf6; text-transform: uppercase; letter-spacing: 3px; font-family: 'Outfit', sans-serif; display: block; margin-bottom: 0.5rem; }
+                        .chapter-title { font-size: 32px; font-weight: 800; color: #0f172a; margin: 0 0 1rem 0; font-family: 'Outfit', sans-serif; line-height: 1.2; }
+                        .chapter-meta { font-size: 13px; color: #64748b; font-family: 'Outfit', sans-serif; }
+                        .chapter-body { color: #334155; }
+                        .chapter-body p { margin-bottom: 1.5rem; }
+                        .chapter-body h1, .chapter-body h2, .chapter-body h3 { font-family: 'Outfit', sans-serif; color: #0f172a; margin-top: 2.5rem; margin-bottom: 1rem; font-weight: 700; }
+                    </style>
+                `;
+
+                const bodyHtml = `
+                    <div class="cover-page">
+                        <div class="cover-team">${teamName}</div>
+                        <h1 class="cover-title">${title}</h1>
+                        <div class="cover-badge">DOCUMENTO VERSIÓN ${docVersion}</div>
+                        <div class="cover-footer">Sientia MTX • Exportado el ${new Date().toLocaleDateString('es-ES')}</div>
+                    </div>
+
+                    <div class="toc-page">
+                        <h2 class="toc-main-title">Índice General</h2>
+                        ${tocHtml}
+                    </div>
+
+                    ${chaptersHtml}
+                `;
+
+                this.printWindow(`${title} - Libro Digital`, bodyHtml, extraStyles);
+            },
+
+        /**
+         * Unified print entry point.
+         * Shows a "Con cabecera / Sin cabecera" SweetAlert2 dialog, then opens
+         * a formatted print window via SientiaPrint.printWindow().
+         *
+         * @param {string} title       - Document / activity title
+         * @param {string} content     - HTML content to print
+         * @param {Object} [opts]
+         * @param {string} [opts.brand='Sientia MTX']  - Brand label shown in header
+         * @param {boolean} [opts.withHeaders=true]    - Skip dialog, force headers on/off
+         */
+        print: async function(title, content, opts) {
+            opts = opts || {};
+            var brand    = opts.brand || 'Sientia MTX';
+            var now      = new Date();
+            var dateStr  = now.toLocaleDateString('es-ES') + ' a las ' + now.toLocaleTimeString('es-ES');
+            var isDark   = document.documentElement.classList.contains('dark');
+            var withHeaders = true;
+
+            // Show Con/Sin cabecera dialog when Swal is available
+            if (typeof Swal !== 'undefined') {
+                var dialogClosed = false;
+                await Swal.fire({
+                    title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Opciones de Impresión</span>',
+                    background: isDark ? '#0f172a' : '#ffffff',
+                    color:      isDark ? '#f3f4f6' : '#1f2937',
+                    showConfirmButton: false,
+                    showCloseButton: true,
+                    customClass: { popup: 'rounded-[2.5rem] shadow-2xl border border-gray-200 dark:border-gray-800 p-6' },
+                    html: '<div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-6 text-center px-4">' +
+                              '¿Cómo deseas imprimir <strong>' + (brand || title) + '</strong>?' +
+                          '</div>' +
+                          '<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-2">' +
+                              '<button type="button" id="_sp_with" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-indigo-100 dark:border-indigo-950 bg-indigo-50/50 dark:bg-indigo-950/30 hover:border-indigo-600 transition-all text-center group">' +
+                                  '<div class="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform shadow-sm">' +
+                                      '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>' +
+                                  '</div>' +
+                                  '<div class="font-black text-[10px] uppercase tracking-widest text-indigo-700 dark:text-indigo-300">Con Cabecera</div>' +
+                                  '<div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Estilo oficial</div>' +
+                              '</button>' +
+                              '<button type="button" id="_sp_without" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-slate-900 hover:border-gray-600 transition-all text-center group">' +
+                                  '<div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 group-hover:scale-110 transition-transform shadow-sm">' +
+                                      '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>' +
+                                  '</div>' +
+                                  '<div class="font-black text-[10px] uppercase tracking-widest text-gray-700 dark:text-gray-300">Sin Cabecera</div>' +
+                                  '<div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Ficha limpia</div>' +
+                              '</button>' +
+                          '</div>',
+                    didOpen: function(popup) {
+                        popup.querySelector('#_sp_with').onclick    = function() { withHeaders = true;  dialogClosed = true; Swal.close(); };
+                        popup.querySelector('#_sp_without').onclick = function() { withHeaders = false; dialogClosed = true; Swal.close(); };
+                    }
+                });
+                if (!dialogClosed) return; // user closed without choosing
+            }
+
+            var headerHtml = withHeaders
+                ? '<div style="border-bottom:4px solid #4f46e5;margin-bottom:40px;padding-bottom:20px">' +
+                      '<span style="font-weight:900;font-size:10px;text-transform:uppercase;letter-spacing:.3em;color:#6366f1;display:block;margin-bottom:6px">' + brand + '</span>' +
+                      '<h1 style="font-size:26px;font-weight:900;color:#0f172a;letter-spacing:-.03em;line-height:1.1;margin:0 0 6px">' + title + '</h1>' +
+                      '<div style="font-size:11px;color:#94a3b8;font-weight:500">Generado el ' + dateStr + '</div>' +
+                  '</div>'
+                : '<h1 style="font-size:22px;font-weight:800;color:#0f172a;border-bottom:2px solid #e2e8f0;padding-bottom:12px;margin-bottom:30px;letter-spacing:-.02em">' + title + '</h1>';
+
+            var watermark = withHeaders
+                ? '<div style="position:fixed;bottom:20px;right:20px;font-size:80px;font-weight:900;color:rgba(99,102,241,.04);pointer-events:none;z-index:0">Sientia.</div>'
+                : '';
+
+            var bodyHtml = headerHtml + '<div class="content">' + content + '</div>' + watermark;
+            this.printWindow(title, bodyHtml);
+        }
+
+        };
+
+        window.wrapEmojisInElement = function(element) {
+            if (window.SientiaPrint && window.SientiaPrint.wrapEmojis) {
+                window.SientiaPrint.wrapEmojis(element);
+            }
+        };
+        window.printDocumentBook = function(docData) {
+            if (window.SientiaPrint && window.SientiaPrint.printDocumentBook) {
+                window.SientiaPrint.printDocumentBook(docData || {});
+            }
+        };
+        window.addEventListener('beforeprint', function() {
+            window.wrapEmojisInElement(document.body);
+        });
+    </script>

@@ -64,6 +64,9 @@ class StoreActivityRequest extends FormRequest
                 Rule::exists('activities', 'id')->where('team_id', $team->id),
             ],
             'is_timeline_locked' => 'nullable|boolean',
+            'is_autoprogrammable' => 'nullable|boolean',
+            'autoprogram_settings' => 'nullable|array',
+            'autoprogram_settings.*' => 'nullable',
             'expediente_id' => [
                 'nullable',
                 Rule::exists('expedientes', 'id')->where('team_id', $team->id),

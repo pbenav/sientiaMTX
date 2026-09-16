@@ -29,7 +29,7 @@
         function showHistoryDiff(id) {
             const histories = @json($task->histories->sortByDesc('created_at')->take(15)->values());
             const log = histories.find(h => h.id == id);
-            
+
             if (!log || !log.old_values || !log.new_values) {
                 // If it's a simple action without values (like 'cloned' or 'blocked'), we might just show notes
                 if (log && log.notes) {
@@ -94,13 +94,13 @@
             };
 
             const ignoredFields = ['updated_at', 'created_at', 'id', 'uuid', 'google_synced_at', 'matrix_order', 'kanban_order', 'kanban_column_id'];
-            
+
             let hasChanges = false;
             let html = '<div class="space-y-4">';
 
             for (const key in log.new_values) {
                 if (ignoredFields.includes(key)) continue;
-                
+
                 const oldVal = log.old_values[key];
                 const newVal = log.new_values[key];
 
@@ -112,7 +112,7 @@
                         if (typeof v === 'boolean') return v ? 'Sí' : 'No';
                         return v;
                     });
-                    
+
                     html += `
                         <div class="bg-gray-50 dark:bg-gray-800/40 rounded-xl p-4 border border-gray-100 dark:border-gray-800">
                             <p class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">${label}</p>
@@ -162,7 +162,7 @@
         function showAttachmentHistory(id) {
             const attachments = @json($allAttachments);
             const attachment = attachments.find(a => a.id == id);
-            
+
             if (!attachment) return;
 
             document.getElementById('history-filename').innerText = attachment.file_name;
@@ -171,9 +171,9 @@
 
             if (attachment.logs && attachment.logs.length > 0) {
                 const logs = attachment.logs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                
+
                 let html = '<div class="space-y-6 relative ml-4 border-l-2 border-gray-100 dark:border-gray-800 pl-8">';
-                
+
                 logs.forEach(log => {
                     const date = new Date(log.created_at).toLocaleString();
                     const actionColors = {
@@ -184,7 +184,7 @@
                         'move_to_drive': 'bg-violet-500',
                         'delete': 'bg-red-500'
                     };
-                    
+
                     const actionIcons = {
                         'upload': '<path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v8" />',
                         'download': '<path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />',
@@ -221,7 +221,7 @@
                                     <span class="text-[10px] bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full font-bold tabular-nums">${date}</span>
                                 </div>
                                 <div class="flex items-center gap-2 group">
-                                    <img src="${log.user ? (log.user.profile_photo_path ? '/storage/' + log.user.profile_photo_path : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(log.user.name) + '&color=7F9CF5&background=EBF4FF') : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF'}" 
+                                    <img src="${log.user ? (log.user.profile_photo_path ? '/storage/' + log.user.profile_photo_path : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(log.user.name) + '&color=7F9CF5&background=EBF4FF') : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF'}"
                                         class="w-5 h-5 rounded-full object-cover shadow-sm" alt="${log.user?.name || '?'}">
                                     <span class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-tighter">${log.user?.name || 'Sistema'}</span>
                                     ${log.ip_address ? `<span class="text-[9px] text-gray-400 font-mono bg-gray-50 dark:bg-gray-800/50 px-1.5 py-0.5 rounded">IP: ${log.ip_address}</span>` : ''}
@@ -231,7 +231,7 @@
                         </div>
                     `;
                 });
-                
+
                 html += '</div>';
                 content.innerHTML = html;
             } else {
@@ -254,7 +254,7 @@
 
         function copyTaskJson() {
             const btn = event.currentTarget;
-            
+
             btn.disabled = true;
             btn.style.opacity = '0.5';
 
@@ -348,7 +348,7 @@
         const content = document.getElementById('reply-content-private').value;
         const button = event.currentTarget;
         const originalText = button.innerHTML;
-        
+
         button.disabled = true;
         button.innerHTML = '<svg class="animate-spin h-3 w-3 mr-2 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> GUARDANDO...';
 
@@ -393,35 +393,51 @@
         (function() {
             const bar = document.getElementById('task-floating-bar');
             if (!bar) return;
+            const checkScroll = (e) => {
+                const bar = document.getElementById('task-floating-bar');
+                if (!bar) return;
 
             const checkScroll = (e) => {
-                let scrollY = 0;
-                if (e && e.target && e.target !== document) {
-                    scrollY = e.target.scrollTop;
-                } else {
-                    scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+                const windowScroll = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+                let targetScroll = 0;
+                if (e && e.target && e.target !== document && e.target !== window && typeof e.target.scrollTop === 'number') {
+                    targetScroll = e.target.scrollTop || 0;
                 }
-                
-                if (scrollY > 150) {
+                const currentScroll = Math.max(windowScroll, targetScroll);
+
+                if (currentScroll > 150) {
+                if (currentScroll > 50) {
                     bar.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
                     bar.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                    bar.style.opacity = '1';
+                    bar.style.pointerEvents = 'auto';
+                    bar.style.visibility = 'visible';
                 } else {
                     bar.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
                     bar.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                    bar.style.opacity = '0';
+                    bar.style.pointerEvents = 'none';
+                    bar.style.visibility = 'hidden';
                 }
             };
 
             window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
-            
-            setTimeout(() => checkScroll(), 100);
+            document.addEventListener('scroll', checkScroll, { passive: true, capture: true });
+            window.addEventListener('resize', checkScroll, { passive: true });
+            document.addEventListener('DOMContentLoaded', checkScroll);
+            checkScroll();
+            setTimeout(checkScroll, 50);
+            setTimeout(checkScroll, 200);
+            setTimeout(checkScroll, 500);
+            setTimeout(checkScroll, 1000);
         })();
     </script>
 @endpush
 
     @if(isset($mappedActivity) && $mappedActivity)
     <!-- MODAL DE CONVERSIÓN DE ACTIVIDAD -->
-    <div x-data="{ 
-        show: false, 
+    <div x-data="{
+        show: false,
         targetType: 'task',
         types: [
             { id: 'task', label: 'Tarea General', icon: '📝', desc: 'Actividad estándar con seguimiento de urgencia, carga cognitiva y gestión de progreso.' },
@@ -442,7 +458,7 @@
         x-transition:leave-end="opacity-0"
         x-cloak
         @click.self="show = false">
-        
+
         <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl border border-gray-100 dark:border-gray-800 transform transition-all text-left flex flex-col max-h-[90vh]"
             x-transition:enter="transition ease-out duration-300 transform"
             x-transition:enter-start="opacity-0 scale-95"
@@ -450,7 +466,7 @@
             x-transition:leave="transition ease-in duration-200 transform"
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95">
-            
+
             <div class="px-8 py-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-violet-50/50 dark:bg-violet-950/20">
                 <div>
                     <div class="flex items-center gap-2 mb-1">
@@ -473,7 +489,7 @@
             <form action="{{ route('teams.activities.convert', [$team, $mappedActivity]) }}" method="POST" class="flex flex-col flex-1 overflow-hidden m-0">
                 @csrf
                 <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
-                    
+
                     <div class="mb-6 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50">
                         <div class="flex gap-3">
                             <div class="text-amber-500 mt-0.5">
@@ -498,12 +514,12 @@
                         <template x-for="type in types" :key="type.id">
                             <label class="relative flex cursor-pointer rounded-2xl border bg-white dark:bg-gray-800/50 p-4 shadow-sm focus:outline-none transition-all group hover:border-violet-300 dark:hover:border-violet-700"
                                 :class="targetType === type.id ? 'border-violet-500 ring-2 ring-violet-500/20 bg-violet-50/30 dark:bg-violet-900/10' : 'border-gray-200 dark:border-gray-700'">
-                                
+
                                 <input type="radio" name="type" :value="type.id" x-model="targetType" class="sr-only">
-                                
+
                                 <div class="flex w-full items-start justify-between gap-4">
                                     <div class="flex items-start gap-4">
-                                        <div class="text-2xl mt-1 p-2 rounded-xl bg-gray-50 dark:bg-gray-800 group-hover:scale-110 transition-transform" 
+                                        <div class="text-2xl mt-1 p-2 rounded-xl bg-gray-50 dark:bg-gray-800 group-hover:scale-110 transition-transform"
                                              :class="targetType === type.id ? 'bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400' : ''"
                                              x-text="type.icon">
                                         </div>
@@ -512,7 +528,7 @@
                                             <span class="text-[10px] text-gray-500 dark:text-gray-400 font-medium leading-relaxed" x-text="type.desc"></span>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="shrink-0 text-violet-500" x-show="targetType === type.id">
                                         <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                                             <circle cx="12" cy="12" r="10" stroke-opacity="0.2" fill="currentColor" fill-opacity="0.1"/>

@@ -162,7 +162,7 @@ class ActivityController extends Controller
         $members = $team->members()->select('users.id', 'users.name', 'users.email')->orderBy('users.name')->get();
         $groups  = $team->groups()->with('users:id')->select('groups.id', 'groups.name')->orderBy('groups.name')->get();
         $expedientes = $team->expedientes()->select('expedientes.id', 'expedientes.code', 'expedientes.title')->orderBy('expedientes.title')->get();
-        
+
         // Actividades padre disponibles para jerarquía (no circulares)
         $parentActivities = Activity::with('creator:id,name')
             ->byTeam($team->id)
@@ -192,12 +192,22 @@ class ActivityController extends Controller
         \Illuminate\Support\Facades\Log::info("STORE PAYLOAD:", $request->all());
         $validated = $request->validated();
         $type = $validated['type'];
-        
+
         // Inject top-level toggle into metadata
         if ($request->has('is_timeline_locked')) {
             $validated['metadata']['is_timeline_locked'] = $request->boolean('is_timeline_locked');
         } else {
             $validated['metadata']['is_timeline_locked'] = false;
+        }
+
+        if ($request->has('is_autoprogrammable')) {
+            $validated['metadata']['is_autoprogrammable'] = $request->boolean('is_autoprogrammable');
+        } else {
+            $validated['metadata']['is_autoprogrammable'] = false;
+        }
+
+        if ($request->has('autoprogram_settings')) {
+            $validated['metadata']['autoprogram_settings'] = $request->input('autoprogram_settings');
         }
 
         $validated['auto_priority'] = $request->boolean('auto_priority');
@@ -275,7 +285,7 @@ class ActivityController extends Controller
         $groups  = $team->groups()->with('users:id')->select('groups.id', 'groups.name')->orderBy('groups.name')->get();
         $expedientes = $team->expedientes()->select('expedientes.id', 'expedientes.code', 'expedientes.title')->orderBy('expedientes.title')->get();
 
-        
+
         $parentActivities = Activity::with('creator:id,name')
             ->byTeam($team->id)
             ->active()
@@ -362,12 +372,22 @@ class ActivityController extends Controller
         }
 
         $validated = $request->validated();
-        
+
         // Inject top-level toggle into metadata
         if ($request->has('is_timeline_locked')) {
             $validated['metadata']['is_timeline_locked'] = $request->boolean('is_timeline_locked');
         } else {
             $validated['metadata']['is_timeline_locked'] = false;
+        }
+
+        if ($request->has('is_autoprogrammable')) {
+            $validated['metadata']['is_autoprogrammable'] = $request->boolean('is_autoprogrammable');
+        } else {
+            $validated['metadata']['is_autoprogrammable'] = false;
+        }
+
+        if ($request->has('autoprogram_settings')) {
+            $validated['metadata']['autoprogram_settings'] = $request->input('autoprogram_settings');
         }
 
         if ($request->has('auto_priority')) {
@@ -442,8 +462,8 @@ class ActivityController extends Controller
         }
 
         $this->activityService->update(
-            $activity, 
-            $validated, 
+            $activity,
+            $validated,
             $request->file('attachments') ?? [],
             $request->input('drive_attachments')
         );
@@ -698,7 +718,7 @@ class ActivityController extends Controller
         // Recuperar la estructura de metadatos del ancestro, pero mantener la trazabilidad
         $currentMetadata = $activity->metadata ?? [];
         $ancestorMetadata = $ancestor->metadata ?? [];
-        
+
         // Mantener las claves de conversión de la actividad actual para no perder el enlace "vidas pasadas"
         $internalKeys = ['converted_from_uuid', 'converted_from_id'];
         $conversionLinks = [];
@@ -713,7 +733,7 @@ class ActivityController extends Controller
 
         // Metadatos finales: los del ancestro más los enlaces de conversión
         $finalMetadata = array_merge($ancestorMetadata, $conversionLinks);
-        
+
         $activity->metadata = $finalMetadata;
 
         $activity->saveQuietly();

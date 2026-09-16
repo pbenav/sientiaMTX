@@ -87,7 +87,7 @@
                          x-data="appointmentSettingsGPS()"
                          x-init="initComponent()">
                         <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">📍 Ubicación Geográfica (Coordenadas GPS)</label>
-                        
+
                         <!-- Buscador por dirección Nominatim -->
                         <div class="relative">
                             <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Buscador GPS / Dirección</label>
@@ -103,7 +103,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            
+
                             <!-- Search Results Dropdown -->
                             <div x-show="searchResults.length > 0" class="absolute z-[1000] w-full mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto">
                                 <template x-for="res in searchResults" :key="res.place_id">
@@ -232,7 +232,7 @@
                             <option value="meet.ffmuc.net" {{ old('jitsi_domain', $settings->jitsi_domain ?? 'meet.jit.si') === 'meet.ffmuc.net' ? 'selected' : '' }}>meet.ffmuc.net (Abierto - Sin límite incrustado - Falla en Firefox)</option>
                         </select>
                         <p class="text-[10px] text-gray-400 mt-2">
-                            El servidor <span class="font-bold">meet.jit.si</span> limita las llamadas incrustadas a 5 minutos, pero funciona bien para apertura externa. 
+                            El servidor <span class="font-bold">meet.jit.si</span> limita las llamadas incrustadas a 5 minutos, pero funciona bien para apertura externa.
                             El servidor <span class="font-bold">meet.ffmuc.net</span> permite incrustación sin límite, pero Firefox bloquea la ventana por seguridad. ¡Elige el que mejor se adapte a ti!
                         </p>
                     </div>
@@ -319,7 +319,7 @@
             },
             initMap() {
                 if (this.mapInstance) return;
-                
+
                 const lat = parseFloat(this.latVal) || 37.17;
                 const lng = parseFloat(this.lngVal) || -3.60;
 
@@ -428,22 +428,32 @@
 <script>
     (function() {
         const bar = document.getElementById('settings-edit-floating-bar');
-        
-        // Función para mostrar/ocultar según scroll
-        function handleScroll() {
-            if (window.scrollY > 150) {
+        if (!bar) return;
+
+        const checkScroll = (e) => {
+            const windowScroll = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+            let targetScroll = 0;
+            if (e && e.target && e.target !== document && e.target !== window && typeof e.target.scrollTop === 'number') {
+                targetScroll = e.target.scrollTop || 0;
+            }
+            const currentScroll = Math.max(windowScroll, targetScroll);
+
+            if (currentScroll > 150) {
+                bar.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+                bar.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
                 bar.style.opacity = '1';
                 bar.style.pointerEvents = 'auto';
-                bar.style.transform = 'translate(-50%, 0)';
             } else {
+                bar.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+                bar.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
                 bar.style.opacity = '0';
                 bar.style.pointerEvents = 'none';
-                bar.style.transform = 'translate(-50%, 1rem)';
             }
-        }
+        };
 
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        handleScroll();
+        window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
+        checkScroll();
+        setTimeout(checkScroll, 200);
     })();
 
     document.addEventListener('alpine:init', () => {
@@ -455,41 +465,41 @@
                 startY: 0,
                 initialLeft: 0,
                 initialBottom: 0,
-                
+
                 startDrag(e) {
                     if (e.target.closest('button') || e.target.closest('a')) return;
-                    
+
                     this.isDragging = true;
                     const touch = e.type.includes('touch') ? e.touches[0] : e;
                     this.startX = touch.clientX;
                     this.startY = touch.clientY;
-                    
+
                     const rect = this.$el.getBoundingClientRect();
                     this.initialLeft = rect.left;
                     this.initialBottom = window.innerHeight - rect.bottom;
-                    
+
                     this.$el.style.transform = 'none';
                     this.$el.style.left = this.initialLeft + 'px';
                     this.$el.style.bottom = this.initialBottom + 'px';
                 },
-                
+
                 drag(e) {
                     if (!this.isDragging) return;
-                    
+
                     const touch = e.type.includes('touch') ? e.touches[0] : e;
                     const deltaX = touch.clientX - this.startX;
                     const deltaY = touch.clientY - this.startY;
-                    
+
                     const newLeft = this.initialLeft + deltaX;
                     const newBottom = this.initialBottom - deltaY;
-                    
+
                     const maxX = window.innerWidth - this.$el.offsetWidth;
                     const maxBottom = window.innerHeight - this.$el.offsetHeight;
-                    
+
                     this.$el.style.left = Math.max(0, Math.min(newLeft, maxX)) + 'px';
                     this.$el.style.bottom = Math.max(0, Math.min(newBottom, maxBottom)) + 'px';
                 },
-                
+
                 stopDrag() {
                     this.isDragging = false;
                 }

@@ -19,7 +19,15 @@ trait ActivityAccessors
      */
     public function getIsAutoprogrammableAttribute(): bool
     {
-        return data_get($this->metadata, 'is_autoprogrammable', false);
+        return (bool) data_get($this->metadata, 'is_autoprogrammable', false);
+    }
+
+    /**
+     * Devuelve la configuración de autoprogramación desde metadata.
+     */
+    public function getAutoprogramSettingsAttribute(): ?array
+    {
+        return data_get($this->metadata, 'autoprogram_settings');
     }
 
     /**

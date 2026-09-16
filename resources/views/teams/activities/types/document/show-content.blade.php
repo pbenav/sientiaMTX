@@ -76,7 +76,7 @@
             <h3 class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
                 {{ __('activities.description') }}
             </h3>
-            <button onclick="printSection('Descripción', 'description-content')" 
+            <button onclick="printSection('Descripción', 'description-content')"
                     class="p-1.5 bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-xl transition-all border border-transparent hover:border-violet-100 dark:hover:border-violet-800 shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest"
                     title="Imprimir descripción">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -88,10 +88,10 @@
         <div id="description-content" style="height: 350px; max-height: none; overflow-y: auto;"
             class="text-sm text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none prose-sm leading-relaxed resize-y min-h-[250px] custom-scrollbar pr-4 py-2"
             x-data="{ content: `{{ base64_encode($displayDescription) }}` }"
-            x-init="$nextTick(() => { 
+            x-init="$nextTick(() => {
                const decodeB64 = (s) => { try { return new TextDecoder().decode(Uint8Array.from(atob(s), c => c.charCodeAt(0))); } catch(_) { try { return decodeURIComponent(escape(atob(s))); } catch(e) { return atob(s); } } };
                const decoded = decodeB64(content);
-               $el.innerHTML = typeof marked !== 'undefined' ? marked.parse(decoded, {breaks: true, gfm: true}) : decoded; 
+               $el.innerHTML = typeof marked !== 'undefined' ? marked.parse(decoded, {breaks: true, gfm: true}) : decoded;
             })">
             <div class="flex items-center justify-center p-4">
                 <svg class="animate-spin h-5 w-5 text-violet-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -106,7 +106,7 @@
             <h3 class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
                 {{ __('activities.observations') }}
             </h3>
-            <button onclick="printSection('Observaciones', 'observations-content')" 
+            <button onclick="printSection('Observaciones', 'observations-content')"
                     class="p-1.5 bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-xl transition-all border border-transparent hover:border-violet-100 dark:hover:border-violet-800 shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest"
                     title="Imprimir observaciones">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -118,10 +118,10 @@
         <div id="observations-content" style="height: 350px; max-height: none; overflow-y: auto;"
             class="text-sm text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none prose-sm leading-relaxed resize-y min-h-[250px] custom-scrollbar pr-4 py-2"
             x-data="{ content: `{{ base64_encode($displayObservations) }}` }"
-            x-init="$nextTick(() => { 
+            x-init="$nextTick(() => {
                const decodeB64 = (s) => { try { return new TextDecoder().decode(Uint8Array.from(atob(s), c => c.charCodeAt(0))); } catch(_) { try { return decodeURIComponent(escape(atob(s))); } catch(e) { return atob(s); } } };
                const decoded = decodeB64(content);
-               $el.innerHTML = typeof marked !== 'undefined' ? marked.parse(decoded, {breaks: true, gfm: true}) : decoded; 
+               $el.innerHTML = typeof marked !== 'undefined' ? marked.parse(decoded, {breaks: true, gfm: true}) : decoded;
             })">
             <div class="flex items-center justify-center p-4">
                 <svg class="animate-spin h-5 w-5 text-violet-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -131,7 +131,7 @@
 @endif
 
 @if(count($chapters) > 0)
-    <div id="chapters-section" x-data="{ 
+    <div id="chapters-section" x-data="{
             search: '',
             currentIndex: 0,
             totalMatches: 0,
@@ -177,7 +177,7 @@
                 this.currentIndex = (this.currentIndex - 1 + this.totalMatches) % this.totalMatches;
                 this.highlightCurrent();
             }
-        }" 
+        }"
         @matches-updated.window="updateMatches()"
         class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-colors space-y-6 mt-6">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100 dark:border-gray-800">
@@ -192,7 +192,7 @@
                     <p class="text-[10px] text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">{{ count($chapters) }} Capítulos integrados</p>
                 </div>
             </div>
-            
+
             <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
                 <div class="relative w-full sm:w-64">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -234,10 +234,10 @@
                 </button>
             </div>
         </div>
-        
+
         <div class="space-y-4">
             @foreach($chapters as $idx => $chapter)
-            <div x-data="{ 
+            <div x-data="{
                     open: false,
                     rawContent: `{{ base64_encode($chapter['content'] ?? '') }}`,
                     decodedContent: '',
@@ -265,7 +265,7 @@
                         if (!this.$refs.mdContainer) return;
                         let html = typeof marked !== 'undefined' ? marked.parse(this.decodedContent, {breaks: true, gfm: true}) : this.decodedContent;
                         this.$refs.mdContainer.innerHTML = html;
-                        
+
                         if (search && search.trim() !== '') {
                             let s = search.trim();
                             let escaped = s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -273,14 +273,14 @@
                             let walker = document.createTreeWalker(this.$refs.mdContainer, NodeFilter.SHOW_TEXT, null, false);
                             let nodesToReplace = [];
                             let node;
-                            
+
                             while (node = walker.nextNode()) {
                                 if (node.parentNode && ['SCRIPT', 'STYLE', 'MARK'].includes(node.parentNode.nodeName)) continue;
                                 if (node.nodeValue.match(regex)) {
                                     nodesToReplace.push(node);
                                 }
                             }
-                            
+
                             nodesToReplace.forEach(n => {
                                 let span = document.createElement('span');
                                 span.innerHTML = n.nodeValue.replace(regex, '<mark class=\'bg-yellow-300 dark:bg-yellow-900 text-gray-900 dark:text-yellow-100 rounded px-1.5 py-0.5 font-bold shadow-sm search-highlight-mark\'>$1</mark>');
@@ -289,7 +289,7 @@
                         }
                         this.$dispatch('matches-updated');
                     }
-                 }" 
+                 }"
                  x-show="isMatch"
                  class="bg-gray-50/40 dark:bg-gray-800/20 border border-gray-100 dark:border-gray-800/60 rounded-2xl p-5 space-y-4 transition-all duration-300">
                 <div class="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800/50 cursor-pointer group" @click="open = !open">
@@ -311,6 +311,7 @@
                             </svg>
                         </button>
                         <button type="button" @click.stop="printSection('{{ addslashes($chapter['title'] ?? 'Capítulo ' . ($idx + 1)) }}', 'chapter-content-{{ $idx }}')" class="p-1.5 text-gray-400 hover:text-orange-500 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors" title="Imprimir Capítulo">
+                        <button type="button" @click.stop="updateContent(); $nextTick(() => printSection('{{ addslashes($chapter['title'] ?? 'Capítulo ' . ($idx + 1)) }}', 'chapter-content-{{ $idx }}'))" class="p-1.5 text-gray-400 hover:text-orange-500 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors" title="Imprimir Capítulo">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                             </svg>

@@ -179,8 +179,42 @@
         }
         .print-btn:hover { background: #6d28d9; }
 
+        .emoji-icon {
+            display: inline-block !important;
+            min-width: 1.25em !important;
+            height: auto !important;
+            width: 1.35em !important;
+            min-width: 1.35em !important;
+            height: 1.35em !important;
+            line-height: 1.35em !important;
+            vertical-align: -0.15em !important;
+            margin-right: 0.25em !important;
+            margin-right: 0.35em !important;
+            text-align: center !important;
+            overflow: visible !important;
+            font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+        }
+
         /* ── Print media ─────────────────────────────────────────────── */
         @media print {
+            *, body, h1, h2, h3, h4, h5, h6, p, li, span, div, code, td, th {
+                font-family: 'Outfit', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+            }
+            .emoji-icon {
+                display: inline-block !important;
+                min-width: 1.25em !important;
+                height: auto !important;
+                width: 1.35em !important;
+                min-width: 1.35em !important;
+                height: 1.35em !important;
+                line-height: 1.35em !important;
+                vertical-align: -0.15em !important;
+                margin-right: 0.25em !important;
+                margin-right: 0.35em !important;
+                text-align: center !important;
+                overflow: visible !important;
+                font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+            }
             .print-btn { display: none !important; }
             body { font-size: 12.5px; }
             .page { padding: 0; max-width: 100%; }
@@ -231,8 +265,40 @@
     </button>
 
     <script>
+        window.wrapEmojisInElement = function(element) {
+            if (!element) return;
+            const emojiRegex = /(\p{Extended_Pictographic}(?:\uFE0F|\uFE0E)?)/gu;
+            const emojiRegex = /([\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2B50}\u{2B55}\u{231A}-\u{231B}\u{23ED}-\u{23EF}\u{23F0}\u{23F3}\u{25FD}-\u{25FE}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{3297}\u{3299}\u{3030}\u{303D}\u{00A9}\u{00AE}\u{2122}\u{2139}]|\p{Extended_Pictographic})(?:\uFE0F|\uFE0E)?/gu;
+            const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
+            const nodesToReplace = [];
+            let node;
+            while (node = walker.nextNode()) {
+                if (node.parentElement && node.parentElement.closest('.emoji-icon, script, style, textarea')) {
+                    continue;
+                }
+                if (emojiRegex.test(node.nodeValue)) {
+                    nodesToReplace.push(node);
+                }
+            }
+            nodesToReplace.forEach(textNode => {
+                const parent = textNode.parentNode;
+                if (!parent) return;
+                const html = textNode.nodeValue.replace(/(\p{Extended_Pictographic}(?:\uFE0F|\uFE0E)?)/gu, '<span class="emoji-icon">$1</span>');
+                const html = textNode.nodeValue.replace(/([\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2B50}\u{2B55}\u{231A}-\u{231B}\u{23ED}-\u{23EF}\u{23F0}\u{23F3}\u{25FD}-\u{25FE}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{3297}\u{3299}\u{3030}\u{303D}\u{00A9}\u{00AE}\u{2122}\u{2139}]|\p{Extended_Pictographic})(?:\uFE0F|\uFE0E)?/gu, '<span class="emoji-icon">$1</span>');
+                const temp = document.createElement('span');
+                temp.innerHTML = html;
+                while (temp.firstChild) {
+                    parent.insertBefore(temp.firstChild, textNode);
+                }
+                parent.removeChild(textNode);
+            });
+        };
+        window.addEventListener('beforeprint', function() {
+            window.wrapEmojisInElement(document.body);
+        });
         // Auto-lanzar impresión al cargar la página
         window.addEventListener('load', function () {
+            window.wrapEmojisInElement(document.body);
             setTimeout(function () { window.print(); }, 400);
         });
     </script>

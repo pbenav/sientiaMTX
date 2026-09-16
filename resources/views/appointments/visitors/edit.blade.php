@@ -46,7 +46,7 @@
                             @error('last_name') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
                     </div>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="dni">DNI/NIE</label>
@@ -156,22 +156,32 @@
 <script>
     (function() {
         const bar = document.getElementById('visitor-edit-floating-bar');
-        
-        // Función para mostrar/ocultar según scroll
-        function handleScroll() {
-            if (window.scrollY > 100) {
+        if (!bar) return;
+
+        const checkScroll = (e) => {
+            const windowScroll = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+            let targetScroll = 0;
+            if (e && e.target && e.target !== document && e.target !== window && typeof e.target.scrollTop === 'number') {
+                targetScroll = e.target.scrollTop || 0;
+            }
+            const currentScroll = Math.max(windowScroll, targetScroll);
+
+            if (currentScroll > 100) {
+                bar.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+                bar.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
                 bar.style.opacity = '1';
                 bar.style.pointerEvents = 'auto';
-                bar.style.transform = 'translate(-50%, 0)';
             } else {
+                bar.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+                bar.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
                 bar.style.opacity = '0';
                 bar.style.pointerEvents = 'none';
-                bar.style.transform = 'translate(-50%, 1rem)';
             }
-        }
+        };
 
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        handleScroll();
+        window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
+        checkScroll();
+        setTimeout(checkScroll, 200);
     })();
 
     document.addEventListener('alpine:init', () => {
@@ -182,41 +192,41 @@
                 startY: 0,
                 initialLeft: 0,
                 initialBottom: 0,
-                
+
                 startDrag(e) {
                     if (e.target.closest('button') || e.target.closest('a')) return;
-                    
+
                     this.isDragging = true;
                     const touch = e.type.includes('touch') ? e.touches[0] : e;
                     this.startX = touch.clientX;
                     this.startY = touch.clientY;
-                    
+
                     const rect = this.$el.getBoundingClientRect();
                     this.initialLeft = rect.left;
                     this.initialBottom = window.innerHeight - rect.bottom;
-                    
+
                     this.$el.style.transform = 'none';
                     this.$el.style.left = this.initialLeft + 'px';
                     this.$el.style.bottom = this.initialBottom + 'px';
                 },
-                
+
                 drag(e) {
                     if (!this.isDragging) return;
-                    
+
                     const touch = e.type.includes('touch') ? e.touches[0] : e;
                     const deltaX = touch.clientX - this.startX;
                     const deltaY = touch.clientY - this.startY;
-                    
+
                     const newLeft = this.initialLeft + deltaX;
                     const newBottom = this.initialBottom - deltaY;
-                    
+
                     const maxX = window.innerWidth - this.$el.offsetWidth;
                     const maxBottom = window.innerHeight - this.$el.offsetHeight;
-                    
+
                     this.$el.style.left = Math.max(0, Math.min(newLeft, maxX)) + 'px';
                     this.$el.style.bottom = Math.max(0, Math.min(newBottom, maxBottom)) + 'px';
                 },
-                
+
                 stopDrag() {
                     this.isDragging = false;
                 }

@@ -16,17 +16,17 @@
                 <div class="min-w-0 flex-1">
                     <!-- Breadcrumbs -->
                     <div class="flex items-center gap-2 mb-1 overflow-hidden">
-                        <a href="{{ route('teams.show', $team) }}" 
+                        <a href="{{ route('teams.show', $team) }}"
                            class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-violet-600 transition-all truncate">
                             {{ $team->name }}
                         </a>
                         <svg class="w-3 h-3 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/></svg>
-                        <a href="{{ route('teams.forum.index', $team) }}" 
+                        <a href="{{ route('teams.forum.index', $team) }}"
                            class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-violet-600 transition-all shrink-0">
                             {{ __('forum.title') ?? 'Foro' }}
                         </a>
                     </div>
-                    <div class="flex items-start gap-3" 
+                    <div class="flex items-start gap-3"
                          x-data="{ editingTitle: false }">
                         @if ($thread->is_pinned)
                             <span x-show="!editingTitle" class="text-violet-500 shrink-0 mt-1.5"><svg xmlns="http://www.w3.org/2000/svg"
@@ -50,12 +50,12 @@
                                     <button type="submit" class="px-5 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-violet-600/20 transition-all active:scale-95">Guardar</button>
                                     <button type="button" @click="editingTitle = false" class="px-5 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-xl text-sm font-bold transition-all">Cancelar</button>
                                 </div>
-                                
+
 
                                 <!-- Quick Emoji Picker -->
                                 <div class="flex items-center gap-1.5 flex-wrap -ml-1">
                                     @foreach(['🚀', '💡', '🐞', '🚨', '📅', '📂', '💬', '✅', '❌', '🤔', '📈', '🔒'] as $emoji)
-                                        <button type="button" 
+                                        <button type="button"
                                             @click="
                                                 const el = $refs.titleInput;
                                                 const start = el.selectionStart;
@@ -80,7 +80,7 @@
                     </div>
                     <div class="text-xs text-gray-500 flex items-center gap-3 mt-1.5 font-medium">
                         <span class="flex items-center gap-1.5 shrink-0">
-                        <img src="{{ $thread->user->profile_photo_url }}" alt="{{ $thread->user->name }}" 
+                        <img src="{{ $thread->user->profile_photo_url }}" alt="{{ $thread->user->name }}"
                             class="w-5 h-5 rounded-full object-cover shadow-sm border border-white dark:border-gray-900"> Creado por
                             {{ $thread->user->name }}
                         </span>
@@ -216,10 +216,10 @@
             </form>
         </div>
 
-        <div class="space-y-6" x-data="{ 
-            replyingToId: null, 
+        <div class="space-y-6" x-data="{
+            replyingToId: null,
             replyingToName: '',
-            driveFiles: [], 
+            driveFiles: [],
             uploadingLocal: false,
             addFile(detail) {
                 if (!detail.targetId || detail.targetId === 'reply-box') {
@@ -247,7 +247,7 @@
                     try {
                         const res = await fetch('{{ route('teams.forum.upload_attachment', $team) }}', {
                             method: 'POST',
-                            headers: { 
+                            headers: {
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
                                 'Accept': 'application/json'
                             },
@@ -266,7 +266,7 @@
                             mime_type: data.mime_type,
                             provider: 'local'
                         }];
-                    } catch (err) { 
+                    } catch (err) {
                         console.error('Upload failed', err);
                     }
                 }
@@ -280,9 +280,9 @@
             @foreach ($messages as $index => $message)
                 <div class="space-y-4">
                     @include('teams.forum.partials.message-item', [
-                        'message' => $message, 
-                        'isRoot' => true, 
-                        'index' => $index, 
+                        'message' => $message,
+                        'isRoot' => true,
+                        'index' => $index,
                         'currentPage' => $messages->currentPage()
                     ])
                 </div>
@@ -298,7 +298,7 @@
             @if (!$thread->is_locked)
                 <div id="reply-box-container" class="mt-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm relative overflow-hidden scroll-mt-24">
                     <div class="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-violet-400 to-violet-600"></div>
-                    
+
                     <form action="{{ route('teams.forum.messages.store', [$team, $thread]) }}" method="POST" enctype="multipart/form-data"
                           onsubmit="return window.validateForumForm(this)">
                         @csrf
@@ -320,8 +320,8 @@
                             </div>
 
                             <div class="flex-1">
-                                <x-markdown-editor 
-                                    name="content" 
+                                <x-markdown-editor
+                                    name="content"
                                     id="reply-content"
                                     rows="8"
                                     placeholder="Escribe tu respuesta aquí..."
@@ -342,7 +342,7 @@
                                         </template>
                                     </div>
                                 </div>
-                                
+
                                 <div class="flex items-center justify-between gap-4 pt-4 border-t border-gray-100 dark:border-gray-800 mt-4">
                                     <div class="flex items-center gap-2">
                                         @php
@@ -360,7 +360,7 @@
                                                 <span class="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-tight">{{ __('Drive') }}</span>
                                             </button>
                                         @else
-                                            <a href="{{ route('profile.edit', ['tab' => 'integrations']) }}" 
+                                            <a href="{{ route('profile.edit', ['tab' => 'integrations']) }}"
                                                 class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-gray-500 rounded-xl cursor-pointer transition-all group" title="Vincular Drive">
                                                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.172 13.828a4 4 0 015.656 0l4 4a4 4 0 01-5.656 5.656l-1.102-1.101" /></svg>
                                                 <span class="text-[10px] font-black text-gray-400 uppercase tracking-tight">{{ __('Vincular') }}</span>
@@ -368,7 +368,7 @@
                                         @endif
                                     </div>
 
-                                    <button type="submit" 
+                                    <button type="submit"
                                         class="inline-flex items-center gap-2 px-8 py-2.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-black rounded-2xl transition-all shadow-lg shadow-violet-600/20 active:scale-95">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
@@ -405,7 +405,7 @@
                   x-data="{}" x-init="$nextTick(() => window.initForumTaskSelect($refs.taskSelectModal))">
                 @csrf
                 @method('PATCH')
-                
+
                 <div class="flex items-center gap-3 mb-6">
                     <div class="p-2.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -469,7 +469,7 @@
         </div>
         <!-- Print Forum Modal -->
         <x-modal name="print-forum-modal" focusable>
-            <div class="p-6" x-data="{ 
+            <div class="p-6" x-data="{
                     printScope: 'single',
                     targetMessageId: null,
                     includeHeaders: true,
@@ -480,7 +480,7 @@
                     printScope = $event.detail.mode || 'single';
                     targetMessageId = $event.detail.messageId || null;
                  ">
-                
+
                 <div class="flex items-center gap-3 mb-6">
                     <div class="p-2.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -543,7 +543,7 @@
                         Cancelar
                     </x-secondary-button>
 
-                    <button type="button" 
+                    <button type="button"
                             @click="executeForumPrint({ scope: printScope, targetId: targetMessageId, headers: includeHeaders, authorMeta: includeAuthorMeta, attachments: includeAttachments }); $dispatch('close')"
                             class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-emerald-600/20 active:scale-95 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -596,56 +596,56 @@
             cursor: pointer !important;
             transition: all 0.2s ease !important;
         }
-        .ts-control input { 
-            font-size: 12px !important; 
-            padding: 0 !important; 
-            margin: 0 !important; 
-            background: transparent !important; 
-            border: none !important; 
-            outline: none !important; 
+        .ts-control input {
+            font-size: 12px !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            background: transparent !important;
+            border: none !important;
+            outline: none !important;
             box-shadow: none !important;
             line-height: 1 !important;
             height: auto !important;
             color: inherit !important;
         }
         .ts-control input::placeholder { color: #9ca3af !important; font-weight: 500 !important; }
-        
+
         .dark .ts-control {
             background-color: #1f2937 !important;
             border-color: #374151 !important;
             color: #f3f4f6 !important;
         }
-        
+
         .ts-wrapper.focus .ts-control {
             border-color: #7c3aed !important;
             box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2) !important;
         }
-        
-        .ts-dropdown { 
-            border-radius: 1rem !important; 
+
+        .ts-dropdown {
+            border-radius: 1rem !important;
             border: 1px solid #e5e7eb !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important; 
-            margin-top: 6px !important; 
-            padding: 0.5rem !important; 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+            margin-top: 6px !important;
+            padding: 0.5rem !important;
             z-index: 9999 !important;
         }
         .dark .ts-dropdown { background-color: #111827 !important; border-color: #374151 !important; }
-        
-        .ts-dropdown .option { 
-            padding: 0.625rem 0.75rem !important; 
-            border-radius: 0.6rem !important; 
-            margin-bottom: 2px !important; 
+
+        .ts-dropdown .option {
+            padding: 0.625rem 0.75rem !important;
+            border-radius: 0.6rem !important;
+            margin-bottom: 2px !important;
             transition: all 0.15s ease !important;
             color: #374151 !important;
         }
         .dark .ts-dropdown .option { color: #e5e7eb !important; }
-        
-        .ts-dropdown .active { 
-            background-color: #f5f3ff !important; 
-            color: #4f46e5 !important; 
+
+        .ts-dropdown .active {
+            background-color: #f5f3ff !important;
+            color: #4f46e5 !important;
         }
         .dark .ts-dropdown .active { background-color: #4f46e5 !important; color: #ffffff !important; }
-        
+
         select.task-selector-tom { display: none !important; }
     </style>
     <script>
@@ -668,7 +668,7 @@
                         outerData.replyingToId = messageId;
                         outerData.replyingToName = name;
                     }
-                    
+
                     const textarea = document.getElementById('reply-content');
                     if (textarea) {
                         textarea.focus();
@@ -747,19 +747,19 @@
                     const dateStr = msgEl.querySelector('[title]')?.getAttribute('title') || '';
                     const isOp = msgEl.innerText.includes('OP');
                     const textEl = msgEl.querySelector('.markdown-content');
-                    
+
                     let contentHtml = '';
                     if (textEl) {
                         const clone = textEl.cloneNode(true);
                         clone.querySelectorAll('button, template, script').forEach(el => el.remove());
                         contentHtml = clone.innerHTML;
                     }
-                    
+
                     let attachmentsHtml = '';
                     if (options.attachments) {
                         const fileLinks = msgEl.querySelectorAll('a[target="_blank"]');
                         const imageImgs = msgEl.querySelectorAll('.group\\/img img');
-                        
+
                         let itemsHtml = '';
                         fileLinks.forEach(link => {
                             const text = link.innerText.trim();
@@ -874,13 +874,35 @@
                                 .msg-body pre { background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.6rem; border-radius: 6px; font-size: 10px; overflow-x: auto; break-inside: avoid; page-break-inside: avoid; }
                                 .print-attachments { margin-top: 0.6rem; padding-top: 0.4rem; border-top: 1px dashed #cbd5e1; font-size: 10px; color: #475569; break-inside: avoid; page-break-inside: avoid; }
                                 .print-attachments ul { margin: 0.2rem 0 0 1rem; padding: 0; }
+                                .emoji-icon { display: inline-block !important; width: 1.35em !important; min-width: 1.35em !important; height: 1.35em !important; line-height: 1.35em !important; vertical-align: -0.15em !important; margin-right: 0.35em !important; text-align: center !important; overflow: visible !important; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important; }
                             </style>
                         </head>
                         <body>
                             ${headerHtml}
                             ${messagesHtml || '<p style="color:#94a3b8; font-style:italic;">No se encontró contenido para imprimir.</p>'}
                             <script>
+                                function wrapEmojisInElement(element) {
+                                    if (!element) return;
+                                    const emojiRegex = /([\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2B50}\u{2B55}\u{231A}-\u{231B}\u{23ED}-\u{23EF}\u{23F0}\u{23F3}\u{25FD}-\u{25FE}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{3297}\u{3299}\u{3030}\u{303D}\u{00A9}\u{00AE}\u{2122}\u{2139}]|\p{Extended_Pictographic})(?:\uFE0F|\uFE0E)?/gu;
+                                    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
+                                    const nodesToReplace = [];
+                                    let node;
+                                    while (node = walker.nextNode()) {
+                                        if (node.parentElement && node.parentElement.closest('.emoji-icon, script, style, textarea')) continue;
+                                        if (emojiRegex.test(node.nodeValue)) nodesToReplace.push(node);
+                                    }
+                                    nodesToReplace.forEach(textNode => {
+                                        const parent = textNode.parentNode;
+                                        if (!parent) return;
+                                        const html = textNode.nodeValue.replace(/([\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2B50}\u{2B55}\u{231A}-\u{231B}\u{23ED}-\u{23EF}\u{23F0}\u{23F3}\u{25FD}-\u{25FE}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{3297}\u{3299}\u{3030}\u{303D}\u{00A9}\u{00AE}\u{2122}\u{2139}]|\p{Extended_Pictographic})(?:\uFE0F|\uFE0E)?/gu, '<span class="emoji-icon">$1</span>');
+                                        const temp = document.createElement('span');
+                                        temp.innerHTML = html;
+                                        while (temp.firstChild) parent.insertBefore(temp.firstChild, textNode);
+                                        parent.removeChild(textNode);
+                                    });
+                                }
                                 window.onload = () => {
+                                    wrapEmojisInElement(document.body);
                                     setTimeout(() => {
                                         window.print();
                                     }, 350);
@@ -1074,13 +1096,13 @@
                 }
             }
 
-            
+
             window.editAttachmentImage = function(id, url) {
                 if (typeof window.openGlobalImageEditor === 'function') {
                     window.openGlobalImageEditor(url, (editedFile) => {
                         const formData = new FormData();
                         formData.append('file', editedFile);
-                        
+
                         Swal.fire({
                             title: 'Guardando...',
                             text: 'Actualizando la imagen en el servidor',
@@ -1145,7 +1167,7 @@
                         const form = document.createElement('form');
                         form.method = 'POST';
                         form.action = `/teams/{{ $team->id }}/attachments/${id}`;
-                        
+
                         // Add CSRF token safely
                         const csrfInput = document.createElement('input');
                         csrfInput.type = 'hidden';
@@ -1193,9 +1215,9 @@
 
             window.voteMessage = function(messageId, button) {
                 const url = `/teams/{{ $team->id }}/forum/messages/${messageId}/vote`;
-                
+
                 button.disabled = true;
-                
+
                 fetch(url, {
                     method: 'POST',
                     headers: {
@@ -1217,14 +1239,14 @@
                             button.classList.remove('text-gray-400');
                             button.classList.add('text-violet-600', 'dark:text-violet-400');
                             if (svg) svg.setAttribute('fill', 'currentColor');
-                            
+
                             button.classList.add('scale-125', 'transition-transform', 'duration-200');
                             setTimeout(() => button.classList.remove('scale-125'), 200);
                         } else {
                             button.classList.remove('text-violet-600', 'dark:text-violet-400');
                             button.classList.add('text-gray-400');
                             if (svg) svg.setAttribute('fill', 'none');
-                            
+
                             button.classList.add('scale-75', 'transition-transform', 'duration-200');
                             setTimeout(() => button.classList.remove('scale-75'), 200);
                         }
@@ -1308,7 +1330,7 @@
                 };
 
                 window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
-                
+
                 // Chequeo inicial
                 const initialScroll = window.scrollY || document.documentElement.scrollTop || 0;
                 updateScrollDock(initialScroll);
@@ -1319,16 +1341,16 @@
                     if (e.target.closest('button') || e.target.closest('a') || e.target.closest('input')) {
                         return;
                     }
-                    
+
                     isDragging = true;
                     dock.style.transition = 'none'; // Desactivar transiciones durante el arrastre
-                    
+
                     // Obtener la posición inicial del toque/clic
                     const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
                     const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-                    
+
                     const rect = dock.getBoundingClientRect();
-                    
+
                     // Al iniciar, fijamos el left y top reales para evitar que salte por el transform del CSS
                     if (!hasDragged) {
                         dock.style.bottom = 'auto';
@@ -1337,10 +1359,10 @@
                         dock.style.top = rect.top + 'px';
                         hasDragged = true;
                     }
-                    
+
                     startX = clientX - rect.left;
                     startY = clientY - rect.top;
-                    
+
                     document.addEventListener('mousemove', drag);
                     document.addEventListener('mouseup', stopDrag);
                     document.addEventListener('touchmove', drag, { passive: false });
@@ -1350,21 +1372,21 @@
                 const drag = (e) => {
                     if (!isDragging) return;
                     if (e.cancelable) e.preventDefault();
-                    
+
                     const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
                     const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-                    
+
                     let newLeft = clientX - startX;
                     let newTop = clientY - startY;
-                    
+
                     // Límites de la ventana para que no se salga de la pantalla
                     const rect = dock.getBoundingClientRect();
                     const maxLeft = window.innerWidth - rect.width;
                     const maxTop = window.innerHeight - rect.height;
-                    
+
                     newLeft = Math.max(0, Math.min(newLeft, maxLeft));
                     newTop = Math.max(0, Math.min(newTop, maxTop));
-                    
+
                     dock.style.left = newLeft + 'px';
                     dock.style.top = newTop + 'px';
                 };
@@ -1381,13 +1403,13 @@
                 dock.addEventListener('mousedown', startDrag);
                 dock.addEventListener('touchstart', startDrag, { passive: true });
                 dock.style.cursor = 'grab';
-                
+
                 dock.addEventListener('mouseenter', () => { if (!isDragging) dock.style.cursor = 'grab'; });
                 dock.addEventListener('mousedown', () => { dock.style.cursor = 'grabbing'; });
                 dock.addEventListener('mouseup', () => { dock.style.cursor = 'grab'; });
             });
         </script>
-        
+
         <!-- Floating Contextual Action Dock -->
         <div id="forum-action-dock"
              style="
@@ -1411,7 +1433,7 @@
                 transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
              "
              class="dark:[background:rgba(17,24,39,0.92)] dark:[border-color:rgba(55,65,81,0.8)]">
-             
+
              <!-- Drag Handle -->
              <div class="cursor-grab text-gray-300 hover:text-gray-500 dark:text-gray-700 dark:hover:text-gray-500 transition-colors px-1 select-none flex items-center justify-center" title="Arrastrar">
                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
@@ -1425,7 +1447,7 @@
              </div>
 
              <!-- Back button -->
-             <a href="{{ route('teams.forum.index', $team) }}" 
+             <a href="{{ route('teams.forum.index', $team) }}"
                 class="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-violet-600 dark:text-gray-400 dark:hover:text-violet-400 transition-colors py-1.5 px-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800">
                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />

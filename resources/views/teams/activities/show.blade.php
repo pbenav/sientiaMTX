@@ -15,7 +15,7 @@
             $instance = $activity->instances()
                 ->whereHas('assignedTo', fn($q) => $q->where('users.id', auth()->id()))
                 ->first();
-            
+
             if ($instance) {
                 $personalInstance = $instance;
             }
@@ -53,7 +53,7 @@
                 {{-- Actions --}}
             </div>
         </div>
-        
+
         <div class="mt-2">
             <x-demo-hint>
                 La ficha técnica de la actividad centraliza toda la ejecución: permite el registro de tiempos (Time-tracking), subdividir el trabajo mediante el desglose, sincronizar fechas con Google Calendar/Activities y gestionar archivos asociados. Además, facilita la clonación y exportación de actividades (Portabilidad JSON).
@@ -290,7 +290,7 @@
                         <div class="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-gray-400 border-b border-gray-50 dark:border-gray-700/50 mb-1">
                             Google Workspace
                         </div>
-                        
+
                         @can('update', $activity)
                             <!-- Sincronización Google Activities -->
                             <form action="{{ route('google.sync_activity', [$team, $activity]) }}" method="POST">
@@ -598,7 +598,7 @@
                             const form = document.createElement('form');
                             form.method = 'POST';
                             form.action = "{{ route('teams.activities.merge-deprecated', [$team, $activity]) }}";
-                            
+
                             const token = document.createElement('input');
                             token.type = 'hidden';
                             token.name = '_token';
@@ -619,612 +619,181 @@
 
                 async function printSection(sectionLabel, contentId) {
                     const el = document.getElementById(contentId);
-                    if (!el) {
-                        console.error('Print section element not found:', contentId);
-                        return;
-                    }
-                    const content = el.innerHTML;
-                    const isDark = document.documentElement.classList.contains('dark');
-                    
-                    const result = await Swal.fire({
-                        title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Imprimir Sección</span>',
-                        background: isDark ? '#0f172a' : '#ffffff',
-                        color: isDark ? '#f3f4f6' : '#1f2937',
-                        showConfirmButton: false,
-                        showCloseButton: true,
-                        customClass: {
-                            popup: 'rounded-[2.5rem] shadow-2xl border border-gray-200 dark:border-gray-800 p-6',
-                        },
-                        html: `
-                            <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-6 text-center px-4">
-                                ¿Deseas imprimir la sección "<strong>${sectionLabel}</strong>" con el membrete de Sientia MTX?
-                            </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-2">
-                                <button type="button" id="print-section-btn-with-headers" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-indigo-100 dark:border-indigo-950 bg-indigo-50/50 dark:bg-indigo-950/30 hover:border-indigo-600 transition-all text-center group">
-                                    <div class="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform shadow-sm">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                    </div>
-                                    <div class="font-black text-[10px] uppercase tracking-widest text-indigo-700 dark:text-indigo-300">Con Cabeceras</div>
-                                    <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Estilo oficial</div>
-                                </button>
-                                <button type="button" id="print-section-btn-no-headers" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-slate-900 hover:border-gray-600 transition-all text-center group">
-                                    <div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 group-hover:scale-110 transition-transform shadow-sm">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                                    </div>
-                                    <div class="font-black text-[10px] uppercase tracking-widest text-gray-700 dark:text-gray-300">Sin Cabeceras</div>
-                                    <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Ficha limpia</div>
-                                </button>
-                            </div>
-                        `,
-                        didOpen: (el) => {
-                            el.querySelector('#print-section-btn-with-headers').onclick = () => { window._sientiaPrintSectionMode = 'with'; Swal.close(); };
-                            el.querySelector('#print-section-btn-no-headers').onclick = () => { window._sientiaPrintSectionMode = 'without'; Swal.close(); };
-                        }
-                    });
-
-                    if (!window._sientiaPrintSectionMode) return;
-                    const withHeaders = window._sientiaPrintSectionMode === 'with';
-                    window._sientiaPrintSectionMode = null;
-
-                    const taskTitle = @json($activity->title);
-                    const brandLabel = 'Sientia MTX • ' + sectionLabel;
-                    const now = new Date();
-                    const dateStr = now.toLocaleDateString() + ' a las ' + now.toLocaleTimeString();
-                    
-                    const headerHtml = withHeaders ? `
-                        <div class="print-header">
-                            <div class="title-container">
-                                <span class="brand">${brandLabel}</span>
-                                <h1 class="title">${taskTitle}</h1>
-                                <div class="meta">Generado el ${dateStr}</div>
-                            </div>
-                        </div>
-                    ` : `<h1 style="font-size: 22px; font-weight: 800; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 30px; letter-spacing: -0.02em;">${taskTitle}</h1>`;
-
-                    const printWin = window.open('', '_blank', 'width=850,height=900');
-                    printWin.document.write(`
-                        <!DOCTYPE html>
-                        <html>
-                            <head>
-                                <title>${taskTitle}</title>
-                                <meta charset="utf-8">
-                                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-                                <script src="https://cdn.tailwindcss.com">${'<'}/script>
-                                <script>
-                                    tailwind.config = {
-                                        theme: {
-                                            extend: {
-                                                fontFamily: { sans: ['Inter', 'sans-serif'] },
-                                            }
-                                        }
-                                    }
-                                ${'<'}/script>
-                                <style>
-                                    body {
-                                        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                                        padding: 40px 60px;
-                                        color: #1e293b;
-                                        background-color: #fff;
-                                        -webkit-print-color-adjust: exact;
-                                        print-color-adjust: exact;
-                                    }
-                                    .print-header {
-                                        border-bottom: 4px solid #4f46e5;
-                                        margin-bottom: 40px;
-                                        padding-bottom: 20px;
-                                    }
-                                    .brand {
-                                        font-weight: 900;
-                                        font-size: 10px;
-                                        text-transform: uppercase;
-                                        letter-spacing: 0.3em;
-                                        color: #6366f1;
-                                        margin-bottom: 8px;
-                                        display: block;
-                                    }
-                                    .title {
-                                        font-size: 26px;
-                                        font-weight: 900;
-                                        color: #0f172a;
-                                        letter-spacing: -0.03em;
-                                        line-height: 1.1;
-                                        margin: 0 0 6px 0;
-                                    }
-                                    .meta {
-                                        font-size: 11px;
-                                        color: #94a3b8;
-                                        font-weight: 500;
-                                        letter-spacing: 0.02em;
-                                    }
-                                    .content {
-                                        margin-top: 30px;
-                                    }
-                                    .content h1, .content h2, .content h3, .content h4, .content h5, .content h6 {
-                                        margin-top: 1.5em;
-                                        margin-bottom: 0.5em;
-                                        font-weight: 700;
-                                        color: #0f172a;
-                                    }
-                                    .content p {
-                                        margin-bottom: 1em;
-                                        line-height: 1.7;
-                                    }
-                                    .content ul, .content ol {
-                                        margin-bottom: 1em;
-                                        padding-left: 1.5em;
-                                    }
-                                    .content li {
-                                        margin-bottom: 0.25em;
-                                    }
-                                    .content img {
-                                        max-width: 100%;
-                                        border-radius: 8px;
-                                    }
-                                    .content table {
-                                        border-collapse: collapse;
-                                        width: 100%;
-                                        margin-bottom: 1em;
-                                    }
-                                    .content td, .content th {
-                                        border: 1px solid #e2e8f0;
-                                        padding: 0.5rem;
-                                    }
-                                    .content pre {
-                                        background: #f1f5f9;
-                                        padding: 1rem;
-                                        border-radius: 0.5rem;
-                                        overflow-x: auto;
-                                    }
-                                    .content code {
-                                        background: #f1f5f9;
-                                        padding: 0.125rem 0.25rem;
-                                        border-radius: 0.25rem;
-                                    }
-                                    .watermark {
-                                        position: fixed;
-                                        bottom: 20px;
-                                        right: 20px;
-                                        font-size: 80px;
-                                        font-weight: 900;
-                                        color: rgba(99, 102, 241, 0.04);
-                                        pointer-events: none;
-                                        z-index: 0;
-                                    }
-                                </style>
-                            </head>
-                            <body>
-                                ${headerHtml}
-                                <div class="content">${content}</div>
-                                ${withHeaders ? '<div class="watermark">Sientia.</div>' : ''}
-                            </body>
-                        </html>
-                    `);
-                    printWin.document.close();
-                    printWin.onload = () => { printWin.print(); };
+                    if (!el) { console.error('printSection: element not found:', contentId); return; }
+                    await SientiaPrint.print(
+                        @json($activity->title),
+                        el.innerHTML,
+                        { brand: 'Sientia MTX \u2022 ' + sectionLabel }
+                    );
                 }
 
                 async function printPrivateNotes() {
                     const editor = document.getElementById('reply-content-private');
-                    let rawContent = editor ? editor.value : '';
-                    const isDark = document.documentElement.classList.contains('dark');
-
-                    const result = await Swal.fire({
-                        title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Imprimir Notas Privadas</span>',
-                        background: isDark ? '#0f172a' : '#ffffff',
-                        color: isDark ? '#f3f4f6' : '#1f2937',
-                        showConfirmButton: false,
-                        showCloseButton: true,
-                        customClass: {
-                            popup: 'rounded-[2.5rem] shadow-2xl border border-gray-200 dark:border-gray-800 p-6',
-                        },
-                        html: `
-                            <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-6 text-center px-4">
-                                ¿Deseas imprimir las notas privadas con el membrete de Sientia MTX?
-                            </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-2">
-                                <button type="button" id="print-notes-btn-with-headers" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-indigo-100 dark:border-indigo-950 bg-indigo-50/50 dark:bg-indigo-950/30 hover:border-indigo-600 transition-all text-center group">
-                                    <div class="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform shadow-sm">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                    </div>
-                                    <div class="font-black text-[10px] uppercase tracking-widest text-indigo-700 dark:text-indigo-300">Con Cabeceras</div>
-                                    <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Estilo oficial</div>
-                                </button>
-                                <button type="button" id="print-notes-btn-no-headers" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-slate-900 hover:border-gray-600 transition-all text-center group">
-                                    <div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 group-hover:scale-110 transition-transform shadow-sm">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                                    </div>
-                                    <div class="font-black text-[10px] uppercase tracking-widest text-gray-700 dark:text-gray-300">Sin Cabeceras</div>
-                                    <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Ficha limpia</div>
-                                </button>
-                            </div>
-                        `,
-                        didOpen: (el) => {
-                            el.querySelector('#print-notes-btn-with-headers').onclick = () => { window._sientiaPrintNotesMode = 'with'; Swal.close(); };
-                            el.querySelector('#print-notes-btn-no-headers').onclick = () => { window._sientiaPrintNotesMode = 'without'; Swal.close(); };
-                        }
-                    });
-
-                    if (!window._sientiaPrintNotesMode) return;
-                    const withHeaders = window._sientiaPrintNotesMode === 'with';
-                    window._sientiaPrintNotesMode = null;
-
-                    let htmlContent = typeof marked !== 'undefined' ? marked.parse(rawContent) : rawContent.replace(/\n/g, '<br>');
-                    const taskTitle = @json($activity->title);
-                    const brandLabel = 'Sientia MTX • Notas Privadas';
-                    const now = new Date();
-                    const dateStr = now.toLocaleDateString() + ' a las ' + now.toLocaleTimeString();
-                    
-                    const headerHtml = withHeaders ? `
-                        <div class="print-header">
-                            <div class="title-container">
-                                <span class="brand">${brandLabel}</span>
-                                <h1 class="title">${taskTitle}</h1>
-                                <div class="meta">Generado el ${dateStr}</div>
-                            </div>
-                        </div>
-                    ` : `<h1 style="font-size: 22px; font-weight: 800; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 30px; letter-spacing: -0.02em;">${taskTitle}</h1>`;
-
-                    const printWin = window.open('', '_blank', 'width=850,height=900');
-                    printWin.document.write(`
-                        <!DOCTYPE html>
-                        <html>
-                            <head>
-                                <title>${taskTitle}</title>
-                                <meta charset="utf-8">
-                                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-                                <script src="https://cdn.tailwindcss.com">${'<'}/script>
-                                <script>
-                                    tailwind.config = {
-                                        theme: {
-                                            extend: {
-                                                fontFamily: { sans: ['Inter', 'sans-serif'] },
-                                            }
-                                        }
-                                    }
-                                ${'<'}/script>
-                                <style>
-                                    body {
-                                        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                                        padding: 40px 60px;
-                                        color: #1e293b;
-                                        background-color: #fff;
-                                        -webkit-print-color-adjust: exact;
-                                        print-color-adjust: exact;
-                                    }
-                                    .print-header {
-                                        border-bottom: 4px solid #4f46e5;
-                                        margin-bottom: 40px;
-                                        padding-bottom: 20px;
-                                    }
-                                    .brand {
-                                        font-weight: 900;
-                                        font-size: 10px;
-                                        text-transform: uppercase;
-                                        letter-spacing: 0.3em;
-                                        color: #6366f1;
-                                        margin-bottom: 8px;
-                                        display: block;
-                                    }
-                                    .title {
-                                        font-size: 26px;
-                                        font-weight: 900;
-                                        color: #0f172a;
-                                        letter-spacing: -0.03em;
-                                        line-height: 1.1;
-                                        margin: 0 0 6px 0;
-                                    }
-                                    .meta {
-                                        font-size: 11px;
-                                        color: #94a3b8;
-                                        font-weight: 500;
-                                        letter-spacing: 0.02em;
-                                    }
-                                    .content {
-                                        margin-top: 30px;
-                                    }
-                                    .content h1, .content h2, .content h3, .content h4, .content h5, .content h6 {
-                                        margin-top: 1.5em;
-                                        margin-bottom: 0.5em;
-                                        font-weight: 700;
-                                        color: #0f172a;
-                                    }
-                                    .content p {
-                                        margin-bottom: 1em;
-                                        line-height: 1.7;
-                                    }
-                                    .content ul, .content ol {
-                                        margin-bottom: 1em;
-                                        padding-left: 1.5em;
-                                    }
-                                    .content li {
-                                        margin-bottom: 0.25em;
-                                    }
-                                    .content img {
-                                        max-width: 100%;
-                                        border-radius: 8px;
-                                    }
-                                    .content table {
-                                        border-collapse: collapse;
-                                        width: 100%;
-                                        margin-bottom: 1em;
-                                    }
-                                    .content td, .content th {
-                                        border: 1px solid #e2e8f0;
-                                        padding: 0.5rem;
-                                    }
-                                    .content pre {
-                                        background: #f1f5f9;
-                                        padding: 1rem;
-                                        border-radius: 0.5rem;
-                                        overflow-x: auto;
-                                    }
-                                    .content code {
-                                        background: #f1f5f9;
-                                        padding: 0.125rem 0.25rem;
-                                        border-radius: 0.25rem;
-                                    }
-                                    .watermark {
-                                        position: fixed;
-                                        bottom: 20px;
-                                        right: 20px;
-                                        font-size: 80px;
-                                        font-weight: 900;
-                                        color: rgba(99, 102, 241, 0.04);
-                                        pointer-events: none;
-                                        z-index: 0;
-                                    }
-                                </style>
-                            </head>
-                            <body>
-                                ${headerHtml}
-                                <div class="content">${htmlContent}</div>
-                                ${withHeaders ? '<div class="watermark">Sientia.</div>' : ''}
-                            </body>
-                        </html>
-                    `);
-                    printWin.document.close();
-                    printWin.onload = () => { printWin.print(); };
+                    const raw    = editor ? editor.value : '';
+                    const html   = typeof marked !== 'undefined'
+                        ? marked.parse(raw, { breaks: true, gfm: true })
+                        : raw.replace(/\n/g, '<br>');
+                    await SientiaPrint.print(
+                        @json($activity->title),
+                        html,
+                        { brand: 'Sientia MTX \u2022 Notas Privadas' }
+                    );
                 }
 
                 async function printFullTask() {
+                    // Keeps its own bespoke layout (technical sheet), but uses the
+                    // standard Swal header dialog pattern from SientiaPrint.
                     const isDark = document.documentElement.classList.contains('dark');
-                    
-                    const result = await Swal.fire({
-                        title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Imprimir Ficha Técnica</span>',
+                    let withHeaders = true, dialogClosed = false;
+                    await Swal.fire({
+                        title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Imprimir Ficha T\u00e9cnica</span>',
                         background: isDark ? '#0f172a' : '#ffffff',
-                        color: isDark ? '#f3f4f6' : '#1f2937',
-                        showConfirmButton: false,
-                        showCloseButton: true,
-                        customClass: {
-                            popup: 'rounded-[2.5rem] shadow-2xl border border-gray-200 dark:border-gray-800 p-6',
-                        },
-                        html: `
-                            <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-6 text-center px-4">
-                                ¿Deseas imprimir la ficha técnica completa incluyendo el membrete e identidad de Sientia MTX?
-                            </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-2">
-                                <button type="button" id="print-full-btn-with-headers" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-indigo-100 dark:border-indigo-950 bg-indigo-50/50 dark:bg-indigo-950/30 hover:border-indigo-600 transition-all text-center group">
-                                    <div class="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform shadow-sm">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                    </div>
-                                    <div class="font-black text-[10px] uppercase tracking-widest text-indigo-700 dark:text-indigo-300">Con Cabeceras</div>
-                                    <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Estilo oficial</div>
-                                </button>
-                                <button type="button" id="print-full-btn-no-headers" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-slate-900 hover:border-gray-600 transition-all text-center group">
-                                    <div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 group-hover:scale-110 transition-transform shadow-sm">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                                    </div>
-                                    <div class="font-black text-[10px] uppercase tracking-widest text-gray-700 dark:text-gray-300">Sin Cabeceras</div>
-                                    <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Ficha limpia</div>
-                                </button>
-                            </div>
-                        `,
-                        didOpen: (el) => {
-                            el.querySelector('#print-full-btn-with-headers').onclick = () => { window._sientiaPrintFullMode = 'with'; Swal.close(); };
-                            el.querySelector('#print-full-btn-no-headers').onclick = () => { window._sientiaPrintFullMode = 'without'; Swal.close(); };
+                        color:      isDark ? '#f3f4f6' : '#1f2937',
+                        showConfirmButton: false, showCloseButton: true,
+                        customClass: { popup: 'rounded-[2.5rem] shadow-2xl border border-gray-200 dark:border-gray-800 p-6' },
+                        html: '<div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-6 text-center px-4">' +
+                                  '\u00bfC\u00f3mo deseas imprimir la ficha t\u00e9cnica?' +
+                              '</div>' +
+                              '<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-2">' +
+                                  '<button type="button" id="_pft_with" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-indigo-100 dark:border-indigo-950 bg-indigo-50/50 dark:bg-indigo-950/30 hover:border-indigo-600 transition-all text-center group">' +
+                                      '<div class="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform shadow-sm">' +
+                                          '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>' +
+                                      '</div>' +
+                                      '<div class="font-black text-[10px] uppercase tracking-widest text-indigo-700 dark:text-indigo-300">Con Cabecera</div>' +
+                                      '<div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Estilo oficial</div>' +
+                                  '</button>' +
+                                  '<button type="button" id="_pft_without" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-slate-900 hover:border-gray-600 transition-all text-center group">' +
+                                      '<div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 group-hover:scale-110 transition-transform shadow-sm">' +
+                                          '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>' +
+                                      '</div>' +
+                                      '<div class="font-black text-[10px] uppercase tracking-widest text-gray-700 dark:text-gray-300">Sin Cabecera</div>' +
+                                      '<div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Ficha limpia</div>' +
+                                  '</button>' +
+                              '</div>',
+                        didOpen: (popup) => {
+                            popup.querySelector('#_pft_with').onclick    = () => { withHeaders = true;  dialogClosed = true; Swal.close(); };
+                            popup.querySelector('#_pft_without').onclick = () => { withHeaders = false; dialogClosed = true; Swal.close(); };
                         }
                     });
+                    if (!dialogClosed) return;
 
-                    if (!window._sientiaPrintFullMode) return;
-                    const withHeaders = window._sientiaPrintFullMode === 'with';
-                    window._sientiaPrintFullMode = null;
-
-                    const taskTitle = @json($activity->title);
-                    const taskId = @json($activity->id);
-                    const taskUuid = @json($activity->uuid ?? $activity->id);
-                    const status = @json(__('activities.statuses.' . $activity->status_value));
-                    const progress = @json($activity->progress_percentage);
+                    const taskTitle  = @json($activity->title);
+                    const taskUuid   = @json($activity->uuid ?? $activity->id);
+                    const status     = @json(__('activities.statuses.' . $activity->status_value));
+                    const progress   = @json($activity->progress_percentage);
                     const priorityLabel = @json(__('activities.priorities.' . $activity->priority));
-                    const urgencyLabel = @json(__('activities.urgencies.' . $activity->urgency));
-                    const scheduled = @json($activity->scheduled_date?->format('d/m/y H:i') ?? '—');
-                    const due = @json($activity->due_date?->format('d/m/y H:i') ?? '—');
-                    const teamName = @json($team->name);
-                    const creator = @json($activity->creator?->name ?? '—');
-                    
-                    const description = document.getElementById('description-content')?.innerHTML ?? '—';
+                    const urgencyLabel  = @json(__('activities.urgencies.' . $activity->urgency));
+                    const scheduled  = @json($activity->scheduled_date?->format('d/m/y H:i') ?? '—');
+                    const due        = @json($activity->due_date?->format('d/m/y H:i') ?? '—');
+                    const teamName   = @json($team->name);
+                    const creator    = @json($activity->creator?->name ?? '—');
+                    const members    = @json($activity->assignedTo->pluck('name')->toArray());
+                    const skills     = @json($activity->skills->map(fn($s) => $s->name)->toArray());
+                    const description  = document.getElementById('description-content')?.innerHTML ?? '—';
                     const observations = document.getElementById('observations-content')?.innerHTML ?? '—';
-                    
-                    const members = @json($activity->assignedTo->pluck('name')->toArray());
-                    const skills = @json($activity->skills->map(fn($s) => $s->name)->toArray());
+
+                    const css = [
+                        (!withHeaders ? '.header,.side-accent{display:none!important}' : ''),
+                        '@page{size:A4;margin:0}',
+                        'body{font-family:\'Outfit\',sans-serif;color:#1e293b;line-height:1.2;margin:0;padding:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}',
+                        '.sheet{position:relative;max-width:210mm;width:100%;margin:0 auto;padding:18mm 22mm;box-sizing:border-box}',
+                        '.side-accent{position:absolute;top:100px;left:0;height:60%;width:3px;background:linear-gradient(to bottom,#ef4444,#f87171);border-radius:0 3px 3px 0;opacity:.5}',
+                        '.header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px;border-bottom:1px solid #f1f5f9;padding-bottom:8px}',
+                        '.logo-text{font-weight:900;font-size:22px;color:#0f172a;letter-spacing:-.04em}',
+                        '.logo-text .dot{color:#ef4444}.logo-text .suffix{color:#94a3b8;font-weight:400;font-size:16px;margin-left:2px}',
+                        '.document-info{text-align:right}',
+                        '.doc-type{font-size:7px;font-weight:800;text-transform:uppercase;color:#94a3b8;letter-spacing:.15em;margin-bottom:2px}',
+                        '.activity-uuid{font-family:\'JetBrains Mono\',monospace;font-size:6.5px;color:#cbd5e1}',
+                        '.main-title{font-size:19px;font-weight:900;color:#0f172a;letter-spacing:-.02em;margin:0 0 10px}',
+                        '.meta-strip{display:flex;gap:1px;background:#f1f5f9;border:1px solid #f1f5f9;border-radius:6px;overflow:hidden;margin-bottom:15px}',
+                        '.meta-strip-item{flex:1;background:#fff;padding:6px 10px;display:flex;flex-direction:column}',
+                        '.meta-strip-label{font-size:6px;font-weight:800;text-transform:uppercase;color:#94a3b8;margin-bottom:1px}',
+                        '.meta-strip-value{font-size:9px;font-weight:700;color:#1e293b;white-space:nowrap}',
+                        '.content-layout{display:flex;gap:20px}',
+                        '.main-content{flex:1;min-width:0;order:1}',
+                        '.sidebar-content{width:180px;flex-shrink:0;order:2}',
+                        '.section{margin-bottom:12px}',
+                        '.section-title{font-size:8px;font-weight:900;text-transform:uppercase;color:#ef4444;margin-bottom:4px;display:flex;align-items:center;gap:6px}',
+                        '.section-title::after{content:"";flex:1;height:1px;background:#fef2f2}',
+                        '.section-body{font-size:11.5px;color:#334155;line-height:1.4}',
+                        '.section-body img{max-width:100%;border-radius:4px;margin:4px 0}',
+                        '.sidebar-box{background:#f8fafc;padding:10px;border-radius:6px;border:1px solid #f1f5f9}',
+                        '.sidebar-item{margin-bottom:8px}',
+                        '.sidebar-label{font-size:6.5px;font-weight:800;text-transform:uppercase;color:#94a3b8;margin-bottom:2px;display:block}',
+                        '.sidebar-value{font-size:9px;font-weight:700;color:#475569}',
+                        '.pill-list{display:flex;flex-wrap:wrap;gap:3px;margin-top:2px}',
+                        '.pill{font-size:7.5px;font-weight:700;background:#fff;border:1px solid #e2e8f0;padding:1px 5px;border-radius:3px;color:#64748b}',
+                        '.validation-area{margin-top:15px;display:flex;gap:40px}',
+                        '.signature-box{flex:1;border-top:1px solid #f1f5f9;padding-top:4px;min-height:30px}',
+                        '.signature-label{font-size:7px;font-weight:700;color:#cbd5e1;text-transform:uppercase}',
+                        '.footer{margin-top:15px;padding-top:8px;border-top:1px solid #f1f5f9;display:flex;justify-content:space-between;font-size:6.5px;font-weight:600;color:#cbd5e1;text-transform:uppercase}',
+                        '.emoji-icon{display:inline-block!important;width:1.35em!important;min-width:1.35em!important;height:1.35em!important;line-height:1.35em!important;vertical-align:-.15em!important;margin-right:.35em!important;font-family:"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji",sans-serif!important}',
+                        '@media print{.content-layout{display:block}.sidebar-content{float:right;width:180px;margin-left:20px;margin-bottom:15px}.content-layout::after{content:"";display:table;clear:both}}'
+                    ].join('');
 
                     const printWin = window.open('', '_blank', 'width=950,height=1100');
-                    const printHtml = [
-                        '<!DOCTYPE html>',
-                        '<html lang="es">',
-                        '  <head>',
-                        '    <meta charset="UTF-8">',
-                        '    <title>Ficha Técnica - ' + taskTitle + '</title>',
-                        '    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">',
-                        '    <style>',
-                        '      ' + (!withHeaders ? '.header, .side-accent { display: none !important; }' : ''),
-                        '      @page { size: A4; margin: 0; }',
-                        '      body { font-family: \'Outfit\', sans-serif; color: #1e293b; line-height: 1.2; margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }',
-                        '      .sheet { position: relative; max-width: 210mm; width: 100%; margin: 0 auto; padding: 18mm 22mm; box-sizing: border-box; page-break-after: avoid; }',
-                        '      .side-accent { position: absolute; top: 100px; left: 0; height: 60%; width: 3px; background: linear-gradient(to bottom, #ef4444, #f87171); border-radius: 0 3px 3px 0; opacity: 0.5; }',
-                        '      .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }',
-                        '      .logo-text { font-family: \'Outfit\', sans-serif; font-weight: 900; font-size: 22px; color: #0f172a; letter-spacing: -0.04em; line-height: 1; }',
-                        '      .logo-text .dot { color: #ef4444; }',
-                        '      .logo-text .suffix { color: #94a3b8; font-weight: 400; font-size: 16px; margin-left: 2px; }',
-                        '      .document-info { text-align: right; }',
-                        '      .doc-type { font-size: 7px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.15em; margin-bottom: 2px; }',
-                        '      .activity-uuid { font-family: \'JetBrains Mono\', monospace; font-size: 6.5px; color: #cbd5e1; }',
-                        '      .main-title { font-size: 19px; font-weight: 900; color: #0f172a; letter-spacing: -0.02em; margin: 0 0 10px 0; }',
-                        '      .meta-strip { display: flex; gap: 1px; background: #f1f5f9; border: 1px solid #f1f5f9; border-radius: 6px; overflow: hidden; margin-bottom: 15px; }',
-                        '      .meta-strip-item { flex: 1; background: #fff; padding: 6px 10px; display: flex; flex-direction: column; }',
-                        '      .meta-strip-label { font-size: 6px; font-weight: 800; text-transform: uppercase; color: #94a3b8; margin-bottom: 1px; }',
-                        '      .meta-strip-value { font-size: 9px; font-weight: 700; color: #1e293b; white-space: nowrap; }',
-                        '      .content-layout { display: flex; gap: 20px; }',
-                        '      .main-content { flex: 1; min-width: 0; order: 1; }',
-                        '      .sidebar-content { width: 180px; flex-shrink: 0; order: 2; }',
-                        '      .section { margin-bottom: 12px; }',
-                        '      .section-title { font-size: 8px; font-weight: 900; text-transform: uppercase; color: #ef4444; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }',
-                        '      .section-title::after { content: \'\'; flex: 1; height: 1px; background: #fef2f2; }',
-                        '      .section-body { font-size: 11.5px; color: #334155; line-height: 1.4; }',
-                        '      .section-body img { max-width: 100%; border-radius: 4px; margin: 4px 0; }',
-                        '      .sidebar-box { background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #f1f5f9; }',
-                        '      .sidebar-item { margin-bottom: 8px; }',
-                        '      .sidebar-label { font-size: 6.5px; font-weight: 800; text-transform: uppercase; color: #94a3b8; margin-bottom: 2px; display: block; }',
-                        '      .sidebar-value { font-size: 9px; font-weight: 700; color: #475569; }',
-                        '      .pill-list { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 2px; }',
-                        '      .pill { font-size: 7.5px; font-weight: 700; background: #fff; border: 1px solid #e2e8f0; padding: 1px 5px; border-radius: 3px; color: #64748b; }',
-                        '      .validation-area { margin-top: 15px; display: flex; gap: 40px; clear: both; }',
-                        '      .signature-box { flex: 1; border-top: 1px solid #f1f5f9; padding-top: 4px; min-height: 30px; }',
-                        '      .signature-label { font-size: 7px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; }',
-                        '      .footer { margin-top: 15px; padding-top: 8px; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; font-size: 6.5px; font-weight: 600; color: #cbd5e1; text-transform: uppercase; clear: both; }',
-                        '      @media print { html, body { height: auto; } .sheet { border: none; height: auto; min-height: 0; } .content-layout { display: block; } .sidebar-content { float: right; width: 180px; margin-left: 20px; margin-bottom: 15px; } .main-content { display: block; } .content-layout::after { content: ""; display: table; clear: both; } }',
-                        '    </style>',
-                        '  </head>',
-                        '  <body>',
-                        '    <div class="sheet">',
-                        '      <div class="side-accent"></div>',
-                        '      <header class="header">',
-                        '        <div class="logo-text">sientia<span class="dot">.</span><span class="suffix">MTX</span></div>',
-                        '        <div class="document-info">',
-                        '          <div class="doc-type">Ficha Técnica &bull; ' + teamName + '</div>',
-                        '          <div class="activity-uuid">ID: ' + String(taskUuid).toUpperCase() + '</div>',
-                        '        </div>',
-                        '      </header>',
-                        '      <h1 class="main-title">' + taskTitle + '</h1>',
-                        '      <div class="meta-strip">',
-                        '        <div class="meta-strip-item"><span class="meta-strip-label">Estado</span><span class="meta-strip-value" style="color: #ef4444">' + status + '</span></div>',
-                        '        <div class="meta-strip-item"><span class="meta-strip-label">Progreso</span><span class="meta-strip-value">' + progress + '%</span></div>',
-                        '        <div class="meta-strip-item"><span class="meta-strip-label">Prioridad</span><span class="meta-strip-value">' + priorityLabel + '</span></div>',
-                        '        <div class="meta-strip-item"><span class="meta-strip-label">Urgencia</span><span class="meta-strip-value">' + urgencyLabel + '</span></div>',
-                        '        <div class="meta-strip-item" style="flex: 1.2"><span class="meta-strip-label">Inicio</span><span class="meta-strip-value">' + scheduled + '</span></div>',
-                        '        <div class="meta-strip-item" style="flex: 1.2"><span class="meta-strip-label">Límite</span><span class="meta-strip-value" style="color: #ef4444">' + due + '</span></div>',
-                        '      </div>',
-                        '      <div class="content-layout">',
-                        '        <aside class="sidebar-content">',
-                        '          <div class="sidebar-box">',
-                        '            <div class="sidebar-item"><span class="sidebar-label">Propietario</span><div class="sidebar-value">' + creator + '</div></div>',
-                        '            <div class="sidebar-item"><span class="sidebar-label">Asignados</span><div class="pill-list">' + members.map(function(m) { return '<span class="pill">' + m + '</span>'; }).join('') || '<span class="pill">Sin asignar</span>' + '</div></div>',
-                        '            <div class="sidebar-item" style="border-top: 1px dashed #f1f5f9; padding-top: 6px; margin-top: 6px;"><span class="sidebar-label">Capacidades</span><div class="pill-list">' + skills.map(function(s) { return '<span class="pill" style="color: #ef4444; border-color: #fee2e2;">' + s + '</span>'; }).join('') || '<span class="pill">&#8212;</span>' + '</div></div>',
-                        '          </div>',
-                        '        </aside>',
-                        '        <div class="main-content">',
-                        '          <div class="section"><div class="section-title">Descripción</div><div class="section-body">' + description + '</div></div>',
-                        '          <div class="section"><div class="section-title">Observaciones</div><div class="section-body">' + observations + '</div></div>',
-                        '        </div>',
-                        '      </div>',
-                        '      <div class="validation-area">',
-                        '        <div class="signature-box"><div class="signature-label">Firma Responsable</div></div>',
-                        '        <div class="signature-box"><div class="signature-label">Validación Sistema</div><div style="font-size: 5px; color: #cbd5e1; margin-top: 1px; font-family: monospace;">TSR: ' + new Date().getTime() + '</div></div>',
-                        '      </div>',
-                        '      <footer class="footer"><span>Sientia MTX Ecosystem &bull; v0.9.5</span><span>' + new Date().toLocaleString() + '</span></footer>',
-                        '    </div>',
-                        '    <script>' +
-                        '      window.onload = function() { setTimeout(function() { window.print(); setTimeout(function() { window.close(); }, 500); }, 300); };' +
-                        '<' + '/script>',
-                        '  </body>',
-                        '</html>'
-                    ].join('');
-                    printWin.document.write(printHtml);
+                    if (!printWin) return;
+                    printWin.document.write(
+                        '<!DOCTYPE html><html lang="es"><head>' +
+                        '<meta charset="UTF-8">' +
+                        '<title>Ficha T\u00e9cnica - ' + taskTitle + '</title>' +
+                        '<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">' +
+                        '<style>' + css + '</style></head><body>' +
+                        '<div class="sheet">' +
+                        '  <div class="side-accent"></div>' +
+                        '  <header class="header">' +
+                        '    <div class="logo-text">sientia<span class="dot">.</span><span class="suffix">MTX</span></div>' +
+                        '    <div class="document-info">' +
+                        '      <div class="doc-type">Ficha T\u00e9cnica &bull; ' + teamName + '</div>' +
+                        '      <div class="activity-uuid">ID: ' + String(taskUuid).toUpperCase() + '</div>' +
+                        '    </div>' +
+                        '  </header>' +
+                        '  <h1 class="main-title">' + taskTitle + '</h1>' +
+                        '  <div class="meta-strip">' +
+                        '    <div class="meta-strip-item"><span class="meta-strip-label">Estado</span><span class="meta-strip-value" style="color:#ef4444">' + status + '</span></div>' +
+                        '    <div class="meta-strip-item"><span class="meta-strip-label">Progreso</span><span class="meta-strip-value">' + progress + '%</span></div>' +
+                        '    <div class="meta-strip-item"><span class="meta-strip-label">Prioridad</span><span class="meta-strip-value">' + priorityLabel + '</span></div>' +
+                        '    <div class="meta-strip-item"><span class="meta-strip-label">Urgencia</span><span class="meta-strip-value">' + urgencyLabel + '</span></div>' +
+                        '    <div class="meta-strip-item" style="flex:1.2"><span class="meta-strip-label">Inicio</span><span class="meta-strip-value">' + scheduled + '</span></div>' +
+                        '    <div class="meta-strip-item" style="flex:1.2"><span class="meta-strip-label">L\u00edmite</span><span class="meta-strip-value" style="color:#ef4444">' + due + '</span></div>' +
+                        '  </div>' +
+                        '  <div class="content-layout">' +
+                        '    <aside class="sidebar-content"><div class="sidebar-box">' +
+                        '      <div class="sidebar-item"><span class="sidebar-label">Propietario</span><div class="sidebar-value">' + creator + '</div></div>' +
+                        '      <div class="sidebar-item"><span class="sidebar-label">Asignados</span><div class="pill-list">' + (members.length ? members.map(m => '<span class="pill">' + m + '</span>').join('') : '<span class="pill">Sin asignar</span>') + '</div></div>' +
+                        '      <div class="sidebar-item" style="border-top:1px dashed #f1f5f9;padding-top:6px;margin-top:6px"><span class="sidebar-label">Capacidades</span><div class="pill-list">' + (skills.length ? skills.map(s => '<span class="pill" style="color:#ef4444;border-color:#fee2e2">' + s + '</span>').join('') : '<span class="pill">&#8212;</span>') + '</div></div>' +
+                        '    </div></aside>' +
+                        '    <div class="main-content">' +
+                        '      <div class="section"><div class="section-title">Descripci\u00f3n</div><div class="section-body">' + description + '</div></div>' +
+                        '      <div class="section"><div class="section-title">Observaciones</div><div class="section-body">' + observations + '</div></div>' +
+                        '    </div>' +
+                        '  </div>' +
+                        '  <div class="validation-area">' +
+                        '    <div class="signature-box"><div class="signature-label">Firma Responsable</div></div>' +
+                        '    <div class="signature-box"><div class="signature-label">Validaci\u00f3n Sistema</div><div style="font-size:5px;color:#cbd5e1;margin-top:1px;font-family:monospace">TSR: ' + new Date().getTime() + '</div></div>' +
+                        '  </div>' +
+                        '  <footer class="footer"><span>Sientia MTX Ecosystem</span><span>' + new Date().toLocaleString('es-ES') + '</span></footer>' +
+                        '</div>' +
+                        '<script>' +
+                        '  window.onload = function() {' +
+                        '    if (window.opener && window.opener.SientiaPrint && window.opener.SientiaPrint.wrapEmojis) {' +
+                        '      window.opener.SientiaPrint.wrapEmojis(document.body);' +
+                        '    }' +
+                        '    setTimeout(function() { window.print(); setTimeout(function() { window.close(); }, 500); }, 400);' +
+                        '  };' +
+                        '<\/script>' +
+                        '</body></html>'
+                    );
                     printWin.document.close();
                 }
 
                 function printDocumentBook() {
-                    const printWin = window.open('', '_blank');
-                    const title = @json($activity->title);
-                    const teamName = @json($team->name);
-                    const docVersion = @json($activity->metadata['version'] ?? '1.0.0');
-                    const chapters = @json($activity->metadata['chapters'] ?? []);
-                    
-                    let chaptersHtml = '';
-                    let tocHtml = '';
-                    
-                    chapters.forEach((chap, idx) => {
-                        tocHtml += `
-                            <div class="toc-item">
-                                <span class="toc-title">${idx + 1}. ${chap.title}</span>
-                                <span class="toc-dots"></span>
-                                <span class="toc-page">Capítulo ${idx + 1}</span>
-                            </div>
-                        `;
-                        
-                        chaptersHtml += `
-                            <div class="chapter-page">
-                                <div class="chapter-header">
-                                    <span class="chapter-num">CAPÍTULO ${idx + 1}</span>
-                                    <h2 class="chapter-title">${chap.title}</h2>
-                                    <div class="chapter-meta">Por ${chap.author_name || 'Autor'} • ${chap.updated_at || ''}</div>
-                                </div>
-                                <div class="chapter-body">${marked.parse ? marked.parse(chap.content || '') : (chap.content || '')}</div>
-                            </div>
-                        `;
+                    SientiaPrint.printDocumentBook({
+                        title:    @json($activity->title),
+                        teamName: @json($team->name),
+                        version:  @json($activity->metadata['version'] ?? '1.0.0'),
+                        chapters: @json($activity->metadata['chapters'] ?? [])
                     });
-
-                    const bookHtml = [
-                        '<!DOCTYPE html>',
-                        '<html>',
-                        '  <head>',
-                        '    <title>' + title + ' - Libro Digital</title>',
-                        '    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">',
-                        '    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"><' + '/script>',
-                        '    <style>',
-                        '      @page { size: A4; margin: 2.5cm 2cm; }',
-                        '      body { font-family: \'Merriweather\', serif; color: #1e293b; line-height: 1.8; margin: 0; padding: 0; font-size: 14px; }',
-                        '      h1, h2, h3, h4, h5, h6, .outfit { font-family: \'Outfit\', sans-serif; }',
-                        '      .cover-page { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; page-break-after: always; padding: 2rem; box-sizing: border-box; }',
-                        '      .cover-team { font-size: 16px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 2rem; font-family: \'Outfit\', sans-serif; }',
-                        '      .cover-title { font-size: 42px; font-weight: 900; color: #0f172a; line-height: 1.2; margin-bottom: 2rem; font-family: \'Outfit\', sans-serif; }',
-                        '      .cover-badge { display: inline-block; background: #f1f5f9; color: #475569; padding: 8px 24px; border-radius: 50px; font-size: 14px; font-weight: 700; margin-bottom: 4rem; font-family: \'Outfit\', sans-serif; border: 1px solid #e2e8f0; }',
-                        '      .cover-footer { margin-top: auto; font-size: 14px; color: #64748b; font-family: \'Outfit\', sans-serif; }',
-                        '      .toc-page { page-break-after: always; padding: 2rem 0; }',
-                        '      .toc-main-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 3rem; font-family: \'Outfit\', sans-serif; border-bottom: 2px solid #e2e8f0; padding-bottom: 1rem; }',
-                        '      .toc-item { display: flex; align-items: baseline; margin-bottom: 1.5rem; font-family: \'Outfit\', sans-serif; font-size: 16px; }',
-                        '      .toc-title { font-weight: 600; color: #334155; }',
-                        '      .toc-dots { flex: 1; border-bottom: 1px dotted #cbd5e1; margin: 0 12px; }',
-                        '      .toc-page { font-weight: 700; color: #64748b; font-size: 14px; }',
-                        '      .chapter-page { page-break-before: always; padding: 2rem 0; }',
-                        '      .chapter-header { margin-bottom: 3rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 2rem; }',
-                        '      .chapter-num { font-size: 14px; font-weight: 800; color: #8b5cf6; text-transform: uppercase; letter-spacing: 3px; font-family: \'Outfit\', sans-serif; display: block; margin-bottom: 0.5rem; }',
-                        '      .chapter-title { font-size: 32px; font-weight: 800; color: #0f172a; margin: 0 0 1rem 0; font-family: \'Outfit\', sans-serif; line-height: 1.2; }',
-                        '      .chapter-meta { font-size: 13px; color: #64748b; font-family: \'Outfit\', sans-serif; }',
-                        '      .chapter-body { color: #334155; }',
-                        '      .chapter-body p { margin-bottom: 1.5rem; }',
-                        '      .chapter-body h1, .chapter-body h2, .chapter-body h3 { font-family: \'Outfit\', sans-serif; color: #0f172a; margin-top: 2.5rem; margin-bottom: 1rem; font-weight: 700; }',
-                        '    </style>',
-                        '  </head>',
-                        '  <body>',
-                        '    <div class="cover-page">',
-                        '      <div class="cover-team">' + teamName + '</div>',
-                        '      <h1 class="cover-title">' + title + '</h1>',
-                        '      <div class="cover-badge">DOCUMENTO VERSIÓN ' + docVersion + '</div>',
-                        '      <div class="cover-footer">Sientia MTX • Exportado el ' + new Date().toLocaleDateString('es-ES') + '</div>',
-                        '    </div>',
-                        '    <div class="toc-page">',
-                        '      <h2 class="toc-main-title">Índice General</h2>',
-                        tocHtml,
-                        '    </div>',
-                        chaptersHtml,
-                        '    <script>' +
-                        '      window.onload = function() { setTimeout(function() { window.print(); }, 500); };' +
-                        '<' + '/script>',
-                        '  </body>',
-                        '</html>'
-                    ].join('');
-                    printWin.document.write(bookHtml);
-                    printWin.document.close();
                 }
             </script>
 
@@ -1283,7 +852,7 @@
         $isUserObjMgr = $team->isManager($userObj);
         $taskIds = $activity->children()->getQuery()->visibleTo($userObj, $isUserObjMgr)->pluck('activities.id')->push($activity->id);
         $allLogs = \App\Models\TimeLog::whereIn('task_id', $taskIds)->with('user')->get();
-        
+
         $activeUserIds = $allLogs->whereNull('end_at')->pluck('user_id')->unique()->toArray();
 
         $timeStats = $allLogs->groupBy('user_id')
@@ -1387,7 +956,7 @@
             </div>
 
             @include('teams.activities.types.' . $activity->type . '.show-content')
-            
+
             <!-- Attachments Section (For all types) -->
             @include('teams.activities.partials.activity-attachments')
         </div>
@@ -1464,7 +1033,7 @@
         const content = document.getElementById('reply-content-private').value;
         const button = event.currentTarget;
         const originalText = button.innerHTML;
-        
+
         button.disabled = true;
         button.innerHTML = '<svg class="animate-spin h-3 w-3 mr-2 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> GUARDANDO...';
 
@@ -1509,35 +1078,51 @@
         (function() {
             const bar = document.getElementById('activity-floating-bar');
             if (!bar) return;
+            const checkScroll = (e) => {
+                const bar = document.getElementById('activity-floating-bar');
+                if (!bar) return;
 
             const checkScroll = (e) => {
-                let scrollY = 0;
-                if (e && e.target && e.target !== document) {
-                    scrollY = e.target.scrollTop;
-                } else {
-                    scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+                const windowScroll = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+                let targetScroll = 0;
+                if (e && e.target && e.target !== document && e.target !== window && typeof e.target.scrollTop === 'number') {
+                    targetScroll = e.target.scrollTop || 0;
                 }
-                
-                if (scrollY > 150) {
+                const currentScroll = Math.max(windowScroll, targetScroll);
+
+                if (currentScroll > 150) {
+                if (currentScroll > 50) {
                     bar.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
                     bar.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                    bar.style.opacity = '1';
+                    bar.style.pointerEvents = 'auto';
+                    bar.style.visibility = 'visible';
                 } else {
                     bar.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
                     bar.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                    bar.style.opacity = '0';
+                    bar.style.pointerEvents = 'none';
+                    bar.style.visibility = 'hidden';
                 }
             };
 
             window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
-            
-            setTimeout(() => checkScroll(), 100);
+            document.addEventListener('scroll', checkScroll, { passive: true, capture: true });
+            window.addEventListener('resize', checkScroll, { passive: true });
+            document.addEventListener('DOMContentLoaded', checkScroll);
+            checkScroll();
+            setTimeout(checkScroll, 50);
+            setTimeout(checkScroll, 200);
+            setTimeout(checkScroll, 500);
+            setTimeout(checkScroll, 1000);
         })();
     </script>
 @endpush
 
     @if(isset($activity) && $activity)
     <!-- MODAL DE CONVERSIÓN DE ACTIVIDAD -->
-    <div x-data="{ 
-        show: false, 
+    <div x-data="{
+        show: false,
         targetType: 'activity',
         types: [
             { id: 'activity', label: 'Tarea General', icon: '📝', desc: 'Actividad estándar con seguimiento de urgencia, carga cognitiva y gestión de progreso.' },
@@ -1558,7 +1143,7 @@
         x-transition:leave-end="opacity-0"
         x-cloak
         @click.self="show = false">
-        
+
         <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl border border-gray-100 dark:border-gray-800 transform transition-all text-left flex flex-col max-h-[90vh]"
             x-transition:enter="transition ease-out duration-300 transform"
             x-transition:enter-start="opacity-0 scale-95"
@@ -1566,7 +1151,7 @@
             x-transition:leave="transition ease-in duration-200 transform"
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95">
-            
+
             <div class="px-8 py-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-violet-50/50 dark:bg-violet-950/20">
                 <div>
                     <div class="flex items-center gap-2 mb-1">
@@ -1589,7 +1174,7 @@
             <form action="{{ route('teams.activities.convert', [$team, $activity]) }}" method="POST" class="flex flex-col flex-1 overflow-hidden m-0">
                 @csrf
                 <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
-                    
+
                     <div class="mb-6 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50">
                         <div class="flex gap-3">
                             <div class="text-amber-500 mt-0.5">
@@ -1614,12 +1199,12 @@
                         <template x-for="type in types" :key="type.id">
                             <label class="relative flex cursor-pointer rounded-2xl border bg-white dark:bg-gray-800/50 p-4 shadow-sm focus:outline-none transition-all group hover:border-violet-300 dark:hover:border-violet-700"
                                 :class="targetType === type.id ? 'border-violet-500 ring-2 ring-violet-500/20 bg-violet-50/30 dark:bg-violet-900/10' : 'border-gray-200 dark:border-gray-700'">
-                                
+
                                 <input type="radio" name="type" :value="type.id" x-model="targetType" class="sr-only">
-                                
+
                                 <div class="flex w-full items-start justify-between gap-4">
                                     <div class="flex items-start gap-4">
-                                        <div class="text-2xl mt-1 p-2 rounded-xl bg-gray-50 dark:bg-gray-800 group-hover:scale-110 transition-transform" 
+                                        <div class="text-2xl mt-1 p-2 rounded-xl bg-gray-50 dark:bg-gray-800 group-hover:scale-110 transition-transform"
                                              :class="targetType === type.id ? 'bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400' : ''"
                                              x-text="type.icon">
                                         </div>
@@ -1628,7 +1213,7 @@
                                             <span class="text-[10px] text-gray-500 dark:text-gray-400 font-medium leading-relaxed" x-text="type.desc"></span>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="shrink-0 text-violet-500" x-show="targetType === type.id">
                                         <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                                             <circle cx="12" cy="12" r="10" stroke-opacity="0.2" fill="currentColor" fill-opacity="0.1"/>

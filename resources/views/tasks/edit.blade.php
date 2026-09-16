@@ -238,7 +238,7 @@
                                 class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white transition-all cursor-pointer">
                                 <option value="">{{ __('(Ningún expediente)') }}</option>
                                 @foreach ($expedientes as $exp)
-                                    <option value="{{ $exp->id }}" 
+                                    <option value="{{ $exp->id }}"
                                         data-code="{{ $exp->code }}"
                                         {{ (old('expediente_id', $task->expediente_id) == $exp->id) ? 'selected' : '' }}>
                                         {{ $exp->code }} — {{ $exp->title }}
@@ -297,13 +297,13 @@
                             <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-2">
                                 {{ __('Dependencia de Servicio') }}
                             </label>
-                            <select name="service_id" 
+                            <select name="service_id"
                                 class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
                                 <option value="">{{ __('Sin dependencia externa') }}</option>
                                 @foreach ($services as $service)
-                                    <option value="{{ $service->id }}" 
+                                    <option value="{{ $service->id }}"
                                         {{ old('service_id', $task->service_id) == $service->id ? 'selected' : '' }}>
-                                        {{ $service->icon }} {{ $service->name }} 
+                                        {{ $service->icon }} {{ $service->name }}
                                         ({{ $service->getStatusLabel() }})
                                     </option>
                                 @endforeach
@@ -313,8 +313,8 @@
                 </div>
 
                 <div>
-                    <x-markdown-editor 
-                        name="description" 
+                    <x-markdown-editor
+                        name="description"
                         id="description"
                         :value="old('description', $task->description)"
                         :label="__('tasks.description')"
@@ -326,8 +326,8 @@
 
                 <!-- Observations (Markdown) -->
                 <div>
-                    <x-markdown-editor 
-                        name="observations" 
+                    <x-markdown-editor
+                        name="observations"
                         id="observations"
                         :value="old('observations', $task->observations)"
                         :label="__('tasks.observations')"
@@ -538,7 +538,7 @@
                                 <div class="flex flex-wrap gap-2">
                                     @foreach(['1' => 'L', '2' => 'M', '3' => 'X', '4' => 'J', '5' => 'V', '6' => 'S', '7' => 'D'] as $val => $label)
                                         <label class="relative cursor-pointer">
-                                            <input type="checkbox" name="autoprogram_settings[days][]" value="{{ $val }}" 
+                                            <input type="checkbox" name="autoprogram_settings[days][]" value="{{ $val }}"
                                                 {{ in_array($val, old('autoprogram_settings.days', $apSettings['days'] ?? [])) ? 'checked' : '' }}
                                                 class="peer sr-only">
                                             <div class="w-9 h-9 rounded-xl border-2 border-gray-100 dark:border-gray-800 flex items-center justify-center text-xs font-black text-gray-400 peer-checked:border-violet-500 peer-checked:bg-violet-50 dark:peer-checked:bg-violet-900/30 peer-checked:text-violet-600 transition-all hover:border-violet-200 shadow-sm">
@@ -574,7 +574,7 @@
                                         <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('Un día específico de la semana') }}</span>
                                     </label>
                                 </div>
-                                
+
                                 <div x-show="monthlyType === 'ordinal'" class="flex items-center gap-2 mt-3" x-transition>
                                     <span class="text-sm text-gray-500">{{ __('El') }}</span>
                                     <select name="autoprogram_settings[monthly_ordinal]" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-3 py-1.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
@@ -972,8 +972,8 @@
                                         <div class="min-w-0 font-sans">
                                             <p class="text-sm font-bold text-gray-800 dark:text-gray-100 truncate"
                                                 title="{{ $attachment->file_name }}">
-                                                <a href="{{ route('teams.attachments.view', [$team, $attachment]) }}" 
-                                                   target="_blank" 
+                                                <a href="{{ route('teams.attachments.view', [$team, $attachment]) }}"
+                                                   target="_blank"
                                                    class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
                                                     {{ $attachment->file_name }}
                                                 </a>
@@ -990,15 +990,15 @@
                                     <div
                                         class="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-all duration-200">
                                         {{-- Botón de Inyección IA --}}
-                                        <button type="button" 
-                                            @click="$dispatch('ai:analyze-file', { 
-                                                fileName: '{{ addslashes($attachment->file_name) }}', 
+                                        <button type="button"
+                                            @click="$dispatch('ai:analyze-file', {
+                                                fileName: '{{ addslashes($attachment->file_name) }}',
                                                 fileId: {{ $attachment->id }},
                                                 fileUrl: '{{ $attachment->storage_provider === 'google' ? $attachment->web_view_link : route('teams.attachments.view', [$team, $attachment]) }}',
                                                 fileType: '{{ $attachment->mime_type }}',
                                                 taskId: {{ $task->id }},
                                                 teamId: {{ $team->id }},
-                                                autoSubmit: false 
+                                                autoSubmit: false
                                             })"
                                             class="p-2 text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:text-violet-400 dark:hover:bg-violet-900/20 bg-white dark:bg-gray-900 rounded-xl border border-transparent hover:border-violet-100 dark:hover:border-violet-900/40 transition-all shadow-sm"
                                             title="Preguntar a la IA sobre este archivo">
@@ -1008,7 +1008,7 @@
                                         </button>
 
                                         @if($attachment->storage_provider !== 'google' && $isGoogleLinked)
-                                            <button type="button" 
+                                            <button type="button"
                                                 onclick="openDriveUploadPicker({{ $attachment->id }})"
                                                 class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 bg-white dark:bg-gray-900 rounded-xl border border-transparent hover:border-blue-100 dark:hover:border-blue-900/40 transition-all shadow-sm"
                                                 title="Subir a Google Drive">
@@ -1061,7 +1061,7 @@
                                             </button>
                                         @else
                                             @if($attachment->attachable_id !== $task->id)
-                                                @php 
+                                                @php
                                                     $isFromParent = $task->parent_id && $attachment->attachable_id === $task->parent_id;
                                                 @endphp
                                                 <span class="p-2 text-gray-300 dark:text-gray-600 cursor-help"
@@ -1144,35 +1144,35 @@
                 cursor: pointer !important;
                 transition: all 0.2s ease !important;
             }
-            .ts-control input { 
-                font-size: 14px !important; 
-                padding: 0 !important; 
-                margin: 0 !important; 
-                background: transparent !important; 
-                border: none !important; 
-                outline: none !important; 
+            .ts-control input {
+                font-size: 14px !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                background: transparent !important;
+                border: none !important;
+                outline: none !important;
                 box-shadow: none !important;
                 line-height: 1 !important;
                 height: auto !important;
             }
             .ts-control input::placeholder { color: #9ca3af !important; font-weight: 500 !important; }
-            
+
             .dark .ts-control {
                 background-color: #1f2937 !important;
                 border-color: #374151 !important;
                 color: #f3f4f6 !important;
             }
-            
+
             .ts-wrapper.focus .ts-control {
                 border-color: #7c3aed !important;
                 box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2) !important;
             }
-            
+
             /* Clear Button Esthetic */
-            .ts-wrapper .clear-button { 
-                right: 1rem !important; 
-                top: 50% !important; 
-                transform: translateY(-50%) !important; 
+            .ts-wrapper .clear-button {
+                right: 1rem !important;
+                top: 50% !important;
+                transform: translateY(-50%) !important;
                 font-size: 1.25rem !important;
                 color: #9ca3af !important;
                 opacity: 0.7 !important;
@@ -1180,32 +1180,32 @@
             }
             .ts-wrapper .clear-button:hover { opacity: 1 !important; color: #ef4444 !important; }
             .ts-wrapper .ts-control { padding-right: 2.5rem !important; }
-            
-            .ts-dropdown { 
-                border-radius: 1rem !important; 
+
+            .ts-dropdown {
+                border-radius: 1rem !important;
                 border: 1px solid #e5e7eb !important;
-                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important; 
-                margin-top: 6px !important; 
-                padding: 0.5rem !important; 
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+                margin-top: 6px !important;
+                padding: 0.5rem !important;
                 z-index: 9999 !important;
             }
             .dark .ts-dropdown { background-color: #111827 !important; border-color: #374151 !important; }
-            
-            .ts-dropdown .option { 
-                padding: 0.625rem 0.75rem !important; 
-                border-radius: 0.6rem !important; 
-                margin-bottom: 2px !important; 
+
+            .ts-dropdown .option {
+                padding: 0.625rem 0.75rem !important;
+                border-radius: 0.6rem !important;
+                margin-bottom: 2px !important;
                 transition: all 0.15s ease !important;
                 color: #374151 !important;
             }
             .dark .ts-dropdown .option { color: #e5e7eb !important; }
-            
-            .ts-dropdown .active { 
-                background-color: #f5f3ff !important; 
-                color: #4f46e5 !important; 
+
+            .ts-dropdown .active {
+                background-color: #f5f3ff !important;
+                color: #4f46e5 !important;
             }
             .dark .ts-dropdown .active { background-color: #4f46e5 !important; color: #ffffff !important; }
-            
+
             /* Evita parpadeos del selector nativo previo a TomSelect */
             #parent_id_select, #expediente_id_select { display: none; }
         </style>
@@ -1318,12 +1318,12 @@
                                     '</div>' +
                                     '<div class="flex flex-col min-w-0">' +
                                         '<span class="font-bold text-gray-900 dark:text-white truncate text-xs">' + escape(data.text) + '</span>' +
-                                        '<span class="text-[10px] text-gray-700 dark:text-gray-200 font-black uppercase tracking-widest mt-0.5 flex items-center gap-1.5">' + 
+                                        '<span class="text-[10px] text-gray-700 dark:text-gray-200 font-black uppercase tracking-widest mt-0.5 flex items-center gap-1.5">' +
                                             '<span class="w-1.5 h-1.5 rounded-full bg-violet-400"></span>' +
-                                            escape(data.assignee) + 
+                                            escape(data.assignee) +
                                         '</span>' +
                             item: function(data, escape) {
-                                return '<div class="flex items-center gap-2">' + 
+                                return '<div class="flex items-center gap-2">' +
                                     '<span class="text-[10px] font-mono font-bold text-violet-500 bg-violet-50 dark:bg-violet-900/30 px-1.5 py-0.5 rounded">#' + escape(data.value) + '</span>' +
                                     '<span class="font-medium text-gray-900 dark:text-white text-xs">' + escape(data.text) + '</span>' +
                                     '<span class="text-[9px] text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 font-black uppercase tracking-tighter">@' + escape(data.assignee) + '</span>' +
@@ -1339,7 +1339,7 @@
                         window.openGlobalImageEditor(url, (editedFile) => {
                             const formData = new FormData();
                             formData.append('file', editedFile);
-                            
+
                             Swal.fire({
                                 title: 'Guardando...',
                                 text: 'Actualizando la imagen en el servidor',
@@ -1396,7 +1396,7 @@
                             const form = document.createElement('form');
                             form.method = 'POST';
                             form.action = `/teams/{{ $team->id }}/attachments/${id}`;
-                            
+
                             // Add CSRF token safely
                             const csrfInput = document.createElement('input');
                             csrfInput.type = 'hidden';
@@ -1517,7 +1517,7 @@
             function loadDriveFolder(folderId) {
                 const container = document.getElementById('drive-contents');
                 const teamId = '{{ $team->id }}';
-                
+
                 fetch(`{{ route('google.drive.list') }}?team_id=${teamId}&folderId=${folderId}`)
                     .then(response => response.json())
                     .then(data => {
@@ -1527,7 +1527,7 @@
                         }
 
                         container.innerHTML = '';
-                        
+
                         // Add "Go Back" if not in root
                         if (folderId !== 'root') {
                             const backBtn = document.createElement('button');
@@ -1546,7 +1546,7 @@
                             const btn = document.createElement('button');
                             btn.type = 'button';
                             btn.className = 'flex items-center justify-between p-3 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all group text-left border border-transparent hover:border-blue-100 dark:hover:border-blue-800 w-full';
-                            
+
                             const icon = isFolder ? '📁' : '📄';
                             const driveIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M7.71 3.5L1.15 15l3.43 6 6.55-11.5H7.71zM9.73 15L6.3 21h13.12l3.43-6H9.73zM18.74 3.5l-6.55 11.5 3.43 6L22.18 9.5l-3.44-6z"/>
@@ -1576,9 +1576,9 @@
             function attachDriveFile(file) {
                 const teamId = '{{ $team->id }}';
                 const taskId = '{{ $task->id }}';
-                
+
                 Swal.showLoading();
-                
+
                 fetch(`{{ route('teams.attachments.from-drive', [$team]) }}`, {
                     method: 'POST',
                     headers: {
@@ -1618,7 +1618,7 @@
             function toggleSelectAllAttachments() {
                 const checkboxes = document.querySelectorAll('.drive-mass-upload-cb');
                 const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-                
+
                 checkboxes.forEach(cb => {
                     cb.checked = !allChecked;
                 });
@@ -1673,7 +1673,7 @@
                 const container = document.getElementById('drive-upload-contents');
                 container.dataset.currentFolder = folderId;
                 const teamId = '{{ $team->id }}';
-                
+
                 fetch(`{{ route('google.drive.list') }}?team_id=${teamId}&folderId=${folderId}`)
                     .then(response => response.json())
                     .then(data => {
@@ -1683,7 +1683,7 @@
                         }
 
                         container.innerHTML = '';
-                        
+
                         if (folderId !== 'root') {
                             const backBtn = document.createElement('button');
                             backBtn.className = 'flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg text-sm transition-colors text-blue-600 font-bold w-full text-left';
@@ -1702,7 +1702,7 @@
                             const btn = document.createElement('button');
                             btn.type = 'button';
                             btn.className = 'flex items-center justify-between p-3 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all group text-left border border-transparent hover:border-blue-100 dark:hover:border-blue-800 w-full';
-                            
+
                             btn.innerHTML = `
                                 <div class="flex items-center gap-3 overflow-hidden">
                                     <span class="text-lg grow-0">📁</span>
@@ -1740,7 +1740,7 @@
                     didOpen: async () => {
                         Swal.showLoading();
                         let completed = 0;
-                        
+
                         for (const id of idsToUpload) {
                             const formData = new FormData();
                             formData.append('_token', csrfToken);
@@ -1829,24 +1829,44 @@
 <script>
     (function() {
         const bar = document.getElementById('task-edit-floating-bar');
-        let visible = false;
-
-        // Catch scroll on any container (Universal listener with capture phase)
+        if (!bar) return;
         const checkScroll = (e) => {
-            const target = e.target === document ? document.documentElement : e.target;
-            const scrollY = target.scrollTop || 0;
-            const finalScroll = scrollY || window.scrollY || 0;
-            
-            if (finalScroll > 150) {
+            const bar = document.getElementById('task-edit-floating-bar');
+            if (!bar) return;
+
+        const checkScroll = (e) => {
+            const windowScroll = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+            let targetScroll = 0;
+            if (e && e.target && e.target !== document && e.target !== window && typeof e.target.scrollTop === 'number') {
+                targetScroll = e.target.scrollTop || 0;
+            }
+            const currentScroll = Math.max(windowScroll, targetScroll);
+
+            if (currentScroll > 150) {
+            if (currentScroll > 50) {
                 bar.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
                 bar.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                bar.style.opacity = '1';
+                bar.style.pointerEvents = 'auto';
+                bar.style.visibility = 'visible';
             } else {
                 bar.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
                 bar.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                bar.style.opacity = '0';
+                bar.style.pointerEvents = 'none';
+                bar.style.visibility = 'hidden';
             }
         };
 
         window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
+        document.addEventListener('scroll', checkScroll, { passive: true, capture: true });
+        window.addEventListener('resize', checkScroll, { passive: true });
+        document.addEventListener('DOMContentLoaded', checkScroll);
+        checkScroll();
+        setTimeout(checkScroll, 50);
+        setTimeout(checkScroll, 200);
+        setTimeout(checkScroll, 500);
+        setTimeout(checkScroll, 1000);
     })();
 </script>
 </x-app-layout>

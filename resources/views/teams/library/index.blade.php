@@ -43,7 +43,7 @@
                     </h3>
                     <form action="{{ route('teams.library', $team) }}" method="GET" class="space-y-3">
                         <div class="relative">
-                            <input type="text" name="q" value="{{ request('q') }}" placeholder="Buscar en la wiki..." 
+                            <input type="text" name="q" value="{{ request('q') }}" placeholder="Buscar en la wiki..."
                                    class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 pl-8 pr-8 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all placeholder-gray-400">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-2.5 top-2.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -95,10 +95,10 @@
                         @endif
                     </form>
                 </div>
-                
+
                 <div class="flex-1 overflow-y-auto no-scrollbar p-2">
                     @forelse($documents as $doc)
-                         <a href="{{ route('teams.library', [$team, 'doc' => $doc->id]) }}" 
+                         <a href="{{ route('teams.library', [$team, 'doc' => $doc->id]) }}"
                             class="flex items-start gap-2.5 p-2.5 rounded-xl transition-all mb-1 {{ $activeDocument && $activeDocument->id == $doc->id ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400' }}">
                             <div class="mt-0.5 shrink-0">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 {{ $doc->status_value == 'completed' ? 'text-emerald-500' : 'text-gray-400' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -146,7 +146,7 @@
                                 @endif
                             </div>
                             @if($activeDocument->description)
-                                <div x-data="{ 
+                                <div x-data="{
                                         content: `{{ base64_encode($activeDocument->description) }}`,
                                         search: @js(request('q', '')),
                                         init() {
@@ -191,7 +191,7 @@
                             Ver Actividad
                         </a>
                     </div>
-                    
+
                     <div class="p-6 flex-1 flex flex-col min-w-0">
                         @php
                             $notesStr = is_string($activeDocument->notes) ? trim($activeDocument->notes) : '';
@@ -237,9 +237,9 @@
                         @php
                             $chapters = $activeDocument->metadata['chapters'] ?? [];
                         @endphp
-                        
+
                         @if(count($chapters) > 0)
-                            <div id="chapters-section" x-data="{ 
+                            <div id="chapters-section" x-data="{
                                     search: @js(request('q', '')),
                                     currentIndex: 0,
                                     totalMatches: 0,
@@ -286,7 +286,7 @@
                                         this.currentIndex = (this.currentIndex - 1 + this.totalMatches) % this.totalMatches;
                                         this.highlightCurrent();
                                     }
-                                }" 
+                                }"
                                 @matches-updated.window="updateMatches()"
                                 class="bg-gray-50/50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-colors space-y-6">
                                 <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-700">
@@ -342,10 +342,10 @@
                                         </button>
                                     </div>
                                 </div>
-                                
+
                                 <div class="space-y-4 min-w-0">
                                     @foreach($chapters as $idx => $chapter)
-                                    <div x-data="{ 
+                                    <div x-data="{
                                             open: false,
                                             rawContent: `{{ base64_encode($chapter['content'] ?? '') }}`,
                                             decodedContent: '',
@@ -373,7 +373,7 @@
                                                 if (!this.$refs.mdContainer) return;
                                                 let html = typeof marked !== 'undefined' ? marked.parse(this.decodedContent, {breaks: true, gfm: true}) : this.decodedContent;
                                                 this.$refs.mdContainer.innerHTML = html;
-                                                
+
                                                 if (this.search && this.search.trim() !== '') {
                                                     let s = this.search.trim();
                                                     let escaped = s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -381,14 +381,14 @@
                                                     let walker = document.createTreeWalker(this.$refs.mdContainer, NodeFilter.SHOW_TEXT, null, false);
                                                     let nodesToReplace = [];
                                                     let node;
-                                                    
+
                                                     while (node = walker.nextNode()) {
                                                         if (node.parentNode && ['SCRIPT', 'STYLE', 'MARK'].includes(node.parentNode.nodeName)) continue;
                                                         if (node.nodeValue.match(regex)) {
                                                             nodesToReplace.push(node);
                                                         }
                                                     }
-                                                    
+
                                                     nodesToReplace.forEach(n => {
                                                         let span = document.createElement('span');
                                                         span.innerHTML = n.nodeValue.replace(regex, '<mark class=\'bg-yellow-300 dark:bg-yellow-900 text-gray-900 dark:text-yellow-100 rounded px-1.5 py-0.5 font-bold shadow-sm search-highlight-mark\'>$1</mark>');
@@ -398,7 +398,7 @@
 
                                                 this.$dispatch('matches-updated');
                                             }
-                                         }" 
+                                         }"
                                          x-show="isMatch"
                                          class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-4 shadow-sm transition-all duration-300">
                                         <div class="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800/50 cursor-pointer group" @click="open = !open">
@@ -419,7 +419,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div x-show="open" x-collapse style="display: none;" 
+                                        <div x-show="open" x-collapse style="display: none;"
                                              x-init="$nextTick(() => { updateContent(); })">
                                             <div x-ref="mdContainer" id="chapter-content-{{ $idx }}" class="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 resize-y min-h-[120px] pr-4 p-4 bg-gray-50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/80 rounded-2xl mt-2 markdown-body overflow-x-hidden">
                                                 <div class="flex items-center justify-center p-4">
@@ -436,7 +436,7 @@
                                 <p class="text-gray-400 italic">No hay notas directas ni capítulos en la wiki para este documento. Revisa los archivos adjuntos.</p>
                             @endif
                         @endif
-                        
+
                         @if($activeDocument->attachments->isNotEmpty())
                             <div class="mt-8 pt-8 border-t border-gray-100 dark:border-gray-800">
                                 <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4">Archivos Adjuntos (OnlyOffice)</h3>
@@ -504,101 +504,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function printDocumentBook() {
-    const printWin = window.open('', '_blank');
-    const title = @json($activeDocument->title);
-    const teamName = @json($team->name);
-    const docVersion = @json($activeDocument->metadata['version'] ?? '1.0.0');
-    const chapters = @json($activeDocument->metadata['chapters'] ?? []);
-    
-    let chaptersHtml = '';
-    let tocHtml = '';
-    
-    chapters.forEach((chap, idx) => {
-        let rawContent = chap.content || '';
-        let parsedHtml = typeof marked !== 'undefined' ? marked.parse(rawContent, {breaks: true, gfm: true}) : rawContent;
-        
-        tocHtml += `
-            <div class="toc-item">
-                <span class="toc-title">${idx + 1}. ${chap.title}</span>
-                <span class="toc-dots"></span>
-                <span class="toc-page">Capítulo ${idx + 1}</span>
-            </div>
-        `;
-        
-        chaptersHtml += `
-            <div class="chapter-page">
-                <div class="chapter-header">
-                    <span class="chapter-num">CAPÍTULO ${idx + 1}</span>
-                    <h2 class="chapter-title">${chap.title}</h2>
-                    <div class="chapter-meta">Por ${chap.author_name || 'Autor'} • ${chap.updated_at || ''}</div>
-                </div>
-                <div class="chapter-body markdown-body">${parsedHtml}</div>
-            </div>
-        `;
+    SientiaPrint.printDocumentBook({
+        title:    @json($activeDocument->title ?? ''),
+        teamName: @json($team->name ?? ''),
+        version:  @json($activeDocument->metadata['version'] ?? '1.0.0'),
+        chapters: @json($activeDocument->metadata['chapters'] ?? [])
     });
-
-    printWin.document.write(`
-        <!DOCTYPE html>
-        <html>
-            <head>
-                <title>${title} - Libro Digital</title>
-                <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
-                <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"><\/script>
-                <style>
-                    @page { size: A4; margin: 2.5cm 2cm; }
-                    body { font-family: 'Merriweather', serif; color: #1e293b; line-height: 1.8; margin: 0; padding: 0; font-size: 14px; }
-                    h1, h2, h3, h4, h5, h6, .outfit { font-family: 'Outfit', sans-serif; }
-                    
-                    /* Portada */
-                    .cover-page { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; page-break-after: always; padding: 2rem; box-sizing: border-box; }
-                    .cover-team { font-size: 16px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 2rem; font-family: 'Outfit', sans-serif; }
-                    .cover-title { font-size: 42px; font-weight: 900; color: #0f172a; line-height: 1.2; margin-bottom: 2rem; font-family: 'Outfit', sans-serif; }
-                    .cover-badge { display: inline-block; background: #f1f5f9; color: #475569; padding: 8px 24px; border-radius: 50px; font-size: 14px; font-weight: 700; margin-bottom: 4rem; font-family: 'Outfit', sans-serif; border: 1px solid #e2e8f0; }
-                    .cover-footer { margin-top: auto; font-size: 14px; color: #64748b; font-family: 'Outfit', sans-serif; }
-                    
-                    /* Índice */
-                    .toc-page { page-break-after: always; padding: 2rem 0; }
-                    .toc-main-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 3rem; font-family: 'Outfit', sans-serif; border-bottom: 2px solid #e2e8f0; padding-bottom: 1rem; }
-                    .toc-item { display: flex; align-items: baseline; margin-bottom: 1.5rem; font-family: 'Outfit', sans-serif; font-size: 16px; }
-                    .toc-title { font-weight: 600; color: #334155; }
-                    .toc-dots { flex: 1; border-bottom: 1px dotted #cbd5e1; margin: 0 12px; }
-                    .toc-page { font-weight: 700; color: #64748b; font-size: 14px; }
-                    
-                    /* Capítulos */
-                    .chapter-page { page-break-before: always; padding: 2rem 0; }
-                    .chapter-header { margin-bottom: 3rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 2rem; }
-                    .chapter-num { font-size: 14px; font-weight: 800; color: #8b5cf6; text-transform: uppercase; letter-spacing: 3px; font-family: 'Outfit', sans-serif; display: block; margin-bottom: 0.5rem; }
-                    .chapter-title { font-size: 32px; font-weight: 800; color: #0f172a; margin: 0 0 1rem 0; font-family: 'Outfit', sans-serif; line-height: 1.2; }
-                    .chapter-meta { font-size: 13px; color: #64748b; font-family: 'Outfit', sans-serif; }
-                    .chapter-body { color: #334155; }
-                    .chapter-body p { margin-bottom: 1.5rem; }
-                    .chapter-body h1, .chapter-body h2, .chapter-body h3 { font-family: 'Outfit', sans-serif; color: #0f172a; margin-top: 2.5rem; margin-bottom: 1rem; font-weight: 700; }
-                </style>
-            </head>
-            <body>
-                <div class="cover-page">
-                    <div class="cover-team">${teamName}</div>
-                    <h1 class="cover-title">${title}</h1>
-                    <div class="cover-badge">DOCUMENTO VERSIÓN ${docVersion}</div>
-                    <div class="cover-footer">Sientia MTX • Exportado el ${new Date().toLocaleDateString('es-ES')}</div>
-                </div>
-                
-                <div class="toc-page">
-                    <h2 class="toc-main-title">Índice General</h2>
-                    ${tocHtml}
-                </div>
-
-                ${chaptersHtml}
-                
-                <script>
-                    window.onload = () => {
-                        setTimeout(() => window.print(), 500);
-                    };
-                <\/script>
-            </body>
-        </html>
-    `);
-    printWin.document.close();
 }
 </script>
-@endif
