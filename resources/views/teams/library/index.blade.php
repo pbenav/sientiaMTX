@@ -511,4 +511,4 @@ function printDocumentBook() {
         chapters: @json($activeDocument->metadata['chapters'] ?? [])
     });
 }
-</script>
+</script>@endif

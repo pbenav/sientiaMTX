@@ -36,8 +36,8 @@ class ActivityBulkController extends Controller
         $request->validate([
             'task_ids' => 'required|array',
             'task_ids.*' => 'exists:activities,id',
-            'field' => 'required|string|in:status,priority,assigned_user_id',
-            'value' => 'required'
+            'field' => 'required|string|in:status,priority,assigned_user_id,expediente_id',
+            'value' => 'nullable'
         ]);
 
         $user = auth()->user();
@@ -63,6 +63,9 @@ class ActivityBulkController extends Controller
                 $count++;
             } elseif ($request->field === 'priority') {
                 $activity->update(['priority' => $request->value]);
+                $count++;
+            } elseif ($request->field === 'expediente_id') {
+                $activity->update(['expediente_id' => $request->value ?: null]);
                 $count++;
             } elseif ($request->field === 'assigned_user_id') {
                 $activity->assignments()->whereNotNull('user_id')->delete(); // Clear old user assignments

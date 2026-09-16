@@ -280,17 +280,24 @@ HTML;
         return $attachment?->getPublicEmbedUrl();
     }
 
-    private function findAttachmentByFileName(string $filename, Team $team): ?TaskAttachment
+    private function findAttachmentByFileName(string $filename, Team $team)
     {
         $basename = basename($filename);
         $normalized = $this->normalizeFilename($basename);
 
-        $candidates = TaskAttachment::query()
+        $taskCandidates = \App\Models\TaskAttachment::query()
             ->whereHas('task', fn ($query) => $query->where('team_id', $team->id))
             ->latest()
             ->get();
+            
+        $activityCandidates = \App\Models\ActivityAttachment::query()
+            ->whereHas('activity', fn ($query) => $query->where('team_id', $team->id))
+            ->latest()
+            ->get();
+            
+        $candidates = $taskCandidates->concat($activityCandidates);
 
-        return $candidates->first(function (TaskAttachment $attachment) use ($filename, $basename, $normalized) {
+        return $candidates->first(function ($attachment) use ($filename, $basename, $normalized) {
             if (in_array($attachment->file_name, [$filename, $basename], true)) {
                 return true;
             }
@@ -298,8 +305,24 @@ HTML;
             if (str_ends_with($attachment->file_path ?? '', $basename)) {
                 return true;
             }
+            
+            $attachmentNormalized = $this->normalizeFilename($attachment->file_name);
 
-            return $this->normalizeFilename($attachment->file_name) === $normalized;
+            if ($attachmentNormalized === $normalized) {
+                return true;
+            }
+            
+            // Fuzzy match para casos donde la IA inventa prefijos (ej. fecha) o sufijos (-1)
+            if ($attachmentNormalized && $normalized) {
+                if (str_contains($normalized, $attachmentNormalized) || str_contains($attachmentNormalized, $normalized)) {
+                    // Evitar falsos positivos con nombres muy cortos
+                    if (strlen($attachmentNormalized) > 5) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         });
     }
 
@@ -310,11 +333,20 @@ HTML;
         return strtolower(preg_replace('/[^a-z0-9]+/i', '', $name) ?? '');
     }
 
-    private function findAttachmentByStoragePath(string $path, Team $team): ?TaskAttachment
+    private function findAttachmentByStoragePath(string $path, Team $team)
     {
-        return TaskAttachment::query()
+        $attachment = \App\Models\TaskAttachment::query()
             ->where('file_path', $path)
             ->whereHas('task', fn ($query) => $query->where('team_id', $team->id))
             ->first();
+            
+        if (!$attachment) {
+            $attachment = \App\Models\ActivityAttachment::query()
+                ->where('file_path', $path)
+                ->whereHas('activity', fn ($query) => $query->where('team_id', $team->id))
+                ->first();
+        }
+        
+        return $attachment;
     }
 }

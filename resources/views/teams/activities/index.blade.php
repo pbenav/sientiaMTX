@@ -187,6 +187,13 @@
                         <option value="high">Alta</option>
                         <option value="critical">Crítica</option>
                     </select>
+                    <select onchange="applyBulkUpdate('expediente_id', this.value)" class="flex-1 min-w-[120px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 py-2.5 pl-3 pr-6 focus:ring-2 focus:ring-violet-500/50 outline-none">
+                        <option value="">📁 Expediente</option>
+                        <option value="none">-- Sin Expediente --</option>
+                        @foreach ($expedientes as $expediente)
+                            <option value="{{ $expediente->id }}">{{ \Illuminate\Support\Str::limit($expediente->title ?? $expediente->code, 25) }}</option>
+                        @endforeach
+                    </select>
                     <select onchange="applyBulkUpdate('assigned_user_id', this.value)" class="flex-1 min-w-[120px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 py-2.5 pl-3 pr-6 focus:ring-2 focus:ring-violet-500/50 outline-none">
                         <option value="">👤 Asignar</option>
                         @foreach ($members as $member)
@@ -848,7 +855,8 @@
                     const fieldLabels = {
                         'status': 'Estado',
                         'priority': 'Prioridad',
-                        'assigned_user_id': 'Responsable'
+                        'assigned_user_id': 'Responsable',
+                        'expediente_id': 'Expediente'
                     };
 
                     Swal.fire({

@@ -136,12 +136,12 @@ class GanttController extends Controller
                     'urgency'      => $task->urgency,
                     'is_template'  => $task->is_template,
                     'has_children' => $task->children->count() > 0,
-                    'assigned_to'  => $task->assignedUser?->name ?? ($task->children->count() > 0 ? 'Equipo' : 'Sin asignar'),
-                    'user_name'    => $task->assignedUser?->name ?? ($task->children->count() > 0 ? 'Equipo' : 'Sin asignar'),
-                    'user_initials' => ($task->assignedUser) 
-                                        ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($task->assignedUser->name, 0, 2)) 
-                                        : ($task->children->count() > 0 ? 'EQ' : '??'),
-                    'user_id'      => $task->assigned_user_id ?? $task->created_by_id,
+                    'assigned_to'  => ($task->is_template || $task->children->count() > 0) ? ($task->creator?->name ?? 'Equipo') : ($task->assignedUser?->name ?? 'Sin asignar'),
+                    'user_name'    => ($task->is_template || $task->children->count() > 0) ? ($task->creator?->name ?? 'Equipo') : ($task->assignedUser?->name ?? 'Sin asignar'),
+                    'user_initials' => ($task->is_template || $task->children->count() > 0)
+                                        ? ($task->creator ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($task->creator->name, 0, 2)) : 'EQ')
+                                        : ($task->assignedUser ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($task->assignedUser->name, 0, 2)) : '??'),
+                    'user_id'      => ($task->is_template || $task->children->count() > 0) ? $task->created_by_id : ($task->assigned_user_id ?? $task->created_by_id),
                     'user_ids'     => $task->relationLoaded('assignedTo') && $task->assignedTo->isNotEmpty()
                                         ? $task->assignedTo->pluck('id')->push($task->created_by_id)->filter()->unique()->values()->toArray()
                                         : array_values(array_filter([$task->assigned_user_id, $task->created_by_id])),

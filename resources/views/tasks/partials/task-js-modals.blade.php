@@ -393,10 +393,7 @@
         (function() {
             const bar = document.getElementById('task-floating-bar');
             if (!bar) return;
-            const checkScroll = (e) => {
-                const bar = document.getElementById('task-floating-bar');
-                if (!bar) return;
-
+            
             const checkScroll = (e) => {
                 const windowScroll = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
                 let targetScroll = 0;
@@ -405,7 +402,6 @@
                 }
                 const currentScroll = Math.max(windowScroll, targetScroll);
 
-                if (currentScroll > 150) {
                 if (currentScroll > 50) {
                     bar.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
                     bar.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');

@@ -16,6 +16,36 @@ use Carbon\Carbon;
 class StorageController extends Controller
 {
     /**
+     * Resuelve rutas inventadas por la IA (/storage/files/...)
+     */
+    public function resolveHallucinatedFile($filename)
+    {
+        $basename = pathinfo(urldecode($filename), PATHINFO_FILENAME);
+        
+        // Limpiar prefijos de fecha (ej. 2026-09-16-) y sufijos (-1)
+        $clean = preg_replace('/^\d{4}-\d{2}-\d{2}-/', '', $basename);
+        $clean = preg_replace('/-\d+$/', '', $clean);
+        $clean = trim(str_replace('-', ' ', $clean));
+        
+        // Si queda muy corto, usar el original
+        if (strlen($clean) < 4) {
+            $clean = $basename;
+        }
+
+        $activityAtt = \App\Models\ActivityAttachment::where('file_name', 'like', "%{$clean}%")->latest()->first();
+        if ($activityAtt && $activityAtt->getPublicEmbedUrl()) {
+            return redirect($activityAtt->getPublicEmbedUrl());
+        }
+
+        $taskAtt = \App\Models\TaskAttachment::where('file_name', 'like', "%{$clean}%")->latest()->first();
+        if ($taskAtt && $taskAtt->getPublicEmbedUrl()) {
+            return redirect($taskAtt->getPublicEmbedUrl());
+        }
+
+        abort(404, 'Archivo no encontrado');
+    }
+
+    /**
      * Mostrar estadísticas de uso de disco.
      */
     public function index(Team $team)

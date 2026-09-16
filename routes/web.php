@@ -736,3 +736,4 @@ Route::middleware(['auth'])->prefix('metrics')->name('metrics.')->group(function
     Route::get('/api/snapshots', [\App\Http\Controllers\Metrics\ApiController::class, 'snapshots'])->name('api.snapshots');
     Route::get('/api/alerts', [\App\Http\Controllers\Metrics\ApiController::class, 'alerts'])->name('api.alerts');
 });
+Route::get('/storage/files/{filename}', [\App\Http\Controllers\StorageController::class, 'resolveHallucinatedFile'])->where('filename', '.*');

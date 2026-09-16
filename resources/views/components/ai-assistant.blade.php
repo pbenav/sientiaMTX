@@ -1328,9 +1328,9 @@
                 const tailwindScript = usesTailwind ? '<script src="https://cdn.tailwindcss.com"><\/script>' : '';
                 let wrappedHtml = html.includes('ms-root') ? html : `<div class="ms-root">${html}</div>`;
                 const fullCss = (this.micrositeScaffoldCss || '') + '\n' + (css || '');
-                const escAttr = (s) => String(s).replace(/"/g, '&quot;');
                 const fsScript = '<script>document.addEventListener("click",function(e){var b=e.target.closest("[data-ms-fullscreen]");if(!b)return;var v=b.closest(".ms-pdf-viewer");if(!v)return;document.fullscreenElement?document.exitFullscreen():v.requestFullscreen();});<\/script>';
-                return `${tailwindScript}<style>${escAttr(fullCss)}</style>${escAttr(wrappedHtml)}${fsScript}`;
+                const rawSrcdoc = `${tailwindScript}<style>${fullCss}</style>${wrappedHtml}${fsScript}`;
+                return String(rawSrcdoc).replace(/"/g, '&quot;');
             },
 
             generatePayloadCard(content) {
