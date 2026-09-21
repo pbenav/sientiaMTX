@@ -164,11 +164,11 @@ class ActivityController extends Controller
         $expedientes = $team->expedientes()->select('expedientes.id', 'expedientes.code', 'expedientes.title')->orderBy('expedientes.title')->get();
 
         // Actividades padre disponibles para jerarquía (no circulares)
-        $parentActivities = Activity::with('creator:id,name')
+        $parentActivities = Activity::with(['creator:id,name', 'assignedUser:id,name', 'expediente:id,code'])
             ->byTeam($team->id)
             ->active()
             ->where('is_template', false)
-            ->select('id', 'title', 'created_by_id', 'created_at')
+            ->select('id', 'title', 'created_by_id', 'created_at', 'expediente_id')
             ->latest()
             ->limit(50)
             ->get();
@@ -286,12 +286,12 @@ class ActivityController extends Controller
         $expedientes = $team->expedientes()->select('expedientes.id', 'expedientes.code', 'expedientes.title')->orderBy('expedientes.title')->get();
 
 
-        $parentActivities = Activity::with('creator:id,name')
+        $parentActivities = Activity::with(['creator:id,name', 'assignedUser:id,name', 'expediente:id,code'])
             ->byTeam($team->id)
             ->active()
             ->where('id', '!=', $activity->id)
             ->where('is_template', false)
-            ->select('id', 'title', 'created_by_id', 'created_at')
+            ->select('id', 'title', 'created_by_id', 'created_at', 'expediente_id')
             ->latest()
             ->limit(50)
             ->get();
