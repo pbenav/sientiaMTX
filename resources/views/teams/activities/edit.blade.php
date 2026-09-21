@@ -1167,7 +1167,8 @@
                                 <option value="">(Ninguna)</option>
                                 @foreach ($parentActivities as $parent)
                                     <option value="{{ $parent->id }}" {{ old('parent_id', $activity->parent_id) == $parent->id ? 'selected' : '' }}
-                                        data-assignee="{{ $parent->creator ? $parent->creator->name : 'Sin asignar' }}">
+                                        data-assignee="{{ $parent->creator ? $parent->creator->name : 'Sin asignar' }}"
+                                        data-expediente="{{ $parent->expediente ? $parent->expediente->code : '' }}">
                                         {{ $parent->title }}
                                     </option>
                                 @endforeach
@@ -1939,6 +1940,7 @@
                     create: false,
                     sortField: { field: "text", direction: "asc" },
                     placeholder: 'Buscar actividad padre...',
+                    dropdownParent: 'body',
                     render: {
                         option: function(data, escape) {
                             return '<div class="flex items-center gap-3">' +
@@ -1950,6 +1952,7 @@
                                     '<span class="text-[10px] text-gray-700 dark:text-gray-200 font-black uppercase tracking-widest mt-0.5 flex items-center gap-1.5">' +
                                         '<span class="w-1.5 h-1.5 rounded-full bg-violet-400"></span>' +
                                         escape(data.assignee) +
+                                        (data.expediente ? '<span class="ml-1.5 px-1 bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400 rounded-sm font-mono">[' + escape(data.expediente) + ']</span>' : '') +
                                     '</span>' +
                                 '</div>' +
                             '</div>';
@@ -1959,6 +1962,7 @@
                                 '<span class="text-[10px] font-mono font-bold text-violet-500 bg-violet-50 dark:bg-violet-900/30 px-1.5 py-0.5 rounded">#' + escape(data.value) + '</span>' +
                                 '<span class="font-medium text-gray-900 dark:text-white">' + escape(data.text) + '</span>' +
                                 '<span class="text-[9px] text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 font-black uppercase tracking-tighter">@' + escape(data.assignee) + '</span>' +
+                                (data.expediente ? '<span class="text-[9px] text-violet-500 bg-violet-50 dark:bg-violet-900/30 dark:text-violet-400 px-1.5 py-0.5 rounded border border-violet-100 dark:border-violet-800 font-mono font-bold uppercase tracking-tighter">[' + escape(data.expediente) + ']</span>' : '') +
                             '</div>';
                         }
                     }
