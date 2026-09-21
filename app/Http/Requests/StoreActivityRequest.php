@@ -106,7 +106,9 @@ class StoreActivityRequest extends FormRequest
                     $fieldRules = [];
 
                     // 1. Required o Nullable
-                    if (in_array($key, $requiredFields, true)) {
+                    $isPropRequired = in_array($key, $requiredFields, true) || (isset($propRules['required']) && $propRules['required'] === true);
+                    
+                    if ($isPropRequired) {
                         // Solo exigimos required absoluto si es un POST y no hay default
                         // (Si hay default, se autocompletará luego en el service, o podemos dejarlo required)
                         $fieldRules[] = isset($propRules['default']) ? 'nullable' : 'required';
