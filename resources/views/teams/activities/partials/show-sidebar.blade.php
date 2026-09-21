@@ -262,7 +262,11 @@
                             </svg>
                         </div>
                         <div class="min-w-0">
-                            <p class="text-[10px] font-black text-violet-700 dark:text-violet-400 uppercase tracking-widest">{{ __('Plan Maestro Relacionado') }}</p>
+                            @php
+                                $parentIsTemplate = $activity->parent?->is_template ?? false;
+                                $parentTypeStr = $parentIsTemplate ? __('Plan Maestro Relacionado') : __('Actividad Padre');
+                            @endphp
+                            <p class="text-[10px] font-black text-violet-700 dark:text-violet-400 uppercase tracking-widest">{{ $parentTypeStr }}</p>
                             @if ($team->isCoordinator(auth()->user()))
                                 <div class="mt-1">
                                     <select onchange="reassignTask({{ $activity->id }}, this.value)" class="w-full text-[10px] bg-white dark:bg-violet-900 border border-violet-100 dark:border-violet-800 rounded-lg px-2 py-1 shadow-sm font-bold text-violet-700 dark:text-violet-300 cursor-pointer">
@@ -279,7 +283,7 @@
                         </div>
                     </div>
                     <a href="{{ route('teams.activities.show', [$team, $activity->parent_id]) }}" class="block w-full text-center text-[10px] font-black uppercase tracking-widest text-violet-600 dark:text-violet-300 hover:bg-violet-600 hover:text-white dark:hover:bg-violet-500 py-2 bg-white dark:bg-violet-500/10 rounded-xl border border-violet-100 dark:border-violet-500/20 transition-all">
-                        {{ __('VER PLAN MAESTRO') }}
+                        {{ $parentIsTemplate ? __('VER PLAN MAESTRO') : __('VER ACTIVIDAD PADRE') }}
                     </a>
                 </div>
             @endif

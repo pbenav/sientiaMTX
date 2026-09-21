@@ -344,7 +344,10 @@
                                         @if($attachment->activity_id !== $activity->id)
                                             {{-- Informativo para compartidos si el usuario normal no tiene permisos --}}
                                             <span class="p-1.5 text-gray-300 dark:text-gray-600 cursor-help"
-                                                title="{{ $isFromParent ? 'Este archivo es del Plan Maestro y debe eliminarse desde allí.' : 'Este archivo pertenece a una subtarea.' }}">
+                                                @php
+                                                    $parentIsTemplate = $activity->parent?->is_template ?? false;
+                                                @endphp
+                                                title="{{ $isFromParent ? ($parentIsTemplate ? 'Este archivo es del Plan Maestro y debe eliminarse desde allí.' : 'Este archivo es de la Actividad Padre y debe eliminarse desde allí.') : 'Este archivo pertenece a una subtarea.' }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-40"
                                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
