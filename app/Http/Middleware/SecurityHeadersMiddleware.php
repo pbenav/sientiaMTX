@@ -48,7 +48,7 @@ class SecurityHeadersMiddleware
             $csp = "default-src 'self' http://localhost:* ws://localhost:*; " .
                    "script-src 'self' 'unsafe-inline' 'unsafe-eval' {$appOrigin} https://cdn.tailwindcss.com https://meet.jit.si https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://scaleflex.cloudimg.io {$onlyOfficeUrl}; " .
                    "style-src 'self' 'unsafe-inline' {$appOrigin} https://fonts.bunny.net https://fonts.googleapis.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; " .
-                   "img-src 'self' data: blob: {$appOrigin} https://ui-avatars.com https://*.tile.openstreetmap.org https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " .
+                   "img-src 'self' data: blob: https: http:; " .
                    "font-src 'self' data: https://fonts.bunny.net https://fonts.gstatic.com; " .
                    "media-src 'self' data: blob: https://assets.mixkit.co; " .
                    "worker-src 'self' blob:; " .
