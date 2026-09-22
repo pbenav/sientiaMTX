@@ -484,6 +484,11 @@
                 if (!content) return '';
                 let sanitized = content.trim();
 
+                // Fix markdown code blocks wrapped around the JSON
+                if (sanitized.startsWith('```')) {
+                    sanitized = sanitized.replace(/^```[a-z]*\s*/i, '').replace(/\s*```$/, '').trim();
+                }
+
                 // Fix 0: LLM sometimes uses triple single quotes (''') or backticks to wrap HTML/CSS.
                 sanitized = sanitized.replace(/'''([\s\S]*?)'''/g, function(match, innerText) {
                     let escaped = innerText.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t');
@@ -1286,14 +1291,28 @@
             renderMarkdown(text) {
                 if (!text) return '';
                 
-                // 1. Limpieza de respuestas JSON (Deep Research / Intent formats)
-                // Si la respuesta es un JSON con "content", extraemos solo el contenido
                 let cleanText = text.trim();
-                if (cleanText.startsWith('{') && cleanText.includes('"content"')) {
-                    try {
+                
+                // 1. Limpieza de respuestas JSON (Deep Research / Intent formats)
+                try {
+                    if (cleanText.startsWith('{') && cleanText.includes('"content"')) {
                         const parsed = JSON.parse(this.cleanJson(cleanText));
                         if (parsed.content) cleanText = parsed.content;
-                    } catch (e) {}
+                    } else if (cleanText.includes('```json') && cleanText.includes('"content"')) {
+                        const match = cleanText.match(/```json\s*([\s\S]*?)\s*```/);
+                        if (match && match[1]) {
+                            const parsed = JSON.parse(this.cleanJson(match[1]));
+                            if (parsed.content) cleanText = cleanText.replace(match[0], parsed.content);
+                        }
+                    } else if (cleanText.startsWith('```') && cleanText.includes('"content"')) {
+                        const match = cleanText.match(/```\s*([\s\S]*?)\s*```/);
+                        if (match && match[1] && match[1].trim().startsWith('{')) {
+                            const parsed = JSON.parse(this.cleanJson(match[1]));
+                            if (parsed.content) cleanText = cleanText.replace(match[0], parsed.content);
+                        }
+                    }
+                } catch (e) {
+                    console.error("Ax.ia json parse error in renderMarkdown:", e);
                 }
 
                 // 2. Extracción de [PAYLOAD] para evitar que marked los rompa
