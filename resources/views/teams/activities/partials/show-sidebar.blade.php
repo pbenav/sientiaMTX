@@ -289,7 +289,7 @@
             @endif
 
             <!-- 2. TU EJECUCIÓN Card -->
-            @if ($activity->type === 'task')
+            @if (in_array($activity->type, ['task', 'meeting']))
             @if ($personalInstance)
                 <div class="bg-violet-50/40 dark:bg-violet-900/10 border border-violet-100/50 dark:border-violet-800/50 rounded-2xl p-5 space-y-5 shadow-sm transition-colors relative overflow-hidden">
                     <p class="text-[10px] text-violet-600 dark:text-violet-400 uppercase tracking-widest font-black flex items-center gap-2">
@@ -357,7 +357,7 @@
             @endif
 
             <!-- 3. TIEMPO DEDICADO Card -->
-            @if ($activity->type === 'task')
+            @if (in_array($activity->type, ['task', 'meeting']))
             <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm transition-colors">
                 <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-black mb-4">{{ __('TIEMPO DEDICADO') }}</p>
                 <div class="flex items-center justify-between">
@@ -459,7 +459,7 @@
                     @endif
                 </div>
 
-                @if ($activity->type === 'task')
+                @if (in_array($activity->type, ['task', 'meeting']))
                 <div class="grid grid-cols-2 gap-4">
                     <!-- Urgencia -->
                     <div>

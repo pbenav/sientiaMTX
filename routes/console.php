@@ -76,3 +76,6 @@ Schedule::command('metrics:snapshots --weekly')->dailyAt('23:00');
 // Agregaciones mensuales el último día del mes a las 11:59 PM
 Schedule::command('metrics:snapshots --monthly')->monthly()->when(fn () => now()->isLastOfMonth());
 
+
+// Autocompleta reuniones expiradas — cada hora
+Schedule::command('app:autocomplete-meetings')->hourly();
