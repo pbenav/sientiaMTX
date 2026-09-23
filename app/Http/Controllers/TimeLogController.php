@@ -61,7 +61,7 @@ class TimeLogController extends Controller
             }
 
             if ($user->sync_with_cth) {
-                $cthStatus = \App\Jobs\SyncWorkdayWithCth::checkStatus($user);
+                $cthStatus = \App\Jobs\SyncWorkdayWithCth::checkStatus($user, true);
                 $isWorkingCth = $cthStatus['success'] ? $cthStatus['is_working'] : (bool)$activeLog;
                 
                 if ($intent === 'start' && $isWorkingCth) {
