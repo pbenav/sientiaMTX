@@ -20,152 +20,136 @@ class TimeLogController extends Controller
     public function toggleWorkday(Request $request)
     {
         $user = auth()->user();
-        $syncingCth = false;
-        $cthResult = null;
+        $intent = $request->input('intent'); // 'start' or 'stop'
 
-        // --- 1. SI TIENE CTH ACTIVADO, LA FUENTE DE LA VERDAD ES CTH ---
-        if ($user->sync_with_cth) {
-            $syncingCth = true;
-            $cthStatus = \App\Jobs\SyncWorkdayWithCth::checkStatus($user);
+        // Bloqueo atómico de 3 segundos para prevenir doble clics
+        $lock = \Illuminate\Support\Facades\Cache::lock('workday_toggle_' . $user->id, 3);
+        if (!$lock->get()) {
+            return response()->json(['success' => false, 'message' => __('Petición en curso, por favor espera.')], 429);
+        }
+
+        try {
             $activeLog = $user->activeWorkdayLog();
-            
-            // Determinar si en CTH está trabajando o no
-            $isWorkingCth = $cthStatus['success'] ? $cthStatus['is_working'] : (bool)$activeLog;
-            
-            // --- BLINDAJE DE INTENCIÓN DEL USUARIO Y ALINEACIÓN CON CTH ---
-            if ($activeLog && !$isWorkingCth) {
-                // CASO 1: En MTX tenía jornada abierta, pero en CTH ya la cerró (ej. aspa verde aplicada).
-                // Al pulsar el botón rojo en MTX, su intención es detener, jamás abrir un nuevo evento en CTH.
-                $endTime = !empty($cthStatus['end_time']) ? \Carbon\Carbon::parse($cthStatus['end_time'])->setTimezone(date_default_timezone_get()) : now();
-                $workdayEndTime = $endTime->copy();
-                if ($workdayEndTime->lt($activeLog->start_at)) $workdayEndTime = $activeLog->start_at;
+
+            // SANEAMIENTO CRONOLÓGICO: Si la jornada colgada es de ayer, forzar cierre y reiniciar estado
+            if ($activeLog && !$activeLog->start_at->isToday()) {
+                $hardCapMinutes = \App\Models\TimeLog::ANOMALY_HARD_CAP_HOURS * 60;
+                $expected = \App\Models\TimeLog::expectedMinutesForUser($user, $activeLog->start_at);
+                $duration = ($expected > 0 && $expected <= $hardCapMinutes) ? $expected : $hardCapMinutes;
                 
-                $activeLog->update(['end_at' => $workdayEndTime]);
+                $activeLog->update(['end_at' => $activeLog->start_at->copy()->addMinutes($duration)]);
                 $activeLog->fresh()->markAnomalousIfNeeded();
-                $activeTaskLog = $user->activeTaskLog();
-                if ($activeTaskLog) {
-                    $taskEndTime = $endTime->copy();
-                    if ($taskEndTime->lt($activeTaskLog->start_at)) $taskEndTime = $activeTaskLog->start_at;
-                    $activeTaskLog->update(['end_at' => $taskEndTime]);
-                }
+                $activeLog = null; // Reiniciar estado
+            }
+
+            // BLINDAJE DE INTENCIÓN FRONTEND
+            if ($intent === 'stop' && !$activeLog) {
                 return response()->json([
                     'status' => 'stopped',
-                    'message' => __('Workday stopped successfully (Sincronizado con cierre previo en CTH).'),
-                    'syncing_cth' => true,
+                    'message' => __('Jornada ya estaba detenida por otro dispositivo.'),
+                    'syncing_cth' => $user->sync_with_cth,
                     'cth_result' => ['success' => true, 'status' => 'stopped']
                 ]);
-            } elseif (!$activeLog && $isWorkingCth) {
-                // CASO 2: En MTX tenía jornada cerrada, pero en CTH ya la inició.
-                // Al pulsar el botón verde en MTX, su intención es iniciar, jamás detener el evento de CTH.
-                $startTime = !empty($cthStatus['start_time']) ? \Carbon\Carbon::parse($cthStatus['start_time'])->setTimezone(date_default_timezone_get()) : now();
-                $user->timeLogs()->create([
-                    'type' => 'workday',
-                    'start_at' => $startTime,
-                ]);
+            }
+            if ($intent === 'start' && $activeLog) {
                 return response()->json([
                     'status' => 'started',
-                    'message' => __('Workday started successfully (Sincronizado con turno activo en CTH).'),
-                    'syncing_cth' => true,
+                    'message' => __('Jornada ya estaba activa en otro dispositivo.'),
+                    'syncing_cth' => $user->sync_with_cth,
                     'cth_result' => ['success' => true, 'status' => 'started']
                 ]);
             }
-            
-            $actionToSend = $activeLog ? 'stop' : 'start';
-            
-            // Disparar la acción a CTH
-            $cthResult = \App\Jobs\SyncWorkdayWithCth::syncNow($user, $actionToSend);
 
-            if (!$cthResult['success']) {
-                // Si falla en CTH (ej. medida de gracia requerida o error), NO tocamos el contador local y devolvemos el error
-                return response()->json([
-                    'status' => $activeLog ? 'started' : 'stopped',
-                    'message' => $cthResult['message'],
-                    'syncing_cth' => true,
-                    'cth_result' => $cthResult
-                ]);
-            }
-
-            // Si CTH triunfa, alineamos MTX al nuevo estado de CTH
-            if ($actionToSend === 'stop') {
-                if ($activeLog) {
-                    $cthStartTime = !empty($cthResult['start_time']) ? \Carbon\Carbon::parse($cthResult['start_time'])->setTimezone(date_default_timezone_get()) : null;
-                    $cthEndTime = !empty($cthResult['end_time']) ? \Carbon\Carbon::parse($cthResult['end_time'])->setTimezone(date_default_timezone_get()) : now();
-                    
-                    // Si el inicio coincide (margen de 15 min), sincronizamos exactamente con el registro de CTH
-                    if ($cthStartTime && abs($cthStartTime->diffInMinutes($activeLog->start_at)) < 15) {
-                        $activeLog->update([
-                            'start_at' => $cthStartTime,
-                            'end_at' => max($cthStartTime, $cthEndTime)
-                        ]);
-                    } else {
-                        $activeLog->update(['end_at' => now()]);
-                    }
-                    $activeLog->fresh()->markAnomalousIfNeeded();
-                }
-                $activeTaskLog = $user->activeTaskLog();
-                if ($activeTaskLog) {
-                    $activeTaskLog->update(['end_at' => now()]);
-                }
-                return response()->json([
-                    'status' => 'stopped',
-                    'message' => __('Workday stopped successfully.'),
-                    'syncing_cth' => true,
-                    'cth_result' => $cthResult
-                ]);
-            } else {
-                if (!$activeLog) {
-                    $user->timeLogs()->create([
-                        'type' => 'workday',
-                        'start_at' => now(),
+            if ($user->sync_with_cth) {
+                $cthStatus = \App\Jobs\SyncWorkdayWithCth::checkStatus($user);
+                $isWorkingCth = $cthStatus['success'] ? $cthStatus['is_working'] : (bool)$activeLog;
+                
+                if ($intent === 'start' && $isWorkingCth) {
+                    $startTime = !empty($cthStatus['start_time']) ? \Carbon\Carbon::parse($cthStatus['start_time'])->setTimezone(date_default_timezone_get()) : now();
+                    $user->timeLogs()->create(['type' => 'workday', 'start_at' => $startTime]);
+                    return response()->json([
+                        'status' => 'started',
+                        'message' => __('Sincronizado con turno activo en CTH.'),
+                        'syncing_cth' => true,
+                        'cth_result' => ['success' => true, 'status' => 'started']
                     ]);
                 }
-                return response()->json([
-                    'status' => 'started',
-                    'message' => __('Workday started successfully.'),
-                    'syncing_cth' => true,
-                    'cth_result' => $cthResult
-                ]);
+                
+                if ($intent === 'stop' && !$isWorkingCth) {
+                    $endTime = !empty($cthStatus['end_time']) ? \Carbon\Carbon::parse($cthStatus['end_time'])->setTimezone(date_default_timezone_get()) : now();
+                    $workdayEndTime = $endTime->copy();
+                    if ($workdayEndTime->lt($activeLog->start_at)) $workdayEndTime = $activeLog->start_at;
+                    $activeLog->update(['end_at' => $workdayEndTime]);
+                    $activeLog->fresh()->markAnomalousIfNeeded();
+                    
+                    if ($activeTaskLog = $user->activeTaskLog()) {
+                        $taskEndTime = $endTime->copy();
+                        if ($taskEndTime->lt($activeTaskLog->start_at)) $taskEndTime = $activeTaskLog->start_at;
+                        $activeTaskLog->update(['end_at' => $taskEndTime]);
+                    }
+                    return response()->json([
+                        'status' => 'stopped',
+                        'message' => __('Sincronizado con cierre previo en CTH.'),
+                        'syncing_cth' => true,
+                        'cth_result' => ['success' => true, 'status' => 'stopped']
+                    ]);
+                }
+                
+                $actionToSend = $intent ?: ($activeLog ? 'stop' : 'start');
+                $cthResult = \App\Jobs\SyncWorkdayWithCth::syncNow($user, $actionToSend);
+
+                if (!$cthResult['success']) {
+                    return response()->json([
+                        'status' => $activeLog ? 'started' : 'stopped',
+                        'message' => $cthResult['message'],
+                        'syncing_cth' => true,
+                        'cth_result' => $cthResult
+                    ]);
+                }
+
+                if ($actionToSend === 'stop') {
+                    if ($activeLog) {
+                        $cthStartTime = !empty($cthResult['start_time']) ? \Carbon\Carbon::parse($cthResult['start_time'])->setTimezone(date_default_timezone_get()) : null;
+                        $cthEndTime = !empty($cthResult['end_time']) ? \Carbon\Carbon::parse($cthResult['end_time'])->setTimezone(date_default_timezone_get()) : now();
+                        
+                        if ($cthStartTime && abs($cthStartTime->diffInMinutes($activeLog->start_at)) < 15) {
+                            $activeLog->update(['start_at' => $cthStartTime, 'end_at' => max($cthStartTime, $cthEndTime)]);
+                        } else {
+                            $activeLog->update(['end_at' => now()]);
+                        }
+                        $activeLog->fresh()->markAnomalousIfNeeded();
+                    }
+                    if ($activeTaskLog = $user->activeTaskLog()) {
+                        $activeTaskLog->update(['end_at' => now()]);
+                    }
+                    return response()->json(['status' => 'stopped', 'message' => __('Jornada detenida en CTH.'), 'syncing_cth' => true, 'cth_result' => $cthResult]);
+                } else {
+                    if (!$activeLog) $user->timeLogs()->create(['type' => 'workday', 'start_at' => now()]);
+                    return response()->json(['status' => 'started', 'message' => __('Jornada iniciada en CTH.'), 'syncing_cth' => true, 'cth_result' => $cthResult]);
+                }
             }
-        }
 
-        // --- 2. FLUJO NORMAL SIN CTH ---
-        $activeLog = $user->activeWorkdayLog();
-        if ($activeLog) {
-            $activeLog->update(['end_at' => now()]);
-            $activeLog->fresh()->markAnomalousIfNeeded();
-            
-            $activeTaskLog = $user->activeTaskLog();
-            if ($activeTaskLog) {
-                $activeTaskLog->update(['end_at' => now()]);
+            // SIN CTH
+            $actionToPerform = $intent ?: ($activeLog ? 'stop' : 'start');
+            if ($actionToPerform === 'stop') {
+                if ($activeLog) {
+                    $activeLog->update(['end_at' => now()]);
+                    $activeLog->fresh()->markAnomalousIfNeeded();
+                    if ($activeTaskLog = $user->activeTaskLog()) $activeTaskLog->update(['end_at' => now()]);
+                }
+                return response()->json(['status' => 'stopped', 'message' => __('Workday stopped successfully.'), 'syncing_cth' => false, 'cth_result' => null]);
             }
 
-            return response()->json([
-                'status' => 'stopped',
-                'message' => __('Workday stopped successfully.'),
-                'syncing_cth' => false,
-                'cth_result' => null
-            ]);
+            if (!$activeLog) $user->timeLogs()->create(['type' => 'workday', 'start_at' => now()]);
+            return response()->json(['status' => 'started', 'message' => __('Workday started successfully.'), 'syncing_cth' => false, 'cth_result' => null]);
+
+        } finally {
+            $lock->release();
         }
-
-        $user->timeLogs()->create([
-            'type' => 'workday',
-            'start_at' => now(),
-        ]);
-
-        return response()->json([
-            'status' => 'started',
-            'message' => __('Workday started successfully.'),
-            'syncing_cth' => false,
-            'cth_result' => null
-        ]);
     }
-
-    /**
-     * Start/Stop Task log.
-     */
     public function toggleTask(Request $request, $id)
     {
-        $task = Activity::find($id) ?? Task::find($id);
+        $task = \App\Models\Activity::find($id) ?? \App\Models\Task::find($id);
         if (!$task) {
             return response()->json(['success' => false, 'message' => __('Tarea no encontrada.')], 404);
         }
@@ -173,89 +157,79 @@ class TimeLogController extends Controller
         if ($user->cannot('view', $task)) {
             return response()->json(['success' => false, 'message' => __('No tienes permiso para interactuar con esta tarea.')], 403);
         }
-        $activeLogs = $user->timeLogs()->where('type', 'task')->whereNull('end_at')->get();
-        $isSameTask = $activeLogs->contains('task_id', $task->id);
 
-        // ALWAYS Stop all previous active task logs for this user to enforce exclusivity
-        if ($activeLogs->isNotEmpty()) {
-            $user->timeLogs()->where('type', 'task')->whereNull('end_at')->update(['end_at' => now()]);
+        $intent = $request->input('intent'); // 'start' or 'stop'
+        $lock = \Illuminate\Support\Facades\Cache::lock('task_toggle_' . $user->id, 3);
+        if (!$lock->get()) {
+            return response()->json(['success' => false, 'message' => __('Petición en curso, por favor espera.')], 429);
         }
 
-        // If we were just stopping the active task, we're done
-        if ($isSameTask) {
-            $task = $task->fresh();
-            return response()->json([
-                'status' => 'stopped',
-                'message' => __('Task tracking stopped.'),
-                'total_human_time' => method_exists($task, 'totalTrackedTimeHuman') ? $task->totalTrackedTimeHuman() : '0m'
-            ]);
-        }
+        try {
+            $activeLogs = $user->timeLogs()->where('type', 'task')->whereNull('end_at')->get();
+            $isSameTask = $activeLogs->contains('task_id', $task->id);
 
-        $workdayStarted = false;
-        if (!$user->activeWorkdayLog()) {
-            if ($user->sync_with_cth) {
-                $cthStatus = \App\Jobs\SyncWorkdayWithCth::checkStatus($user);
-                if ($cthStatus['success'] && $cthStatus['is_working']) {
-                    $startTime = !empty($cthStatus['start_time']) ? \Carbon\Carbon::parse($cthStatus['start_time'])->setTimezone(date_default_timezone_get()) : now();
-                    $user->timeLogs()->create(['type' => 'workday', 'start_at' => $startTime]);
-                    $workdayStarted = true;
-                } else {
+            // BLINDAJE DE INTENCIÓN FRONTEND
+            if ($intent === 'stop' && !$isSameTask) {
+                return response()->json([
+                    'status' => 'stopped',
+                    'message' => __('La tarea ya estaba detenida.'),
+                    'total_human_time' => method_exists($task, 'totalTrackedTimeHuman') ? $task->fresh()->totalTrackedTimeHuman() : '0m'
+                ]);
+            }
+            if ($intent === 'start' && $isSameTask) {
+                return response()->json([
+                    'status' => 'started',
+                    'message' => __('La tarea ya estaba activa.'),
+                    'total_human_time' => method_exists($task, 'totalTrackedTimeHuman') ? $task->fresh()->totalTrackedTimeHuman() : '0m'
+                ]);
+            }
+
+            // DETENER TODAS LAS TAREAS PREVIAS (Exclusividad)
+            if ($activeLogs->isNotEmpty()) {
+                $user->timeLogs()->where('type', 'task')->whereNull('end_at')->update(['end_at' => now()]);
+            }
+
+            $actionToPerform = $intent ?: ($isSameTask ? 'stop' : 'start');
+
+            if ($actionToPerform === 'stop') {
+                return response()->json([
+                    'status' => 'stopped',
+                    'message' => __('Task tracking stopped.'),
+                    'total_human_time' => method_exists($task, 'totalTrackedTimeHuman') ? $task->fresh()->totalTrackedTimeHuman() : '0m'
+                ]);
+            }
+
+            // START ACTION
+            $workdayStarted = false;
+            if (!$user->activeWorkdayLog()) {
+                if ($user->sync_with_cth) {
                     $cthResult = \App\Jobs\SyncWorkdayWithCth::syncNow($user, 'start');
                     if (!$cthResult['success']) {
-                        return response()->json([
-                            'success' => false,
-                            'status' => 'error',
-                            'message' => __('No se pudo iniciar la tarea porque falló el inicio de jornada en CTH: ') . $cthResult['message']
-                        ], 400);
+                        return response()->json(['success' => false, 'message' => $cthResult['message']]);
                     }
-                    $user->timeLogs()->create(['type' => 'workday', 'start_at' => now()]);
-                    $workdayStarted = true;
                 }
-            } else {
                 $user->timeLogs()->create(['type' => 'workday', 'start_at' => now()]);
                 $workdayStarted = true;
             }
+
+            $user->timeLogs()->create([
+                'task_id' => $task->id,
+                'type' => 'task',
+                'start_at' => now(),
+                'metadata' => ['team_id' => $task->team_id ?? null]
+            ]);
+
+            return response()->json([
+                'status' => 'started',
+                'message' => __('Task tracking started.'),
+                'workday_started' => $workdayStarted,
+                'total_human_time' => method_exists($task, 'totalTrackedTimeHuman') ? $task->fresh()->totalTrackedTimeHuman() : '0m'
+            ]);
+
+        } finally {
+            $lock->release();
         }
-
-        // Update task status to in_progress if it's actionable and not already in progress
-        if (!in_array($task->status, ['completed', 'cancelled', 'in_progress'])) {
-            $task->update(['status' => 'in_progress']);
-            if (method_exists($task, 'syncKanbanColumn')) {
-                $task->syncKanbanColumn();
-            }
-            
-            // Sync parent if exists (Recursive up)
-            $current = $task;
-            while ($current->parent_id) {
-                $parent = $current->parent;
-                if ($parent && !in_array($parent->status, ['completed', 'cancelled', 'in_progress'])) {
-                    $parent->update(['status' => 'in_progress']);
-                    if (method_exists($parent, 'syncKanbanColumn')) {
-                        $parent->syncKanbanColumn();
-                    }
-                }
-                $current = $parent;
-            }
-        }
-
-        $user->timeLogs()->create([
-            'task_id' => $task->id,
-            'type' => 'task',
-            'start_at' => now(),
-        ]);
-
-        return response()->json([
-            'status' => 'started',
-            'workday_started' => $workdayStarted,
-            'message' => __('Working on: ') . $task->title,
-            'new_task_status' => $task->status,
-            'total_elapsed' => $task->totalTrackedSeconds()
-        ]);
     }
-
-    /**
-     * Get current tracking status.
-     */
     public function status()
     {
         $user = auth()->user();

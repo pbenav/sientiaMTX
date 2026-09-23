@@ -18,7 +18,8 @@
         this.loading = true;
         fetch('{{ route('time-logs.toggle-task', $activity) }}', {
             method: 'POST',
-            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            body: JSON.stringify({ intent: this.isActive ? 'stop' : 'start' })
         })
         .then(res => res.json())
         .then(data => {
