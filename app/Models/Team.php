@@ -324,7 +324,7 @@ class Team extends Model
     public function syncDiskUsed(): void
     {
         // 1. Calculate task attachments size (excluding Google Drive)
-        $taskIds = $this->tasks()->pluck('id');
+        $taskIds = $this->tasks()->toBase()->pluck('id');
         $taskSize = TaskAttachment::where('attachable_type', Task::class)
             ->whereIn('attachable_id', $taskIds)
             ->where('storage_provider', '!=', 'google')

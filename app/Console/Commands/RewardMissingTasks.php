@@ -59,7 +59,7 @@ class RewardMissingTasks extends Command
             ->get();
             
         // Es mejor mirar gamification_logs directamente
-        $completedTaskIds = Task::where('status', 'completed')->pluck('id')->toArray();
+        $completedTaskIds = Task::where('status', 'completed')->toBase()->pluck('id')->toArray();
         $loggedTaskIds = GamificationLog::where('source_type', 'App\Models\Task')
             ->whereIn('source_id', $completedTaskIds)
             ->pluck('source_id')

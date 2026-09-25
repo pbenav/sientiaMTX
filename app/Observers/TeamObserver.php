@@ -87,7 +87,7 @@ class TeamObserver
             }
 
             // Purge Time Logs associated with the team's tasks
-            \App\Models\TimeLog::whereIn('task_id', $team->tasks()->withTrashed()->pluck('id'))->delete();
+            \App\Models\TimeLog::whereIn('task_id', $team->tasks()->withTrashed()->toBase()->pluck('id'))->delete();
 
             // 6. Detach members
             $team->members()->detach();

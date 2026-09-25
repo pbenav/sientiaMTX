@@ -234,7 +234,7 @@ class TaskActionController extends Controller
                             ->whereIn('priority', $priorityValues)
                             ->whereIn('urgency', $urgencyValues)
                             ->whereNotNull('matrix_order')
-                            ->orderBy('matrix_order', 'asc')
+                            ->orderBy('matrix_order', 'asc')->toBase()
                             ->pluck('id')
                             ->toArray();
                         
@@ -262,7 +262,7 @@ class TaskActionController extends Controller
                             ->whereIn('priority', $priorityValues)
                             ->whereIn('urgency', $urgencyValues)
                             ->whereNotNull('matrix_order')
-                            ->orderBy('matrix_order', 'asc')
+                            ->orderBy('matrix_order', 'asc')->toBase()
                             ->pluck('id')
                             ->toArray();
                         

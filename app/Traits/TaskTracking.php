@@ -28,7 +28,7 @@ trait TaskTracking
         $childrenSeconds = 0;
         if ($this->children()->exists()) {
              // Efficiently calculate time from all descendants
-             $childrenIds = $this->children()->pluck('id');
+             $childrenIds = $this->children()->toBase()->pluck('id');
              $childrenLogs = \App\Models\TimeLog::whereIn('task_id', $childrenIds)->whereNotNull('end_at')->get();
              $childrenSeconds = (int) $childrenLogs->sum(fn($log) => max(0, $log->start_at->diffInSeconds($log->end_at, false)));
         }
@@ -75,7 +75,7 @@ trait TaskTracking
         // Children logs by this user
         $childrenSeconds = 0;
         if ($this->children()->exists()) {
-             $childrenIds = $this->children()->pluck('id');
+             $childrenIds = $this->children()->toBase()->pluck('id');
              $childrenLogs = \App\Models\TimeLog::whereIn('task_id', $childrenIds)->where('user_id', $userId)->whereNotNull('end_at')->get();
              $childrenSeconds = (int) $childrenLogs->sum(fn($log) => max(0, $log->start_at->diffInSeconds($log->end_at, false)));
         }
@@ -154,7 +154,7 @@ trait TaskTracking
 
         $childrenSeconds = 0;
         if ($this->children()->exists()) {
-            $childrenIds = $this->children()->pluck('id');
+            $childrenIds = $this->children()->toBase()->pluck('id');
             $childrenLogs = \App\Models\TimeLog::whereIn('task_id', $childrenIds)
                 ->where('created_at', '>=', now()->startOfDay())
                 ->get();

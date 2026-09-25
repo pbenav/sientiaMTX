@@ -81,7 +81,7 @@ class StorageController extends Controller
         }
 
         // Task attachments scoped to this team (Local only)
-        $teamTaskIds = $team->tasks()->pluck('id');
+        $teamTaskIds = $team->tasks()->toBase()->pluck('id');
         $taskAttachments = TaskAttachment::whereIn('attachable_id', $teamTaskIds)
             ->where('attachable_type', \App\Models\Task::class)
             ->where('storage_provider', 'local')
