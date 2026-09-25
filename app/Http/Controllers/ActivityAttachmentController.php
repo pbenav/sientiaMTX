@@ -24,16 +24,16 @@ class ActivityAttachmentController extends Controller
         }
 
         $request->validate([
-            'attachments' => 'required|array',
-            'attachments.*' => 'file|max:' . (\Illuminate\Http\UploadedFile::getMaxFilesize() / 1024),
+            'files' => 'required|array',
+            'files.*' => 'file|max:' . (\Illuminate\Http\UploadedFile::getMaxFilesize() / 1024),
         ]);
 
-        $totalUploadSize = collect($request->file('attachments'))->sum(fn($file) => $file->getSize());
+        $totalUploadSize = collect($request->file('files'))->sum(fn($file) => $file->getSize());
         if (!$team->hasAvailableQuota($totalUploadSize)) {
-            return back()->withErrors(['attachments' => '⚠️ El equipo ha alcanzado su límite de almacenamiento.']);
+            return back()->withErrors(['files' => '⚠️ El equipo ha alcanzado su límite de almacenamiento.']);
         }
 
-        $this->activityService->handleAttachments($activity, $request->file('attachments'));
+        $this->activityService->handleAttachments($activity, $request->file('files'));
 
         return back()->with('success', __('activities.files_uploaded'));
     }
