@@ -79,7 +79,8 @@ class ActivityController extends Controller
         $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->orderBy('name')->get();
         $expedientes = $team->expedientes()->orderBy('title')->get();
 
-        return view('teams.activities.index', compact('team', 'activities', 'filters', 'sort', 'dir', 'members', 'skills', 'expedientes'));
+        $allStatusesWithTypes = \App\Services\ActivityStatusManager::getAllStatusesWithTypes();
+        return view('teams.activities.index', compact('team', 'activities', 'filters', 'sort', 'dir', 'members', 'skills', 'expedientes', 'allStatusesWithTypes'));
     }
 
     /**
