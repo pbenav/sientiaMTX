@@ -6,7 +6,7 @@
     "color": "#9b59b6",
     "properties": {
         "title": {
-            "type": "array",
+            "type": "string",
             "required": true,
             "max_length": 255,
             "searchable": true
@@ -22,7 +22,7 @@
             "required": true
         },
         "status": {
-            "type": "array",
+            "type": "string",
             "required": false,
             "default": "active",
             "enum": [
