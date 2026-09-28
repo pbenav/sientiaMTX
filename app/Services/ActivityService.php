@@ -604,8 +604,7 @@ class ActivityService
                       ->orderBy('created_at')
                       ->visibleTo($user, $isManager);
                 }
-            ])
-            ->notEphemeral();
+            ]);
 
         // Visibilidad y Control de Jerarquía
         if ($isManager) {
