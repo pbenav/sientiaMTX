@@ -31,7 +31,13 @@ class LinkActivity extends Activity implements ExportableActivityInterface
 
     public function getUrl(): ?string
     {
-        return $this->metadata['url'] ?? null;
+        if (!empty($this->metadata['url'])) {
+            return $this->metadata['url'];
+        }
+        if (!empty($this->metadata['links']) && is_array($this->metadata['links']) && count($this->metadata['links']) > 0) {
+            return $this->metadata['links'][0]['url'] ?? null;
+        }
+        return null;
     }
 
     public function getOgTitle(): ?string

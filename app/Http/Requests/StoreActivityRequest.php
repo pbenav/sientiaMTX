@@ -154,7 +154,11 @@ class StoreActivityRequest extends FormRequest
                         $fieldRules[] = 'exists:skills,id';
                     }
 
-                    $rules[$key] = $fieldRules;
+                    // Determinar si la regla debe aplicarse en la raíz o dentro del array metadata
+                    $isBaseField = in_array($key, ['title', 'description', 'status', 'url', 'priority', 'urgency', 'progress_percentage', 'due_date', 'scheduled_date']);
+                    $ruleKey = $isBaseField ? $key : "metadata.{$key}";
+
+                    $rules[$ruleKey] = $fieldRules;
                 }
             }
         }

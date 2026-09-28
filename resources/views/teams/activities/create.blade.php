@@ -123,13 +123,10 @@
                         </div>
                     </div>
                 @elseif ($type === 'link')
-                    <!-- ENLACE ESPECÍFICO -->
+                    <!-- ENLACE ESPECÍFICO (CRUD) -->
                     <div class="bg-gray-50/50 dark:bg-gray-800/20 border border-gray-150 dark:border-gray-800 rounded-3xl p-6 mb-6">
-                        <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">{{ __('URL del Enlace') }}</label>
-                        <div>
-                            <input type="url" name="url" id="url" value="{{ old('url') }}" class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all font-mono" placeholder="https://..." required>
-                            <p class="text-[10px] text-gray-400 mt-1">{{ __('URL completa del recurso enlazado') }}</p>
-                        </div>
+                        <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Colección de Enlaces</label>
+                        <x-link-crud :initialLinks="old('metadata.links', [])" />
                     </div>
                 @elseif ($type === 'agreement')
                     <!-- DECISIÓN ESPECÍFICO -->
