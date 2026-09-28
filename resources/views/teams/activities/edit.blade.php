@@ -665,9 +665,11 @@
                     <div>
                         <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">{{ __('activities.status') ?? 'Estado' }}</label>
                         <select name="status" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none cursor-pointer">
-                            @foreach ($statuses as $val => $label)
-                                <option value="{{ $val }}" {{ old('status', $activity->status_value) === $val ? 'selected' : '' }}>
-                                    {{ $label }}
+                            @foreach ($allStatusesWithTypes as $statusKey => $data)
+                                <option value="{{ $statusKey }}"
+                                    {{ old('status', $activity->status_value) === $statusKey ? 'selected' : '' }}
+                                    {{ in_array($activity->type, $data['types']) ? '' : 'disabled class="text-gray-400 dark:text-gray-600 line-through"' }}>
+                                    {{ $data['label'] }}
                                 </option>
                             @endforeach
                         </select>

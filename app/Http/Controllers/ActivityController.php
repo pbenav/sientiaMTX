@@ -299,50 +299,9 @@ class ActivityController extends Controller
         $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->orderBy('name')->get();
         $services = $team->services()->orderBy('name')->get();
         $priorities = ['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'];
-        $allStatuses = [
-            'pending'     => 'Pendiente',
-            'in_progress' => 'En Progreso',
-            'completed'   => 'Completada',
-            'cancelled'   => 'Cancelada',
-            'blocked'     => 'Bloqueada',
-            'draft'       => 'Borrador',
-            'active'      => 'Activo',
-            'proposed'    => 'Propuesto',
-            'scheduled'   => 'Programado',
-            'uploaded'    => 'Subido',
-            'editing'     => 'En Edición',
-            'reviewed'    => 'Revisado',
-            'archived'    => 'Archivado',
-            'reviewing'   => 'En Revisión',
-            'approved'    => 'Aprobado',
-            'rejected'    => 'Rechazado',
-            'broken'      => 'Roto',
-            'published'   => 'Publicado',
-            'triggered'   => 'Disparado',
-            'dismissed'   => 'Descartado',
-            'deprecated'  => 'Deprecado'
-        ];
-        $templateLoader = app(\App\Services\TemplateLoader::class);
-        $template = $templateLoader->getTemplate($activity->type);
-        $allowedStates = array_keys($template['states'] ?? []);
+                $allStatusesWithTypes = \App\Services\ActivityStatusManager::getAllStatusesWithTypes();
 
-        $statuses = [];
-        if (!empty($allowedStates)) {
-            foreach ($allowedStates as $state) {
-                $statuses[$state] = $allStatuses[$state] ?? ucfirst($state);
-            }
-        } else {
-            $statuses = [
-                'pending'     => 'Pendiente',
-                'in_progress' => 'En Progreso',
-                'completed'   => 'Completada',
-                'cancelled'   => 'Cancelada',
-                'blocked'     => 'Bloqueada',
-            ];
-        }
-
-        return view('teams.activities.edit', compact('team', 'activity', 'members', 'groups', 'expedientes', 'parentActivities', 'skills', 'services', 'priorities', 'statuses'));
-    }
+        return view('teams.activities.edit', compact('team', 'activity', 'members', 'groups', 'expedientes', 'parentActivities', 'skills', 'services', 'priorities', 'allStatusesWithTypes'));    }
 
     /**
      * Actualiza una actividad, verificando cuota de almacenamiento y protegiendo integridad de acuerdos firmados.
