@@ -70,7 +70,6 @@
                         class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold uppercase tracking-wider py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
                         <option value="">Estado</option>
                         @php
-                        @php
                             $selectedType = $filters['type'] ?? '';
                         @endphp
                         @foreach($allStatusesWithTypes as $statusKey => $data)
