@@ -830,6 +830,14 @@
         background-color: transparent !important;
         color: #000 !important;
     }
+    /* Remove background from AI assistant wrappers or copied HTML */
+    div[class*="bg-gray-8"], div[class*="bg-gray-9"], 
+    div[class*="bg-slate-8"], div[class*="bg-slate-9"],
+    div[style*="background"],
+    .prose div, .markdown-body div,
+    .bg-gray-800, .bg-gray-900, .dark\:bg-gray-800, .dark\:bg-gray-900 {
+        background-color: transparent !important;
+    }
     pre, .prose pre {
         border: 1px solid #cbd5e1 !important;
         border-radius: 0.25rem !important;
@@ -841,7 +849,6 @@
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
     }
 }
-
         :root {
             --color-q1: #ef4444;
             /* Red   – Do First  */
@@ -1055,6 +1062,14 @@
         background-color: transparent !important;
         color: #000 !important;
     }
+    /* Remove background from AI assistant wrappers or copied HTML */
+    div[class*="bg-gray-8"], div[class*="bg-gray-9"], 
+    div[class*="bg-slate-8"], div[class*="bg-slate-9"],
+    div[style*="background"],
+    .prose div, .markdown-body div,
+    .bg-gray-800, .bg-gray-900, .dark\:bg-gray-800, .dark\:bg-gray-900 {
+        background-color: transparent !important;
+    }
     pre, .prose pre {
         border: 1px solid #cbd5e1 !important;
         border-radius: 0.25rem !important;
@@ -1066,7 +1081,6 @@
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
     }
 }
-
                                 @page { size: A4; margin: 2cm; }
                                 body { font-family: 'Merriweather', serif; color: #1e293b; line-height: 1.8; margin: 0; padding: 0; font-size: 14px; }
                                 h1, h2, h3, h4, h5, h6, .outfit { font-family: 'Outfit', sans-serif; }
@@ -1171,6 +1185,14 @@
         background-color: transparent !important;
         color: #000 !important;
     }
+    /* Remove background from AI assistant wrappers or copied HTML */
+    div[class*="bg-gray-8"], div[class*="bg-gray-9"], 
+    div[class*="bg-slate-8"], div[class*="bg-slate-9"],
+    div[style*="background"],
+    .prose div, .markdown-body div,
+    .bg-gray-800, .bg-gray-900, .dark\:bg-gray-800, .dark\:bg-gray-900 {
+        background-color: transparent !important;
+    }
     pre, .prose pre {
         border: 1px solid #cbd5e1 !important;
         border-radius: 0.25rem !important;
@@ -1182,7 +1204,6 @@
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
     }
 }
-
                         .cover-page { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; page-break-after: always; padding: 2rem; box-sizing: border-box; }
                         .cover-team { font-size: 16px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 2rem; font-family: 'Outfit', sans-serif; }
                         .cover-title { font-size: 42px; font-weight: 900; color: #0f172a; line-height: 1.2; margin-bottom: 2rem; font-family: 'Outfit', sans-serif; }

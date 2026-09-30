@@ -10,6 +10,14 @@
         background-color: transparent !important;
         color: #000 !important;
     }
+    /* Remove background from AI assistant wrappers or copied HTML */
+    div[class*="bg-gray-8"], div[class*="bg-gray-9"], 
+    div[class*="bg-slate-8"], div[class*="bg-slate-9"],
+    div[style*="background"],
+    .prose div, .markdown-body div,
+    .bg-gray-800, .bg-gray-900, .dark\:bg-gray-800, .dark\:bg-gray-900 {
+        background-color: transparent !important;
+    }
     pre, .prose pre {
         border: 1px solid #cbd5e1 !important;
         border-radius: 0.25rem !important;
@@ -21,7 +29,6 @@
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
     }
 }
-
     #map {
         height: 100%;
         width: 100%;
