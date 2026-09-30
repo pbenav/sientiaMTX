@@ -146,7 +146,7 @@ class ActivityFactory
             // ─── 3. Sincronización de Especialidades (Skills) ─────────────────
             if (!empty($core['skills']) && is_array($core['skills'])) {
                 $skillNames = array_column($core['skills'], 'name');
-                $skillIds = Skill::forTeamOrGlobal($team->id)
+                $skillIds = Skill::forTeam($team->id)
                     ->whereIn('name', $skillNames)
                     ->pluck('id');
                 $activity->skills()->sync($skillIds);

@@ -25,7 +25,7 @@ class GanttController extends Controller
             return redirect()->back()->with('warning', __('teams.unauthorized_access'));
         }
         $members = $team->members()->get();
-        $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->get();
+        $skills = \App\Models\Skill::forTeam($team->id)->get();
         $expedientes = $team->expedientes()->orderBy('created_at', 'desc')->get();
 
         // Get the exact task set that would be visible in the Gantt chart with current filters

@@ -42,7 +42,7 @@ class BuildKanbanDataAction
             'completedTasks' => $completedTasks,
             'filters' => $filters,
             'members' => $team->members,
-            'skills' => Skill::forTeamOrGlobal($team->id)->get(),
+            'skills' => Skill::forTeam($team->id)->get(),
             'expedientes' => $team->expedientes()->orderBy('created_at', 'desc')->get(),
         ];
     }

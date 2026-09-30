@@ -76,7 +76,7 @@ class ActivityController extends Controller
         $activities = $this->activityService->paginate($team, $filters, $perPage, $sort, $dir);
 
         $members = $team->members()->orderBy('name')->get();
-        $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->orderBy('name')->get();
+        $skills = \App\Models\Skill::forTeam($team->id)->orderBy('name')->get();
         $expedientes = $team->expedientes()->orderBy('title')->get();
 
         $allStatusesWithTypes = \App\Services\ActivityStatusManager::getAllStatusesWithTypes();
@@ -174,7 +174,7 @@ class ActivityController extends Controller
             ->limit(50)
             ->get();
 
-        $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->orderBy('name')->get();
+        $skills = \App\Models\Skill::forTeam($team->id)->orderBy('name')->get();
         $services = $team->services()->orderBy('name')->get();
         $priorities = ['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'];
 
@@ -297,7 +297,7 @@ class ActivityController extends Controller
             ->limit(50)
             ->get();
 
-        $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->orderBy('name')->get();
+        $skills = \App\Models\Skill::forTeam($team->id)->orderBy('name')->get();
         $services = $team->services()->orderBy('name')->get();
         $priorities = ['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'];
                 $allStatusesWithTypes = \App\Services\ActivityStatusManager::getAllStatusesWithTypes();

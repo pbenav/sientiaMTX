@@ -85,18 +85,8 @@ class Skill extends Model
      * @param int $teamId ID del equipo
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeForTeamOrGlobal($query, $teamId)
+    public function scopeForTeam($query, $teamId)
     {
-        return $query->where(function($q) use ($teamId) {
-            $q->where('team_id', $teamId)
-              ->orWhere(function($subQ) use ($teamId) {
-                  $subQ->whereNull('team_id')
-                       ->whereNotIn('name', function($nameQuery) use ($teamId) {
-                           $nameQuery->select('name')
-                                     ->from('skills')
-                                     ->where('team_id', $teamId);
-                       });
-              });
-        });
+        return $query->where('team_id', $teamId);
     }
 }

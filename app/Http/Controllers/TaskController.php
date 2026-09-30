@@ -150,7 +150,7 @@ class TaskController extends Controller
             $tasks = $query->paginate($perPage)->withQueryString();
         }
         $members = $team->members;
-        $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->get();
+        $skills = \App\Models\Skill::forTeam($team->id)->get();
         $hideCompleted = session('hide_completed_tasks', true);
 
         $services = $team->services()->with(['reports' => function($q) {
@@ -181,7 +181,7 @@ class TaskController extends Controller
         $groups = $team->groups;
         $priorities = ['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'];
         $tasks = $team->tasks()->with('assignedUser')->orderBy('title')->get();
-        $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->orderBy('name')->get();
+        $skills = \App\Models\Skill::forTeam($team->id)->orderBy('name')->get();
         $services = $team->services()->orderBy('name')->get();
 
         $referer = request()->headers->get('referer');

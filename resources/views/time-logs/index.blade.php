@@ -384,7 +384,7 @@
                 <div class="p-6">
                     <div class="flex flex-wrap justify-between gap-y-6 gap-x-2">
                         @php
-                            $allSkills = \App\Models\Skill::forTeamOrGlobal($team->id)->orderBy('name')->get();
+                            $allSkills = \App\Models\Skill::forTeam($team->id)->orderBy('name')->get();
                             $memberIds = $team->members->pluck('id');
                             
                             // Collective XP: Summing from all members, grouping by name to handle shadowing
@@ -428,15 +428,9 @@
 
                             $levelThresholds = [1 => 0, 2 => 30, 3 => 100, 4 => 300, 5 => 1000]; // Adjusted for better early reward
                         
-                            $filteredSkills = $allSkills->filter(function($skill) use ($team, $potentialXp, $completedTaskCount) {
-                                if ($skill->team_id === $team->id) return true;
-                                $planData = $potentialXp->get($skill->name);
-                                $pendingCount = $planData ? $planData->count : 0;
-                                $completedCount = $completedTaskCount->get($skill->name, 0);
-                                return ($pendingCount + $completedCount) > 0;
-                            });
+
                         @endphp
-                        @if($filteredSkills->isEmpty())
+                        @if($allSkills->isEmpty())
                             <div class="w-full text-center py-6 flex flex-col items-center">
                                 <div class="w-12 h-12 bg-gray-50 dark:bg-gray-800/50 rounded-full flex items-center justify-center mb-3 text-gray-400">
                                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -446,7 +440,7 @@
                                 <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Este equipo aún no ha desarrollado habilidades</p>
                             </div>
                         @else
-                            @foreach($filteredSkills as $skill)
+                            @foreach($allSkills as $skill)
                             @php
                                 $xp = $collectiveXp->get($skill->name, 0);
                                 $planData = $potentialXp->get($skill->name);

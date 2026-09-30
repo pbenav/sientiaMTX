@@ -310,7 +310,7 @@ class TeamController extends Controller
             });
         }
 
-        $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->get();
+        $skills = \App\Models\Skill::forTeam($team->id)->get();
 
 
         $allTasks = $query->get();
