@@ -999,33 +999,7 @@
                                         }
                                     }
                                 <\/script>
-                                <style>
-@media print {
-    /* -- Print Mode Code Block Fix -- */
-    pre, code, pre *, code *, .prose pre, .prose code {
-        background-color: transparent !important;
-        color: #000 !important;
-    }
-    /* Remove background from AI assistant wrappers or copied HTML */
-    div[class*="bg-gray-8"], div[class*="bg-gray-9"], 
-    div[class*="bg-slate-8"], div[class*="bg-slate-9"],
-    div[style*="background"],
-    .prose div, .markdown-body div,
-    .bg-gray-800, .bg-gray-900, .dark\:bg-gray-800, .dark\:bg-gray-900 {
-        background-color: transparent !important;
-    }
-    pre, .prose pre {
-        border: 1px solid #cbd5e1 !important;
-        border-radius: 0.25rem !important;
-        white-space: pre-wrap !important;
-        word-break: break-all !important;
-        padding: 0.5rem !important;
-    }
-    code, .prose code {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
-    }
-}
-                                    body {
+                                <style>@media print{/* -- Print Mode Code Block Fix -- */pre,code,pre *,code *,.prose pre,.prose code{background-color:transparent!important;color:#000!important}div[class*="bg-gray-8"],div[class*="bg-gray-9"],div[class*="bg-slate-8"],div[class*="bg-slate-9"],div[style*="background"],.prose div,.markdown-body div,.bg-gray-800,.bg-gray-900,.dark\\:bg-gray-800,.dark\\:bg-gray-900{background-color:transparent!important}pre,.prose pre{border:1px solid #cbd5e1!important;border-radius:0.25rem!important;white-space:pre-wrap!important;word-break:break-all!important;padding:0.5rem!important}code,.prose code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace!important}}body {
                                         font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
                                         padding: 40px 60px;
                                         color: #1e293b;
@@ -1263,33 +1237,7 @@
                                         }
                                     }
                                 <\/script>
-                                <style>
-@media print {
-    /* -- Print Mode Code Block Fix -- */
-    pre, code, pre *, code *, .prose pre, .prose code {
-        background-color: transparent !important;
-        color: #000 !important;
-    }
-    /* Remove background from AI assistant wrappers or copied HTML */
-    div[class*="bg-gray-8"], div[class*="bg-gray-9"], 
-    div[class*="bg-slate-8"], div[class*="bg-slate-9"],
-    div[style*="background"],
-    .prose div, .markdown-body div,
-    .bg-gray-800, .bg-gray-900, .dark\:bg-gray-800, .dark\:bg-gray-900 {
-        background-color: transparent !important;
-    }
-    pre, .prose pre {
-        border: 1px solid #cbd5e1 !important;
-        border-radius: 0.25rem !important;
-        white-space: pre-wrap !important;
-        word-break: break-all !important;
-        padding: 0.5rem !important;
-    }
-    code, .prose code {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
-    }
-}
-                                    body {
+                                <style>@media print{/* -- Print Mode Code Block Fix -- */pre,code,pre *,code *,.prose pre,.prose code{background-color:transparent!important;color:#000!important}div[class*="bg-gray-8"],div[class*="bg-gray-9"],div[class*="bg-slate-8"],div[class*="bg-slate-9"],div[style*="background"],.prose div,.markdown-body div,.bg-gray-800,.bg-gray-900,.dark\\:bg-gray-800,.dark\\:bg-gray-900{background-color:transparent!important}pre,.prose pre{border:1px solid #cbd5e1!important;border-radius:0.25rem!important;white-space:pre-wrap!important;word-break:break-all!important;padding:0.5rem!important}code,.prose code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace!important}}body {
                                         font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
                                         padding: 40px 60px;
                                         color: #1e293b;
@@ -1484,33 +1432,7 @@
                             '    <meta charset="UTF-8">',
                             '    <title>Ficha Técnica - ' + taskTitle + '</title>',
                             '    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">',
-                            '    <style>
-@media print {
-    /* -- Print Mode Code Block Fix -- */
-    pre, code, pre *, code *, .prose pre, .prose code {
-        background-color: transparent !important;
-        color: #000 !important;
-    }
-    /* Remove background from AI assistant wrappers or copied HTML */
-    div[class*="bg-gray-8"], div[class*="bg-gray-9"], 
-    div[class*="bg-slate-8"], div[class*="bg-slate-9"],
-    div[style*="background"],
-    .prose div, .markdown-body div,
-    .bg-gray-800, .bg-gray-900, .dark\:bg-gray-800, .dark\:bg-gray-900 {
-        background-color: transparent !important;
-    }
-    pre, .prose pre {
-        border: 1px solid #cbd5e1 !important;
-        border-radius: 0.25rem !important;
-        white-space: pre-wrap !important;
-        word-break: break-all !important;
-        padding: 0.5rem !important;
-    }
-    code, .prose code {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
-    }
-}
-',
+                            '    <style>@media print{/* -- Print Mode Code Block Fix -- */pre,code,pre *,code *,.prose pre,.prose code{background-color:transparent!important;color:#000!important}div[class*="bg-gray-8"],div[class*="bg-gray-9"],div[class*="bg-slate-8"],div[class*="bg-slate-9"],div[style*="background"],.prose div,.markdown-body div,.bg-gray-800,.bg-gray-900,.dark\\:bg-gray-800,.dark\\:bg-gray-900{background-color:transparent!important}pre,.prose pre{border:1px solid #cbd5e1!important;border-radius:0.25rem!important;white-space:pre-wrap!important;word-break:break-all!important;padding:0.5rem!important}code,.prose code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace!important}}',
                             '      ' + (!withHeaders ? '.header, .side-accent { display: none !important; }' : ''),
                             '      @page { size: A4; margin: 0; }',
                             '      body { font-family: \'Outfit\', sans-serif; color: #1e293b; line-height: 1.2; margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }',

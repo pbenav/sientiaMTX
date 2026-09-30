@@ -581,33 +581,7 @@
     @push('scripts')
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
-    <style>
-@media print {
-    /* -- Print Mode Code Block Fix -- */
-    pre, code, pre *, code *, .prose pre, .prose code {
-        background-color: transparent !important;
-        color: #000 !important;
-    }
-    /* Remove background from AI assistant wrappers or copied HTML */
-    div[class*="bg-gray-8"], div[class*="bg-gray-9"], 
-    div[class*="bg-slate-8"], div[class*="bg-slate-9"],
-    div[style*="background"],
-    .prose div, .markdown-body div,
-    .bg-gray-800, .bg-gray-900, .dark\:bg-gray-800, .dark\:bg-gray-900 {
-        background-color: transparent !important;
-    }
-    pre, .prose pre {
-        border: 1px solid #cbd5e1 !important;
-        border-radius: 0.25rem !important;
-        white-space: pre-wrap !important;
-        word-break: break-all !important;
-        padding: 0.5rem !important;
-    }
-    code, .prose code {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
-    }
-}
-        /* Bulletproof Modern TomSelect Wrapper */
+    <style>@media print{/* -- Print Mode Code Block Fix -- */pre,code,pre *,code *,.prose pre,.prose code{background-color:transparent!important;color:#000!important}div[class*="bg-gray-8"],div[class*="bg-gray-9"],div[class*="bg-slate-8"],div[class*="bg-slate-9"],div[style*="background"],.prose div,.markdown-body div,.bg-gray-800,.bg-gray-900,.dark\\:bg-gray-800,.dark\\:bg-gray-900{background-color:transparent!important}pre,.prose pre{border:1px solid #cbd5e1!important;border-radius:0.25rem!important;white-space:pre-wrap!important;word-break:break-all!important;padding:0.5rem!important}code,.prose code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace!important}}/* Bulletproof Modern TomSelect Wrapper */
         .ts-control {
             border-radius: 0.75rem !important;
             border-width: 1px !important;
@@ -847,33 +821,7 @@
                         <head>
                             <title>${threadTitle} - Impresión</title>
                             <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet">
-                            <style>
-@media print {
-    /* -- Print Mode Code Block Fix -- */
-    pre, code, pre *, code *, .prose pre, .prose code {
-        background-color: transparent !important;
-        color: #000 !important;
-    }
-    /* Remove background from AI assistant wrappers or copied HTML */
-    div[class*="bg-gray-8"], div[class*="bg-gray-9"], 
-    div[class*="bg-slate-8"], div[class*="bg-slate-9"],
-    div[style*="background"],
-    .prose div, .markdown-body div,
-    .bg-gray-800, .bg-gray-900, .dark\:bg-gray-800, .dark\:bg-gray-900 {
-        background-color: transparent !important;
-    }
-    pre, .prose pre {
-        border: 1px solid #cbd5e1 !important;
-        border-radius: 0.25rem !important;
-        white-space: pre-wrap !important;
-        word-break: break-all !important;
-        padding: 0.5rem !important;
-    }
-    code, .prose code {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
-    }
-}
-                                @page { size: A4; margin: 1.5cm; }
+                            <style>@media print{/* -- Print Mode Code Block Fix -- */pre,code,pre *,code *,.prose pre,.prose code{background-color:transparent!important;color:#000!important}div[class*="bg-gray-8"],div[class*="bg-gray-9"],div[class*="bg-slate-8"],div[class*="bg-slate-9"],div[style*="background"],.prose div,.markdown-body div,.bg-gray-800,.bg-gray-900,.dark\\:bg-gray-800,.dark\\:bg-gray-900{background-color:transparent!important}pre,.prose pre{border:1px solid #cbd5e1!important;border-radius:0.25rem!important;white-space:pre-wrap!important;word-break:break-all!important;padding:0.5rem!important}code,.prose code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace!important}}@page { size: A4; margin: 1.5cm; }
                                 svg { max-width: 16px !important; max-height: 16px !important; width: 16px !important; height: 16px !important; display: inline-block; vertical-align: middle; }
                                 body {
                                     font-family: 'Outfit', -apple-system, sans-serif;

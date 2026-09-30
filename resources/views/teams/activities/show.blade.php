@@ -738,33 +738,7 @@
                         '<meta charset="UTF-8">' +
                         '<title>Ficha T\u00e9cnica - ' + taskTitle + '</title>' +
                         '<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">' +
-                        '<style>
-@media print {
-    /* -- Print Mode Code Block Fix -- */
-    pre, code, pre *, code *, .prose pre, .prose code {
-        background-color: transparent !important;
-        color: #000 !important;
-    }
-    /* Remove background from AI assistant wrappers or copied HTML */
-    div[class*="bg-gray-8"], div[class*="bg-gray-9"], 
-    div[class*="bg-slate-8"], div[class*="bg-slate-9"],
-    div[style*="background"],
-    .prose div, .markdown-body div,
-    .bg-gray-800, .bg-gray-900, .dark\:bg-gray-800, .dark\:bg-gray-900 {
-        background-color: transparent !important;
-    }
-    pre, .prose pre {
-        border: 1px solid #cbd5e1 !important;
-        border-radius: 0.25rem !important;
-        white-space: pre-wrap !important;
-        word-break: break-all !important;
-        padding: 0.5rem !important;
-    }
-    code, .prose code {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
-    }
-}
-' + css + '</style></head><body>' +
+                        '<style>@media print{/* -- Print Mode Code Block Fix -- */pre,code,pre *,code *,.prose pre,.prose code{background-color:transparent!important;color:#000!important}div[class*="bg-gray-8"],div[class*="bg-gray-9"],div[class*="bg-slate-8"],div[class*="bg-slate-9"],div[style*="background"],.prose div,.markdown-body div,.bg-gray-800,.bg-gray-900,.dark\\:bg-gray-800,.dark\\:bg-gray-900{background-color:transparent!important}pre,.prose pre{border:1px solid #cbd5e1!important;border-radius:0.25rem!important;white-space:pre-wrap!important;word-break:break-all!important;padding:0.5rem!important}code,.prose code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace!important}}' + css + '</style></head><body>' +
                         '<div class="sheet">' +
                         '  <div class="side-accent"></div>' +
                         '  <header class="header">' +
@@ -1268,33 +1242,7 @@
     @push('scripts')
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
-    <style>
-@media print {
-    /* -- Print Mode Code Block Fix -- */
-    pre, code, pre *, code *, .prose pre, .prose code {
-        background-color: transparent !important;
-        color: #000 !important;
-    }
-    /* Remove background from AI assistant wrappers or copied HTML */
-    div[class*="bg-gray-8"], div[class*="bg-gray-9"], 
-    div[class*="bg-slate-8"], div[class*="bg-slate-9"],
-    div[style*="background"],
-    .prose div, .markdown-body div,
-    .bg-gray-800, .bg-gray-900, .dark\:bg-gray-800, .dark\:bg-gray-900 {
-        background-color: transparent !important;
-    }
-    pre, .prose pre {
-        border: 1px solid #cbd5e1 !important;
-        border-radius: 0.25rem !important;
-        white-space: pre-wrap !important;
-        word-break: break-all !important;
-        padding: 0.5rem !important;
-    }
-    code, .prose code {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
-    }
-}
-        /* Estilos personalizados para TomSelect dentro de SweetAlert */
+    <style>@media print{/* -- Print Mode Code Block Fix -- */pre,code,pre *,code *,.prose pre,.prose code{background-color:transparent!important;color:#000!important}div[class*="bg-gray-8"],div[class*="bg-gray-9"],div[class*="bg-slate-8"],div[class*="bg-slate-9"],div[style*="background"],.prose div,.markdown-body div,.bg-gray-800,.bg-gray-900,.dark\\:bg-gray-800,.dark\\:bg-gray-900{background-color:transparent!important}pre,.prose pre{border:1px solid #cbd5e1!important;border-radius:0.25rem!important;white-space:pre-wrap!important;word-break:break-all!important;padding:0.5rem!important}code,.prose code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace!important}}/* Estilos personalizados para TomSelect dentro de SweetAlert */
         .swal2-html-container .ts-wrapper {
             border: none !important;
             background: transparent !important;
