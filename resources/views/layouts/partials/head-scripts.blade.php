@@ -824,6 +824,24 @@
     </script>
 
     <style>
+@media print {
+    /* -- Print Mode Code Block Fix -- */
+    pre, code, pre *, code *, .prose pre, .prose code {
+        background-color: transparent !important;
+        color: #000 !important;
+    }
+    pre, .prose pre {
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 0.25rem !important;
+        white-space: pre-wrap !important;
+        word-break: break-all !important;
+        padding: 0.5rem !important;
+    }
+    code, .prose code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+    }
+}
+
         :root {
             --color-q1: #ef4444;
             /* Red   – Do First  */
@@ -1031,6 +1049,24 @@
                             <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Merriweather:wght@300;400;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
                             <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"><\/script>
                             <style>
+@media print {
+    /* -- Print Mode Code Block Fix -- */
+    pre, code, pre *, code *, .prose pre, .prose code {
+        background-color: transparent !important;
+        color: #000 !important;
+    }
+    pre, .prose pre {
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 0.25rem !important;
+        white-space: pre-wrap !important;
+        word-break: break-all !important;
+        padding: 0.5rem !important;
+    }
+    code, .prose code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+    }
+}
+
                                 @page { size: A4; margin: 2cm; }
                                 body { font-family: 'Merriweather', serif; color: #1e293b; line-height: 1.8; margin: 0; padding: 0; font-size: 14px; }
                                 h1, h2, h3, h4, h5, h6, .outfit { font-family: 'Outfit', sans-serif; }
@@ -1129,6 +1165,24 @@
 
                 const extraStyles = `
                     <style>
+@media print {
+    /* -- Print Mode Code Block Fix -- */
+    pre, code, pre *, code *, .prose pre, .prose code {
+        background-color: transparent !important;
+        color: #000 !important;
+    }
+    pre, .prose pre {
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 0.25rem !important;
+        white-space: pre-wrap !important;
+        word-break: break-all !important;
+        padding: 0.5rem !important;
+    }
+    code, .prose code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+    }
+}
+
                         .cover-page { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; page-break-after: always; padding: 2rem; box-sizing: border-box; }
                         .cover-team { font-size: 16px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 2rem; font-family: 'Outfit', sans-serif; }
                         .cover-title { font-size: 42px; font-weight: 900; color: #0f172a; line-height: 1.2; margin-bottom: 2rem; font-family: 'Outfit', sans-serif; }

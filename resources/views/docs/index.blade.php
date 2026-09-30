@@ -153,6 +153,24 @@
 
     @push('scripts')
     <style>
+@media print {
+    /* -- Print Mode Code Block Fix -- */
+    pre, code, pre *, code *, .prose pre, .prose code {
+        background-color: transparent !important;
+        color: #000 !important;
+    }
+    pre, .prose pre {
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 0.25rem !important;
+        white-space: pre-wrap !important;
+        word-break: break-all !important;
+        padding: 0.5rem !important;
+    }
+    code, .prose code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+    }
+}
+
         @media (max-width: 767px) {
             #docs-sidebar { display: none !important; }
             #docs-mobile-toggle { display: block !important; }
