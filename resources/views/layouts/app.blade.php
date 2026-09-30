@@ -62,14 +62,13 @@
            directives used in this layout. */
         [data-fouc-hide] { display: none !important; }
 
-        /* Forzar que el cursor del ratón nunca desaparezca en modales y backdrops de SweetAlert2 */
-        body.swal2-shown,
-        body.swal2-shown *,
-        .swal2-container,
-        .swal2-container *,
-        .swal2-popup,
-        .swal2-modal,
-        .swal2-backdrop-show {
+        /* Forzar que el cursor del ratón nunca desaparezca en modales y backdrops de SweetAlert2,
+           pero excluimos explícitamente los Toasts para que no bloqueen la interfaz. */
+        body.swal2-shown:not(.swal2-toast-shown) .swal2-container,
+        body.swal2-shown:not(.swal2-toast-shown) .swal2-container *,
+        body.swal2-shown:not(.swal2-toast-shown) .swal2-popup,
+        body.swal2-shown:not(.swal2-toast-shown) .swal2-modal,
+        body.swal2-shown:not(.swal2-toast-shown) .swal2-backdrop-show {
             cursor: auto !important;
             pointer-events: auto !important;
         }
