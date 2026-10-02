@@ -844,7 +844,7 @@
                                 .print-meta { font-size: 11px; color: #64748b; }
                                 .print-message {
                                     border: 1px solid #e2e8f0;
-                                    border-radius: 10px;
+                                    border-radius: 0;
                                     padding: 1rem;
                                     margin-bottom: 1rem;
                                     background: #fff;
