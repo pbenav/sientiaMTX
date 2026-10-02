@@ -874,9 +874,18 @@
                 `);
                 printWin.document.close();
                 printWin.focus();
-                setTimeout(() => {
-                    printWin.print();
-                }, 500);
+                
+                const runPrint = () => {
+                    setTimeout(() => {
+                        printWin.print();
+                    }, 400);
+                };
+
+                if (printWin.document.readyState === 'complete') {
+                    runPrint();
+                } else {
+                    printWin.onload = runPrint;
+                }
             };
 
             function editMessage(messageId, content) {
