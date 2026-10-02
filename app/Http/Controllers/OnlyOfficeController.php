@@ -31,11 +31,23 @@ class OnlyOfficeController extends Controller
         }
         $apiUrl = $serverUrl . '/web-apps/apps/api/documents/api.js';
 
+        $baseUrl = rtrim(config('onlyoffice.internal_app_url', config('app.url')), '/');
+        $downloadUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+            'onlyoffice.download',
+            now()->addHours(2),
+            ['attachment' => $attachment->id]
+        );
+        $appUrl = rtrim(config('app.url'), '/');
+        if ($baseUrl !== $appUrl) {
+            $downloadUrl = str_replace($appUrl, $baseUrl, $downloadUrl);
+        }
+        $callbackUrl = $baseUrl . '/onlyoffice/callback/' . $attachment->id;
+
         $config = $this->onlyOfficeService->buildConfig(
             $attachment,
             auth()->user(),
-            route('onlyoffice.callback', $attachment),
-            route('onlyoffice.download', $attachment),
+            $callbackUrl,
+            $downloadUrl,
             $attachment->file_name,
             'edit'
         );
@@ -141,11 +153,23 @@ class OnlyOfficeController extends Controller
         }
         $apiUrl = $serverUrl . '/web-apps/apps/api/documents/api.js';
 
+        $baseUrl = rtrim(config('onlyoffice.internal_app_url', config('app.url')), '/');
+        $downloadUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+            'onlyoffice.activity.download',
+            now()->addHours(2),
+            ['attachment' => $attachment->id]
+        );
+        $appUrl = rtrim(config('app.url'), '/');
+        if ($baseUrl !== $appUrl) {
+            $downloadUrl = str_replace($appUrl, $baseUrl, $downloadUrl);
+        }
+        $callbackUrl = $baseUrl . '/onlyoffice/activity-callback/' . $attachment->id;
+
         $config = $this->onlyOfficeService->buildConfig(
             $attachment,
             auth()->user(),
-            route('onlyoffice.activity.callback', $attachment),
-            route('onlyoffice.activity.download', $attachment),
+            $callbackUrl,
+            $downloadUrl,
             $attachment->file_name,
             'edit'
         );

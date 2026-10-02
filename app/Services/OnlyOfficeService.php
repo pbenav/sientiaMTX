@@ -46,7 +46,10 @@ class OnlyOfficeService
         ];
 
         if (!empty($secret)) {
-            $config['token'] = JWT::encode($config, $secret, 'HS256');
+            $payload = $config;
+            $payload['iat'] = time();
+            $payload['exp'] = time() + (60 * 60);
+            $config['token'] = JWT::encode($payload, $secret, 'HS256');
         }
 
         return $config;
