@@ -108,7 +108,7 @@
 
                         <div class="my-2 border-t border-gray-100 dark:border-gray-800"></div>
 
-                        <button onclick="window.print()" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                        <button onclick="promptSurveyPrint()" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                             <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                             {{ __('Imprimir Informe') }}
                         </button>
@@ -195,7 +195,7 @@
                                     </h2>
                                     <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">{{ __('Métricas clave y participación en tiempo real') }}</p>
                                 </div>
-                                <button onclick="window.print()" class="print-hide flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-indigo-500/20 active:scale-95">
+                                <button onclick="promptSurveyPrint()" class="print-hide flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-indigo-500/20 active:scale-95">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                                     {{ __('Imprimir Reporte') }}
                                 </button>
@@ -792,6 +792,11 @@
 
             .print-hide { display: none !important; }
 
+        @media screen {
+            .print-only-header { display: none !important; }
+        }
+
+
             body {
                 background: white !important;
                 -webkit-print-color-adjust: exact !important;
@@ -933,7 +938,7 @@
         <div class="w-px h-5 bg-gray-100 dark:bg-gray-800"></div>
 
         <div class="flex items-center gap-1">
-            <button onclick="window.print()" class="p-2 text-gray-400 hover:text-indigo-600 transition-colors rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-500/10" title="{{ __('Imprimir Informe') }}">
+            <button onclick="promptSurveyPrint()" class="p-2 text-gray-400 hover:text-indigo-600 transition-colors rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-500/10" title="{{ __('Imprimir Informe') }}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
             </button>
 
@@ -1006,4 +1011,85 @@
             </script>
         @endpush
     @endif
+
+    <script>
+        function promptSurveyPrint() {
+            const isDark = document.documentElement.classList.contains('dark');
+            Swal.fire({
+                title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Opciones de Impresión</span>',
+                background: isDark ? '#0f172a' : '#ffffff',
+                color: isDark ? '#f3f4f6' : '#1f2937',
+                showConfirmButton: false,
+                showCloseButton: true,
+                customClass: {
+                    popup: 'rounded-[2.5rem] shadow-2xl border border-gray-200 dark:border-gray-800 p-6',
+                },
+                html: `
+                    <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-6 text-center px-4">
+                        ¿Deseas incluir las cabeceras corporativas y la marca de agua de SientiaMTX?
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-2">
+                        <button type="button" id="print-btn-with" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-indigo-100 dark:border-indigo-950 bg-indigo-50/50 dark:bg-indigo-950/30 hover:border-indigo-600 transition-all text-center group">
+                            <div class="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform shadow-sm">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            </div>
+                            <div class="font-black text-[10px] uppercase tracking-widest text-indigo-700 dark:text-indigo-300">Con Cabeceras</div>
+                            <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Reporte oficial</div>
+                        </button>
+                        <button type="button" id="print-btn-without" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-slate-900 hover:border-gray-600 transition-all text-center group">
+                            <div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 group-hover:scale-110 transition-transform shadow-sm">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                            </div>
+                            <div class="font-black text-[10px] uppercase tracking-widest text-gray-700 dark:text-gray-300">Sin Cabeceras</div>
+                            <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Contenido limpio</div>
+                        </button>
+                    </div>
+                `,
+                didOpen: () => {
+                    document.getElementById('print-btn-with').onclick = () => {
+                        Swal.close();
+                        executeSurveyPrint(true);
+                    };
+                    document.getElementById('print-btn-without').onclick = () => {
+                        Swal.close();
+                        executeSurveyPrint(false);
+                    };
+                }
+            });
+        }
+
+        function executeSurveyPrint(withHeaders) {
+            let headerEl = document.getElementById('mtx-survey-print-header');
+            if (withHeaders) {
+                if (!headerEl) {
+                    headerEl = document.createElement('div');
+                    headerEl.id = 'mtx-survey-print-header';
+                    headerEl.className = 'print-only-header hidden';
+                    headerEl.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #e5e7eb; padding-bottom: 12px; margin-bottom: 24px;">
+                            <div>
+                                <h1 style="font-size: 24pt; font-weight: 900; color: #111827; margin: 0; letter-spacing: -0.02em;">sientia<em style="color:#7c3aed; font-style:normal;">MTX</em></h1>
+                                <div style="font-size: 10pt; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px;">Reporte de Encuesta</div>
+                            </div>
+                            <div style="text-align: right; font-size: 9pt; color: #9ca3af;">
+                                <div>{{ $survey->title }}</div>
+                                <div>Generado el ${new Date().toLocaleDateString()}</div>
+                            </div>
+                        </div>
+                    `;
+                    document.body.prepend(headerEl);
+                }
+                headerEl.style.display = 'block';
+            } else {
+                if (headerEl) headerEl.style.display = 'none';
+            }
+            
+            // Allow DOM to update before printing
+            setTimeout(() => {
+                window.print();
+                if (headerEl) headerEl.style.display = 'none';
+            }, 100);
+        }
+    </script>
+
 </x-app-layout>
