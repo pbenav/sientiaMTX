@@ -112,7 +112,7 @@ class AppointmentController extends Controller
 
         $appointments = $filterAction->execute($team, $request);
 
-        return view('teams.appointments.list', compact('team', 'appointments'));
+        return view('appointments.list', compact('team', 'appointments'));
     }
 
     /**
