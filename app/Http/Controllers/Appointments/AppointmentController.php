@@ -111,8 +111,13 @@ class AppointmentController extends Controller
         }
 
         $appointments = $filterAction->execute($team, $request);
+        
+        $services = \App\Models\AppointmentService::where('team_id', $team->id)
+            ->where('user_id', auth()->id())
+            ->orderBy('name')
+            ->get();
 
-        return view('appointments.list', compact('team', 'appointments'));
+        return view('appointments.list', compact('team', 'appointments', 'services'));
     }
 
     /**
