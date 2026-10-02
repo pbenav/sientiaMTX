@@ -193,11 +193,28 @@
                         if (slider) {
                             slider.value = data.progress;
                             const fl = slider.parentElement.querySelector('.progress-fill');
-                            if (fl) fl.style.width = data.progress + '%';
+                            if (fl) {
+                                fl.style.width = data.progress + '%';
+                                if (data.progress == 100) {
+                                    fl.classList.remove('bg-violet-500');
+                                    fl.classList.add('bg-emerald-500');
+                                } else {
+                                    fl.classList.add('bg-violet-500');
+                                    fl.classList.remove('bg-emerald-500');
+                                }
+                            }
                             const th = slider.parentElement.querySelector('.progress-thumb');
                             if (th) {
                                 th.style.left = data.progress + '%';
                                 th.style.marginLeft = data.progress == 0 ? '8px' : (data.progress == 100 ? '-8px' : '0');
+                            }
+                        }
+                        const archiveBtn = card.querySelector('.archive-task-btn');
+                        if (archiveBtn) {
+                            if (data.progress == 100) {
+                                archiveBtn.classList.remove('hidden');
+                            } else {
+                                archiveBtn.classList.add('hidden');
                             }
                         }
                         const label = card.querySelector('.progress-text') || card.querySelector('.progress-label');

@@ -117,9 +117,9 @@
         <div class="shrink-0 flex flex-col items-end gap-1.5">
             <div class="flex items-center gap-1.5">
                 @include('tasks.partials.task-timer-button')
-                @if($showBadges && !$task->is_archived && ($task->isCompleted() || $column?->type === 'done'))
+                @if($showBadges && !$task->is_archived)
                     <button onclick="archiveTask({{ $task->id }})" 
-                            class="p-1 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-500 hover:text-emerald-600 transition-colors"
+                            class="archive-task-btn p-1 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-500 hover:text-emerald-600 transition-colors {{ ($task->isCompleted() || $column?->type === 'done') ? '' : 'hidden' }}"
                             title="{{ __('tasks.mark_as_completed_and_archive') }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
