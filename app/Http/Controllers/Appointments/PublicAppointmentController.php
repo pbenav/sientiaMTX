@@ -28,21 +28,7 @@ class PublicAppointmentController extends Controller
      * Normaliza un email eliminando los puntos del alias y todo lo que haya después del '+'
      * (útil para evitar que los usuarios hagan bypass de los límites de cuenta usando trucos de Gmail/etc).
      */
-    protected function normalizeEmail(?string $email): ?string
-    {
-        if (!$email) return null;
-        
-        $email = strtolower(trim($email));
-        $parts = explode('@', $email);
-        
-        if (count($parts) === 2) {
-            $localPart = $parts[0];
-            
-            // Eliminar alias con '+' (e.g. user+spam@gmail.com -> user@gmail.com)
-            if (($plusPos = strpos($localPart, '+')) !== false) {
-                $localPart = substr($localPart, 0, $plusPos);
-            }
-            
+                
             // Eliminar puntos
             $localPart = str_replace('.', '', $localPart);
             
@@ -283,263 +269,15 @@ class PublicAppointmentController extends Controller
     /**
      * Formulario de reserva: guardar.
      */
-    public function store(Request $request, AppointmentService $service)
+    public function store(\App\Http\Requests\Appointments\StorePublicAppointmentRequest $request, AppointmentService $service, \App\Actions\Appointments\BookPublicAppointmentAction $bookAction, \App\Services\Appointments\AppointmentPostBookingService $postBookingService)
     {
-        $settings = $service->user->appointmentSettingsForTeam($service->team_id);
-        if (!$settings || !$settings->is_public || !$service->user->hasAppointmentsEnabledForTeam($service->team_id)) {
-            abort(404);
-        }
-
-        $validationRules = [
-            'first_name'    => 'required|string|max:100',
-            'last_name'     => 'required|string|max:150',
-            'dni'           => ['required', 'string', 'max:20', new DniNie],
-            'email'         => 'nullable|email:rfc,dns|max:255',
-            'phone'         => ['nullable', 'string', 'max:20', 'regex:/^(\+?[0-9\s\-\.\(\)]{6,20})$/'],
-            'city'          => 'nullable|string|max:100',
-            'postal_code'   => 'nullable|string|max:10',
-            'observations'  => 'nullable|string|max:2000',
-            'consent_email' => 'boolean',
-            'consent_data'  => 'required|accepted',
-            'consent_legal' => 'required|accepted',
-            'appointment_date' => 'required|date|after_or_equal:today',
-            'appointment_time' => 'required|string',
-            'modality'         => 'required|string|in:presencial,jitsi,meet',
-        ];
-
-        if (!empty($service->custom_fields)) {
-            $validationRules['custom_fields_values'] = 'nullable|array';
-            foreach ($service->custom_fields as $field) {
-                $rule = $field['is_required'] ? 'required' : 'nullable';
-                if ($field['type'] === 'number') {
-                    $rule .= '|numeric';
-                } elseif ($field['type'] === 'date') {
-                    $rule .= '|date';
-                } else {
-                    $rule .= '|string|max:2000';
-                }
-                $validationRules['custom_fields_values.' . $field['id']] = $rule;
-            }
-        }
-
-        $data = $request->validate($validationRules);
-
-        $date = Carbon::parse($data['appointment_date']);
-
-        // Traducir caracteres árabes si existen
-        $firstName = $this->transliterateArabic($data['first_name']);
-        $lastName = $this->transliterateArabic($data['last_name']);
-
-        $checkData = array_merge($data, [
-            'first_name' => $firstName,
-            'last_name' => $lastName,
-        ]);
-
-        // Validación avanzada de email si se proporciona (después de la validación de formato)
-        if (!empty($data['email'])) {
-            $validationResult = $this->emailValidation->verify($data['email']);
-            
-            \Log::info('Public appointment email validation', [
-                'email' => $data['email'],
-                'valid' => $validationResult['valid'],
-                'reason' => $validationResult['reason'] ?? null,
-                'method' => $validationResult['method'] ?? null,
-                'ip' => $request->ip(),
-            ]);
-            
-            if (!$validationResult['valid']) {
-                return back()
-                    ->withErrors(['email' => 'El correo electrónico no parece existir. Por favor, verifica que sea correcto.'])
-                    ->withInput();
-            }
-        }
-
-        if (!empty($data['dni'])) {
-            $existingDniVisitor = \App\Models\AppointmentVisitor::where('dni', $data['dni'])->first();
-            if ($existingDniVisitor) {
-                if ($this->isDifferentPerson($checkData, $existingDniVisitor)) {
-                    return back()->withErrors(['dni' => 'Este DNI o documento ya está registrado a nombre de otra persona. Comprueba los datos introducidos.'])->withInput();
-                }
-            }
-        }
-
-        $normalizedEmail = null;
-        if (!empty($data['email'])) {
-            $normalizedEmail = $this->normalizeEmail($data['email']);
-            
-            $existingEmailVisitor = \App\Models\AppointmentVisitor::where(function($q) use ($data, $normalizedEmail) {
-                $q->where('email', $data['email'])
-                  ->orWhereRaw("CONCAT(REPLACE(SUBSTRING_INDEX(SUBSTRING_INDEX(email, '@', 1), '+', 1), '.', ''), '@', SUBSTRING_INDEX(email, '@', -1)) = ?", [$normalizedEmail]);
-            })->first();
-            
-            if ($existingEmailVisitor) {
-                if ($this->isDifferentPerson($checkData, $existingEmailVisitor)) {
-                    return back()->withErrors(['email' => 'Este correo electrónico (o una variación del mismo) ya está registrado a nombre de otra persona. No se permite usar alias para distintas personas.'])->withInput();
-                }
-            }
-        }
-
-        // Verificar si ya existe una cita activa para el mismo servicio con el mismo DNI o Email
-        $existingAppointment = null;
-        if (!empty($data['dni']) || !empty($data['email'])) {
-            $existingAppointment = Appointment::where('service_id', $service->id)
-                ->whereIn('status', ['confirmed', 'scheduled', 'pending'])
-                ->whereHas('visitor', function ($query) use ($data, $normalizedEmail) {
-                    $query->where(function ($q) use ($data, $normalizedEmail) {
-                        if (!empty($data['dni'])) {
-                            $q->where('dni', $data['dni']);
-                        }
-                        if (!empty($data['email'])) {
-                            $q->orWhere(function($subQ) use ($data, $normalizedEmail) {
-                                $subQ->where('email', $data['email'])
-                                     ->orWhereRaw("CONCAT(REPLACE(SUBSTRING_INDEX(SUBSTRING_INDEX(email, '@', 1), '+', 1), '.', ''), '@', SUBSTRING_INDEX(email, '@', -1)) = ?", [$normalizedEmail]);
-                            });
-                        }
-                    });
-                })
-                ->first();
-        }
-
-        if ($existingAppointment) {
-            $formattedTime = \Carbon\Carbon::parse($existingAppointment->appointment_time)->format('H:i');
-            $formattedDate = $existingAppointment->appointment_date->format('d/m/Y');
-            
-            return back()
-                ->withErrors([
-                    'appointment_date' => "Ya tienes una cita concertada para este servicio el día {$formattedDate} a las {$formattedTime}."
-                ])
-                ->with('existing_appointment_localizador', $existingAppointment->localizador)
-                ->withInput();
-        }
-
-
-        // Bloquear el tramo horario específico para evitar que múltiples personas (o clics dobles)
-        // reserven el mismo espacio simultáneamente, causando una condición de carrera.
-        $lockKey = 'appointment_slot_' . $service->id . '_' . $date->format('Ymd') . '_' . str_replace(':', '', $data['appointment_time']);
+        $overrideCapacity = auth()->check() && $request->boolean('override_capacity') && \Carbon\Carbon::parse($request->appointment_date)->isToday();
         
-        // Evitamos usar el driver 'file' para los bloqueos, ya que puede dar fallos de 'fopen' si los directorios temporales no existen
-        $cacheStore = config('cache.default') === 'file' ? 'database' : null;
-
-        return Cache::store($cacheStore)->lock($lockKey, 10)->block(5, function () use ($request, $service, $data, $settings, $date, $firstName, $lastName, $normalizedEmail) {
-            return DB::transaction(function () use ($request, $service, $data, $settings, $date, $firstName, $lastName, $normalizedEmail) {
-                // Validar disponibilidad en tiempo real dentro de la transacción
-                $overrideCapacity = auth()->check() && $request->boolean('override_capacity') && $date->isToday();
-                if (!$this->availability->isSlotAvailable($service, $date, $data['appointment_time'], $overrideCapacity)) {
-                    return back()->withErrors(['appointment_time' => 'El tramo seleccionado ya no está disponible. Por favor, elige otro.'])->withInput();
-                }
-
-                // Buscar si existe un visitante previo (priorizando DNI, luego Email)
-                $visitor = null;
-                if (!empty($data['dni'])) {
-                    $visitor = AppointmentVisitor::where('dni', $data['dni'])->lockForUpdate()->first();
-                }
-                
-                if (!$visitor && !empty($data['email'])) {
-                    $visitor = AppointmentVisitor::where(function($q) use ($data, $normalizedEmail) {
-                        $q->where('email', $data['email'])
-                          ->orWhereRaw("CONCAT(REPLACE(SUBSTRING_INDEX(SUBSTRING_INDEX(email, '@', 1), '+', 1), '.', ''), '@', SUBSTRING_INDEX(email, '@', -1)) = ?", [$normalizedEmail]);
-                    })->lockForUpdate()->first();
-                }
-                
-                if (!$visitor) {
-                    $visitor = AppointmentVisitor::where('first_name', $firstName)
-                                 ->where('last_name', $lastName)
-                                 ->where('phone', $data['phone'])
-                                 ->lockForUpdate()->first();
-                }
-
-                if ($visitor) {
-                    // Restricción: No puede tener más de dos citas el mismo día para este servicio específico
-                    $existingAppointmentsCount = Appointment::where('visitor_id', $visitor->id)
-                        ->where('appointment_date', $date->toDateString())
-                        ->whereIn('status', ['confirmed', 'scheduled', 'pending'])
-                        ->where('service_id', $service->id)
-                        ->count();
-
-                    if ($existingAppointmentsCount >= 2) {
-                        return back()->withErrors(['appointment_date' => 'Ya tienes el máximo de citas (2) programadas para este servicio en la fecha indicada.'])
-                                     ->withInput();
-                    }
-
-                    // Actualizar datos del visitante existente
-                    $visitor->update([
-                        'first_name'    => $firstName,
-                        'last_name'     => $lastName,
-                        'dni'           => $data['dni'] ?? $visitor->dni,
-                        'email'         => $data['email'] ?? $visitor->email,
-                        'phone'         => $data['phone'] ?? $visitor->phone,
-                        'city'          => $data['city'] ?? $visitor->city,
-                        'postal_code'   => $data['postal_code'] ?? $visitor->postal_code,
-                        'observations'  => $data['observations'] ?? $visitor->observations,
-                        'consent_email' => $request->boolean('consent_email'),
-                        'ip_address'    => $request->ip(),
-                    ]);
-                } else {
-                    // Crear nuevo visitante
-                    $visitor = AppointmentVisitor::create([
-                        'first_name'    => $firstName,
-                        'last_name'     => $lastName,
-                        'dni'           => $data['dni'] ?? null,
-                        'email'         => $data['email'] ?? null,
-                        'phone'         => $data['phone'] ?? null,
-                        'city'          => $data['city'] ?? null,
-                        'postal_code'   => $data['postal_code'] ?? null,
-                        'observations'  => $data['observations'] ?? null,
-                        'consent_email' => $request->boolean('consent_email'),
-                        'consent_data'  => true,
-                        'consent_legal' => true,
-                        'ip_address'    => $request->ip(),
-                    ]);
-                }
-
-                // Crear cita
-                $appointment = Appointment::create([
-            'localizador'         => Appointment::generateLocalizador(),
-            'user_id'             => $service->user_id,
-            'service_id'          => $service->id,
-            'visitor_id'          => $visitor->id,
-            'appointment_date'    => $date->toDateString(),
-            'appointment_time'    => $data['appointment_time'] . ':00',
-            'slot_duration_minutes' => $service->getEffectiveSlotDuration(),
-            'status'              => 'confirmed',
-            'modality'            => $data['modality'],
-            'custom_fields_values' => $data['custom_fields_values'] ?? null,
-        ]);
-
-        // Generar tarea automática si está configurado
-        if ($settings->auto_create_task) {
-            $this->createTaskForAppointment($appointment, $settings);
-        }
-
-        // Sincronizar con Google Calendar si está habilitado en el servicio
-        if ($service->sync_to_google_calendar && $service->user->google_token) {
-            $this->syncToGoogleCalendar($appointment);
-        }
-
-                // Sincronizar con Google Tasks si está habilitado en el servicio
-                if ($service->sync_to_google_tasks && $service->user->google_token) {
-                    $this->syncToGoogleTasks($appointment);
-                }
-
-                // Email de confirmación al visitante (si consintió y tiene email)
-                if ($visitor->consent_email && $visitor->email && $settings->email_confirmation) {
-                    try {
-                        \Mail::to($visitor->email)->locale(app()->getLocale())->send(new \App\Mail\AppointmentConfirmedMail($appointment));
-                    } catch (\Throwable $e) {
-                        \Log::warning("AppointmentConfirmed mail failed: " . $e->getMessage());
-                    }
-                }
-
-                // Email al miembro de nueva cita
-                try {
-                    \Mail::to($service->user->email)->locale($service->user->preferredLocale())->send(new \App\Mail\AppointmentNewRequestMail($appointment));
-                } catch (\Throwable $e) {
-                    \Log::warning("AppointmentNewRequest mail failed: " . $e->getMessage());
-                }
-
-                return redirect()->route('public.appointments.confirm', $appointment->localizador);
-            });
-        });
+        $appointment = $bookAction->execute($service, $request->validated(), $overrideCapacity);
+        
+        $postBookingService->handleNewAppointment($appointment);
+        
+        return redirect()->route('public.appointments.confirm', $appointment->localizador);
     }
 
     /**
@@ -557,30 +295,7 @@ class PublicAppointmentController extends Controller
     /**
      * Genera una tarea automática en el sistema para la cita.
      */
-    protected function createTaskForAppointment(Appointment $appointment, AppointmentSettings $settings): void
-    {
-        try {
-            $member = $appointment->member;
-
-            // Determinar el expediente
-            $expedienteId = $settings->default_expediente_id;
-
-            // Determinar la descripción de la tarea con enlace de videoconferencia si procede
-            $description = "**Visitante:** {$appointment->visitor->full_name}\n"
-                . "**Localizador:** {$appointment->localizador}\n"
-                . "**Servicio:** {$appointment->service->name}\n"
-                . "**Modalidad:** " . \App\Models\AppointmentService::MODALITIES[$appointment->modality] . "\n"
-                . "**Fecha:** {$appointment->appointment_date->format('d/m/Y')} a las {$appointment->appointment_time}";
-
-            if (!empty($appointment->custom_fields_values) && !empty($appointment->service->custom_fields)) {
-                $description .= "\n\n**Información Adicional:**\n";
-                foreach ($appointment->service->custom_fields as $field) {
-                    $val = $appointment->custom_fields_values[$field['id']] ?? '';
-                    if (!empty($val)) {
-                        $description .= "- **{$field['name']}:** {$val}\n";
-                    }
                 }
-            }
 
             if (in_array($appointment->modality, ['jitsi', 'meet'])) {
                 $videoUrl = route('public.appointments.video.auth', $appointment) . '?localizador=' . $appointment->localizador;
@@ -624,29 +339,7 @@ class PublicAppointmentController extends Controller
         }
     }
 
-    /**
-     * Sincronizar cita con Google Calendar.
-     */
-    protected function syncToGoogleCalendar(Appointment $appointment): void
-    {
-        try {
-            $member = $appointment->member;
-            $googleService = new \App\Services\GoogleService();
-            
-            if ($googleService->setTokenForUser($member)) {
-                $description = "Cita Previa: {$appointment->service->name}\n"
-                             . "Ciudadano: {$appointment->visitor->full_name}\n"
-                             . "Localizador: {$appointment->localizador}";
-
-                if (!empty($appointment->custom_fields_values) && !empty($appointment->service->custom_fields)) {
-                    $description .= "\n\nInformación Adicional:\n";
-                    foreach ($appointment->service->custom_fields as $field) {
-                        $val = $appointment->custom_fields_values[$field['id']] ?? '';
-                        if (!empty($val)) {
-                            $description .= "- {$field['name']}: {$val}\n";
-                        }
                     }
-                }
 
                 $eventData = [
                     'summary' => '[CITA] ' . $appointment->visitor->full_name . ' - ' . $appointment->service->name,
@@ -672,31 +365,7 @@ class PublicAppointmentController extends Controller
         }
     }
 
-    /**
-     * Sincronizar cita con Google Tasks.
-     */
-    protected function syncToGoogleTasks(Appointment $appointment): void
-    {
-        try {
-            $member = $appointment->member;
-            $googleService = new \App\Services\GoogleService();
-            
-            if ($googleService->setTokenForUser($member)) {
-                $description = "Cita Previa: {$appointment->service->name}\n"
-                             . "Ciudadano: {$appointment->visitor->full_name}\n"
-                             . "Localizador: {$appointment->localizador}\n"
-                             . "Día: {$appointment->appointment_date->format('d/m/Y')}\n"
-                             . "Hora: {$appointment->appointment_time}";
-
-                if (!empty($appointment->custom_fields_values) && !empty($appointment->service->custom_fields)) {
-                    $description .= "\n\nInformación Adicional:\n";
-                    foreach ($appointment->service->custom_fields as $field) {
-                        $val = $appointment->custom_fields_values[$field['id']] ?? '';
-                        if (!empty($val)) {
-                            $description .= "- {$field['name']}: {$val}\n";
-                        }
                     }
-                }
 
                 $taskData = [
                     'title' => '[CITA] ' . $appointment->visitor->full_name . ' - ' . $appointment->service->name,
@@ -1058,12 +727,7 @@ class PublicAppointmentController extends Controller
     /**
      * Helper to add a Latin transliteration to Arabic names.
      */
-    protected function transliterateArabic(?string $text): ?string
-    {
-        if (!$text) {
-            return $text;
-        }
-
+    
         if (preg_match('/\p{Arabic}/u', $text)) {
             // Utilizamos el transliterador para convertir caracteres árabes a latinos
             if (class_exists(\Transliterator::class)) {
@@ -1088,17 +752,7 @@ class PublicAppointmentController extends Controller
     /**
      * Checks if the new booking data belongs to a different person than the existing visitor.
      */
-    protected function isDifferentPerson(array $newData, AppointmentVisitor $existing): bool
-    {
-        // 1. DNI check
-        $newDni = preg_replace('/[^A-Za-z0-9]/', '', $newData['dni'] ?? '');
-        $existingDni = preg_replace('/[^A-Za-z0-9]/', '', $existing->dni ?? '');
-        
-        if (!empty($newDni) && !empty($existingDni)) {
-            // Si ambos tienen DNI, el DNI manda de forma estricta.
-            return mb_strtoupper($newDni) !== mb_strtoupper($existingDni);
-        }
-
+    
         // 2. Name check
         $normalize = function (?string $str) {
             if (!$str) {
