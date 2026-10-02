@@ -837,8 +837,7 @@
                                     border-bottom: 2px solid #cbd5e1;
                                     padding-bottom: 1rem;
                                     margin-bottom: 1.25rem;
-                                    break-after: avoid;
-                                    page-break-after: avoid;
+                                    
                                 }
                                 .print-team { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1.5px; }
                                 .print-title { font-size: 20px; font-weight: 900; color: #0f172a; margin: 0.3rem 0; line-height: 1.25; }
@@ -861,13 +860,12 @@
                                     display: flex;
                                     align-items: center;
                                     justify-content: space-between;
-                                    break-after: avoid;
-                                    page-break-after: avoid;
+                                    
                                 }
                                 .op-badge { background: #f1f5f9; color: #7c3aed; padding: 2px 6px; border-radius: 4px; font-weight: 800; font-size: 9px; margin-left: 4px; }
                                 .msg-date { color: #94a3b8; font-size: 10px; }
                                 .msg-body p { margin-top: 0; margin-bottom: 0.5rem; orphans: 3; widows: 3; }
-                                .msg-body h1, .msg-body h2, .msg-body h3, .msg-body h4 { break-after: avoid; page-break-after: avoid; margin-top: 1rem; margin-bottom: 0.4rem; }
+                                .msg-body h1, .msg-body h2, .msg-body h3, .msg-body h4 {  margin-top: 1rem; margin-bottom: 0.4rem; }
                                 .msg-body img { max-width: 100%; max-height: 240px; object-fit: contain; border-radius: 6px; border: 1px solid #cbd5e1; display: block; margin: 0.5rem 0; break-inside: avoid; page-break-inside: avoid; }
                                 .msg-body pre { background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.6rem; border-radius: 6px; font-size: 10px; overflow-x: auto; break-inside: avoid; page-break-inside: avoid; }
                                 .print-attachments { margin-top: 0.6rem; padding-top: 0.4rem; border-top: 1px dashed #cbd5e1; font-size: 10px; color: #475569; break-inside: avoid; page-break-inside: avoid; }
@@ -878,34 +876,7 @@
                         <body>
                             ${headerHtml}
                             ${messagesHtml || '<p style="color:#94a3b8; font-style:italic;">No se encontró contenido para imprimir.</p>'}
-                            <script>
-                                function wrapEmojisInElement(element) {
-                                    if (!element) return;
-                                    const emojiRegex = /([\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2B50}\u{2B55}\u{231A}-\u{231B}\u{23ED}-\u{23EF}\u{23F0}\u{23F3}\u{25FD}-\u{25FE}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{3297}\u{3299}\u{3030}\u{303D}\u{00A9}\u{00AE}\u{2122}\u{2139}]|\p{Extended_Pictographic})(?:\uFE0F|\uFE0E)?/gu;
-                                    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
-                                    const nodesToReplace = [];
-                                    let node;
-                                    while (node = walker.nextNode()) {
-                                        if (node.parentElement && node.parentElement.closest('.emoji-icon, script, style, textarea')) continue;
-                                        if (emojiRegex.test(node.nodeValue)) nodesToReplace.push(node);
-                                    }
-                                    nodesToReplace.forEach(textNode => {
-                                        const parent = textNode.parentNode;
-                                        if (!parent) return;
-                                        const html = textNode.nodeValue.replace(/([\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2B50}\u{2B55}\u{231A}-\u{231B}\u{23ED}-\u{23EF}\u{23F0}\u{23F3}\u{25FD}-\u{25FE}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{3297}\u{3299}\u{3030}\u{303D}\u{00A9}\u{00AE}\u{2122}\u{2139}]|\p{Extended_Pictographic})(?:\uFE0F|\uFE0E)?/gu, '<span class="emoji-icon">$1</span>');
-                                        const temp = document.createElement('span');
-                                        temp.innerHTML = html;
-                                        while (temp.firstChild) parent.insertBefore(temp.firstChild, textNode);
-                                        parent.removeChild(textNode);
-                                    });
-                                }
-                                window.onload = () => {
-                                    wrapEmojisInElement(document.body);
-                                    setTimeout(() => {
-                                        window.print();
-                                    }, 350);
-                                };
-                            <\/script>
+
                         </body>
                     </html>
                 `);
@@ -913,7 +884,7 @@
                 printWin.focus();
                 setTimeout(() => {
                     printWin.print();
-                }, 250);
+                }, 500);
             };
 
             function editMessage(messageId, content) {
