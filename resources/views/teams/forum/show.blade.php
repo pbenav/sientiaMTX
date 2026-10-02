@@ -843,11 +843,13 @@
                                 .print-title { font-size: 20px; font-weight: 900; color: #0f172a; margin: 0.3rem 0; line-height: 1.25; }
                                 .print-meta { font-size: 11px; color: #64748b; }
                                 .print-message {
-                                    border: 1px solid #e2e8f0;
-                                    border-radius: 0;
-                                    padding: 1rem;
+                                    display: block;
+                                    width: 100%;
+                                    border: none;
+                                    border-bottom: 1px dashed #cbd5e1;
+                                    padding: 1rem 0;
                                     margin-bottom: 1rem;
-                                    background: #fff;
+                                    background: transparent;
                                     break-inside: auto;
                                     page-break-inside: auto;
                                 }
