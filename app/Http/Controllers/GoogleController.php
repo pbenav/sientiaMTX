@@ -309,12 +309,11 @@ class GoogleController extends Controller
      * @param  Request  $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function import(Request $request)
+    public function import(Request $request, \App\Actions\Google\ImportGoogleDataAction $importAction)
     {
-        $user = Auth::user();
+        $user = \Illuminate\Support\Facades\Auth::user();
         $teamId = $request->input('team_id');
         $selectedEventIds = $request->input('events', []);
-        $visibility = $request->input('visibility', 'private');
         $activityTypes = $request->input('types', []);
 
         if (empty($selectedEventIds)) {
@@ -325,288 +324,7 @@ class GoogleController extends Controller
             return redirect()->route('google.auth', ['team_id' => $teamId])->with('info', __('google.connect_account_first'));
         }
 
-        $syncCount = 0;
-        $allowedTypes = array_keys(\App\Models\Activity::SUBTYPES);
-
-        // Process Calendar Events
-        $calendarIds = collect($selectedEventIds)
-            ->filter(fn($id) => str_starts_with($id, 'cal:'))
-            ->map(fn($id) => str_replace('cal:', '', $id))
-            ->toArray();
-
-        if (!empty($calendarIds)) {
-            $allEvents = $this->googleService->listEvents(100);
-            foreach ($allEvents as $event) {
-                if (in_array($event->id, $calendarIds)) {
-                    $chosenType = $activityTypes['cal:' . $event->id] ?? 'meeting';
-                    if (!in_array($chosenType, $allowedTypes)) {
-                        $chosenType = 'meeting';
-                    }
-
-                    $start = $event->getStart()->getDateTime() ?: $event->getStart()->getDate();
-                    $fullTitle = $event->getSummary() ?: 'Evento sin título';
-                    $title = mb_strlen($fullTitle) > 250 ? mb_substr($fullTitle, 0, 247) . '...' : $fullTitle;
-                    
-                    $description = $event->getDescription() ?: '';
-                    if (mb_strlen($fullTitle) > 250) {
-                        $description = "Título original: " . $fullTitle . "\n\n" . $description;
-                    }
-
-                    // Check if Activity already exists
-                    $existing = \App\Models\Activity::where('team_id', $teamId)
-                        ->where(function($q) use ($event, $title, $start) {
-                            $q->where('google_calendar_event_id', $event->id)
-                              ->orWhere(function($sub) use ($title, $start) {
-                                  $sub->where('title', $title)
-                                      ->where('scheduled_date', date('Y-m-d H:i:s', strtotime($start)));
-                              });
-                        })
-                        ->first();
-
-                    if (!$existing) {
-                        $location = $event->getLocation();
-
-                        // Extraer enlace de Google Meet (hangoutLink o conferenceData)
-                        $meetUri = $event->getHangoutLink();
-                        if (!$meetUri && $event->getConferenceData()) {
-                            $entryPoints = $event->getConferenceData()->getEntryPoints();
-                            if (!empty($entryPoints)) {
-                                foreach ($entryPoints as $ep) {
-                                    if ($ep->getEntryPointType() === 'video' || $ep->getUri()) {
-                                        $meetUri = $ep->getUri();
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-
-                        $durationMinutes = 60;
-                        if ($event->getStart()->getDateTime() && $event->getEnd()->getDateTime()) {
-                            $startTs = strtotime($event->getStart()->getDateTime());
-                            $endTs = strtotime($event->getEnd()->getDateTime());
-                            $durationMinutes = max(1, round(($endTs - $startTs) / 60));
-                        }
-
-                        // Metadatos y estado según subtipo
-                        $metadata = [];
-                        $statusValue = 'pending';
-
-                        $hasPhysicalLocation = !empty($location) && !filter_var($location, FILTER_VALIDATE_URL);
-
-                        if ($chosenType === 'meeting') {
-                            $statusValue = 'scheduled';
-                            $modality = 'remote';
-                            if ($meetUri && $hasPhysicalLocation) {
-                                $modality = 'hybrid';
-                            } elseif ($hasPhysicalLocation) {
-                                $modality = 'presential';
-                            }
-
-                            $metadata = [
-                                'location'         => $location ?: ($meetUri ?: null),
-                                'join_url'         => $meetUri ?: (filter_var($location, FILTER_VALIDATE_URL) ? $location : null),
-                                'google_meet_url'  => $meetUri ?: null,
-                                'duration_minutes' => $durationMinutes,
-                                'modality'         => $modality,
-                            ];
-                        } elseif ($chosenType === 'task') {
-                            $statusValue = 'pending';
-                            $metadata = [
-                                'urgency'        => 'low',
-                                'cognitive_load' => 1,
-                            ];
-                        } elseif ($chosenType === 'reminder') {
-                            $statusValue = 'pending';
-                            $metadata = [
-                                'channels' => ['email'],
-                            ];
-                        } elseif ($chosenType === 'note') {
-                            $statusValue = 'draft';
-                            $metadata = [
-                                'format' => 'markdown',
-                            ];
-                        } elseif ($chosenType === 'document') {
-                            $statusValue = 'draft';
-                        }
-
-                        // Detectar organizador del evento en Google Calendar
-                        $organizer = $event->getOrganizer();
-                        $isOrganizer = $organizer ? ($organizer->getSelf() || strcasecmp($organizer->getEmail() ?? '', $user->email) === 0) : true;
-                        $organizerEmail = $organizer ? $organizer->getEmail() : null;
-                        $organizerName = $organizer ? ($organizer->getDisplayName() ?: $organizer->getEmail()) : null;
-
-                        $metadata['google_is_organizer']   = $isOrganizer;
-                        $metadata['google_organizer_email'] = $organizerEmail;
-                        $metadata['google_organizer_name']  = $organizerName;
-                        $metadata['is_external_event']      = !$isOrganizer;
-
-                        if ($event->getHtmlLink()) {
-                            $metadata['google_html_link'] = $event->getHtmlLink();
-                        }
-
-                        // Recopilar asistentes: miembros del equipo como internos, terceros como externos
-                        $team = \App\Models\Team::find($teamId);
-                        $teamMembers = $team ? $team->members()->get() : collect();
-
-                        $guests = [];
-                        $internalMemberIds = [];
-                        $rawAttendees = $event->getAttendees() ?: [];
-                        foreach ($rawAttendees as $att) {
-                            $attEmail = $att->getEmail();
-                            // Omitir al propio usuario actual
-                            if ($attEmail && strcasecmp($attEmail, $user->email) !== 0) {
-                                $matchedMember = $teamMembers->first(fn($m) => strcasecmp($m->email, $attEmail) === 0);
-                                if ($matchedMember) {
-                                    $internalMemberIds[] = $matchedMember->id;
-                                } else {
-                                    $guests[] = [
-                                        'name'            => $att->getDisplayName() ?: explode('@', $attEmail)[0],
-                                        'email'           => $attEmail,
-                                        'notify'          => false,
-                                        'response_status' => $att->getResponseStatus() ?: 'needsAction',
-                                    ];
-                                }
-                            }
-                        }
-                        if (!empty($guests)) {
-                            $metadata['guests'] = $guests;
-                        }
-
-                        $activity = \App\Models\Activity::create([
-                            'team_id'                  => $teamId,
-                            'created_by_id'            => $user->id,
-                            'type'                     => $chosenType,
-                            'title'                    => $title,
-                            'description'              => $description,
-                            'scheduled_date'           => date('Y-m-d H:i:s', strtotime($start)),
-                            'due_date'                 => $event->getEnd()->getDateTime() ? date('Y-m-d H:i:s', strtotime($event->getEnd()->getDateTime())) : null,
-                            'original_due_date'        => $event->getEnd()->getDateTime() ? date('Y-m-d H:i:s', strtotime($event->getEnd()->getDateTime())) : null,
-                            'visibility'               => $visibility,
-                            'priority'                 => 'low',
-                            'auto_priority'            => false,
-                            'progress_percentage'      => 0,
-                            'status'                   => ['value' => $statusValue],
-                            'metadata'                 => $metadata,
-                            'google_calendar_event_id' => $event->id,
-                            'google_synced_at'         => now(),
-                        ]);
-
-                        // Asignación directa al usuario creador
-                        \App\Models\ActivityAssignment::create([
-                            'activity_id'    => $activity->id,
-                            'user_id'        => $user->id,
-                            'assigned_by_id' => $user->id,
-                            'assigned_at'    => now(),
-                        ]);
-
-                        // Asignar también a miembros del equipo que asistirán a la reunión
-                        foreach ($internalMemberIds as $memberId) {
-                            if ($memberId !== $user->id) {
-                                \App\Models\ActivityAssignment::firstOrCreate([
-                                    'activity_id' => $activity->id,
-                                    'user_id'     => $memberId,
-                                ], [
-                                    'assigned_by_id' => $user->id,
-                                    'assigned_at'    => now(),
-                                ]);
-                            }
-                        }
-
-                        $syncCount++;
-                    }
-                }
-            }
-        }
-
-        // Process Google Tasks
-        $taskIds = collect($selectedEventIds)
-            ->filter(fn($id) => str_starts_with($id, 'task:'))
-            ->map(fn($id) => str_replace('task:', '', $id))
-            ->toArray();
-
-        if (!empty($taskIds)) {
-            $allTasks = $this->googleService->listTasks(100);
-            foreach ($allTasks as $task) {
-                if (in_array($task->id, $taskIds)) {
-                    $chosenType = $activityTypes['task:' . $task->id] ?? 'task';
-                    if (!in_array($chosenType, $allowedTypes)) {
-                        $chosenType = 'task';
-                    }
-
-                    $due = $task->getDue() ?: now()->toIso8601String();
-                    $fullTitle = $task->getTitle() ?: 'Tarea sin título';
-                    
-                    // Remove Google Space/Doc context brackets e.g. "[Space Name] Task Title" -> "Task Title"
-                    $fullTitle = preg_replace('/^\[.*?\]\s*/', '', $fullTitle);
-                    $title = mb_strlen($fullTitle) > 250 ? mb_substr($fullTitle, 0, 247) . '...' : $fullTitle;
-
-                    $description = ($task->getNotes() ?: '');
-                    if (mb_strlen($fullTitle) > 250) {
-                        $description = "Título original: " . $fullTitle . "\n\n" . $description;
-                    }
-                    $description .= ($task->listTitle ? " [" . $task->listTitle . "]" : "");
-
-                    $googleId = $task->id;
-                    $existing = \App\Models\Activity::where('team_id', $teamId)
-                        ->where(function($q) use ($googleId, $title, $due) {
-                            $q->where('google_task_id', $googleId)
-                              ->orWhere('google_task_id', 'task:' . $googleId)
-                              ->orWhere(function($sub) use ($title, $due) {
-                                  $sub->where('title', 'LIKE', $title . '%')
-                                      ->whereDate('scheduled_date', date('Y-m-d', strtotime($due)));
-                              });
-                        })
-                        ->first();
-
-                    if (!$existing) {
-                        $isCompleted = $task->getStatus() === 'completed';
-                        $statusValue = $isCompleted ? 'completed' : 'pending';
-                        if ($chosenType === 'meeting' && !$isCompleted) {
-                            $statusValue = 'scheduled';
-                        } elseif (in_array($chosenType, ['note', 'document']) && !$isCompleted) {
-                            $statusValue = 'draft';
-                        }
-
-                        $activity = \App\Models\Activity::create([
-                            'team_id'             => $teamId,
-                            'created_by_id'       => $user->id,
-                            'type'                => $chosenType,
-                            'title'               => $title,
-                            'description'         => $description,
-                            'scheduled_date'      => date('Y-m-d H:i:s', strtotime($due)),
-                            'due_date'            => date('Y-m-d H:i:s', strtotime($due)),
-                            'original_due_date'   => date('Y-m-d H:i:s', strtotime($due)),
-                            'visibility'          => $visibility,
-                            'priority'            => 'low',
-                            'auto_priority'       => false,
-                            'progress_percentage' => $isCompleted ? 100 : 0,
-                            'status'              => ['value' => $statusValue],
-                            'metadata'            => [
-                                'urgency'        => 'low',
-                                'cognitive_load' => 1,
-                            ],
-                            'google_task_id'      => $task->id,
-                            'google_task_list_id' => '@default',
-                            'google_synced_at'    => now(),
-                        ]);
-
-                        // Asignación directa al usuario creador
-                        \App\Models\ActivityAssignment::create([
-                            'activity_id'    => $activity->id,
-                            'user_id'        => $user->id,
-                            'assigned_by_id' => $user->id,
-                            'assigned_at'    => now(),
-                        ]);
-
-                        if ($isCompleted) {
-                            $this->awardGamificationPoints($activity);
-                        }
-
-                        $syncCount++;
-                    }
-                }
-            }
-        }
+        $syncCount = $importAction->execute($user, $teamId, $selectedEventIds, $activityTypes);
 
         return redirect()->route('teams.activities.index', $teamId)
             ->with('success', __('google.import_success', ['count' => $syncCount]));
@@ -658,27 +376,28 @@ class GoogleController extends Controller
      * @param  int  $taskId
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function disconnectTask(\App\Models\Team $team, $taskId)
+    public function disconnectTask(\App\Models\Team $team, $taskId, Request $request, \App\Actions\Google\DisconnectGoogleTaskAction $disconnectAction)
     {
         $task = \App\Models\Activity::find($taskId) ?? \App\Models\Task::find($taskId);
         if (!$task || $task->team_id !== $team->id) {
             return redirect()->route('teams.dashboard', $team)->with('warning', __('tasks.not_found_in_team'));
         }
 
-        $user = Auth::user();
+        $user = \Illuminate\Support\Facades\Auth::user();
         if ($user->cannot('update', $task)) {
-            return redirect()->back()->with('warning', __('tasks.unauthorized_update'));
+            return redirect()->back()->with('warning', __('tasks.unauthorized_edit'));
         }
 
-        // Intento de borrar en la API de Google antes de soltar la referencia local
-        if ($this->googleService->setTokenForUser($user, $team->id)) {
-            if ($task->google_task_id && $task->google_task_list_id) {
-                try {
-                    $this->googleService->deleteTask($task->google_task_list_id, $task->google_task_id);
-                } catch (\Exception $e) {
-                    Log::error('Error deleting Google Task during disconnect: ' . $e->getMessage());
-                }
-            }
+        if (!$this->googleService->setTokenForUser($user, $team->id)) {
+            return redirect()->route('google.auth', ['team_id' => $team->id])->with('info', __('google.connect_account_first'));
+        }
+
+        $deleteInGoogle = $request->boolean('delete_in_google');
+        $result = $disconnectAction->execute($user, $team, $task, $deleteInGoogle);
+
+        $type = $result['success'] ? 'success' : 'error';
+        return redirect()->back()->with($type, $result['message']);
+    }
 
             $isExternalEvent = data_get($task->metadata, 'google_is_organizer') === false 
                 || data_get($task->metadata, 'is_external_event') === true;
@@ -720,14 +439,14 @@ class GoogleController extends Controller
      * @param  int  $taskId
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function syncTask(\App\Models\Team $team, $taskId)
+    public function syncTask(\App\Models\Team $team, $taskId, \App\Actions\Google\SyncTaskWithGoogleAction $syncAction)
     {
         $task = \App\Models\Activity::find($taskId) ?? \App\Models\Task::find($taskId);
         if (!$task || $task->team_id !== $team->id) {
             return redirect()->route('teams.dashboard', $team)->with('warning', __('tasks.not_found_in_team'));
         }
 
-        $user = Auth::user();
+        $user = \Illuminate\Support\Facades\Auth::user();
         if ($user->cannot('view', $task)) {
             return redirect()->back()->with('warning', __('tasks.unauthorized_view'));
         }
@@ -736,152 +455,10 @@ class GoogleController extends Controller
             return redirect()->route('google.auth', ['team_id' => $team->id])->with('info', __('google.connect_account_first'));
         }
 
-        // 1. If not exported yet, export it
-        if (!$task->google_task_id) {
-            $notes = ($task->description ?: '') . "\n\n";
-            $notes .= "--- SientiaMTX Details ---\n";
-            $notes .= "Quadrant: " . $task->getQuadrant($task) . "\n";
-            $notes .= "Priority: " . strtoupper($task->priority) . "\n";
-            $notes .= "Urgency: " . strtoupper($task->urgency) . "\n";
-            $notes .= "Team: " . $team->name . "\n";
-
-            $dateToUse = $task->due_date ?? $task->scheduled_date;
-
-            $data = [
-                'title' => $task->title,
-                'notes' => trim($notes),
-            ];
-
-            if ($dateToUse) {
-                // Google Tasks API expects RFC3339 for the due field
-                $data['due'] = $dateToUse->toRfc3339String();
-            }
-
-            try {
-                $googleTaskId = $this->googleService->createTask($data);
-
-                if ($googleTaskId) {
-                    $task->update([
-                        'google_task_id' => $googleTaskId,
-                        'google_task_list_id' => '@default',
-                        'google_synced_at' => now(),
-                    ]);
-                    return back()->with('success', __('google.export_success'));
-                }
-            } catch (\Exception $e) {
-                Log::error('Error exporting to Google Tasks: ' . $e->getMessage());
-                return back()->with('error', __('google.export_failed') . ': ' . $e->getMessage());
-            }
-        }
-
-        // 2. Already exported, perform bidirectional sync
-        try {
-            $googleTask = $this->googleService->getTask($task->google_task_list_id, $task->google_task_id);
-
-            if (!$googleTask) {
-                // Task was deleted in Google Tasks. Unlink it locally instead of deleting.
-                $task->update([
-                    'google_task_id' => null,
-                    'google_task_list_id' => null,
-                    'google_synced_at' => null,
-                ]);
-                return redirect()->route('teams.tasks.show', [$team, $task])
-                    ->with('warning', __('google.sync_remote_unlinked'));
-            }
-
-            $googleUpdated = strtotime($googleTask->getUpdated());
-            $localUpdated = $task->updated_at->timestamp;
-            $lastSynced = $task->google_synced_at ? $task->google_synced_at->timestamp : 0;
-
-            // Determine which side is newer
-            // If Google is newer than the last sync AND newer than local
-            if ($googleUpdated > $lastSynced && $googleUpdated > $localUpdated) {
-                $oldTitle = $task->title;
-                $newTitle = $googleTask->getTitle();
-                $titleChanged = ($oldTitle !== $newTitle);
-
-                // Remote is newer, update local
-                $task->update([
-                    'title' => $newTitle,
-                    'description' => $googleTask->getNotes() ?: $task->description,
-                    'status' => $googleTask->getStatus() === 'completed' ? 'completed' : $task->status,
-                    'progress_percentage' => $googleTask->getStatus() === 'completed' ? 100 : $task->progress_percentage,
-                    'google_synced_at' => now(),
-                ]);
-                
-                // --- Title propagation (Architectural requirement) ---
-                if ($titleChanged) {
-                    if ($task->is_template) {
-                        // If template name changes, all instances follow
-                        $task->instances()->update(['title' => $newTitle]);
-                    } elseif ($task->parent_id) {
-                        // If an instance name changes, we update the parent name and all siblings
-                        $parent = $task->parent;
-                        $parent->update(['title' => $newTitle]);
-                        $parent->instances()->where('id', '!=', $task->id)->update(['title' => $newTitle]);
-                    }
-                }
-
-                // If it was marked as completed in Google, ensure local status reflects it
-                if ($googleTask->getStatus() === 'completed' && $task->status !== 'completed') {
-                    $task->status = 'completed';
-                    $task->progress_percentage = 100;
-                    $task->save();
-                    $this->awardGamificationPoints($task);
-                } else {
-                    $task->save();
-                }
-                
-                // --- Parent sync (Architectural requirement) ---
-                if ($task->parent_id) {
-                    $currentParent = $task->parent;
-                    while ($currentParent) {
-                        $currentParent->update(['progress_percentage' => $currentParent->progress]);
-                        $currentParent->syncKanbanColumn();
-                        $currentParent = $currentParent->parent;
-                    }
-                }
-
-                return back()->with('success', __('google.sync_from_remote_success'));
-            } 
-            
-            // If Local is newer than last sync
-            if ($localUpdated > $lastSynced) {
-                // Local is newer, update remote
-                $notes = ($task->description ?: '') . "\n\n";
-                $notes .= "--- " . __('google.details_title') . " ---\n";
-                $q = $task->getQuadrant($task);
-                $notes .= __('google.details_quadrant') . ": Q{$q} - " . __('tasks.quadrants.' . $q . '.label') . "\n";
-                $notes .= __('google.details_priority') . ": " . strtoupper(__('tasks.priorities.' . $task->priority)) . "\n";
-                $notes .= __('google.details_urgency') . ": " . strtoupper(__('tasks.urgencies.' . $task->urgency)) . "\n";
-                $notes .= __('google.details_team') . ": " . $team->name . "\n";
-
-                $dateToUse = $task->due_date ?? $task->scheduled_date;
-
-                $data = [
-                    'title' => $task->title,
-                    'notes' => trim($notes),
-                    'status' => $task->status === 'completed' ? 'completed' : 'needsAction',
-                ];
-                
-                if ($dateToUse) {
-                    $data['due'] = $dateToUse->toRfc3339String();
-                }
-
-                $this->googleService->updateTask($task->google_task_list_id, $task->google_task_id, $data);
-                
-                $task->update([
-                    'google_synced_at' => now(),
-                ]);
-
-                return back()->with('success', __('google.sync_to_remote_success'));
-            }
-
-            return back()->with('info', __('google.already_synced'));
-        } catch (\Exception $e) {
-            Log::error('Error in bidirectional Google Tasks sync: ' . $e->getMessage());
-            return back()->with('error', __('google.sync_failed') . ': ' . $e->getMessage());
-        }
+        $result = $syncAction->execute($user, $team, $task);
+        
+        $type = $result['success'] ? 'success' : 'error';
+        return redirect()->back()->with($type, $result['message']);
     }
 
     /**
@@ -895,12 +472,29 @@ class GoogleController extends Controller
      * @param  int  $taskId
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function exportTaskToCalendar(\App\Models\Team $team, $taskId)
+    public function exportTaskToCalendar(\App\Models\Team $team, $taskId, \App\Actions\Google\ExportTaskToCalendarAction $exportAction)
     {
         $task = \App\Models\Activity::find($taskId) ?? \App\Models\Task::find($taskId);
         if (!$task || $task->team_id !== $team->id) {
             return redirect()->route('teams.dashboard', $team)->with('warning', __('tasks.not_found_in_team'));
         }
+
+        $user = auth()->user();
+        if ($user->cannot('view', $task)) {
+            return redirect()->back()->with('warning', __('tasks.unauthorized_view'));
+        }
+
+        if (!$this->googleService->setTokenForUser($user, $team->id)) {
+            return redirect()->route('google.auth', ['team_id' => $team->id])->with('info', __('google.connect_account_first'));
+        }
+
+        $result = $exportAction->execute($user, $team, $task);
+        
+        $type = $result['success'] ? 'success' : 'error';
+        return redirect()->back()->with($type, $result['message']);
+    }
+
+    }
 
         $user = auth()->user();
         if ($user->cannot('view', $task)) {
