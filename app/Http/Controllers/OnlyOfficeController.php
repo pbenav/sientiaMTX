@@ -32,13 +32,12 @@ class OnlyOfficeController extends Controller
         $apiUrl = $serverUrl . '/web-apps/apps/api/documents/api.js';
 
         $baseUrl = rtrim(config('onlyoffice.internal_app_url', config('app.url')), '/');
-        $downloadUrl = \Illuminate\Support\Facades\URL::signedRoute(
-            'onlyoffice.download',
-            ['attachment' => $attachment->id]
-        );
-        $appUrl = rtrim(config('app.url'), '/');
-        if ($baseUrl !== $appUrl) {
-            $downloadUrl = str_replace($appUrl, $baseUrl, $downloadUrl);
+        if ($baseUrl !== rtrim(config('app.url'), '/')) {
+            \Illuminate\Support\Facades\URL::forceRootUrl($baseUrl);
+        }
+        $downloadUrl = \Illuminate\Support\Facades\URL::signedRoute('onlyoffice.download', ['attachment' => $attachment->id]);
+        if ($baseUrl !== rtrim(config('app.url'), '/')) {
+            \Illuminate\Support\Facades\URL::forceRootUrl(config('app.url'));
         }
         $callbackUrl = $baseUrl . '/onlyoffice/callback/' . $attachment->id;
 
@@ -153,13 +152,12 @@ class OnlyOfficeController extends Controller
         $apiUrl = $serverUrl . '/web-apps/apps/api/documents/api.js';
 
         $baseUrl = rtrim(config('onlyoffice.internal_app_url', config('app.url')), '/');
-        $downloadUrl = \Illuminate\Support\Facades\URL::signedRoute(
-            'onlyoffice.activity.download',
-            ['attachment' => $attachment->id]
-        );
-        $appUrl = rtrim(config('app.url'), '/');
-        if ($baseUrl !== $appUrl) {
-            $downloadUrl = str_replace($appUrl, $baseUrl, $downloadUrl);
+        if ($baseUrl !== rtrim(config('app.url'), '/')) {
+            \Illuminate\Support\Facades\URL::forceRootUrl($baseUrl);
+        }
+        $downloadUrl = \Illuminate\Support\Facades\URL::signedRoute('onlyoffice.activity.download', ['attachment' => $attachment->id]);
+        if ($baseUrl !== rtrim(config('app.url'), '/')) {
+            \Illuminate\Support\Facades\URL::forceRootUrl(config('app.url'));
         }
         $callbackUrl = $baseUrl . '/onlyoffice/activity-callback/' . $attachment->id;
 
