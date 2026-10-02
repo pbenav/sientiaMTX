@@ -34,7 +34,7 @@ class OnlyOfficeController extends Controller
         $baseUrl = rtrim(config('onlyoffice.internal_app_url', config('app.url')), '/');
         $downloadUrl = \Illuminate\Support\Facades\URL::signedRoute(
             'onlyoffice.download',
-            ['attachment' => $attachment->id]
+            ['attachment' => $attachment->id, 'v' => md5($attachment->id . '_' . $attachment->updated_at->timestamp)]
         );
         $appUrl = rtrim(config('app.url'), '/');
         if ($baseUrl !== $appUrl) {
@@ -155,7 +155,7 @@ class OnlyOfficeController extends Controller
         $baseUrl = rtrim(config('onlyoffice.internal_app_url', config('app.url')), '/');
         $downloadUrl = \Illuminate\Support\Facades\URL::signedRoute(
             'onlyoffice.activity.download',
-            ['attachment' => $attachment->id]
+            ['attachment' => $attachment->id, 'v' => md5($attachment->id . '_' . $attachment->updated_at->timestamp)]
         );
         $appUrl = rtrim(config('app.url'), '/');
         if ($baseUrl !== $appUrl) {
