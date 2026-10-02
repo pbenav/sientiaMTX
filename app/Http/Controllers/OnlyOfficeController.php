@@ -29,6 +29,7 @@ class OnlyOfficeController extends Controller
         if (empty($serverUrl)) {
             abort(500, 'Servidor de OnlyOffice no configurado.');
         }
+        $apiUrl = $serverUrl . '/web-apps/apps/api/documents/api.js';
 
         $config = $this->onlyOfficeService->buildConfig(
             $attachment,
@@ -38,11 +39,14 @@ class OnlyOfficeController extends Controller
             $attachment->file_name,
             'edit'
         );
+        $token = $config['token'] ?? null;
 
         return view('onlyoffice.editor', [
             'config' => $config,
+            'apiUrl' => $apiUrl,
             'serverUrl' => $serverUrl,
             'attachment' => $attachment,
+            'token' => $token,
             'backUrl' => url()->previous()
         ]);
     }
@@ -135,6 +139,7 @@ class OnlyOfficeController extends Controller
         if (empty($serverUrl)) {
             abort(500, 'Servidor de OnlyOffice no configurado.');
         }
+        $apiUrl = $serverUrl . '/web-apps/apps/api/documents/api.js';
 
         $config = $this->onlyOfficeService->buildConfig(
             $attachment,
@@ -144,11 +149,14 @@ class OnlyOfficeController extends Controller
             $attachment->file_name,
             'edit'
         );
+        $token = $config['token'] ?? null;
 
         return view('onlyoffice.editor', [
             'config' => $config,
+            'apiUrl' => $apiUrl,
             'serverUrl' => $serverUrl,
             'attachment' => $attachment,
+            'token' => $token,
             'backUrl' => url()->previous()
         ]);
     }
