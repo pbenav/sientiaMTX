@@ -32,9 +32,8 @@ class OnlyOfficeController extends Controller
         $apiUrl = $serverUrl . '/web-apps/apps/api/documents/api.js';
 
         $baseUrl = rtrim(config('onlyoffice.internal_app_url', config('app.url')), '/');
-        $downloadUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+        $downloadUrl = \Illuminate\Support\Facades\URL::signedRoute(
             'onlyoffice.download',
-            now()->addHours(2),
             ['attachment' => $attachment->id]
         );
         $appUrl = rtrim(config('app.url'), '/');
@@ -154,9 +153,8 @@ class OnlyOfficeController extends Controller
         $apiUrl = $serverUrl . '/web-apps/apps/api/documents/api.js';
 
         $baseUrl = rtrim(config('onlyoffice.internal_app_url', config('app.url')), '/');
-        $downloadUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+        $downloadUrl = \Illuminate\Support\Facades\URL::signedRoute(
             'onlyoffice.activity.download',
-            now()->addHours(2),
             ['attachment' => $attachment->id]
         );
         $appUrl = rtrim(config('app.url'), '/');
