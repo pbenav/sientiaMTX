@@ -647,6 +647,766 @@
 
         select.task-selector-tom { display: none !important; }
     </style>
+    <script>
+            function quoteMessage(name, content) {
+                const textarea = document.getElementById('reply-content');
+                if (textarea) {
+                    const quote = `> **${name}**: ${content}\n\n`;
+                    textarea.value = quote + textarea.value;
+                    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                    textarea.focus();
+                    textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+
+            function replyTo(messageId, name) {
+                const container = document.getElementById('reply-box-container');
+                if (container) {
+                    const outerData = Alpine.$data(document.querySelector('[x-data*="replyingToId"]'));
+                    if (outerData) {
+                        outerData.replyingToId = messageId;
+                        outerData.replyingToName = name;
+                    }
+
+                    const textarea = document.getElementById('reply-content');
+                    if (textarea) {
+                        textarea.focus();
+                        container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            }
+
+            window.openImageLightbox = function(src, caption = '') {
+                const lightbox = document.getElementById('forum-image-lightbox');
+                const img = document.getElementById('lightbox-img');
+                const cap = document.getElementById('lightbox-caption');
+                const dl = document.getElementById('lightbox-download');
+                if (lightbox && img) {
+                    img.src = src;
+                    if (cap) cap.innerText = caption;
+                    if (dl) dl.href = src;
+                    lightbox.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                }
+            };
+
+            window.closeImageLightbox = function() {
+                const lightbox = document.getElementById('forum-image-lightbox');
+                if (lightbox) {
+                    lightbox.classList.add('hidden');
+                    document.body.style.overflow = 'auto';
+                }
+            };
+
+            document.addEventListener('click', function(e) {
+                if (e.target && e.target.tagName === 'IMG' && e.target.closest('.markdown-content')) {
+                    openImageLightbox(e.target.src, e.target.alt || 'Imagen del mensaje');
+                }
+            });
+
+            window.openForumPrintModal = function(messageId = null) {
+                window.dispatchEvent(new CustomEvent('set-print-target', {
+                    detail: {
+                        mode: messageId ? 'single' : 'thread',
+                        messageId: messageId
+                    }
+                }));
+                window.dispatchEvent(new CustomEvent('open-modal', { detail: 'print-forum-modal' }));
+            };
+
+            window.printMessage = function(messageId) {
+                window.openForumPrintModal(messageId);
+            };
+
+            window.executeForumPrint = function(options) {
+                const threadTitle = @json($thread->title);
+                const teamName = @json($team->name);
+                const threadAuthor = @json($thread->user->name);
+                const threadDate = @json($thread->created_at->format('d/m/Y H:i'));
+                const linkedTask = @json($thread->task ? $thread->task->title : null);
+
+                let headerHtml = '';
+                if (options.headers) {
+                    headerHtml = `
+                        <div class="print-header">
+                            <div class="print-team">${teamName} • Foro</div>
+                            <h1 class="print-title">${threadTitle}</h1>
+                            <div class="print-meta">
+                                Creado por <strong>${threadAuthor}</strong> el ${threadDate}
+                                ${linkedTask ? ` • Tarea vinculada: <strong>${linkedTask}</strong>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                function buildMessageHtml(msgEl) {
+                    if (!msgEl) return '';
+                    const msgId = msgEl.id ? msgEl.id.replace('msg-', '') : '';
+                    const userName = msgEl.querySelector('.text-xs.font-bold')?.innerText || 'Usuario';
+                    const dateStr = msgEl.querySelector('[title]')?.getAttribute('title') || '';
+                    const isOp = msgEl.innerText.includes('OP');
+                    const textEl = msgEl.querySelector('.markdown-content');
+
+                    let contentHtml = '';
+                    if (textEl) {
+                        const clone = textEl.cloneNode(true);
+                        clone.querySelectorAll('button, template, script').forEach(el => el.remove());
+                        contentHtml = clone.innerHTML;
+                    }
+
+                    let attachmentsHtml = '';
+                    if (options.attachments) {
+                        const fileLinks = msgEl.querySelectorAll('a[target="_blank"]');
+                        const imageImgs = msgEl.querySelectorAll('.group\\/img img');
+
+                        let itemsHtml = '';
+                        fileLinks.forEach(link => {
+                            const text = link.innerText.trim();
+                            if (text && text !== 'Original' && !text.includes('Ampliar')) itemsHtml += `<li>${text}</li>`;
+                        });
+
+                        let imagesHtml = '';
+                        imageImgs.forEach(img => {
+                            if (img.src && !img.src.includes('profile_photo')) {
+                                imagesHtml += `<div style="margin-top: 8px; break-inside: avoid; page-break-inside: avoid;"><img src="${img.src}" style="max-width: 100%; max-height: 240px; border-radius: 6px; border: 1px solid #cbd5e1; display: block;"></div>`;
+                            }
+                        });
+
+                        if (itemsHtml || imagesHtml) {
+                            attachmentsHtml = `<div class="print-attachments"><strong>Adjuntos:</strong>${itemsHtml ? '<ul>' + itemsHtml + '</ul>' : ''}${imagesHtml}</div>`;
+                        }
+                    }
+
+                    let authorMetaHtml = '';
+                    if (options.authorMeta) {
+                        authorMetaHtml = `
+                            <div class="msg-author">
+                                <span><strong>${userName}</strong> ${isOp ? '<span class="op-badge">OP</span>' : ''}</span>
+                                <span class="msg-date">${dateStr}</span>
+                            </div>
+                        `;
+                    }
+
+                    return `
+                        <div class="print-message">
+                            ${authorMetaHtml}
+                            <div class="msg-body">${contentHtml}</div>
+                            ${attachmentsHtml}
+                        </div>
+                    `;
+                }
+
+                let messagesHtml = '';
+
+                if (options.scope === 'single' && options.targetId) {
+                    const msgEl = document.getElementById('msg-' + options.targetId);
+                    if (msgEl) {
+                        messagesHtml = buildMessageHtml(msgEl);
+                    }
+                } else {
+                    const msgEls = document.querySelectorAll('.space-y-6 > .space-y-4 > [id^="msg-"], [id^="msg-"]');
+                    const processed = new Set();
+                    msgEls.forEach(msgEl => {
+                        if (msgEl.id && !processed.has(msgEl.id)) {
+                            processed.add(msgEl.id);
+                            messagesHtml += buildMessageHtml(msgEl);
+                        }
+                    });
+                }
+
+                const printWin = window.open('', '_blank');
+                printWin.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                        <head>
+                            <title>${threadTitle} - Impresión</title>
+                            <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet">
+                            <style>@media print{/* -- Print Mode Code Block Fix -- */pre,code,pre *,code *,.prose pre,.prose code{background-color:transparent!important;color:#000!important}div[class*=bg-gray-8],div[class*=bg-gray-9],div[class*=bg-slate-8],div[class*=bg-slate-9],div[style*=background],.prose div,.markdown-body div,.bg-gray-800,.bg-gray-900,.dark\\:bg-gray-800,.dark\\:bg-gray-900{background-color:transparent!important}pre,.prose pre{border:1px solid #cbd5e1!important;border-radius:0.25rem!important;white-space:pre-wrap!important;word-break:break-all!important;padding:0.5rem!important}code,.prose code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace!important}}@page { size: A4; margin: 1.5cm; }
+                                svg { max-width: 16px !important; max-height: 16px !important; width: 16px !important; height: 16px !important; display: inline-block; vertical-align: middle; }
+                                body {
+                                    font-family: 'Outfit', -apple-system, sans-serif;
+                                    color: #1e293b;
+                                    line-height: 1.5;
+                                    margin: 0;
+                                    padding: 0;
+                                    font-size: 12px;
+                                    orphans: 3;
+                                    widows: 3;
+                                }
+                                .print-header {
+                                    border-bottom: 2px solid #cbd5e1;
+                                    padding-bottom: 1rem;
+                                    margin-bottom: 1.25rem;
+                                    break-after: avoid;
+                                    page-break-after: avoid;
+                                }
+                                .print-team { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1.5px; }
+                                .print-title { font-size: 20px; font-weight: 900; color: #0f172a; margin: 0.3rem 0; line-height: 1.25; }
+                                .print-meta { font-size: 11px; color: #64748b; }
+                                .print-message {
+                                    border: 1px solid #e2e8f0;
+                                    border-radius: 10px;
+                                    padding: 1rem;
+                                    margin-bottom: 1rem;
+                                    background: #fff;
+                                    break-inside: auto;
+                                    page-break-inside: auto;
+                                }
+                                .msg-author {
+                                    font-size: 11px;
+                                    border-bottom: 1px solid #f1f5f9;
+                                    padding-bottom: 0.4rem;
+                                    margin-bottom: 0.6rem;
+                                    color: #475569;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: space-between;
+                                    break-after: avoid;
+                                    page-break-after: avoid;
+                                }
+                                .op-badge { background: #f1f5f9; color: #7c3aed; padding: 2px 6px; border-radius: 4px; font-weight: 800; font-size: 9px; margin-left: 4px; }
+                                .msg-date { color: #94a3b8; font-size: 10px; }
+                                .msg-body p { margin-top: 0; margin-bottom: 0.5rem; orphans: 3; widows: 3; }
+                                .msg-body h1, .msg-body h2, .msg-body h3, .msg-body h4 { break-after: avoid; page-break-after: avoid; margin-top: 1rem; margin-bottom: 0.4rem; }
+                                .msg-body img { max-width: 100%; max-height: 240px; object-fit: contain; border-radius: 6px; border: 1px solid #cbd5e1; display: block; margin: 0.5rem 0; break-inside: avoid; page-break-inside: avoid; }
+                                .msg-body pre { background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.6rem; border-radius: 6px; font-size: 10px; overflow-x: auto; break-inside: avoid; page-break-inside: avoid; }
+                                .print-attachments { margin-top: 0.6rem; padding-top: 0.4rem; border-top: 1px dashed #cbd5e1; font-size: 10px; color: #475569; break-inside: avoid; page-break-inside: avoid; }
+                                .print-attachments ul { margin: 0.2rem 0 0 1rem; padding: 0; }
+                                .emoji-icon { display: inline-block !important; width: 1.35em !important; min-width: 1.35em !important; height: 1.35em !important; line-height: 1.35em !important; vertical-align: -0.15em !important; margin-right: 0.35em !important; text-align: center !important; overflow: visible !important; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important; }
+                            </style>
+                        </head>
+                        <body>
+                            ${headerHtml}
+                            ${messagesHtml || '<p style="color:#94a3b8; font-style:italic;">No se encontró contenido para imprimir.</p>'}
+                            <script>
+                                function wrapEmojisInElement(element) {
+                                    if (!element) return;
+                                    const emojiRegex = /([\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2B50}\u{2B55}\u{231A}-\u{231B}\u{23ED}-\u{23EF}\u{23F0}\u{23F3}\u{25FD}-\u{25FE}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{3297}\u{3299}\u{3030}\u{303D}\u{00A9}\u{00AE}\u{2122}\u{2139}]|\p{Extended_Pictographic})(?:\uFE0F|\uFE0E)?/gu;
+                                    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
+                                    const nodesToReplace = [];
+                                    let node;
+                                    while (node = walker.nextNode()) {
+                                        if (node.parentElement && node.parentElement.closest('.emoji-icon, script, style, textarea')) continue;
+                                        if (emojiRegex.test(node.nodeValue)) nodesToReplace.push(node);
+                                    }
+                                    nodesToReplace.forEach(textNode => {
+                                        const parent = textNode.parentNode;
+                                        if (!parent) return;
+                                        const html = textNode.nodeValue.replace(/([\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2B50}\u{2B55}\u{231A}-\u{231B}\u{23ED}-\u{23EF}\u{23F0}\u{23F3}\u{25FD}-\u{25FE}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{3297}\u{3299}\u{3030}\u{303D}\u{00A9}\u{00AE}\u{2122}\u{2139}]|\p{Extended_Pictographic})(?:\uFE0F|\uFE0E)?/gu, '<span class="emoji-icon">$1</span>');
+                                        const temp = document.createElement('span');
+                                        temp.innerHTML = html;
+                                        while (temp.firstChild) parent.insertBefore(temp.firstChild, textNode);
+                                        parent.removeChild(textNode);
+                                    });
+                                }
+                                window.onload = () => {
+                                    wrapEmojisInElement(document.body);
+                                    setTimeout(() => {
+                                        window.print();
+                                    }, 350);
+                                };
+                            <\/script>
+                        </body>
+                    </html>
+                `);
+                printWin.document.close();
+            };
+
+            function editMessage(messageId, content) {
+                document.getElementById(`message-view-${messageId}`).classList.add('hidden');
+                document.getElementById(`actions-${messageId}`).classList.add('hidden');
+                document.getElementById(`message-edit-${messageId}`).classList.remove('hidden');
+                document.getElementById(`edit-content-${messageId}`).focus();
+            }
+
+            function cancelEdit(messageId) {
+                document.getElementById(`message-view-${messageId}`).classList.remove('hidden');
+                document.getElementById(`actions-${messageId}`).classList.remove('hidden');
+                document.getElementById(`message-edit-${messageId}`).classList.add('hidden');
+            }
+
+            function showAttachmentHistory(id) {
+                fetch(`/teams/{{ $team->id }}/attachments/history/${id}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        document.getElementById('history-filename').innerText = data.attachment.file_name;
+                        const content = document.getElementById('history-content');
+                        content.innerHTML = '';
+
+                        if (data.logs && data.logs.length > 0) {
+                            let html = '<div class="space-y-6 relative ml-4 border-l-2 border-gray-100 dark:border-gray-800 pl-8">';
+                            data.logs.forEach(log => {
+                                const date = new Date(log.created_at).toLocaleString();
+                                html += `
+                                    <div class="relative">
+                                        <div class="absolute -left-[45px] top-1 w-8 h-8 rounded-full border-4 border-white dark:border-gray-900 bg-gray-400 flex items-center justify-center text-white shadow-sm ring-4 ring-gray-100 dark:ring-gray-800/30">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" /></svg>
+                                        </div>
+                                        <div>
+                                            <div class="flex items-center justify-between mb-1">
+                                                <span class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">${log.action}</span>
+                                                <span class="text-[10px] bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full font-bold tabular-nums">${date}</span>
+                                            </div>
+                                            <div class="flex items-center gap-2 group">
+                                                <span class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-tighter">${log.user?.name || 'Sistema'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            html += '</div>';
+                            content.innerHTML = html;
+                        } else {
+                            content.innerHTML = '<div class="text-center py-10"><p class="text-gray-500 italic">Sin movimientos registrados.</p></div>';
+                        }
+                        document.getElementById('attachment-history-modal').classList.remove('hidden');
+                    });
+            }
+
+            function closeAttachmentHistory() {
+                document.getElementById('attachment-history-modal').classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+
+            window.confirmDeleteThread = function(form) {
+                Swal.fire({
+                    title: '{{ __('¿Eliminar todo el hilo?') }}',
+                    text: '{{ __('Esta acción no se puede deshacer y eliminará todos los mensajes.') }}',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#94a3b8',
+                    confirmButtonText: '{{ __('Sí, eliminar todo') }}',
+                    cancelButtonText: '{{ __('Cancelar') }}',
+                    customClass: {
+                        popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                        title: 'text-red-600 dark:text-red-400 font-black uppercase tracking-tighter pt-8 text-lg',
+                        htmlContainer: 'text-sm font-medium text-slate-600 dark:text-slate-400 px-8 pb-4',
+                        confirmButton: 'rounded-2xl px-6 py-3 shadow-lg shadow-red-500/30 uppercase tracking-widest font-black text-[10px]',
+                        cancelButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]'
+                    },
+                    buttonsStyling: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+                return false;
+            }
+
+            window.validateForumForm = function(form) {
+                const content = form.querySelector('textarea[name="content"]').value.trim();
+                if (!content) {
+                    Swal.fire({
+                        title: '{{ __('Mensaje vacío') }}',
+                        text: '{{ __('El mensaje será desechado si no escribes algo.') }}',
+                        icon: 'warning',
+                        confirmButtonColor: '#ef4444',
+                        confirmButtonText: '{{ __('Entendido') }}',
+                        customClass: {
+                            popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                            confirmButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]'
+                        }
+                    });
+                    return false;
+                }
+                return true;
+            }
+
+            window.confirmDeleteMessage = function(form, isFirst) {
+                const text = isFirst ? '{{ __('Este es el primer post. Borrarlo eliminará todo el hilo. ¿Estás seguro?') }}' : '{{ __('¿Eliminar este mensaje?') }}';
+                Swal.fire({
+                    title: '{{ __('Eliminar mensaje') }}',
+                    text: text,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#94a3b8',
+                    confirmButtonText: '{{ __('Sí, eliminar') }}',
+                    cancelButtonText: '{{ __('Cancelar') }}',
+                    customClass: {
+                        popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                        title: 'text-red-600 dark:text-red-400 font-black uppercase tracking-tighter pt-8 text-lg',
+                        htmlContainer: 'text-sm font-medium text-slate-600 dark:text-slate-400 px-8 pb-4',
+                        confirmButton: 'rounded-2xl px-6 py-3 shadow-lg shadow-red-500/30 uppercase tracking-widest font-black text-[10px]',
+                        cancelButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]'
+                    },
+                    buttonsStyling: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+                return false;
+            }
+
+            window.confirmAttachmentDelete = function(id, provider = 'local') {
+                if (provider === 'google') {
+                    Swal.fire({
+                        title: '¿Qué deseas hacer?',
+                        text: "Este archivo está en Google Drive. ¿Quieres eliminarlo de la nube o solo desvincularlo de esta tarea?",
+                        icon: 'question',
+                        showDenyButton: true,
+                        showCancelButton: true,
+                        confirmButtonText: 'Eliminar de Drive y MTX',
+                        denyButtonText: 'Solo desvincular de MTX',
+                        cancelButtonText: 'Cancelar',
+                        confirmButtonColor: '#ef4444',
+                        denyButtonColor: '#6b7280',
+                        customClass: {
+                            popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                            confirmButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]',
+                            denyButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]',
+                            cancelButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const form = document.getElementById(`delete-attachment-${id}`);
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'delete_from_drive';
+                            input.value = '1';
+                            form.appendChild(input);
+                            form.submit();
+                        } else if (result.isDenied) {
+                            document.getElementById(`delete-attachment-${id}`).submit();
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        title: "{{ __('¿Eliminar este archivo?') }}",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: '{{ __('Sí, eliminar') }}',
+                        cancelButtonText: '{{ __('Cancelar') }}',
+                        customClass: {
+                            popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                            confirmButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]',
+                            cancelButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            document.getElementById(`delete-attachment-${id}`).submit();
+                        }
+                    });
+                }
+            }
+
+
+            window.editAttachmentImage = function(id, url) {
+                if (typeof window.openGlobalImageEditor === 'function') {
+                    window.openGlobalImageEditor(url, (editedFile) => {
+                        const formData = new FormData();
+                        formData.append('file', editedFile);
+
+                        Swal.fire({
+                            title: 'Guardando...',
+                            text: 'Actualizando la imagen en el servidor',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        fetch(`/teams/{{ $team->id }}/attachments/${id}/replace`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                'Accept': 'application/json'
+                            },
+                            body: formData
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: '¡Actualizada!',
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                throw new Error(data.message || 'Error al guardar la imagen');
+                            }
+                        })
+                        .catch(error => {
+                            Swal.fire('Error', error.message, 'error');
+                        });
+                    });
+                }
+            }
+
+            window.renameAttachment = function(id, currentName) {
+                Swal.fire({
+                    title: 'Renombrar Archivo',
+                    input: 'text',
+                    inputValue: currentName,
+                    showCancelButton: true,
+                    confirmButtonColor: '#7c3aed',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Guardar',
+                    cancelButtonText: 'Cancelar',
+                    customClass: {
+                        popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                        confirmButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]',
+                        cancelButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]'
+                    },
+                    inputValidator: (value) => {
+                        if (!value) {
+                            return 'El nombre no puede estar vacío';
+                        }
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = `/teams/{{ $team->id }}/attachments/${id}`;
+
+                        // Add CSRF token safely
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = '_token';
+                        csrfInput.value = '{{ csrf_token() }}';
+                        form.appendChild(csrfInput);
+
+                        // Add Method override safely
+                        const methodInput = document.createElement('input');
+                        methodInput.type = 'hidden';
+                        methodInput.name = '_method';
+                        methodInput.value = 'PATCH';
+                        form.appendChild(methodInput);
+
+                        // Add File Name safely
+                        const fileInput = document.createElement('input');
+                        fileInput.type = 'hidden';
+                        fileInput.name = 'file_name';
+                        fileInput.value = result.value;
+                        form.appendChild(fileInput);
+
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+            }
+
+            window.shareMessage = function(id) {
+                const url = window.location.origin + window.location.pathname + '#msg-' + id;
+                navigator.clipboard.writeText(url).then(() => {
+                    Swal.fire({
+                        title: '{{ __("Enlace copiado") }}',
+                        text: '{{ __("El enlace directo a este mensaje ha sido copiado al portapapeles.") }}',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        customClass: {
+                            popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
+                            title: 'text-emerald-600 dark:text-emerald-400 font-black uppercase tracking-tighter pt-8 text-lg',
+                            htmlContainer: 'text-sm font-medium text-slate-600 dark:text-slate-400 px-8 pb-4',
+                        }
+                    });
+                });
+            }
+
+            window.voteMessage = function(messageId, button) {
+                const url = `/teams/{{ $team->id }}/forum/messages/${messageId}/vote`;
+
+                button.disabled = true;
+
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const countSpan = button.querySelector('.votes-count');
+                        if (countSpan) {
+                            countSpan.textContent = data.votes_count;
+                        }
+                        const svg = button.querySelector('svg');
+                        if (data.voted) {
+                            button.classList.remove('text-gray-400');
+                            button.classList.add('text-violet-600', 'dark:text-violet-400');
+                            if (svg) svg.setAttribute('fill', 'currentColor');
+
+                            button.classList.add('scale-125', 'transition-transform', 'duration-200');
+                            setTimeout(() => button.classList.remove('scale-125'), 200);
+                        } else {
+                            button.classList.remove('text-violet-600', 'dark:text-violet-400');
+                            button.classList.add('text-gray-400');
+                            if (svg) svg.setAttribute('fill', 'none');
+
+                            button.classList.add('scale-75', 'transition-transform', 'duration-200');
+                            setTimeout(() => button.classList.remove('scale-75'), 200);
+                        }
+                    }
+                })
+                .catch(err => console.error(err))
+                .finally(() => {
+                    button.disabled = false;
+                });
+            }
+            window.initForumTaskSelect = function(el) {
+                if (el && window.TomSelect && !el.tomselect) {
+                    new TomSelect(el, {
+                        create: false,
+                        sortField: { field: 'text', direction: 'asc' },
+                        placeholder: 'Buscar tarea...',
+                        allowEmptyOption: true,
+                        render: {
+                            option: function(data, escape) {
+                                // TomSelect maps data-assignee from native <option> to data.assignee
+                                const usr = data.assignee || 'Sin asignar';
+                                return `<div class="flex items-center gap-3 py-0.5">
+                                    <div class="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 shrink-0 border border-gray-200/50 dark:border-gray-700/50">
+                                        <span class="text-[8px] font-mono font-black">#${escape(data.value)}</span>
+                                    </div>
+                                    <div class="flex flex-col min-w-0">
+                                        <span class="font-bold text-gray-900 dark:text-white truncate text-xs">${escape(data.text)}</span>
+                                        <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">@${escape(usr)}</span>
+                                    </div>
+                                </div>`;
+                            },
+                            item: function(data, escape) {
+                                return `<div class="flex items-center gap-2">
+                                    <span class="text-[9px] font-mono font-bold text-violet-500 bg-violet-50 dark:bg-violet-900/30 px-1 py-0.5 rounded border border-violet-100/50 dark:border-violet-800/50">#${escape(data.value)}</span>
+                                    <span class="font-bold text-xs text-gray-900 dark:text-white truncate max-w-[200px]">${escape(data.text)}</span>
+                                </div>`;
+                            }
+                        }
+                    });
+                }
+            };
+            // Re-attempt init once fully loaded in case it missed the window
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelectorAll('.task-selector-tom').forEach(select => {
+                    window.initForumTaskSelect(select);
+                });
+            });
+
+            document.addEventListener('DOMContentLoaded', () => {
+                const dock = document.getElementById('forum-action-dock');
+                if (!dock) return;
+                let visible = false;
+                let isDragging = false;
+                let startX, startY;
+                let hasDragged = false;
+
+                function updateScrollDock(scrollY) {
+                    const shouldShow = scrollY > 300;
+                    if (shouldShow === visible) return;
+                    visible = shouldShow;
+                    if (visible) {
+                        dock.style.opacity = '1';
+                        if (!hasDragged) {
+                            dock.style.transform = 'translateX(-50%) translateY(0)';
+                        }
+                        dock.style.pointerEvents = 'auto';
+                    } else {
+                        dock.style.opacity = '0';
+                        if (!hasDragged) {
+                            dock.style.transform = 'translateX(-50%) translateY(1rem)';
+                        }
+                        dock.style.pointerEvents = 'none';
+                    }
+                }
+
+                const checkScroll = (e) => {
+                    const target = e.target === document ? document.documentElement : e.target;
+                    const scrollY = target.scrollTop || 0;
+                    const finalScroll = scrollY || window.scrollY || 0;
+                    updateScrollDock(finalScroll);
+                };
+
+                window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
+
+                // Chequeo inicial
+                const initialScroll = window.scrollY || document.documentElement.scrollTop || 0;
+                updateScrollDock(initialScroll);
+
+                // --- SISTEMA DE ARRASTRE DRAGGABLE PREMIUM (Mouse y Touch) ---
+                const startDrag = (e) => {
+                    // Evitar arrastrar si clicamos en botones, inputs o enlaces interactivos
+                    if (e.target.closest('button') || e.target.closest('a') || e.target.closest('input')) {
+                        return;
+                    }
+
+                    isDragging = true;
+                    dock.style.transition = 'none'; // Desactivar transiciones durante el arrastre
+
+                    // Obtener la posición inicial del toque/clic
+                    const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+
+                    const rect = dock.getBoundingClientRect();
+
+                    // Al iniciar, fijamos el left y top reales para evitar que salte por el transform del CSS
+                    if (!hasDragged) {
+                        dock.style.bottom = 'auto';
+                        dock.style.transform = 'none';
+                        dock.style.left = rect.left + 'px';
+                        dock.style.top = rect.top + 'px';
+                        hasDragged = true;
+                    }
+
+                    startX = clientX - rect.left;
+                    startY = clientY - rect.top;
+
+                    document.addEventListener('mousemove', drag);
+                    document.addEventListener('mouseup', stopDrag);
+                    document.addEventListener('touchmove', drag, { passive: false });
+                    document.addEventListener('touchend', stopDrag);
+                };
+
+                const drag = (e) => {
+                    if (!isDragging) return;
+                    if (e.cancelable) e.preventDefault();
+
+                    const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+
+                    let newLeft = clientX - startX;
+                    let newTop = clientY - startY;
+
+                    // Límites de la ventana para que no se salga de la pantalla
+                    const rect = dock.getBoundingClientRect();
+                    const maxLeft = window.innerWidth - rect.width;
+                    const maxTop = window.innerHeight - rect.height;
+
+                    newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+                    newTop = Math.max(0, Math.min(newTop, maxTop));
+
+                    dock.style.left = newLeft + 'px';
+                    dock.style.top = newTop + 'px';
+                };
+
+                const stopDrag = () => {
+                    isDragging = false;
+                    dock.style.transition = 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)'; // Restaurar transiciones
+                    document.removeEventListener('mousemove', drag);
+                    document.removeEventListener('mouseup', stopDrag);
+                    document.removeEventListener('touchmove', drag);
+                    document.removeEventListener('touchend', stopDrag);
+                };
+
+                dock.addEventListener('mousedown', startDrag);
+                dock.addEventListener('touchstart', startDrag, { passive: true });
+                dock.style.cursor = 'grab';
+
+                dock.addEventListener('mouseenter', () => { if (!isDragging) dock.style.cursor = 'grab'; });
+                dock.addEventListener('mousedown', () => { dock.style.cursor = 'grabbing'; });
+                dock.addEventListener('mouseup', () => { dock.style.cursor = 'grab'; });
+            });
+        </script>
 
         <!-- Floating Contextual Action Dock -->
         <div id="forum-action-dock"
