@@ -810,6 +810,24 @@ class ActivityService
             unset($base['chapter_title'], $base['chapter_content']);
         }
 
+        // --- Injected Top-Level Toggles from Request ---
+        if (request()->has('is_timeline_locked')) {
+            $base['is_timeline_locked'] = request()->boolean('is_timeline_locked');
+        } elseif (!isset($base['is_timeline_locked'])) {
+            $base['is_timeline_locked'] = false;
+        }
+
+        if (request()->has('is_autoprogrammable')) {
+            $base['is_autoprogrammable'] = request()->boolean('is_autoprogrammable');
+        } elseif (!isset($base['is_autoprogrammable'])) {
+            $base['is_autoprogrammable'] = false;
+        }
+
+        if (request()->has('autoprogram_settings')) {
+            $base['autoprogram_settings'] = request()->input('autoprogram_settings');
+        }
+
+
         $loader = app(\App\Services\TemplateLoader::class);
         $template = $loader->getTemplate($type);
 

@@ -188,40 +188,12 @@ class ActivityController extends Controller
      * @param  Team  $team
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(StoreActivityRequest $request, Team $team)
+    public function store(\App\Http\Requests\StoreActivityRequest $request, \App\Models\Team $team)
     {
-        \Illuminate\Support\Facades\Log::info("STORE PAYLOAD:", $request->all());
         $validated = $request->validated();
         $type = $validated['type'];
 
-        // Inject top-level toggle into metadata
-        if ($request->has('is_timeline_locked')) {
-            $validated['metadata']['is_timeline_locked'] = $request->boolean('is_timeline_locked');
-        } else {
-            $validated['metadata']['is_timeline_locked'] = false;
-        }
-
-        if ($request->has('is_autoprogrammable')) {
-            $validated['metadata']['is_autoprogrammable'] = $request->boolean('is_autoprogrammable');
-        } else {
-            $validated['metadata']['is_autoprogrammable'] = false;
-        }
-
-        if ($request->has('autoprogram_settings')) {
-            $validated['metadata']['autoprogram_settings'] = $request->input('autoprogram_settings');
-        }
-
         $validated['auto_priority'] = $request->boolean('auto_priority');
-
-        // Quota check de archivos
-        if ($request->hasFile('attachments')) {
-            $totalUploadSize = collect($request->file('attachments'))->sum(fn($file) => $file->getSize());
-            if (!$team->hasAvailableQuota($totalUploadSize)) {
-                return back()->withInput()->withErrors(['attachments' => '⚠️ El equipo ha alcanzado su límite de almacenamiento. Libera espacio para subir más archivos.']);
-            }
-        }
-
-        \Illuminate\Support\Facades\Log::info("ActivityController@store: drive_attachments = " . $request->input('drive_attachments'));
 
         $activity = $this->activityService->create(
             $team,
@@ -315,7 +287,7 @@ class ActivityController extends Controller
      * @param  Activity  $activity
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(StoreActivityRequest $request, Team $team, Activity $activity)
+    public function update(\App\Http\Requests\StoreActivityRequest $request, \App\Models\Team $team, \App\Models\Activity $activity, \App\Actions\Activities\UpdateActivityAction $updateAction)
     {
         if ($activity->team_id !== $team->id) {
             return redirect()->route('teams.dashboard', $team)->with('warning', __('activities.not_found'));
@@ -327,106 +299,18 @@ class ActivityController extends Controller
             abort(403, 'No tienes permiso para modificar esta actividad.');
         }
 
-        if ($isParallel && auth()->user()->cannot('create', [Activity::class, $team])) {
+        if ($isParallel && auth()->user()->cannot('create', [\App\Models\Activity::class, $team])) {
             abort(403, 'No tienes permiso para crear actividades en este equipo.');
         }
 
         $validated = $request->validated();
+        
+        $result = $updateAction->execute($team, $activity, $validated, $request, $isParallel);
 
-        // Inject top-level toggle into metadata
-        if ($request->has('is_timeline_locked')) {
-            $validated['metadata']['is_timeline_locked'] = $request->boolean('is_timeline_locked');
-        } else {
-            $validated['metadata']['is_timeline_locked'] = false;
-        }
-
-        if ($request->has('is_autoprogrammable')) {
-            $validated['metadata']['is_autoprogrammable'] = $request->boolean('is_autoprogrammable');
-        } else {
-            $validated['metadata']['is_autoprogrammable'] = false;
-        }
-
-        if ($request->has('autoprogram_settings')) {
-            $validated['metadata']['autoprogram_settings'] = $request->input('autoprogram_settings');
-        }
-
-        if ($request->has('auto_priority')) {
-            $validated['auto_priority'] = $request->boolean('auto_priority');
-        } elseif (in_array($activity->type, ['task', 'meeting', 'reminder'])) {
-            $validated['auto_priority'] = false;
-        }
-
-        if ($request->hasFile('attachments')) {
-            $totalUploadSize = collect($request->file('attachments'))->sum(fn($file) => $file->getSize());
-            if (!$team->hasAvailableQuota($totalUploadSize)) {
-                return back()->withInput()->withErrors(['attachments' => '⚠️ El equipo ha alcanzado su límite de almacenamiento.']);
-            }
-        }
-
-        // Si se solicitó crear como actividad paralela:
         if ($isParallel) {
-            if (isset($validated['metadata'])) {
-                unset(
-                    $validated['metadata']['is_external_event'],
-                    $validated['metadata']['google_is_organizer'],
-                    $validated['metadata']['google_organizer_email'],
-                    $validated['metadata']['google_organizer_name'],
-                    $validated['metadata']['google_calendar_event_id'],
-                    $validated['metadata']['google_calendar_id'],
-                    $validated['metadata']['google_html_link'],
-                    $validated['metadata']['google_synced_at'],
-                    $validated['metadata']['google_meet_url'],
-                    $validated['metadata']['google_task_id'],
-                    $validated['metadata']['google_task_list_id']
-                );
-            }
-
-            // Registrar referencia a la actividad de origen
-            $validated['metadata']['parallel_of_activity_id'] = $activity->id;
-
-            $type = $validated['type'] ?? $activity->type;
-
-            // Mantener fechas originales si no vinieron en la petición
-            if (empty($validated['scheduled_date']) && $activity->scheduled_date) {
-                $validated['scheduled_date'] = $activity->scheduled_date;
-            }
-            if (empty($validated['due_date']) && $activity->due_date) {
-                $validated['due_date'] = $activity->due_date;
-            }
-
-            $newActivity = $this->activityService->create(
-                $team,
-                $type,
-                $validated,
-                $request->file('attachments') ?? [],
-                $request->input('drive_attachments')
-            );
-
-            return redirect()->route('teams.activities.show', ['team' => $team, 'activity' => $newActivity])
+            return redirect()->route('teams.activities.show', ['team' => $team, 'activity' => $result])
                 ->with('success', '✨ Actividad paralela creada con éxito para la misma fecha y hora sin modificar la original.');
         }
-
-        // Protección de integridad: si el acuerdo ya tiene firmas,
-        // ignorar cualquier intento de modificar los términos del documento.
-        if ($activity->type === 'agreement') {
-            $meta = $activity->metadata ?? [];
-            $hasMemberSig = collect($meta['member_signatures'] ?? [])->contains(fn($s) => !empty($s['signed_at']));
-            $hasGuestSig  = collect($meta['guests'] ?? [])->contains(fn($g) => !empty($g['signed_at']));
-
-            if ($hasMemberSig || $hasGuestSig) {
-                // Descartar el campo terms del payload para que no se sobreescriba
-                if (isset($validated['metadata']['terms'])) {
-                    unset($validated['metadata']['terms']);
-                }
-            }
-        }
-
-        $this->activityService->update(
-            $activity,
-            $validated,
-            $request->file('attachments') ?? [],
-            $request->input('drive_attachments')
-        );
 
         $tab = $request->input('tab', 'general');
         return redirect()->route('teams.activities.show', ['team' => $team, 'activity' => $activity, 'tab' => $tab])
@@ -650,7 +534,7 @@ class ActivityController extends Controller
      * @param  Activity  $activity
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function restoreMetadata(Request $request, Team $team, Activity $activity)
+    public function restoreMetadata(\Illuminate\Http\Request $request, \App\Models\Team $team, \App\Models\Activity $activity, \App\Actions\Activities\RestoreMetadataAction $action)
     {
         if ($activity->team_id !== $team->id) {
             abort(404);
@@ -666,43 +550,7 @@ class ActivityController extends Controller
             return back()->with('error', 'No se encontró el historial de conversión original.');
         }
 
-        // Recuperar campos genéricos
-        $activity->type = $ancestor->type;
-        $activity->description = $ancestor->description;
-        $activity->due_date = $ancestor->due_date;
-        $activity->scheduled_date = $ancestor->scheduled_date;
-        $activity->original_due_date = $ancestor->original_due_date;
-        $activity->priority = $ancestor->priority;
-        $activity->auto_priority = $ancestor->auto_priority;
-
-        // Recuperar la estructura de metadatos del ancestro, pero mantener la trazabilidad
-        $currentMetadata = $activity->metadata ?? [];
-        $ancestorMetadata = $ancestor->metadata ?? [];
-
-        // Mantener las claves de conversión de la actividad actual para no perder el enlace "vidas pasadas"
-        $internalKeys = ['converted_from_uuid', 'converted_from_id'];
-        $conversionLinks = [];
-        foreach ($internalKeys as $k) {
-            if (isset($currentMetadata[$k])) {
-                $conversionLinks[$k] = $currentMetadata[$k];
-            }
-        }
-
-        // Limpiar claves del ancestro que marcan que está deprecado
-        unset($ancestorMetadata['converted_to_uuid'], $ancestorMetadata['converted_to_id'], $ancestorMetadata['is_deprecated']);
-
-        // Metadatos finales: los del ancestro más los enlaces de conversión
-        $finalMetadata = array_merge($ancestorMetadata, $conversionLinks);
-
-        $activity->metadata = $finalMetadata;
-
-        $activity->saveQuietly();
-
-        $activity->histories()->create([
-            'user_id' => auth()->id(),
-            'action' => 'restored_metadata',
-            'details' => json_encode(['from_uuid' => $ancestor->uuid])
-        ]);
+        $action->execute($activity, $ancestor);
 
         return back()->with('success', 'Metadatos y configuraciones de la versión original restaurados correctamente.');
     }
@@ -715,11 +563,9 @@ class ActivityController extends Controller
      * @param  Activity $activity
      * @return \Illuminate\Http\JsonResponse
      */
-    public function resendMeetingInvitation(Request $request, Team $team, Activity $activity)
+    public function resendMeetingInvitation(\Illuminate\Http\Request $request, \App\Models\Team $team, \App\Models\Activity $activity, \App\Actions\Activities\ResendMeetingInvitationAction $action)
     {
-        $request->validate([
-            'email' => 'required|email',
-        ]);
+        $request->validate(['email' => 'required|email']);
 
         if ($activity->team_id !== $team->id) {
             return response()->json(['error' => __('activities.not_found')], 404);
@@ -733,35 +579,13 @@ class ActivityController extends Controller
             return response()->json(['error' => 'Esta actividad no admite invitaciones a destinatarios externos.'], 422);
         }
 
-        $guestEmail = $request->email;
-        $meta = $activity->metadata ?? [];
-        $guests = $meta['guests'] ?? [];
+        $result = $action->execute($activity, $request->email);
 
-        $guest = collect($guests)->firstWhere('email', $guestEmail);
-
-        if (!$guest) {
-            return response()->json(['error' => 'Invitado no encontrado en la lista.'], 404);
+        if (!$result['success']) {
+            return response()->json(['error' => $result['error']], $result['code']);
         }
 
-        try {
-            \Illuminate\Support\Facades\Mail::to($guestEmail)->send(
-                new \App\Mail\MeetingGuestInvitationMail(
-                    $activity,
-                    $guest['name'] ?? 'Invitado',
-                    auth()->user(),
-                    $meta['invitation_message'] ?? null
-                )
-            );
-
-            $msgLabel = $activity->type === 'reminder' ? 'Recordatorio enviado' : 'Invitación enviada';
-            return response()->json([
-                'success' => true,
-                'message' => "{$msgLabel} con éxito a {$guestEmail}."
-            ]);
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Failed to resend guest invitation to {$guestEmail}: " . $e->getMessage());
-            return response()->json(['error' => 'No se pudo enviar el correo: ' . $e->getMessage()], 500);
-        }
+        return response()->json(['success' => true, 'message' => $result['message']]);
     }
 }
 

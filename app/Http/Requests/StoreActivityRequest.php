@@ -34,6 +34,21 @@ class StoreActivityRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      */
+    public function after(): array
+    {
+        return [
+            function (\Illuminate\Validation\Validator $validator) {
+                if ($this->hasFile('attachments')) {
+                    $team = $this->route('team');
+                    $totalUploadSize = collect($this->file('attachments'))->sum(fn($file) => $file->getSize());
+                    if (!$team->hasAvailableQuota($totalUploadSize)) {
+                        $validator->errors()->add('attachments', '⚠️ El equipo ha alcanzado su límite de almacenamiento. Libera espacio para subir más archivos.');
+                    }
+                }
+            }
+        ];
+    }
+
     public function rules(): array
     {
         $team = $this->route('team');
