@@ -1047,13 +1047,18 @@
                 `,
                 didOpen: () => {
                     document.getElementById('print-btn-with').onclick = () => {
+                        window._sientiaPrintWithHeader = true;
                         Swal.close();
-                        executeSurveyPrint(true);
                     };
                     document.getElementById('print-btn-without').onclick = () => {
+                        window._sientiaPrintWithHeader = false;
                         Swal.close();
-                        executeSurveyPrint(false);
                     };
+                }
+            }).then(() => {
+                if (typeof window._sientiaPrintWithHeader !== 'undefined') {
+                    executeSurveyPrint(window._sientiaPrintWithHeader);
+                    delete window._sientiaPrintWithHeader;
                 }
             });
         }
@@ -1084,11 +1089,11 @@
                 if (headerEl) headerEl.style.display = 'none';
             }
             
-            // Allow DOM to update before printing
+            // Allow DOM to update and Swal to fully unmount before printing
             setTimeout(() => {
                 window.print();
                 if (headerEl) headerEl.style.display = 'none';
-            }, 100);
+            }, 600);
         }
     </script>
 
