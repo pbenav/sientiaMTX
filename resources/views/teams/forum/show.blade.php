@@ -581,7 +581,7 @@
     @push('scripts')
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
-    <style>@media print{/* -- Print Mode Code Block Fix -- */pre,code,pre *,code *,.prose pre,.prose code{background-color:transparent!important;color:#000!important}div[class*=bg-gray-8],div[class*=bg-gray-9],div[class*=bg-slate-8],div[class*=bg-slate-9],div[style*=background],.prose div,.markdown-body div,.bg-gray-800,.bg-gray-900,.dark\\:bg-gray-800,.dark\\:bg-gray-900{background-color:transparent!important}pre,.prose pre{border:1px solid #cbd5e1!important;border-radius:0.25rem!important;white-space:pre-wrap!important;word-break:break-all!important;padding:0.5rem!important}code,.prose code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace!important}}/* Bulletproof Modern TomSelect Wrapper */
+    <style>@media print{ * { overflow: visible !important; break-inside: auto !important; page-break-inside: auto !important; } /* -- Print Mode Code Block Fix -- */pre,code,pre *,code *,.prose pre,.prose code{background-color:transparent!important;color:#000!important}div[class*=bg-gray-8],div[class*=bg-gray-9],div[class*=bg-slate-8],div[class*=bg-slate-9],div[style*=background],.prose div,.markdown-body div,.bg-gray-800,.bg-gray-900,.dark\\:bg-gray-800,.dark\\:bg-gray-900{background-color:transparent!important}pre,.prose pre{border:1px solid #cbd5e1!important;border-radius:0.25rem!important;white-space:pre-wrap!important;word-break:break-all!important;padding:0.5rem!important}code,.prose code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace!important}}/* Bulletproof Modern TomSelect Wrapper */
         .ts-control {
             border-radius: 0.75rem !important;
             border-width: 1px !important;
@@ -768,7 +768,7 @@
                         let imagesHtml = '';
                         imageImgs.forEach(img => {
                             if (img.src && !img.src.includes('profile_photo')) {
-                                imagesHtml += `<div style="margin-top: 8px; break-inside: avoid; page-break-inside: avoid;"><img src="${img.src}" style="max-width: 100%; max-height: 240px; border-radius: 6px; border: 1px solid #cbd5e1; display: block;"></div>`;
+                                imagesHtml += `<div style="margin-top: 8px; "><img src="${img.src}" style="max-width: 100%; max-height: 240px; border-radius: 6px; border: 1px solid #cbd5e1; display: block;"></div>`;
                             }
                         });
 
@@ -821,7 +821,7 @@
                         <head>
                             <title>${threadTitle} - Impresión</title>
                             <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet">
-                            <style>@media print{/* -- Print Mode Code Block Fix -- */pre,code,pre *,code *,.prose pre,.prose code{background-color:transparent!important;color:#000!important}div[class*=bg-gray-8],div[class*=bg-gray-9],div[class*=bg-slate-8],div[class*=bg-slate-9],div[style*=background],.prose div,.markdown-body div,.bg-gray-800,.bg-gray-900,.dark\\:bg-gray-800,.dark\\:bg-gray-900{background-color:transparent!important}pre,.prose pre{border:1px solid #cbd5e1!important;border-radius:0.25rem!important;white-space:pre-wrap!important;word-break:break-all!important;padding:0.5rem!important}code,.prose code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace!important}}@page { size: A4; margin: 1.5cm; }
+                            <style>@media print{ * { overflow: visible !important; break-inside: auto !important; page-break-inside: auto !important; } /* -- Print Mode Code Block Fix -- */pre,code,pre *,code *,.prose pre,.prose code{background-color:transparent!important;color:#000!important}div[class*=bg-gray-8],div[class*=bg-gray-9],div[class*=bg-slate-8],div[class*=bg-slate-9],div[style*=background],.prose div,.markdown-body div,.bg-gray-800,.bg-gray-900,.dark\\:bg-gray-800,.dark\\:bg-gray-900{background-color:transparent!important}pre,.prose pre{border:1px solid #cbd5e1!important;border-radius:0.25rem!important;white-space:pre-wrap!important;word-break:break-all!important;padding:0.5rem!important}code,.prose code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace!important}}@page { size: A4; margin: 1.5cm; }
                                 svg { max-width: 16px !important; max-height: 16px !important; width: 16px !important; height: 16px !important; display: inline-block; vertical-align: middle; }
                                 body {
                                     font-family: 'Outfit', -apple-system, sans-serif;
@@ -853,24 +853,14 @@
                                     break-inside: auto;
                                     page-break-inside: auto;
                                 }
-                                .msg-author {
-                                    font-size: 11px;
-                                    border-bottom: 1px solid #f1f5f9;
-                                    padding-bottom: 0.4rem;
-                                    margin-bottom: 0.6rem;
-                                    color: #475569;
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: space-between;
-                                    
-                                }
+                                .msg-author { font-size: 11px; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.4rem; margin-bottom: 0.6rem; color: #475569; display: block; } .msg-author > span { display: inline-block; margin-right: 15px; }
                                 .op-badge { background: #f1f5f9; color: #7c3aed; padding: 2px 6px; border-radius: 4px; font-weight: 800; font-size: 9px; margin-left: 4px; }
                                 .msg-date { color: #94a3b8; font-size: 10px; }
                                 .msg-body p { margin-top: 0; margin-bottom: 0.5rem; orphans: 3; widows: 3; }
                                 .msg-body h1, .msg-body h2, .msg-body h3, .msg-body h4 {  margin-top: 1rem; margin-bottom: 0.4rem; }
-                                .msg-body img { max-width: 100%; max-height: 240px; object-fit: contain; border-radius: 6px; border: 1px solid #cbd5e1; display: block; margin: 0.5rem 0; break-inside: avoid; page-break-inside: avoid; }
-                                .msg-body pre { background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.6rem; border-radius: 6px; font-size: 10px; overflow-x: auto; break-inside: avoid; page-break-inside: avoid; }
-                                .print-attachments { margin-top: 0.6rem; padding-top: 0.4rem; border-top: 1px dashed #cbd5e1; font-size: 10px; color: #475569; break-inside: avoid; page-break-inside: avoid; }
+                                .msg-body img { max-width: 100%; max-height: 240px; object-fit: contain; border-radius: 6px; border: 1px solid #cbd5e1; display: block; margin: 0.5rem 0;  }
+                                .msg-body pre { background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.6rem; border-radius: 6px; font-size: 10px;   }
+                                .print-attachments { margin-top: 0.6rem; padding-top: 0.4rem; border-top: 1px dashed #cbd5e1; font-size: 10px; color: #475569;  }
                                 .print-attachments ul { margin: 0.2rem 0 0 1rem; padding: 0; }
                                 .emoji-icon { display: inline-block !important; width: 1.35em !important; min-width: 1.35em !important; height: 1.35em !important; line-height: 1.35em !important; vertical-align: -0.15em !important; margin-right: 0.35em !important; text-align: center !important; overflow: visible !important; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important; }
                             </style>
