@@ -1257,7 +1257,8 @@
             }
             window.initForumTaskSelect = function(el) {
                 if (el && window.TomSelect && !el.tomselect) {
-                    new TomSelect(el, {
+                    try {
+                        new TomSelect(el, {
                         create: false,
                         sortField: { field: 'text', direction: 'asc' },
                         placeholder: 'Buscar tarea...',
@@ -1284,6 +1285,9 @@
                             }
                         }
                     });
+                    } catch(err) {
+                        console.warn("TomSelect init ignored error:", err);
+                    }
                 }
             };
             // Re-attempt init once fully loaded in case it missed the window
