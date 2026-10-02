@@ -2229,62 +2229,6 @@
         </button>
     </div>
 
-    <script>
-        (function() {
-            var bar = document.getElementById('activity-edit-floating-bar');
-            if (!bar) return;
-            function checkScroll() {
-                var s = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-                if (s > 50) {
-                    bar.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
-                    bar.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
-                    bar.style.opacity = '1'; bar.style.pointerEvents = 'auto'; bar.style.visibility = 'visible';
-                } else {
-                    bar.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
-                    bar.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
-                    bar.style.opacity = '0'; bar.style.pointerEvents = 'none'; bar.style.visibility = 'hidden';
-                }
-            }
-            window.addEventListener('scroll', checkScroll, { passive: true });
-            document.addEventListener('scroll', checkScroll, { passive: true });
-            window.addEventListener('resize', checkScroll, { passive: true });
-            checkScroll();
-            setTimeout(checkScroll, 50); setTimeout(checkScroll, 200);
-            setTimeout(checkScroll, 500); setTimeout(checkScroll, 1000);
-        })();
-
-        window.printSection = async function(sectionLabel, contentId) {
-            var el = document.getElementById(contentId);
-            if (!el) { console.error('printSection: element not found:', contentId); return; }
-            await SientiaPrint.print(
-                @json($activity->title),
-                el.innerHTML,
-                { brand: 'Sientia MTX \u2022 ' + sectionLabel }
-            );
-        };
-
-        window.printPrivateNotes = async function() {
-            var editor = document.getElementById('reply-content-private');
-            var raw    = editor ? editor.value : '';
-            var html   = typeof marked !== 'undefined'
-                ? marked.parse(raw, { breaks: true, gfm: true })
-                : raw.replace(/\n/g, '<br>');
-            await SientiaPrint.print(
-                @json($activity->title),
-                html,
-                { brand: 'Sientia MTX \u2022 Notas Privadas' }
-            );
-        };
-
-        window.printDocumentBook = function() {
-            SientiaPrint.printDocumentBook({
-                title:    @json($activity->title ?? ''),
-                teamName: @json($team->name ?? ''),
-                version:  @json($activity->metadata['version'] ?? '1.0.0'),
-                chapters: @json($activity->metadata['chapters'] ?? [])
-            });
-        };
-    </script>
 
     <!-- MODAL DE AÑADIR CAPÍTULO A DOCUMENTO -->
     <div x-data="{ show: false }"

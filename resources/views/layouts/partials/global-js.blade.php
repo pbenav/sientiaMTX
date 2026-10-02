@@ -109,6 +109,43 @@
                 hasDragged: false,
                 startX: 0,
                 startY: 0,
+                isVisible: false,
+
+                init() {
+                    const checkScroll = (e) => {
+                        const s = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+                        let targetScroll = 0;
+                        if (e && e.target && e.target !== document && e.target !== window && typeof e.target.scrollTop === 'number') {
+                            targetScroll = e.target.scrollTop || 0;
+                        }
+                        const maxScroll = Math.max(s, targetScroll);
+                        this.isVisible = maxScroll > 50;
+                        
+                        if (this.isVisible) {
+                            this.$el.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+                            this.$el.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                            this.$el.style.opacity = '1';
+                            this.$el.style.pointerEvents = 'auto';
+                            this.$el.style.visibility = 'visible';
+                        } else {
+                            this.$el.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+                            this.$el.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                            this.$el.style.opacity = '0';
+                            this.$el.style.pointerEvents = 'none';
+                            this.$el.style.visibility = 'hidden';
+                        }
+                    };
+                    
+                    window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
+                    document.addEventListener('scroll', checkScroll, { passive: true, capture: true });
+                    window.addEventListener('resize', checkScroll, { passive: true });
+                    
+                    // Initial checks
+                    checkScroll();
+                    setTimeout(checkScroll, 50);
+                    setTimeout(checkScroll, 200);
+                    setTimeout(checkScroll, 500);
+                },
 
                 startDrag(e) {
                     if (e.target.closest('button') || e.target.closest('a') || e.target.closest('input')) return;

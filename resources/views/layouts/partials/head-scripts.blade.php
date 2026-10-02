@@ -1248,6 +1248,48 @@
                 window.SientiaPrint.wrapEmojis(element);
             }
         };
+                window.printSection = function(sectionLabel, contentId, customTitle = null) {
+            const el = document.getElementById(contentId);
+            if (!el) {
+                console.error('Print section element not found:', contentId);
+                return;
+            }
+            
+            let title = customTitle;
+            if (!title) {
+                const h1 = document.querySelector('h1');
+                title = h1 ? h1.innerText.trim() : document.title.split('—').pop().trim();
+            }
+            
+            if (window.SientiaPrint && window.SientiaPrint.print) {
+                window.SientiaPrint.print(title, el.innerHTML, { brand: 'Sientia MTX • ' + sectionLabel });
+            }
+        };
+
+        window.printPrivateNotes = function(customTitle = null) {
+            const editor = document.getElementById('reply-content-private');
+            if (!editor) {
+                console.error('Private notes editor not found');
+                return;
+            }
+            
+            let content = editor.value || '';
+            if (typeof marked !== 'undefined') {
+                content = marked.parse(content);
+            } else {
+                content = '<div style="white-space: pre-wrap;">' + content + '</div>';
+            }
+
+            let title = customTitle;
+            if (!title) {
+                const h1 = document.querySelector('h1');
+                title = h1 ? h1.innerText.trim() : document.title.split('—').pop().trim();
+            }
+            
+            if (window.SientiaPrint && window.SientiaPrint.print) {
+                window.SientiaPrint.print(title, content, { brand: 'Sientia MTX • Notas Privadas' });
+            }
+        };
         window.printDocumentBook = function(docData) {
             if (window.SientiaPrint && window.SientiaPrint.printDocumentBook) {
                 window.SientiaPrint.printDocumentBook(docData || {});

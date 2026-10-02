@@ -947,33 +947,6 @@
         </div>
     </div>
 
-    <script>
-        (function() {
-            const bar = document.getElementById('survey-floating-bar');
-            if (!bar) return;
-
-            const checkScroll = (e) => {
-                const windowScroll = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-                let targetScroll = 0;
-                if (e && e.target && e.target !== document && e.target !== window && typeof e.target.scrollTop === 'number') {
-                    targetScroll = e.target.scrollTop || 0;
-                }
-                const currentScroll = Math.max(windowScroll, targetScroll);
-
-                if (currentScroll > 150) {
-                    bar.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
-                    bar.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
-                } else {
-                    bar.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
-                    bar.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
-                }
-            };
-
-            window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
-            checkScroll();
-            setTimeout(checkScroll, 200);
-        })();
-    </script>
     @if ($isGlobal)
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
         <style>
