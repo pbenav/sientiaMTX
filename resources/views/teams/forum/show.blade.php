@@ -910,6 +910,10 @@
                     </html>
                 `);
                 printWin.document.close();
+                printWin.focus();
+                setTimeout(() => {
+                    printWin.print();
+                }, 250);
             };
 
             function editMessage(messageId, content) {
