@@ -192,18 +192,18 @@ class AiContentTransferController extends Controller
             abort(403);
         }
 
-        $request->input("content") = $this->extractPayload($request->input('content'));
+        $content = $this->extractPayload($request->input('content'));
 
         if ($request->target === 'reply' || $request->target === 'comment') {
             $thread->messages()->create([
                 'user_id' => $request->user()->id,
-                'content' => is_array($request->input("content")) ? json_encode($request->input("content")) : $request->input("content")
+                'content' => $this->getBestTextFromPayload($content, 'content')
             ]);
             return response()->json(['success' => true, 'message' => 'Respuesta publicada con éxito en el hilo de discusión.']);
         }
 
         if ($request->target === 'draft') {
-            return response()->json(['success' => true, 'message' => 'Contenido listo para el editor.', 'content' => $request->input("content")]);
+            return response()->json(['success' => true, 'message' => 'Contenido listo para el editor.', 'content' => $content]);
         }
 
         // If thread has a task and target is task-related, redirect to task transfer
@@ -262,16 +262,16 @@ class AiContentTransferController extends Controller
             $user = $request->user();
             
             $title = $request->title;
-            $request->input("content") = '';
+            $content = '';
             
             if (is_array($payload)) {
                 $title = $title ?: ($payload['title'] ?? $payload['task_data']['title'] ?? null);
             }
-            $request->input("content") = $this->getBestTextFromPayload($payload, 'observations');
+            $content = $this->getBestTextFromPayload($payload, 'observations');
 
             if ($request->target === 'quick-note') {
                 $note = $user->quickNotes()->create([
-                    'content' => ($title ? "**$title**\n\n" : "") . $request->input("content"),
+                    'content' => ($title ? "**$title**\n\n" : "") . $content,
                     'position_x' => 250,
                     'position_y' => 200,
                     'color' => '#fef3c7',
@@ -439,7 +439,7 @@ class AiContentTransferController extends Controller
         // Create message
         $thread->messages()->create([
             'user_id' => $request->user()->id,
-            'content' => "Ax.ia: " . (is_array($request->input("content")) ? json_encode($request->input("content")) : $request->input("content"))
+            'content' => "Ax.ia: " . ($this->getBestTextFromPayload($payload, 'content'))
         ]);
 
         return response()->json(['success' => true, 'message' => 'Respuesta publicada en el hilo general del equipo.']);
@@ -555,20 +555,20 @@ class AiContentTransferController extends Controller
      * Busca el contenido entre etiquetas [PAYLOAD]...[/PAYLOAD] o [INJECT]...[/INJECT],
      * limpia marcadores de código Markdown (```json ... ```), e intenta decodificar JSON.
      *
-     * @param  array|string|null  $request->input("content")  Contenido crudo de la respuesta de IA
+     * @param  array|string|null  $content  Contenido crudo de la respuesta de IA
      * @return array|string El payload decodificado o el contenido original si no es JSON
      */
-    private function extractPayload($request->input("content"))
+    private function extractPayload($content)
     {
-        if (is_array($request->input("content"))) {
-            return $request->input("content");
+        if (is_array($content)) {
+            return $content;
         }
 
         $raw = '';
-        if (preg_match('/\[PAYLOAD\](.*?)\[\/PAYLOAD\]/s', $request->input("content"), $matches)) {
+        if (preg_match('/\[PAYLOAD\](.*?)\[\/PAYLOAD\]/s', $content, $matches)) {
             $raw = trim($matches[1]);
         } else {
-            $raw = trim(str_replace(['[PAYLOAD]', '[/PAYLOAD]', '[INJECT]', '[/INJECT]'], '', $request->input("content")));
+            $raw = trim(str_replace(['[PAYLOAD]', '[/PAYLOAD]', '[INJECT]', '[/INJECT]'], '', $content));
         }
 
         // Limpieza de Markdown (ej. ```json ... ```) si está presente
