@@ -353,7 +353,7 @@ class TimeLogController extends Controller
             ->groupBy(function($log) {
                 return $log->start_at->format('Y-m-d');
             })
-            ->map(function($logs, $date) {
+            ->map(function($logs, $date) use ($user) {
                 $totalMinutes = 0;
                 $isActive     = false;
                 $hasAnomaly   = false;

@@ -76,7 +76,7 @@ class AppointmentVisitorController extends Controller
         ->when($filterCity, function ($query, $filterCity) {
             $query->where('city', 'like', "%{$filterCity}%");
         })
-        ->when($filterMinAppointments, function ($query, $filterMinAppointments) {
+        ->when($filterMinAppointments, function ($query, $filterMinAppointments) use ($team) {
             $query->whereHas('appointments', function ($q) use ($team, $filterMinAppointments) {
                 $q->whereHas('service', function ($sq) use ($team) {
                     $sq->where('team_id', $team->id);
@@ -88,7 +88,7 @@ class AppointmentVisitorController extends Controller
                 $q->where('team_id', $team->id);
             });
         }])
-        ->when($filterMinAppointments, function ($query, $filterMinAppointments) {
+        ->when($filterMinAppointments, function ($query, $filterMinAppointments) use ($team) {
             $query->having('appointments_count', '>=', (int)$filterMinAppointments);
         })
         ->when($sortBy === 'appointments_count', function ($query) use ($sortDir) {

@@ -473,4 +473,37 @@ class AppointmentController extends Controller
             'appointments' => $appointments,
             'blocks'       => $blocks,
         ]);
-    }}
+    }
+    private function deleteGoogleEvent(\App\Models\Appointment $appointment): void
+    {
+        if ($appointment->google_event_id) {
+            try {
+                $googleService = new \App\Services\GoogleService();
+                $member = $appointment->service->user;
+                if ($member && $googleService->setTokenForUser($member)) {
+                    $googleService->deleteEvent($appointment->google_event_id);
+                    $appointment->update(['google_event_id' => null]);
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error("Error eliminando cita en Google Calendar: " . $e->getMessage());
+            }
+        }
+    }
+
+    private function deleteGoogleTask(\App\Models\Appointment $appointment): void
+    {
+        // El nuevo schema no suele tener google_task_id en appointments, pero por si acaso legacy
+        if (isset($appointment->google_task_id) && $appointment->google_task_id) {
+            try {
+                $googleService = new \App\Services\GoogleService();
+                $member = $appointment->service->user;
+                if ($member && $googleService->setTokenForUser($member)) {
+                    $googleService->updateTask('@default', $appointment->google_task_id, ['status' => 'cancelled']);
+                    $appointment->update(['google_task_id' => null]);
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error("Error cancelando tarea en Google Tasks: " . $e->getMessage());
+            }
+        }
+    }
+}

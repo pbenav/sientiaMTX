@@ -248,7 +248,7 @@ class StorageController extends Controller
 
         if (in_array('attachments', $request->types)) {
             // Adjuntos de Tareas
-            $taskAttachments = TaskAttachment::where('attachable_type', Task::class)
+            $taskAttachments = TaskAttachment::where('attachable_type', \App\Models\Task::class)
                 ->whereHas('task', fn($q) => $q->where('team_id', $team->id))
                 ->where('storage_provider', 'local') // Only local files count for space
                 ->where('created_at', '<', $dateLimit)
