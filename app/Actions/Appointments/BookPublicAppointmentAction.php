@@ -158,9 +158,9 @@ class BookPublicAppointmentAction
                 'dni'           => $data['dni'] ?? $visitor->dni,
                 'email'         => $data['email'] ?? $visitor->email,
                 'phone'         => $data['phone'] ?? $visitor->phone,
-                'city'          => $data['city'] ?? clone $visitor->city,
-                'postal_code'   => $data['postal_code'] ?? clone $visitor->postal_code,
-                'observations'  => $data['observations'] ?? clone $visitor->observations,
+                'city'          => $data['city'] ?? $visitor->city,
+                'postal_code'   => $data['postal_code'] ?? $visitor->postal_code,
+                'observations'  => $data['observations'] ?? $visitor->observations,
                 'consent_email' => $data['consent_email'] ?? false,
             ]);
         } else {

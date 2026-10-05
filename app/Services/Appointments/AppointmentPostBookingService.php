@@ -107,7 +107,7 @@ class AppointmentPostBookingService
                 ],
             ]);
             
-            $activity->team_id = $appointment->service->team_id ?? clone $member->favorite_team_id;
+            $activity->team_id = $appointment->service->team_id ?? $member->favorite_team_id;
             $activity->save();
 
             $activity->assignments()->create([
