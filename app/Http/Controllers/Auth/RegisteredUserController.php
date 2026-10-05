@@ -100,7 +100,7 @@ class RegisteredUserController extends Controller
         // Process pending invitations
         $invitations = \App\Models\TeamInvitation::where('email', $user->email)->get();
         foreach ($invitations as $invitation) {
-            $invitation->team->members()->attach($user->id, ['role_id' => $invitation->role_id]);
+            $invitation->team->members()->syncWithoutDetaching([$user->id => ['role_id' => $invitation->role_id]]);
             $invitation->delete();
         }
 

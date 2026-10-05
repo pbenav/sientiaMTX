@@ -80,7 +80,7 @@ class AuthenticatedSessionController extends Controller
 
             if ($invitation) {
                 if (!$invitation->team->members()->where('user_id', $user->id)->exists()) {
-                    $invitation->team->members()->attach($user->id, ['role_id' => $invitation->role_id]);
+                    $invitation->team->members()->syncWithoutDetaching([$user->id => ['role_id' => $invitation->role_id]]);
                 }
                 $invitation->delete();
                 

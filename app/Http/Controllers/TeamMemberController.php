@@ -100,11 +100,11 @@ class TeamMemberController extends Controller
             return back()->with('success', __('teams.invitation_sent'));
         }
 
-        if ($team->members()->where('user_id', $user->id)->exists()) {
+        if ($team->members()->where('users.id', $user->id)->exists()) {
             return back()->withErrors(['email' => 'El usuario ya es miembro del equipo']);
         }
 
-        $team->members()->attach($user->id, ['role_id' => $validated['role_id']]);
+        $team->members()->syncWithoutDetaching([$user->id => ['role_id' => $validated['role_id']]]);
 
         SecurityLog::log(
             'team.member_added',
@@ -148,8 +148,8 @@ class TeamMemberController extends Controller
 
             if ($user) {
                 // If user exists, check if already in team
-                if (!$team->members()->where('user_id', $user->id)->exists()) {
-                    $team->members()->attach($user->id, ['role_id' => $validated['role_id']]);
+                if (!$team->members()->where('users.id', $user->id)->exists()) {
+                    $team->members()->syncWithoutDetaching([$user->id => ['role_id' => $validated['role_id']]]);
                     $added++;
                 } else {
                     $alreadyMembers++;

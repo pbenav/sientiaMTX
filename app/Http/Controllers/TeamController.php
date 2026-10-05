@@ -118,7 +118,7 @@ class TeamController extends Controller
 
         // Add creator as coordinator
         $coordinatorRole = TeamRole::where('name', 'coordinator')->first();
-        $team->members()->attach(auth()->id(), ['role_id' => $coordinatorRole->id]);
+        $team->members()->syncWithoutDetaching([auth()->id() => ['role_id' => $coordinatorRole->id]]);
 
         return redirect()->route('teams.show', $team)
             ->with('success', __('teams.created'));
