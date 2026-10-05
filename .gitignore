@@ -41,3 +41,4 @@ mkdocs.yml
 .opencode/
 INFORME_AUDITORIA.md
 resources/views/teams/activities/types/document/show-content.blade.php
+.antigravity/
