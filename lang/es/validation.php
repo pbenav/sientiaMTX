@@ -189,6 +189,7 @@ return [
     */
 
     'attributes' => [
+        'metadata.links' => 'enlaces',
         'password' => 'contraseña',
         'locale' => 'idioma',
         'email' => 'correo electrónico',

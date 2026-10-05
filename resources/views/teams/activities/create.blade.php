@@ -15,7 +15,7 @@
                 @include('teams.partials.breadcrumb')
                 <span class="text-gray-300 dark:text-gray-700 mx-1">/</span>
                 <h1 class="text-base font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-1.5">
-                    <span class="truncate">Crear nueva actividad: 
+                    <span class="truncate">Crear nueva actividad:
                         @switch($type)
                             @case('task') 📋 Tarea @break
                             @case('document') 📄 Documento @break
@@ -29,7 +29,7 @@
                     </span>
                 </h1>
             </div>
-            
+
             <div class="flex items-center gap-2 shrink-0">
                 @if($type === 'task')
                     <button type="button" onclick="importFromClipboard()" class="text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 rounded-xl border border-emerald-100 dark:border-emerald-500/20 shadow-sm">
@@ -56,17 +56,25 @@
             <form id="create-task-form" method="POST" action="{{ route('teams.activities.store', $team) }}" class="" enctype="multipart/form-data" @submit="console.log('chapter_title:', document.querySelector('input[name=\'metadata[chapter_title]\']')?.value, 'chapter_content:', document.querySelector('textarea[name=\'metadata[chapter_content]\']')?.value)">
                 @csrf
                 <input type="hidden" name="type" value="{{ $type }}">
-                <div x-data="{ activeTab: '{{ request('tab', 'general') }}' }">
+                <div x-data="{ 
+    activeTab: '{{ request('tab', 'general') }}',
+    setActiveTab(t) {
+        this.activeTab = t;
+        const url = new URL(window.location);
+        url.searchParams.set('tab', t);
+        window.history.replaceState({}, '', url);
+    }
+}">
                     <!-- Tabs Nav -->
                     <div class="flex gap-4 border-b border-gray-200 dark:border-gray-800 pb-2 mb-6 overflow-x-auto">
-                        <button type="button" @click="activeTab = 'general'" :class="activeTab === 'general' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">General</button>
+                        <button type="button" @click="setActiveTab('general')" :class="activeTab === 'general' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">General</button>
                         <button type="button" @click="activeTab = 'planning'" :class="activeTab === 'planning' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">Planificación y Estado</button>
                         <button type="button" @click="activeTab = 'team'" :class="activeTab === 'team' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">Equipo y Ejecución</button>
                         <button type="button" @click="activeTab = 'context'" :class="activeTab === 'context' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">Contexto y Vinculaciones</button>
                     </div>
-    
 
-                
+
+
                     <!-- TAB: General -->
                     <div x-show="activeTab === 'general'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;" class="space-y-6">
 <!-- Title -->
@@ -83,8 +91,8 @@
 
                 <!-- Description -->
                 <div>
-                    <x-markdown-editor 
-                        name="description" 
+                    <x-markdown-editor
+                        name="description"
                         id="description"
                         :value="old('description')"
                         :label="__('tasks.description')"
@@ -99,15 +107,15 @@
                         <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-6">
                             Esta actividad creará un documento estructurado. Puedes empezar creando el primer capítulo aquí mismo. Los miembros del equipo también podrán editarlo simultáneamente usando el sistema colaborativo de OnlyOffice.
                         </p>
-                        
+
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Título del Primer Capítulo</label>
                                 <input type="text" name="metadata[chapter_title]" value="{{ old('metadata.chapter_title') }}" placeholder="Ej. Introducción" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all">
                             </div>
                             <div>
-                                <x-markdown-editor 
-                                    name="metadata[chapter_content]" 
+                                <x-markdown-editor
+                                    name="metadata[chapter_content]"
                                     id="chapter_content"
                                     :value="old('metadata.chapter_content')"
                                     :label="__('Contenido del Primer Capítulo')"
@@ -137,10 +145,10 @@
                                     Define los detalles del acuerdo. Más adelante, los participantes (internos o externos) podrán firmar este documento usando Autofirma.
                                 </p>
                             </div>
-                            
+
                             <div class="md:col-span-2">
-                                <x-markdown-editor 
-                                    name="metadata[terms]" 
+                                <x-markdown-editor
+                                    name="metadata[terms]"
                                     id="metadata_terms"
                                     :value="old('metadata.terms')"
                                     label="Términos del Acuerdo (Documento a Firmar)"
@@ -154,12 +162,6 @@
                             <div>
                                 <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Fecha del Acuerdo</label>
                                 <input type="date" name="metadata[agreement_date]" value="{{ old('metadata.agreement_date', now()->format('Y-m-d')) }}" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none">
-                            </div>
-                            
-                            <div class="md:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Partes Externas Involucradas (Firmantes)</label>
-                                <p class="text-[10px] text-gray-500 mb-3 leading-tight">Añade a las personas externas al equipo que deberán ratificar/firmar este acuerdo. Se les enviará un correo seguro con el documento.</p>
-                                <x-guest-crud :initialGuests="old('metadata.guests', [])" :initialMessage="old('metadata.invitation_message', '')" />
                             </div>
                         </div>
                     </div>
@@ -236,11 +238,6 @@
                                 </div>
                                 <input type="text" name="metadata[location]" x-model="link" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none" placeholder="Ej. Sala de juntas principal o Enlace de Google Meet/Teams">
                             </div>
-                            <div class="md:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Invitados Externos a la Reunión</label>
-                                <p class="text-[10px] text-gray-500 mb-3 leading-tight">Añade a las personas externas al equipo que asistirán a la reunión. Se les enviará una invitación por correo con los detalles.</p>
-                                <x-guest-crud :initialGuests="old('metadata.guests', [])" :initialMessage="old('metadata.invitation_message', '')" />
-                            </div>
                         </div>
                     </div>
 
@@ -250,8 +247,8 @@
                 @if($type === "task")
                 <!-- Observations (Markdown) -->
                 <div>
-                    <x-markdown-editor 
-                        name="metadata[observations]" 
+                    <x-markdown-editor
+                        name="metadata[observations]"
                         id="observations"
                         :value="old('metadata.observations')"
                         :label="__('tasks.observations')"
@@ -350,7 +347,7 @@
                     </div>
                 </div>
 
-                
+
                     </div>
 
                     <!-- TAB: Planning -->
@@ -401,7 +398,34 @@
                 </div>
                 @endif
 
-
+                <!-- Prioridad Automática -->
+                @if(in_array($type, ['task', 'meeting', 'reminder']))
+                <div class="bg-gray-50/50 dark:bg-gray-800/20 p-5 rounded-3xl border border-gray-150 dark:border-gray-800 flex items-center justify-between shadow-sm hover:border-violet-200 dark:hover:border-violet-800/50 transition-all">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-10 h-10 rounded-2xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-violet-600 dark:text-violet-400 shrink-0 border border-violet-200/50 dark:border-violet-700/30 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white">{{ __('Prioridad Automática') }}</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                @if($type === 'meeting')
+                                    {{ __('La prioridad aumentará automáticamente conforme se acerque la fecha de la reunión.') }}
+                                @elseif($type === 'reminder')
+                                    {{ __('La prioridad aumentará automáticamente conforme se acerque la fecha límite del recordatorio.') }}
+                                @else
+                                    {{ __('La prioridad aumentará automáticamente (Media -> Alta -> Crítica) conforme se acerque la fecha de entrega.') }}
+                                @endif
+                            </span>
+                        </div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer select-none">
+                        <input type="checkbox" name="auto_priority" value="1" {{ old('auto_priority') ? 'checked' : '' }} class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-focus:ring-4 peer-focus:ring-violet-500/20 dark:peer-focus:ring-violet-800/20 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-violet-600"></div>
+                    </label>
+                </div>
+                @endif
 
                 <!-- Dates -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 font-mono"
@@ -466,8 +490,8 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="md:col-span-2">
                             <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Canales de Notificación</label>
-                            @php 
-                                $channels = old('metadata.channels', ['email']); 
+                            @php
+                                $channels = old('metadata.channels', ['email']);
                                 $isWhatsappEnabled = config('services.whatsapp.enabled', true) && ($team->settings['has_whatsapp'] ?? false);
                             @endphp
                             <div class="flex flex-wrap gap-4 mt-2">
@@ -480,8 +504,8 @@
                                     <span class="text-sm text-gray-700 dark:text-gray-300"> Notificación en la App (Push/Nudge)</span>
                                 </label>
                                 <label class="flex items-center gap-2 {{ !$isWhatsappEnabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer' }}">
-                                    <input type="checkbox" name="metadata[channels][]" value="whatsapp" 
-                                           {{ in_array('whatsapp', $channels) ? 'checked' : '' }} 
+                                    <input type="checkbox" name="metadata[channels][]" value="whatsapp"
+                                           {{ in_array('whatsapp', $channels) ? 'checked' : '' }}
                                            {{ !$isWhatsappEnabled ? 'disabled' : '' }}
                                            class="accent-violet-600 rounded disabled:opacity-50">
                                     <span class="text-sm text-gray-700 dark:text-gray-300"> WhatsApp
@@ -533,7 +557,7 @@
 
 
                 <!-- Autoprogrammable (Recurrence) -->
-                <div x-data="{ 
+                <div x-data="{
                     isAutoprogrammable: {{ old('is_autoprogrammable', 0) ? 'true' : 'false' }},
                     frequency: '{{ old('autoprogram_settings.frequency', 'daily') }}',
                     monthlyType: '{{ old('autoprogram_settings.monthly_type', 'date') }}',
@@ -556,15 +580,15 @@
                                 <span class="text-[11px] text-gray-500 dark:text-gray-400">{{ __('tasks.autoprogrammable_hint') }}</span>
                             </div>
                         </div>
-                        
+
                         <!-- Segmented Control -->
                         <div class="flex p-1 bg-gray-200 dark:bg-gray-950/50 rounded-xl w-fit self-start sm:self-center border border-transparent dark:border-gray-800">
-                            <button type="button" @click="isAutoprogrammable = false" 
+                            <button type="button" @click="isAutoprogrammable = false"
                                 :class="!isAutoprogrammable ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
                                 class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-200">
                                 {{ __('tasks.disabled') }}
                             </button>
-                            <button type="button" @click="isAutoprogrammable = true" 
+                            <button type="button" @click="isAutoprogrammable = true"
                                 :class="isAutoprogrammable ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/20' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
                                 class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-200">
                                 {{ __('tasks.active') }}
@@ -599,7 +623,7 @@
                                 <div class="flex flex-wrap gap-2">
                                     @foreach(['1' => 'L', '2' => 'M', '3' => 'X', '4' => 'J', '5' => 'V', '6' => 'S', '7' => 'D'] as $val => $label)
                                         <label class="relative cursor-pointer">
-                                            <input type="checkbox" name="autoprogram_settings[days][]" value="{{ $val }}" 
+                                            <input type="checkbox" name="autoprogram_settings[days][]" value="{{ $val }}"
                                                 {{ in_array($val, old('autoprogram_settings.days', [])) ? 'checked' : '' }}
                                                 class="peer sr-only">
                                             <div class="w-9 h-9 rounded-xl border-2 border-gray-100 dark:border-gray-800 flex items-center justify-center text-xs font-black text-gray-400 peer-checked:border-violet-500 peer-checked:bg-violet-50 dark:peer-checked:bg-violet-900/30 peer-checked:text-violet-600 transition-all hover:border-violet-200 shadow-sm">
@@ -635,7 +659,7 @@
                                         <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('Un día específico de la semana') }}</span>
                                     </label>
                                 </div>
-                                
+
                                 <div x-show="monthlyType === 'ordinal'" class="flex items-center gap-2 mt-3" x-transition>
                                     <span class="text-sm text-gray-500">{{ __('El') }}</span>
                                     <select name="autoprogram_settings[monthly_ordinal]" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-3 py-1.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
@@ -755,7 +779,7 @@
 
                     <!-- TAB: Team -->
                     <div x-show="activeTab === 'team'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;" class="space-y-6">
-                
+
                 @if($type === "task")
 <!-- Assignment Mode -->
                 <div class="mb-6 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
@@ -878,7 +902,7 @@
                         </div>
                     @endif
                 </div>
-                
+
                 <!-- Gamification Features (Resiliencia Colectiva) -->
                 <div class="bg-amber-50/20 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 rounded-2xl p-6 space-y-6">
                     <div class="flex items-center gap-3 mb-2">
@@ -953,11 +977,24 @@
                             </label>
                         </div>
                     </div>
-                </div>
 
+                    <!-- BLOCK: Invitados Externos y Destinatarios -->
+                    <div class="bg-gray-50/50 dark:bg-gray-800/30 border border-gray-150 dark:border-gray-800 rounded-3xl p-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0 shadow-sm border border-violet-200 dark:border-violet-500/10">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-black uppercase tracking-widest text-violet-700 dark:text-violet-400">Invitados Externos y Destinatarios</h4>
+                                <p class="text-[10px] text-gray-500 dark:text-gray-400">Añade personas externas al equipo (asistentes a reuniones, firmantes de acuerdos o destinatarios de avisos/recordatorios).</p>
+                            </div>
+                        </div>
+                        <x-guest-crud :initialGuests="old('metadata.guests', [])" :initialMessage="old('metadata.invitation_message', '')" />
+                    </div>
                     </div>
 
                     <!-- TAB: Context -->
+                    </div>
                     <div x-show="activeTab === 'context'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;" class="space-y-6">
 <!-- Contexto y Vinculaciones Card -->
                 <div class="bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 mb-8 space-y-6 transition-all shadow-sm">
@@ -975,14 +1012,22 @@
 
                     <!-- Primary: Expediente (Pre-eminent) -->
                     <div>
-                        <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">
-                            {{ __('Expediente Vinculado') }}
-                        </label>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400">
+                                {{ __('Expediente Vinculado') }}
+                            </label>
+                            <button type="button" onclick="quickCreateExpediente({{ $team->id }})" class="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                <span>{{ __('Nuevo Expediente') }}</span>
+                            </button>
+                        </div>
                         <select name="expediente_id" id="expediente_id_select"
                             class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white transition-all cursor-pointer">
                             <option value="">{{ __('(Ningún expediente)') }}</option>
                             @foreach ($expedientes as $exp)
-                                <option value="{{ $exp->id }}" 
+                                <option value="{{ $exp->id }}"
                                     data-code="{{ $exp->code }}"
                                     {{ (old('expediente_id', request('expediente_id')) == $exp->id) ? 'selected' : '' }}>
                                     {{ $exp->code }} — {{ $exp->title }}
@@ -1003,7 +1048,8 @@
                                 <option value="">{{ __('tasks.no_dependency') ?? 'Sin dependencia' }}</option>
                                 @foreach ($parentActivities as $t)
                                     <option value="{{ $t->id }}" {{ old('parent_id') == $t->id ? 'selected' : '' }}
-                                        data-assignee="{{ $t->assignedUser ? $t->assignedUser->name : __('tasks.unassigned') }}">
+                                        data-assignee="{{ $t->assignedUser ? $t->assignedUser->name : __('tasks.unassigned') }}"
+                                        data-expediente="{{ $t->expediente ? $t->expediente->code : '' }}">
                                         {{ $t->title }}
                                     </option>
                                 @endforeach
@@ -1015,13 +1061,13 @@
                             <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-2">
                                 {{ __('Dependencia de Servicio') }}
                             </label>
-                            <select name="service_id" 
+                            <select name="service_id"
                                 class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
                                 <option value="">{{ __('Sin dependencia externa') }}</option>
                                 @foreach ($services as $service)
-                                    <option value="{{ $service->id }}" 
+                                    <option value="{{ $service->id }}"
                                         {{ old('service_id') == $service->id ? 'selected' : '' }}>
-                                        {{ $service->icon }} {{ $service->name }} 
+                                        {{ $service->icon }} {{ $service->name }}
                                         ({{ $service->getStatusLabel() }})
                                     </option>
                                 @endforeach
@@ -1048,8 +1094,7 @@
     @push('scripts')
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
-    <style>
-        /* Bulletproof Modern TomSelect Wrapper */
+    <style>@media print{/* -- Print Mode Code Block Fix -- */pre,code,pre *,code *,.prose pre,.prose code{background-color:transparent!important;color:#000!important}div[class*=bg-gray-8],div[class*=bg-gray-9],div[class*=bg-slate-8],div[class*=bg-slate-9],div[style*=background],.prose div,.markdown-body div,.bg-gray-800,.bg-gray-900,.dark\\:bg-gray-800,.dark\\:bg-gray-900{background-color:transparent!important}pre,.prose pre{border:1px solid #cbd5e1!important;border-radius:0.25rem!important;white-space:pre-wrap!important;word-break:break-all!important;padding:0.5rem!important}code,.prose code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace!important}}/* Bulletproof Modern TomSelect Wrapper */
         /* Prevenir que el wrapper herede los estilos de Tailwind del select original causando doble caja */
         .ts-wrapper {
             border: none !important;
@@ -1070,13 +1115,13 @@
             cursor: pointer !important;
             transition: all 0.2s ease !important;
         }
-        .ts-control input { 
-            font-size: 14px !important; 
-            padding: 0 !important; 
-            margin: 0 !important; 
-            background: transparent !important; 
-            border: none !important; 
-            outline: none !important; 
+        .ts-control input {
+            font-size: 14px !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            background: transparent !important;
+            border: none !important;
+            outline: none !important;
             box-shadow: none !important;
             line-height: 1 !important;
             height: auto !important;
@@ -1085,23 +1130,23 @@
         }
         .ts-control input::placeholder { color: #9ca3af !important; font-weight: 500 !important; }
         .ts-control.has-items input::placeholder { color: transparent !important; }
-        
+
         .dark .ts-control {
             background-color: #1f2937 !important;
             border-color: #374151 !important;
             color: #f3f4f6 !important;
         }
-        
+
         .ts-wrapper.focus .ts-control {
             border-color: #7c3aed !important;
             box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2) !important;
         }
-        
+
         /* Clear Button Esthetic */
-        .ts-wrapper .clear-button { 
-            right: 1rem !important; 
-            top: 50% !important; 
-            transform: translateY(-50%) !important; 
+        .ts-wrapper .clear-button {
+            right: 1rem !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
             font-size: 1.25rem !important;
             color: #9ca3af !important;
             opacity: 0.7 !important;
@@ -1109,32 +1154,32 @@
         }
         .ts-wrapper .clear-button:hover { opacity: 1 !important; color: #ef4444 !important; }
         .ts-wrapper .ts-control { padding-right: 2.5rem !important; }
-        
-        .ts-dropdown { 
-            border-radius: 1rem !important; 
+
+        .ts-dropdown {
+            border-radius: 1rem !important;
             border: 1px solid #e5e7eb !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important; 
-            margin-top: 6px !important; 
-            padding: 0.5rem !important; 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+            margin-top: 6px !important;
+            padding: 0.5rem !important;
             z-index: 9999 !important;
         }
         .dark .ts-dropdown { background-color: #111827 !important; border-color: #374151 !important; }
-        
-        .ts-dropdown .option { 
-            padding: 0.625rem 0.75rem !important; 
-            border-radius: 0.6rem !important; 
-            margin-bottom: 2px !important; 
+
+        .ts-dropdown .option {
+            padding: 0.625rem 0.75rem !important;
+            border-radius: 0.6rem !important;
+            margin-bottom: 2px !important;
             transition: all 0.15s ease !important;
             color: #374151 !important;
         }
         .dark .ts-dropdown .option { color: #e5e7eb !important; }
-        
-        .ts-dropdown .active { 
-            background-color: #f5f3ff !important; 
-            color: #4f46e5 !important; 
+
+        .ts-dropdown .active {
+            background-color: #f5f3ff !important;
+            color: #4f46e5 !important;
         }
         .dark .ts-dropdown .active { background-color: #4f46e5 !important; color: #ffffff !important; }
-        
+
         /* Ocultar el select original para evitar duplicidad si TomSelect tarda un instante */
         #parent_id_select, #expediente_id_select { display: none; }
     </style>
@@ -1148,10 +1193,10 @@
                     throw new Error('El formato no es un JSON de Sientia MTX válido.');
                 }
                 const task = data.task;
-                
+
                 // Title
                 document.querySelector('[name="title"]').value = task.title || '';
-                
+
                 // Description (Rich Editor)
                 const descEl = document.getElementById('description');
                 if (descEl) {
@@ -1171,10 +1216,10 @@
                         obsEl.value = task.observations || '';
                     }
                 }
-                
+
                 if (task.priority) document.querySelector('[name="priority"]').value = task.priority;
                 if (task.urgency) document.querySelector('[name="urgency"]').value = task.urgency;
-                
+
                 // Visibility
                 const visRadio = document.querySelector(`input[name="visibility"][value="${task.visibility}"]`);
                 if (visRadio) visRadio.checked = true;
@@ -1189,7 +1234,7 @@
                 // Checkboxes
                 if (document.querySelector('[name="is_out_of_skill_tree"]'))
                     document.querySelector('[name="is_out_of_skill_tree"]').checked = !!task.is_out_of_skill_tree;
-                
+
                 if (document.querySelector('[name="is_backstage"]'))
                     document.querySelector('[name="is_backstage"]').checked = !!task.is_backstage;
 
@@ -1278,6 +1323,135 @@
             urgencyEl?.addEventListener('change', updatePreview);
             updatePreview();
 
+            // --- Quick Create Expediente ---
+            window.quickCreateExpediente = function(teamId) {
+                if (typeof Swal === 'undefined') {
+                    alert('Error: SweetAlert2 no está disponible.');
+                    return;
+                }
+
+                Swal.fire({
+                    title: '{{ __("Crear Nuevo Expediente") }}',
+                    html: `
+                        <div class="text-left space-y-4 pt-2">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
+                                    {{ __("Título del Expediente") }} <span class="text-red-500">*</span>
+                                </label>
+                                <input id="swal-exp-title" type="text" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="{{ __("Ej. Expediente de Contratación 2026") }}">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
+                                    {{ __("Descripción (Opcional)") }}
+                                </label>
+                                <textarea id="swal-exp-desc" rows="2" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="{{ __("Resumen o notas sobre este expediente...") }}"></textarea>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
+                                        {{ __("Prioridad") }}
+                                    </label>
+                                    <select id="swal-exp-priority" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                                        <option value="low">{{ __("Baja") }}</option>
+                                        <option value="medium" selected>{{ __("Media") }}</option>
+                                        <option value="high">{{ __("Alta") }}</option>
+                                        <option value="critical">{{ __("Crítica") }}</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
+                                        {{ __("Visibilidad") }}
+                                    </label>
+                                    <select id="swal-exp-visibility" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                                        <option value="public" selected>{{ __("Pública (Equipo)") }}</option>
+                                        <option value="private">{{ __("Privada") }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    `,
+                    focusConfirm: false,
+                    showCancelButton: true,
+                    confirmButtonText: '{{ __("Crear y Asignar") }}',
+                    cancelButtonText: '{{ __("Cancelar") }}',
+                    customClass: {
+                        popup: 'rounded-2xl dark:bg-gray-800 dark:text-white',
+                        confirmButton: 'bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors',
+                        cancelButton: 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 text-gray-700 dark:text-gray-300 font-bold px-4 py-2 rounded-xl text-sm transition-colors mr-2'
+                    },
+                    buttonsStyling: false,
+                    preConfirm: () => {
+                        const title = document.getElementById('swal-exp-title').value.trim();
+                        const description = document.getElementById('swal-exp-desc').value.trim();
+                        const priority = document.getElementById('swal-exp-priority').value;
+                        const visibility = document.getElementById('swal-exp-visibility').value;
+
+                        if (!title) {
+                            Swal.showValidationMessage('{{ __("Por favor, introduce el título del expediente") }}');
+                            return false;
+                        }
+
+                        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+                        return fetch(`/teams/${teamId}/expedientes`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': token
+                            },
+                            body: JSON.stringify({
+                                title: title,
+                                description: description,
+                                priority: priority,
+                                visibility: visibility,
+                                status: 'open'
+                            })
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                return response.json().then(err => {
+                                    throw new Error(err.message || '{{ __("Error al crear el expediente") }}');
+                                });
+                            }
+                            return response.json();
+                        })
+                        .catch(error => {
+                            Swal.showValidationMessage(`Error: ${error.message}`);
+                        });
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed && result.value && result.value.success) {
+                        const exp = result.value.expediente;
+                        const selectEl = document.getElementById('expediente_id_select');
+
+                        if (selectEl) {
+                            if (selectEl.tomselect) {
+                                selectEl.tomselect.addOption({
+                                    value: exp.id,
+                                    text: exp.display_name
+                                });
+                                selectEl.tomselect.setValue(exp.id);
+                            } else {
+                                const option = new Option(exp.display_name, exp.id, true, true);
+                                selectEl.add(option);
+                                selectEl.value = exp.id;
+                            }
+                        }
+
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: '{{ __("Expediente creado y vinculado") }}',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true
+                        });
+                    }
+                });
+            };
+
             // --- TomSelect for Expedientes ---
             const expedSelectEl = document.getElementById('expediente_id_select');
             if (expedSelectEl) {
@@ -1319,6 +1493,7 @@
                     create: false,
                     sortField: { field: "text", direction: "asc" },
                     placeholder: '{{ __("tasks.search_task") ?? "Buscar tarea..." }}',
+                    dropdownParent: "body",
                     render: {
                         option: function(data, escape) {
                             return '<div class="flex items-center gap-3">' +
@@ -1327,18 +1502,20 @@
                                 '</div>' +
                                 '<div class="flex flex-col min-w-0">' +
                                     '<span class="font-bold text-gray-900 dark:text-white truncate text-xs">' + escape(data.text) + '</span>' +
-                                    '<span class="text-[10px] text-gray-700 dark:text-gray-200 font-black uppercase tracking-widest mt-0.5 flex items-center gap-1.5">' + 
+                                    '<span class="text-[10px] text-gray-700 dark:text-gray-200 font-black uppercase tracking-widest mt-0.5 flex items-center gap-1.5">' +
                                         '<span class="w-1.5 h-1.5 rounded-full bg-violet-400"></span>' +
-                                        escape(data.assignee) + 
+                                        escape(data.assignee) +
+                                        (data.expediente ? '<span class="ml-1.5 px-1 bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400 rounded-sm font-mono">[' + escape(data.expediente) + ']</span>' : '') +
                                     '</span>' +
                                 '</div>' +
                             '</div>';
                         },
                         item: function(data, escape) {
-                            return '<div class="flex items-center gap-2">' + 
+                            return '<div class="flex items-center gap-2">' +
                                 '<span class="text-[10px] font-mono font-bold text-violet-500 bg-violet-50 dark:bg-violet-900/30 px-1.5 py-0.5 rounded">#' + escape(data.value) + '</span>' +
                                 '<span class="font-medium text-gray-900 dark:text-white">' + escape(data.text) + '</span>' +
                                 '<span class="text-[9px] text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 font-black uppercase tracking-tighter">@' + escape(data.assignee) + '</span>' +
+                                (data.expediente ? '<span class="text-[9px] text-violet-500 bg-violet-50 dark:bg-violet-900/30 dark:text-violet-400 px-1.5 py-0.5 rounded border border-violet-100 dark:border-violet-800 font-mono font-bold uppercase tracking-tighter">[' + escape(data.expediente) + ']</span>' : '') +
                             '</div>';
                         }
                     }
@@ -1378,7 +1555,7 @@
         function loadDriveFolder(folderId) {
             const container = document.getElementById('drive-contents');
             const teamId = '{{ $team->id }}';
-            
+
             fetch(`{{ route('google.drive.list') }}?team_id=${teamId}&folderId=${folderId}`)
                 .then(response => response.json())
                 .then(data => {
@@ -1388,7 +1565,7 @@
                     }
 
                     container.innerHTML = '';
-                    
+
                     if (folderId !== 'root') {
                         const backBtn = document.createElement('button');
                         backBtn.className = 'p-2 text-blue-600 font-bold text-sm mb-2';
@@ -1446,7 +1623,7 @@
 
         function renderFiles() {
             const list = document.getElementById('file-list-preview');
-            // Note: This won't show the local files again if we cleared it, 
+            // Note: This won't show the local files again if we cleared it,
             // so we should handle local files and drive files together.
             // I'll update updateFileList to also call renderFiles.
         }
@@ -1490,7 +1667,7 @@
                     const isImage = file.type.startsWith('image/');
                     const div = document.createElement('div');
                     div.className = 'flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700/50';
-                    
+
                     let imagePreview = '';
                     if (isImage) {
                         const objectUrl = URL.createObjectURL(file);
@@ -1619,26 +1796,4 @@
     </button>
 </div>
 
-<script>
-    (function() {
-        const bar = document.getElementById('task-create-floating-bar');
-        let visible = false;
-
-        const checkScroll = (e) => {
-            const target = e.target === document ? document.documentElement : e.target;
-            const scrollY = target.scrollTop || 0;
-            const finalScroll = scrollY || window.scrollY || 0;
-            
-            if (finalScroll > 150) {
-                bar.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
-                bar.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
-            } else {
-                bar.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
-                bar.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
-            }
-        };
-
-        window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
-    })();
-</script>
 </x-app-layout>

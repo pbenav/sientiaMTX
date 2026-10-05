@@ -35,10 +35,18 @@
         @include('teams.partials.team-view-nav', ['switcherClass' => 'mt-4 mb-2 flex w-full'])
     </x-slot>
 
-    <div x-data="{ activeTab: '{{ session('tab', request('tab', 'members')) }}' }" class="space-y-6">
+    <div x-data="{ 
+        activeTab: '{{ session('tab', request('tab', 'members')) }}',
+        setActiveTab(t) {
+            this.activeTab = t;
+            const url = new URL(window.location);
+            url.searchParams.set('tab', t);
+            window.history.replaceState({}, '', url);
+        }
+    }" class="space-y-6">
         <!-- Tabs -->
         <div class="flex items-center gap-1 border-b border-gray-200 dark:border-gray-800">
-            <button @click="activeTab = 'members'"
+            <button @click="setActiveTab('members')"
                 :class="activeTab === 'members' ?
                     'text-violet-600 dark:text-violet-400 border-b-2 border-violet-500 bg-violet-50/50 dark:bg-transparent' :
                     'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"

@@ -56,6 +56,7 @@ Route::prefix('citas')->name('public.appointments.')->middleware('throttle:60,1'
     // Buscador de videocita por localizador (desde el portal principal)
     Route::post('/mi-videocita', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'findVideoAppointment'])->name('video.find');
     Route::post('/visitor-by-email', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'getVisitorByEmail'])->name('visitor-by-email');
+    Route::post('/validate-email', [\App\Http\Controllers\Appointments\PublicAppointmentController::class, 'validateEmail'])->name('validate-email');
 });
 
 // --- Directorio y Micrositios Públicos ---
@@ -279,11 +280,17 @@ Route::middleware('auth')->group(function () {
 
         // Private Notes
         Route::post('activities/{activity}/private-notes', [\App\Http\Controllers\ActivityNoteController::class, 'updatePrivateNote'])->name('teams.activities.private-notes.update');
+
+        // Reenvío de invitaciones a reuniones
+        Route::post('activities/{activity}/resend-meeting-invitation', [\App\Http\Controllers\ActivityController::class, 'resendMeetingInvitation'])->name('teams.activities.resend_meeting_invitation');
     });
 
     // Legacy Task routes - all redirect to Activity equivalents
     // These exist only for backward compatibility with existing bookmarks/links
     Route::prefix('teams/{team}')->group(function() {
+        Route::get('tasks', function(Team $team) {
+            return redirect()->route('teams.activities.index', $team);
+        })->name('teams.tasks.index');
         Route::get('tasks/{task}', function(Team $team, $task) {
             $taskId = $task instanceof \App\Models\Task ? $task->id : $task;
             $mapping = \DB::table('activity_task_mapping')->where('task_id', $taskId)->first();
@@ -729,3 +736,4 @@ Route::middleware(['auth'])->prefix('metrics')->name('metrics.')->group(function
     Route::get('/api/snapshots', [\App\Http\Controllers\Metrics\ApiController::class, 'snapshots'])->name('api.snapshots');
     Route::get('/api/alerts', [\App\Http\Controllers\Metrics\ApiController::class, 'alerts'])->name('api.alerts');
 });
+Route::get('/storage/files/{filename}', [\App\Http\Controllers\StorageController::class, 'resolveHallucinatedFile'])->where('filename', '.*');

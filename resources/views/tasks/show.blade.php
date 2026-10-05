@@ -15,7 +15,7 @@
             $instance = $task->instances()
                 ->where('assigned_user_id', auth()->id())
                 ->first();
-            
+
             if ($instance) {
                 $personalInstance = $instance;
             }
@@ -243,7 +243,7 @@
                         <div class="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-gray-400 border-b border-gray-50 dark:border-gray-700/50 mb-1">
                             Google Workspace
                         </div>
-                        
+
                         @can('update', $task)
                             <!-- Sincronización Google Tasks -->
                             <form action="{{ route('google.sync_task', [$team, $task]) }}" method="POST">
@@ -444,7 +444,7 @@
                                     data.forEach(t => {
                                         options += `<option value="${t.id}">${t.text}</option>`;
                                     });
-                                    
+
                                     Swal.fire({
                                         title: '¿Fusionar esta tarea?',
                                         html: `
@@ -489,7 +489,7 @@
                                             const form = document.createElement('form');
                                             form.method = 'POST';
                                             form.action = "{{ route('teams.activities.bulk-merge', [$team, $task]) }}";
-                                            
+
                                             const token = document.createElement('input');
                                             token.type = 'hidden';
                                             token.name = '_token';
@@ -567,7 +567,7 @@
         $isUserObjMgr = $team->isManager($userObj);
         $taskIds = $task->children()->getQuery()->visibleTo($userObj, $isUserObjMgr)->pluck('tasks.id')->push($task->id);
         $allLogs = \App\Models\TimeLog::whereIn('task_id', $taskIds)->with('user')->get();
-        
+
         $activeUserIds = $allLogs->whereNull('end_at')->pluck('user_id')->unique()->toArray();
 
         $timeStats = $allLogs->groupBy('user_id')
@@ -636,7 +636,7 @@
                                     </span>
                                 </div>
                                 <p class="text-xs text-gray-600 dark:text-gray-300 font-medium leading-relaxed">
-                                    Esta tarea ya ha sido convertida y unificada en el nuevo sistema de Actividades. 
+                                    Esta tarea ya ha sido convertida y unificada en el nuevo sistema de Actividades.
                                 </p>
                                 <a href="{{ route('teams.activities.show', [$team, $mappedActivity]) }}" class="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-violet-600 hover:bg-violet-500 px-4 py-2 rounded-xl mt-3 transition-colors shadow-sm">
                                     Ir a la nueva ficha de Actividad
@@ -653,7 +653,7 @@
                 @include('tasks.partials.task-info')
                 @include('tasks.partials.task-instances')
                         <!-- Bulk Actions Bar -->
-                        <div x-show="selectedMembers.length > 0" 
+                        <div x-show="selectedMembers.length > 0"
                              x-transition:enter="transition ease-out duration-300"
                              x-transition:enter-start="opacity-0 -translate-y-4"
                              x-transition:enter-end="opacity-100 translate-y-0"
@@ -663,7 +663,7 @@
                                     <span x-text="selectedMembers.length"></span> {{ __('seleccionados') }}
                                 </span>
                             </div>
-                            <button type="button" @click.prevent.stop="nudgeUser(selectedMembers)" 
+                            <button type="button" @click.prevent.stop="nudgeUser(selectedMembers)"
                                     x-show="selectedMembers.length > 0"
                                     class="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-md flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
@@ -679,8 +679,8 @@
                                 <tr>
                                     @if($team->isCoordinator(auth()->user()) || (isset($instances) && count($instances) > 1))
                                     <th class="px-4 py-3 w-10">
-                                        <input type="checkbox" 
-                                               @click="toggleAll()" 
+                                        <input type="checkbox"
+                                               @click="toggleAll()"
                                                :checked="selectedMembers.length > 0 && selectedMembers.length === document.querySelectorAll('.member-checkbox:not(:disabled)').length"
                                                class="rounded border-gray-300 dark:border-gray-700 text-violet-600 focus:ring-violet-500 bg-white dark:bg-gray-900 cursor-pointer">
                                     </th>
@@ -725,7 +725,7 @@
                                         $instSeconds = (int) $inst->timeLogs->sum(fn($l) => $l->start_at->diffInSeconds($l->end_at ?: now()));
                                         $instFormatted = (floor($instSeconds / 3600) > 0 ? floor($instSeconds / 3600) . "h " : "") . floor(($instSeconds % 3600) / 60) . "m";
                                         $isInstActive = $inst->timeLogs->whereNull('end_at')->isNotEmpty();
-                                        
+
                                         // Team membership date
                                         $teamMember = $instMember ? $team->members()->where('users.id', $instMember->id)->first() : null;
                                         $joinedAt = $teamMember?->pivot?->joined_at;
@@ -734,7 +734,7 @@
                                         $subtasksCount = $isSimulated ? 0 : $inst->children()->count();
                                         $subtasksDone = $isSimulated ? 0 : $inst->children()->where('status', 'completed')->count();
                                     @endphp
-                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer group" 
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer group"
                                         data-name="{{ strtolower($instMemberName) }}"
                                         data-taskname="{{ strtolower($inst->name) }}"
                                         data-status="{{ $inst->status }}"
@@ -742,12 +742,12 @@
                                         x-show="(roadmapQuery === '' || $el.dataset.name.includes(roadmapQuery.toLowerCase()) || $el.dataset.taskname.includes(roadmapQuery.toLowerCase())) && (roadmapStatus === '' || (roadmapStatus === 'completed' && $el.dataset.status === 'completed') || (roadmapStatus === 'pending' && $el.dataset.status !== 'completed'))"
                                         x-transition
                                         @if(!$isSimulated) onclick="if(!event.target.closest('button, select, a, input')) window.location='{{ route('teams.tasks.show', [$team->id, $inst->id]) }}'" @endif>
-                                        
+
                                         @if($team->isCoordinator(auth()->user()) || (isset($instances) && count($instances) > 1))
                                         <td class="px-4 py-4" onclick="event.stopPropagation()">
-                                            <input type="checkbox" 
-                                                   value="{{ ($isSimulated ? $task->id : $inst->id) . ':' . ($isSimulated ? $inst->user_id : ($inst->assigned_user_id ?? '')) }}" 
-                                                   x-model="selectedMembers" 
+                                            <input type="checkbox"
+                                                   value="{{ ($isSimulated ? $task->id : $inst->id) . ':' . ($isSimulated ? $inst->user_id : ($inst->assigned_user_id ?? '')) }}"
+                                                   x-model="selectedMembers"
                                                    class="member-checkbox rounded border-gray-300 dark:border-gray-700 text-violet-600 focus:ring-violet-500 bg-white dark:bg-gray-900 cursor-pointer"
                                                    {{ $inst->status === 'completed' ? 'disabled' : '' }}>
                                         </td>
@@ -756,7 +756,7 @@
                                         <td class="px-4 py-4 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors" onclick="event.stopPropagation()">
                                             <div class="flex items-center gap-4">
                                                     <div class="relative">
-                                                        <img src="{{ $instMember ? $instMember->profile_photo_url : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF' }}" 
+                                                        <img src="{{ $instMember ? $instMember->profile_photo_url : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF' }}"
                                                             alt="{{ $instMemberName }}"
                                                             class="w-10 h-10 rounded-2xl object-cover shadow-inner border border-white dark:border-gray-800 {{ $isInstActive ? 'ring-2 ring-red-500 ring-offset-2 dark:ring-offset-gray-900 animate-pulse' : '' }}">
                                                         @if($isInstActive)
@@ -893,12 +893,12 @@
                             </button>
                         </div>
                     </div>
-                    
+
                     <form action="{{ route('teams.activities.private-notes.update', [$team, $personalInstance]) }}" method="POST" id="private-notes-form">
                         @csrf
                         <div style="max-height: 400px; overflow-y: auto;" class="max-h-[500px] overflow-y-auto custom-scrollbar">
-                            <x-markdown-editor 
-                                name="content" 
+                            <x-markdown-editor
+                                name="content"
                                 id="reply-content-private"
                                 :value="old('content', $personalInstance->currentPrivateNote?->content)"
                                 :label="null"
@@ -917,379 +917,12 @@
             @endif
 
             <script>
-                async function printSection(sectionLabel, contentId) {
-                    const el = document.getElementById(contentId);
-                    if (!el) {
-                        console.error('Print section element not found:', contentId);
-                        return;
-                    }
-                    const content = el.innerHTML;
-                    const isDark = document.documentElement.classList.contains('dark');
 
-                    const result = await Swal.fire({
-                        title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Imprimir Sección</span>',
-                        background: isDark ? '#0f172a' : '#ffffff',
-                        color: isDark ? '#f3f4f6' : '#1f2937',
-                        showConfirmButton: false,
-                        showCloseButton: true,
-                        customClass: {
-                            popup: 'rounded-[2.5rem] shadow-2xl border border-gray-200 dark:border-gray-800 p-6',
-                        },
-                        html: `
-                            <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-6 text-center px-4">
-                                ¿Deseas imprimir la sección "<strong>${sectionLabel}</strong>" con el membrete de Sientia MTX?
-                            </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-2">
-                                <button type="button" id="print-section-btn-with-headers" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-indigo-100 dark:border-indigo-950 bg-indigo-50/50 dark:bg-indigo-950/30 hover:border-indigo-600 transition-all text-center group">
-                                    <div class="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform shadow-sm">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                    </div>
-                                    <div class="font-black text-[10px] uppercase tracking-widest text-indigo-700 dark:text-indigo-300">Con Cabeceras</div>
-                                    <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Estilo oficial</div>
-                                </button>
-                                <button type="button" id="print-section-btn-no-headers" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-slate-900 hover:border-gray-600 transition-all text-center group">
-                                    <div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 group-hover:scale-110 transition-transform shadow-sm">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                                    </div>
-                                    <div class="font-black text-[10px] uppercase tracking-widest text-gray-700 dark:text-gray-300">Sin Cabeceras</div>
-                                    <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Ficha limpia</div>
-                                </button>
-                            </div>
-                        `,
-                        didOpen: (el) => {
-                            el.querySelector('#print-section-btn-with-headers').onclick = () => { window._sientiaPrintSectionMode = 'with'; Swal.close(); };
-                            el.querySelector('#print-section-btn-no-headers').onclick = () => { window._sientiaPrintSectionMode = 'without'; Swal.close(); };
-                        }
-                    });
-
-                    if (!window._sientiaPrintSectionMode) return;
-                    const withHeaders = window._sientiaPrintSectionMode === 'with';
-                    window._sientiaPrintSectionMode = null;
-
-                    const taskTitle = @json($task->title);
-                    const brandLabel = 'Sientia MTX • ' + sectionLabel;
-                    const now = new Date();
-                    const dateStr = now.toLocaleDateString() + ' a las ' + now.toLocaleTimeString();
-                    
-                    const headerHtml = withHeaders ? `
-                        <div class="print-header">
-                            <div class="title-container">
-                                <span class="brand">${brandLabel}</span>
-                                <h1 class="title">${taskTitle}</h1>
-                                <div class="meta">Generado el ${dateStr}</div>
-                            </div>
-                        </div>
-                    ` : `<h1 style="font-size: 22px; font-weight: 800; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 30px; letter-spacing: -0.02em;">${taskTitle}</h1>`;
-
-                    const printWin = window.open('', '_blank', 'width=850,height=900');
-                    printWin.document.write(`
-                        <!DOCTYPE html>
-                        <html>
-                            <head>
-                                <title>${taskTitle}</title>
-                                <meta charset="utf-8">
-                                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-                                <script src="https://cdn.tailwindcss.com"><\/script>
-                                <script>
-                                    tailwind.config = {
-                                        theme: {
-                                            extend: {
-                                                fontFamily: { sans: ['Inter', 'sans-serif'] },
-                                            }
-                                        }
-                                    }
-                                <\/script>
-                                <style>
-                                    body {
-                                        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                                        padding: 40px 60px;
-                                        color: #1e293b;
-                                        background-color: #fff;
-                                        -webkit-print-color-adjust: exact;
-                                        print-color-adjust: exact;
-                                    }
-                                    .print-header {
-                                        border-bottom: 4px solid #4f46e5;
-                                        margin-bottom: 40px;
-                                        padding-bottom: 20px;
-                                    }
-                                    .brand {
-                                        font-weight: 900;
-                                        font-size: 10px;
-                                        text-transform: uppercase;
-                                        letter-spacing: 0.3em;
-                                        color: #6366f1;
-                                        margin-bottom: 8px;
-                                        display: block;
-                                    }
-                                    .title {
-                                        font-size: 26px;
-                                        font-weight: 900;
-                                        color: #0f172a;
-                                        letter-spacing: -0.03em;
-                                        line-height: 1.1;
-                                        margin: 0 0 6px 0;
-                                    }
-                                    .meta {
-                                        font-size: 11px;
-                                        color: #94a3b8;
-                                        font-weight: 500;
-                                        letter-spacing: 0.02em;
-                                    }
-                                    .content {
-                                        margin-top: 30px;
-                                    }
-                                    .content h1, .content h2, .content h3, .content h4, .content h5, .content h6 {
-                                        margin-top: 1.5em;
-                                        margin-bottom: 0.5em;
-                                        font-weight: 700;
-                                        color: #0f172a;
-                                    }
-                                    .content p {
-                                        margin-bottom: 1em;
-                                        line-height: 1.7;
-                                    }
-                                    .content ul, .content ol {
-                                        margin-bottom: 1em;
-                                        padding-left: 1.5em;
-                                    }
-                                    .content li {
-                                        margin-bottom: 0.25em;
-                                    }
-                                    .content img {
-                                        max-width: 100%;
-                                        border-radius: 8px;
-                                    }
-                                    .content table {
-                                        border-collapse: collapse;
-                                        width: 100%;
-                                        margin-bottom: 1em;
-                                    }
-                                    .content td, .content th {
-                                        border: 1px solid #e2e8f0;
-                                        padding: 0.5rem;
-                                    }
-                                    .content pre {
-                                        background: #f1f5f9;
-                                        padding: 1rem;
-                                        border-radius: 0.5rem;
-                                        overflow-x: auto;
-                                    }
-                                    .content code {
-                                        background: #f1f5f9;
-                                        padding: 0.125rem 0.25rem;
-                                        border-radius: 0.25rem;
-                                    }
-                                    .watermark {
-                                        position: fixed;
-                                        bottom: 20px;
-                                        right: 20px;
-                                        font-size: 80px;
-                                        font-weight: 900;
-                                        color: rgba(99, 102, 241, 0.04);
-                                        pointer-events: none;
-                                        z-index: 0;
-                                    }
-                                </style>
-                            </head>
-                            <body>
-                                ${headerHtml}
-                                <div class="content">${content}</div>
-                                ${withHeaders ? '<div class="watermark">Sientia.</div>' : ''}
-                            </body>
-                        </html>
-                    `);
-                    printWin.document.close();
-                    printWin.onload = () => { printWin.print(); };
-                }
-
-                async function printPrivateNotes() {
-                    const editor = document.getElementById('reply-content-private');
-                    let rawContent = editor ? editor.value : '';
-                    const isDark = document.documentElement.classList.contains('dark');
-
-                    const result = await Swal.fire({
-                        title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Imprimir Notas Privadas</span>',
-                        background: isDark ? '#0f172a' : '#ffffff',
-                        color: isDark ? '#f3f4f6' : '#1f2937',
-                        showConfirmButton: false,
-                        showCloseButton: true,
-                        customClass: {
-                            popup: 'rounded-[2.5rem] shadow-2xl border border-gray-200 dark:border-gray-800 p-6',
-                        },
-                        html: `
-                            <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-6 text-center px-4">
-                                ¿Deseas imprimir las notas privadas con el membrete de Sientia MTX?
-                            </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-2">
-                                <button type="button" id="print-notes-btn-with-headers" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-indigo-100 dark:border-indigo-950 bg-indigo-50/50 dark:bg-indigo-950/30 hover:border-indigo-600 transition-all text-center group">
-                                    <div class="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform shadow-sm">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                    </div>
-                                    <div class="font-black text-[10px] uppercase tracking-widest text-indigo-700 dark:text-indigo-300">Con Cabeceras</div>
-                                    <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Estilo oficial</div>
-                                </button>
-                                <button type="button" id="print-notes-btn-no-headers" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-slate-900 hover:border-gray-600 transition-all text-center group">
-                                    <div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 group-hover:scale-110 transition-transform shadow-sm">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                                    </div>
-                                    <div class="font-black text-[10px] uppercase tracking-widest text-gray-700 dark:text-gray-300">Sin Cabeceras</div>
-                                    <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Ficha limpia</div>
-                                </button>
-                            </div>
-                        `,
-                        didOpen: (el) => {
-                            el.querySelector('#print-notes-btn-with-headers').onclick = () => { window._sientiaPrintNotesMode = 'with'; Swal.close(); };
-                            el.querySelector('#print-notes-btn-no-headers').onclick = () => { window._sientiaPrintNotesMode = 'without'; Swal.close(); };
-                        }
-                    });
-
-                    if (!window._sientiaPrintNotesMode) return;
-                    const withHeaders = window._sientiaPrintNotesMode === 'with';
-                    window._sientiaPrintNotesMode = null;
-
-                    let htmlContent = typeof marked !== 'undefined' ? marked.parse(rawContent) : rawContent.replace(/\n/g, '<br>');
-                    const taskTitle = @json($task->title);
-                    const brandLabel = 'Sientia MTX • Notas Privadas';
-                    const now = new Date();
-                    const dateStr = now.toLocaleDateString() + ' a las ' + now.toLocaleTimeString();
-                    
-                    const headerHtml = withHeaders ? `
-                        <div class="print-header">
-                            <div class="title-container">
-                                <span class="brand">${brandLabel}</span>
-                                <h1 class="title">${taskTitle}</h1>
-                                <div class="meta">Generado el ${dateStr}</div>
-                            </div>
-                        </div>
-                    ` : `<h1 style="font-size: 22px; font-weight: 800; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 30px; letter-spacing: -0.02em;">${taskTitle}</h1>`;
-
-                    const printWin = window.open('', '_blank', 'width=850,height=900');
-                    printWin.document.write(`
-                        <!DOCTYPE html>
-                        <html>
-                            <head>
-                                <title>${taskTitle}</title>
-                                <meta charset="utf-8">
-                                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-                                <script src="https://cdn.tailwindcss.com"><\/script>
-                                <script>
-                                    tailwind.config = {
-                                        theme: {
-                                            extend: {
-                                                fontFamily: { sans: ['Inter', 'sans-serif'] },
-                                            }
-                                        }
-                                    }
-                                <\/script>
-                                <style>
-                                    body {
-                                        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                                        padding: 40px 60px;
-                                        color: #1e293b;
-                                        background-color: #fff;
-                                        -webkit-print-color-adjust: exact;
-                                        print-color-adjust: exact;
-                                    }
-                                    .print-header {
-                                        border-bottom: 4px solid #4f46e5;
-                                        margin-bottom: 40px;
-                                        padding-bottom: 20px;
-                                    }
-                                    .brand {
-                                        font-weight: 900;
-                                        font-size: 10px;
-                                        text-transform: uppercase;
-                                        letter-spacing: 0.3em;
-                                        color: #6366f1;
-                                        margin-bottom: 8px;
-                                        display: block;
-                                    }
-                                    .title {
-                                        font-size: 26px;
-                                        font-weight: 900;
-                                        color: #0f172a;
-                                        letter-spacing: -0.03em;
-                                        line-height: 1.1;
-                                        margin: 0 0 6px 0;
-                                    }
-                                    .meta {
-                                        font-size: 11px;
-                                        color: #94a3b8;
-                                        font-weight: 500;
-                                        letter-spacing: 0.02em;
-                                    }
-                                    .content {
-                                        margin-top: 30px;
-                                    }
-                                    .content h1, .content h2, .content h3, .content h4, .content h5, .content h6 {
-                                        margin-top: 1.5em;
-                                        margin-bottom: 0.5em;
-                                        font-weight: 700;
-                                        color: #0f172a;
-                                    }
-                                    .content p {
-                                        margin-bottom: 1em;
-                                        line-height: 1.7;
-                                    }
-                                    .content ul, .content ol {
-                                        margin-bottom: 1em;
-                                        padding-left: 1.5em;
-                                    }
-                                    .content li {
-                                        margin-bottom: 0.25em;
-                                    }
-                                    .content img {
-                                        max-width: 100%;
-                                        border-radius: 8px;
-                                    }
-                                    .content table {
-                                        border-collapse: collapse;
-                                        width: 100%;
-                                        margin-bottom: 1em;
-                                    }
-                                    .content td, .content th {
-                                        border: 1px solid #e2e8f0;
-                                        padding: 0.5rem;
-                                    }
-                                    .content pre {
-                                        background: #f1f5f9;
-                                        padding: 1rem;
-                                        border-radius: 0.5rem;
-                                        overflow-x: auto;
-                                    }
-                                    .content code {
-                                        background: #f1f5f9;
-                                        padding: 0.125rem 0.25rem;
-                                        border-radius: 0.25rem;
-                                    }
-                                    .watermark {
-                                        position: fixed;
-                                        bottom: 20px;
-                                        right: 20px;
-                                        font-size: 80px;
-                                        font-weight: 900;
-                                        color: rgba(99, 102, 241, 0.04);
-                                        pointer-events: none;
-                                        z-index: 0;
-                                    }
-                                </style>
-                            </head>
-                            <body>
-                                ${headerHtml}
-                                <div class="content">${htmlContent}</div>
-                                ${withHeaders ? '<div class="watermark">Sientia.</div>' : ''}
-                            </body>
-                        </html>
-                    `);
-                    printWin.document.close();
-                    printWin.onload = () => { printWin.print(); };
-                }
 
                     async function printFullTask() {
                         console.log('printFullTask called');
                         const isDark = document.documentElement.classList.contains('dark');
-                        
+
                         const result = await Swal.fire({
                             title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Imprimir Ficha Técnica</span>',
                             background: isDark ? '#0f172a' : '#ffffff',
@@ -1327,10 +960,10 @@
                         const due = @json($task->due_date?->format('d/m/y H:i') ?? '—');
                         const teamName = @json($team->name);
                         const creator = @json($task->creator?->name ?? '—');
-                        
+
                         const description = document.getElementById('description-content')?.innerHTML ?? '—';
                         const observations = document.getElementById('observations-content')?.innerHTML ?? '—';
-                        
+
                         const members = @json($task->assignedTo->pluck('name')->toArray());
                         const skills = @json($task->skills->map(fn($s) => $s->name)->toArray());
 
@@ -1342,7 +975,7 @@
                             '    <meta charset="UTF-8">',
                             '    <title>Ficha Técnica - ' + taskTitle + '</title>',
                             '    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">',
-                            '    <style>',
+                            '    <style>@media print{/* -- Print Mode Code Block Fix -- */pre,code,pre *,code *,.prose pre,.prose code{background-color:transparent!important;color:#000!important}div[class*=bg-gray-8],div[class*=bg-gray-9],div[class*=bg-slate-8],div[class*=bg-slate-9],div[style*=background],.prose div,.markdown-body div,.bg-gray-800,.bg-gray-900,.dark\\:bg-gray-800,.dark\\:bg-gray-900{background-color:transparent!important}pre,.prose pre{border:1px solid #cbd5e1!important;border-radius:0.25rem!important;white-space:pre-wrap!important;word-break:break-all!important;padding:0.5rem!important}code,.prose code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace!important}}',
                             '      ' + (!withHeaders ? '.header, .side-accent { display: none !important; }' : ''),
                             '      @page { size: A4; margin: 0; }',
                             '      body { font-family: \'Outfit\', sans-serif; color: #1e293b; line-height: 1.2; margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }',
@@ -1379,6 +1012,8 @@
                             '      .signature-label { font-size: 7px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; }',
                             '      .footer { margin-top: 15px; padding-top: 8px; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; font-size: 6.5px; font-weight: 600; color: #cbd5e1; text-transform: uppercase; clear: both; }',
                             '      @media print { html, body { height: auto; } .sheet { border: none; height: auto; min-height: 0; } .content-layout { display: block; } .sidebar-content { float: right; width: 180px; margin-left: 20px; margin-bottom: 15px; } .main-content { display: block; } .content-layout::after { content: ""; display: table; clear: both; } }',
+                            '      .emoji-icon { display: inline-block !important; width: 1.35em !important; min-width: 1.35em !important; height: 1.35em !important; line-height: 1.35em !important; vertical-align: -0.15em !important; margin-right: 0.35em !important; text-align: center !important; overflow: visible !important; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important; }',
+                            '      @media print { html, body { height: auto; } .sheet { border: none; height: auto; min-height: 0; } .content-layout { display: block; } .sidebar-content { float: right; width: 180px; margin-left: 20px; margin-bottom: 15px; } .main-content { display: block; } .content-layout::after { content: ""; display: table; clear: both; } .emoji-icon { display: inline-block !important; width: 1.35em !important; min-width: 1.35em !important; height: 1.35em !important; line-height: 1.35em !important; vertical-align: -0.15em !important; margin-right: 0.35em !important; text-align: center !important; overflow: visible !important; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important; } }',
                             '    </style>',
                             '  </head>',
                             '  <body>',
@@ -1420,8 +1055,38 @@
                             '      <footer class="footer"><span>Sientia MTX Ecosystem &bull; v0.9.5</span><span>' + new Date().toLocaleString() + '</span></footer>',
                             '    </div>',
                             '    <script>' +
+                            '      if (window.opener && window.opener.SientiaPrint && window.opener.SientiaPrint.wrapEmojis) {' +
+                            '        window.opener.SientiaPrint.wrapEmojis(document.body);' +
+                            '      }' +
                             '      window.onload = function() { setTimeout(function() { window.print(); setTimeout(function() { window.close(); }, 500); }, 300); };' +
+                            '      function wrapEmojisInElement(element) {' +
+                            '        if (!element) return;' +
+                            '        const emojiRegex = /([\\u{1F300}-\\u{1FAFF}\\u{2600}-\\u{26FF}\\u{2700}-\\u{27BF}\\u{1F900}-\\u{1F9FF}\\u{1F600}-\\u{1F64F}\\u{1F680}-\\u{1F6FF}\\u{2B50}\\u{2B55}\\u{231A}-\\u{231B}\\u{23ED}-\\u{23EF}\\u{23F0}\\u{23F3}\\u{25FD}-\\u{25FE}\\u{2B05}-\\u{2B07}\\u{2B1B}-\\u{2B1C}\\u{3297}\\u{3299}\\u{3030}\\u{303D}\\u{00A9}\\u{00AE}\\u{2122}\\u{2139}]|\\p{Extended_Pictographic})(?:\\uFE0F|\\uFE0E)?/gu;' +
+                            '        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);' +
+                            '        const nodesToReplace = [];' +
+                            '        let node;' +
+                            '        while (node = walker.nextNode()) {' +
+                            '          if (node.parentElement && node.parentElement.closest(".emoji-icon, script, style, textarea")) continue;' +
+                            '          if (emojiRegex.test(node.nodeValue)) nodesToReplace.push(node);' +
+                            '      window.onload = function() {' +
+                            '        if (window.opener && window.opener.SientiaPrint && window.opener.SientiaPrint.wrapEmojis) {' +
+                            '          window.opener.SientiaPrint.wrapEmojis(document.body);' +
+                            '        }' +
+                            '        nodesToReplace.forEach(textNode => {' +
+                            '          const parent = textNode.parentNode;' +
+                            '          if (!parent) return;' +
+                            '          const html = textNode.nodeValue.replace(/([\\u{1F300}-\\u{1FAFF}\\u{2600}-\\u{26FF}\\u{2700}-\\u{27BF}\\u{1F900}-\\u{1F9FF}\\u{1F600}-\\u{1F64F}\\u{1F680}-\\u{1F6FF}\\u{2B50}\\u{2B55}\\u{231A}-\\u{231B}\\u{23ED}-\\u{23EF}\\u{23F0}\\u{23F3}\\u{25FD}-\\u{25FE}\\u{2B05}-\\u{2B07}\\u{2B1B}-\\u{2B1C}\\u{3297}\\u{3299}\\u{3030}\\u{303D}\\u{00A9}\\u{00AE}\\u{2122}\\u{2139}]|\\p{Extended_Pictographic})(?:\\uFE0F|\\uFE0E)?/gu, "<span class=\\"emoji-icon\\">$1</span>");' +
+                            '          const temp = document.createElement("span");' +
+                            '          temp.innerHTML = html;' +
+                            '          while (temp.firstChild) parent.insertBefore(temp.firstChild, textNode);' +
+                            '          parent.removeChild(textNode);' +
+                            '        });' +
+                            '      }' +
+                            '      window.onload = function() { wrapEmojisInElement(document.body); setTimeout(function() { window.print(); setTimeout(function() { window.close(); }, 500); }, 300); };' +
                             '<' + '/script>',
+                            '        setTimeout(function() { window.print(); setTimeout(function() { window.close(); }, 500); }, 300);' +
+                            '      };' +
+                            '    <' + '/script>',
                             '  </body>',
                             '</html>'
                         ].join('');

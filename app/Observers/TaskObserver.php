@@ -169,7 +169,7 @@ class TaskObserver
 
             // Datos comunes a mapear
             $activityData = [
-                'team_id'             => $task->team_id,
+                'team_id'             => $task->team_id ?? auth()->user()?->current_team_id ?? auth()->user()?->teams()->first()?->id ?? 1,
                 'created_by_id'       => $task->created_by_id ?? auth()->id() ?? 1,
                 'parent_id'           => $activityParentId,
                 'expediente_id'       => $task->expediente_id,
@@ -194,24 +194,39 @@ class TaskObserver
                 'google_calendar_event_id' => $task->google_calendar_event_id,
                 'google_calendar_id'  => $task->google_calendar_id,
                 'google_synced_at'    => $task->google_synced_at,
-                // Metadatos específicos de la tarea
-                'metadata' => [
-                    'urgency'              => $task->urgency ?? 'medium',
-                    'cognitive_load'       => $task->cognitive_load ?? 1,
-                    'is_out_of_skill_tree' => $task->is_out_of_skill_tree ?? false,
-                    'autoprogram_settings' => $task->autoprogram_settings,
-                    'service_id'           => $task->service_id,
-                    'skill_id'             => $task->skill_id,
-                    'impact_human_metric'  => $task->impact_human_metric ?? 0,
-                ]
             ];
 
             if ($mapping) {
                 $activity = \App\Models\Activity::withTrashed()->find($mapping->activity_id);
                 if ($activity) {
+                    $activityData['metadata'] = array_merge(
+                        $activity->metadata ?? [],
+                        [
+                            'urgency'              => $task->urgency ?? 'medium',
+                            'cognitive_load'       => $task->cognitive_load ?? 1,
+                            'is_out_of_skill_tree' => $task->is_out_of_skill_tree ?? false,
+                            'is_autoprogrammable'  => (bool) $task->is_autoprogrammable,
+                            'is_timeline_locked'   => (bool) $task->is_timeline_locked,
+                            'autoprogram_settings' => $task->autoprogram_settings,
+                            'service_id'           => $task->service_id,
+                            'skill_id'             => $task->skill_id,
+                            'impact_human_metric'  => $task->impact_human_metric ?? 0,
+                        ]
+                    );
                     $activity->update($activityData);
                 }
             } else {
+                $activityData['metadata'] = [
+                    'urgency'              => $task->urgency ?? 'medium',
+                    'cognitive_load'       => $task->cognitive_load ?? 1,
+                    'is_out_of_skill_tree' => $task->is_out_of_skill_tree ?? false,
+                    'is_autoprogrammable'  => (bool) $task->is_autoprogrammable,
+                    'is_timeline_locked'   => (bool) $task->is_timeline_locked,
+                    'autoprogram_settings' => $task->autoprogram_settings,
+                    'service_id'           => $task->service_id,
+                    'skill_id'             => $task->skill_id,
+                    'impact_human_metric'  => $task->impact_human_metric ?? 0,
+                ];
                 $activity = \App\Models\Activity::create($activityData);
                 
                 \DB::table('activity_task_mapping')->insert([

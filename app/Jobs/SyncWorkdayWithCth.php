@@ -30,13 +30,21 @@ class SyncWorkdayWithCth implements ShouldQueue
     /**
      * Check current status in CTH (Single source of truth).
      */
-    public static function checkStatus(User $user): array
+    public static function checkStatus(User $user, bool $forceFresh = false): array
     {
         if (!$user->sync_with_cth || !$user->cth_api_token) {
             return ['success' => false, 'is_working' => false];
         }
 
-        return \Illuminate\Support\Facades\Cache::remember('cth_status_' . $user->id, 10, function () use ($user) {
+        
+        $cacheKey = 'cth_status_' . $user->id;
+        
+        if ($forceFresh) {
+            \Illuminate\Support\Facades\Cache::forget($cacheKey);
+        }
+
+        return \Illuminate\Support\Facades\Cache::remember($cacheKey, 10, function () use ($user) {
+
             $apiUrl = rtrim($user->cth_api_url ?: config('services.cth.url'), '/');
             if (str_ends_with($apiUrl, '/api/v1')) {
                 $apiUrl = substr($apiUrl, 0, -7);

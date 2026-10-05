@@ -90,7 +90,7 @@ class TaskBulkController extends Controller
             }
         }
 
-        return redirect()->route('teams.tasks.index', $team)
+        return redirect()->route('teams.activities.index', $team)
             ->with('success', "$deletedCount tareas eliminadas correctamente.");
     }
 

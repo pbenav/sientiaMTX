@@ -7,7 +7,7 @@
 
     <div class="py-8 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900 min-h-screen">
         <div class="max-w-full mx-auto">
-            
+
     <x-slot name="header">
         <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
             <div class="flex items-start gap-4 min-w-0 flex-1">
@@ -50,7 +50,7 @@
                     </button>
                     <div x-show="open" @click.away="open = false" x-cloak
                          class="absolute right-0 mt-3 w-64 bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 py-3 z-50">
-                        
+
                         @can('update', $survey)
                         <a href="{{ route($routePrefix . 'edit', $contextTeam ? [$contextTeam, $survey] : [$survey]) }}" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                             <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
@@ -108,14 +108,14 @@
 
                         <div class="my-2 border-t border-gray-100 dark:border-gray-800"></div>
 
-                        <button onclick="window.print()" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                        <button onclick="promptSurveyPrint()" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                             <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                             {{ __('Imprimir Informe') }}
                         </button>
 
                         @can('delete', $survey)
 
-                        <a href="{{ route($contextTeam ? 'teams.surveys.export-json' : 'global-surveys.export-json', $contextTeam ? [$contextTeam, $survey] : [$survey]) }}" 
+                        <a href="{{ route($contextTeam ? 'teams.surveys.export-json' : 'global-surveys.export-json', $contextTeam ? [$contextTeam, $survey] : [$survey]) }}"
                            class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                             <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                             {{ __('Exportar JSON') }}
@@ -158,7 +158,7 @@
                                 {{ $survey->is_closed ? __('Finalizada') : __('Activa') }}
                             </span>
                         </div>
-                        
+
                         <div class="h-4 w-px bg-gray-200 dark:bg-gray-700 hidden sm:block"></div>
 
                         <div class="flex items-center gap-2">
@@ -195,7 +195,7 @@
                                     </h2>
                                     <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">{{ __('Métricas clave y participación en tiempo real') }}</p>
                                 </div>
-                                <button onclick="window.print()" class="print-hide flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-indigo-500/20 active:scale-95">
+                                <button onclick="promptSurveyPrint()" class="print-hide flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-indigo-500/20 active:scale-95">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                                     {{ __('Imprimir Reporte') }}
                                 </button>
@@ -249,11 +249,11 @@
 
                                 <!-- Visibility KPI -->
                                 <div x-data="{ copied: false }"
-                                     @if($survey->is_public && $survey->uuid) 
-                                        @click='navigator.clipboard.writeText("{{ route("public.surveys.show", $survey->uuid) }}"); copied = true; setTimeout(() => copied = false, 3000); Swal.fire({title:"Enlace Copiado", text:"El enlace público de la encuesta ha sido copiado al portapapeles", icon:"success", toast:true, position:"top-end", showConfirmButton:false, timer:3000})' 
+                                     @if($survey->is_public && $survey->uuid)
+                                        @click='navigator.clipboard.writeText("{{ route("public.surveys.show", $survey->uuid) }}"); copied = true; setTimeout(() => copied = false, 3000); Swal.fire({title:"Enlace Copiado", text:"El enlace público de la encuesta ha sido copiado al portapapeles", icon:"success", toast:true, position:"top-end", showConfirmButton:false, timer:3000})'
                                         class="cursor-pointer bg-white dark:bg-gray-800/60 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-between group hover:border-violet-500/50 hover:bg-violet-50/50 dark:hover:bg-violet-900/10 transition-all duration-300"
                                         title="{{ __('Copiar Enlace Público') }}"
-                                     @else 
+                                     @else
                                         class="bg-white dark:bg-gray-800/60 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-between group hover:border-indigo-500/50 transition-all duration-300"
                                      @endif>
                                     <div class="min-w-0">
@@ -280,7 +280,7 @@
 
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
                                 @foreach($survey->questions as $question)
-                                    <div x-data="{ showModal: false }" 
+                                    <div x-data="{ showModal: false }"
                                          class="bg-white dark:bg-gray-800/40 p-3 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col h-full hover:shadow-md transition-all cursor-pointer hover:border-indigo-500/50 group/card"
                                          @click="showModal = true">
                                         <div class="flex items-start justify-between mb-2 border-l-2 border-indigo-600 pl-3">
@@ -294,12 +294,12 @@
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
                                             </div>
                                         </div>
-                                        
+
                                         @if($question->type !== 'text')
                                             <div class="flex flex-1 items-center gap-4">
                                                 <!-- Legend (Ultra compact KPI style) -->
                                                 <div class="flex-1 space-y-2">
-                                                    @php 
+                                                    @php
                                                         $qTotalVotes = $question->votes()->count();
                                                         $maxVotes = $question->options->max('votes_count');
                                                     @endphp
@@ -329,8 +329,8 @@
                                                 <!-- Mini Chart -->
                                                 <div class="relative shrink-0 flex justify-center">
                                                     <div class="w-[70px] h-[70px]">
-                                                        <canvas id="chart-{{ $question->id }}" 
-                                                                data-type="{{ $question->type }}" 
+                                                        <canvas id="chart-{{ $question->id }}"
+                                                                data-type="{{ $question->type }}"
                                                                 data-labels='@json($question->options->pluck("label"))'
                                                                 data-values='@json($question->options->pluck("votes_count"))'></canvas>
                                                     </div>
@@ -363,7 +363,7 @@
                                         <!-- Modal for Answers (All Types) -->
                                         <div x-show="showModal" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6" style="display: none;">
                                             <div x-show="showModal" x-transition.opacity class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="showModal = false"></div>
-                                            <div x-show="showModal" 
+                                            <div x-show="showModal"
                                                  x-transition:enter="transition ease-out duration-300"
                                                  x-transition:enter-start="opacity-0 scale-95 translate-y-4"
                                                  x-transition:enter-end="opacity-100 scale-100 translate-y-0"
@@ -372,7 +372,7 @@
                                                  x-transition:leave-end="opacity-0 scale-95 translate-y-4"
                                                  class="relative w-full max-w-2xl bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[85vh] cursor-default"
                                                  @click.stop>
-                                                
+
                                                 <!-- Modal Header -->
                                                 <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between shrink-0 bg-gray-50/50 dark:bg-gray-800/50">
                                                     <div class="flex items-center gap-3">
@@ -411,15 +411,15 @@
                                                         @else
                                                             <div class="flex justify-center mb-8 mt-4">
                                                                 <div class="w-full max-w-[300px] sm:max-w-[400px]">
-                                                                    <canvas id="chart-modal-{{ $question->id }}" 
-                                                                            data-type="{{ $question->type }}" 
+                                                                    <canvas id="chart-modal-{{ $question->id }}"
+                                                                            data-type="{{ $question->type }}"
                                                                             data-labels='@json($question->options->pluck("label"))'
                                                                             data-values='@json($question->options->pluck("votes_count"))'></canvas>
                                                                 </div>
                                                             </div>
                                                             <!-- Detail Legend -->
                                                             <div class="space-y-3">
-                                                                @php 
+                                                                @php
                                                                     $qTotalVotes = $question->votes()->count();
                                                                     $maxVotes = $question->options->max('votes_count');
                                                                 @endphp
@@ -461,7 +461,7 @@
                     <div x-data="{ showForm: @json(!$hasVoted) }">
                         @if($hasVoted)
                             <div class="flex justify-center mb-12">
-                                <button @click="showForm = !showForm" 
+                                <button @click="showForm = !showForm"
                                         class="px-8 py-4 bg-white dark:bg-gray-900 border-2 border-indigo-100 dark:border-indigo-800 rounded-2xl text-sm font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all shadow-sm flex items-center gap-3">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                     <span x-text="showForm ? '{{ __('Ocultar mis respuestas') }}' : '{{ __('Cambiar mis respuestas') }}'"></span>
@@ -473,7 +473,7 @@
                             $initialAnswers = $userVotes->mapWithKeys(function($votes, $qId) use ($survey) {
                                 $question = $survey->questions->where('id', $qId)->first();
                                 if (!$question) return [];
-                                
+
                                 if ($question->type === 'text') {
                                     return [$qId => $votes->first()->text_value ?? ''];
                                 } elseif ($question->type === 'multiple_choice') {
@@ -488,7 +488,7 @@
                         <div x-show="showForm" x-collapse x-cloak class="space-y-12" x-data="votingManager(@json($initialAnswers))">
                             <form action="{{ route($routePrefix . 'vote', $contextTeam ? [$contextTeam, $survey] : [$survey]) }}" method="POST" id="survey-form">
                                 @csrf
-                                
+
                                 <div class="space-y-8">
                                     @foreach($survey->questions as $index => $question)
                                         <div class="relative">
@@ -512,15 +512,15 @@
                                                         @foreach($question->options as $option)
                                                             <label class="group relative flex items-center p-4 bg-gray-50 dark:bg-gray-800/50 border-2 rounded-2xl cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/5"
                                                                    :class="isSelected({{ $question->id }}, {{ $option->id }}, '{{ $question->type }}') ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-500/10' : 'border-transparent'">
-                                                                
+
                                                                 <div class="relative flex items-center justify-center w-5 h-5 border-2 border-gray-300 dark:border-gray-600 rounded-md group-hover:border-indigo-500 transition-colors overflow-hidden"
                                                                      :class="isSelected({{ $question->id }}, {{ $option->id }}, '{{ $question->type }}') ? 'border-indigo-600' : ''">
-                                                                    <input type="{{ $question->type === 'single_choice' ? 'radio' : 'checkbox' }}" 
-                                                                           name="answers[{{ $question->id }}]{{ $question->type === 'multiple_choice' ? '[]' : '' }}" 
+                                                                    <input type="{{ $question->type === 'single_choice' ? 'radio' : 'checkbox' }}"
+                                                                           name="answers[{{ $question->id }}]{{ $question->type === 'multiple_choice' ? '[]' : '' }}"
                                                                            value="{{ $option->id }}"
                                                                            x-model="answers['{{ $question->id }}']"
                                                                            class="peer absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                                                                    
+
                                                                     <div class="w-full h-full bg-indigo-600 p-1 transition-opacity duration-300 pointer-events-none"
                                                                          :class="isSelected({{ $question->id }}, {{ $option->id }}, '{{ $question->type }}') ? 'opacity-100' : 'opacity-0'">
                                                                         <svg class="w-full h-full text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"/></svg>
@@ -545,7 +545,7 @@
                                                     <div class="flex flex-col items-center p-6 bg-gray-50 dark:bg-gray-800/30 rounded-3xl border border-gray-100 dark:border-gray-800">
                                                         <div class="flex gap-4">
                                                             <template x-for="i in 5">
-                                                                <button type="button" @click="answers['{{ $question->id }}'] = i" 
+                                                                <button type="button" @click="answers['{{ $question->id }}'] = i"
                                                                         class="p-2 transition-all duration-300 transform hover:scale-125"
                                                                         :class="answers['{{ $question->id }}'] >= i ? 'text-amber-400 drop-shadow-xl' : 'text-gray-300 dark:text-gray-600'">
                                                                     <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
@@ -571,7 +571,7 @@
                                 </div>
 
                                 <div class="mt-10 pt-8 border-t border-gray-100 dark:border-gray-800 flex justify-center">
-                                    <button type="submit" 
+                                    <button type="submit"
                                             class="group relative inline-flex items-center justify-center px-10 py-4 font-bold text-white tracking-wider uppercase transition-all duration-500 ease-in-out transform bg-indigo-600 rounded-2xl hover:scale-105 active:scale-95 shadow-[0_20px_50px_rgba(79,70,229,0.3)] hover:shadow-[0_20px_50px_rgba(79,70,229,0.5)] overflow-hidden">
                                         <div class="absolute inset-0 w-full h-full bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-700"></div>
                                         <span class="relative flex items-center gap-2 text-lg">
@@ -665,9 +665,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             const isDark = document.documentElement.classList.contains('dark');
             const textColor = isDark ? '#94a3b8' : '#64748b';
-            
+
             const colors = [
-                '#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f59e0b', 
+                '#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f59e0b',
                 '#10b981', '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6'
             ];
 
@@ -736,19 +736,19 @@
                     // Inicializar el objeto answers con los datos que vienen del servidor
                     // initialAnswers debe ser un objeto: { question_id: [option_ids] o valor }
                     const data = initialAnswers || {};
-                    
+
                     // Procesamos todas las preguntas para asegurar que existan en el modelo de Alpine
                     @foreach($survey->questions as $question)
                         @php
                             $qId = $question->id;
                             $type = $question->type;
                         @endphp
-                        
+
                         if (data['{{ $qId }}'] !== undefined) {
                             @if($type === 'multiple_choice')
                                 // Checkboxes esperan un array de strings
-                                this.answers['{{ $qId }}'] = Array.isArray(data['{{ $qId }}']) 
-                                    ? data['{{ $qId }}'].map(String) 
+                                this.answers['{{ $qId }}'] = Array.isArray(data['{{ $qId }}'])
+                                    ? data['{{ $qId }}'].map(String)
                                     : [String(data['{{ $qId }}'])];
                             @elseif($type === 'single_choice' || $type === 'rating')
                                 // Radios y rating esperan un string o número único
@@ -771,7 +771,7 @@
                 isSelected(qId, oId, type) {
                     const current = this.answers[String(qId)];
                     if (current === undefined || current === null || current === '') return false;
-                    
+
                     if (type === 'single_choice') {
                         return String(current) === String(oId);
                     } else if (type === 'multiple_choice') {
@@ -791,8 +791,13 @@
             }
 
             .print-hide { display: none !important; }
-            
-            body { 
+
+        @media screen {
+            .print-only-header { display: none !important; }
+        }
+
+
+            body {
                 background: white !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
@@ -826,8 +831,8 @@
             }
 
             /* Main padding reduction and layout block fix */
-            .p-8, .sm\:p-12, .pb-0, .mb-12, .mb-10, .mb-8, .mb-4 { 
-                padding: 0 !important; 
+            .p-8, .sm\:p-12, .pb-0, .mb-12, .mb-10, .mb-8, .mb-4 {
+                padding: 0 !important;
                 margin-bottom: 0.5rem !important;
                 display: block !important;
                 page-break-inside: auto !important;
@@ -835,7 +840,7 @@
             }
 
             /* Card preservation */
-            .bg-white { 
+            .bg-white {
                 background-color: #ffffff !important;
                 border-radius: 0.5rem !important;
                 border: 1px solid #e5e7eb !important;
@@ -847,7 +852,7 @@
                 display: grid !important;
                 gap: 0.5rem !important;
             }
-            
+
             /* KPI Grid (Top cards) - 4 columns */
             .lg\:grid-cols-4 {
                 grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
@@ -865,13 +870,13 @@
             h2 { font-size: 10pt !important; color: #111827 !important; }
             h3 { font-size: 8.5pt !important; color: #111827 !important; }
             p, span, div { font-size: 7pt !important; color: #374151 !important; }
-            
+
             /* Charts and Indicators - Condensed */
             canvas {
                 max-width: 70px !important;
                 max-height: 70px !important;
             }
-            
+
             .h-1 { height: 2px !important; }
             .space-y-2 { margin-top: 0.15rem !important; }
             .space-y-2 > * + * { margin-top: 0.15rem !important; }
@@ -882,7 +887,7 @@
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
             }
-            
+
             /* Global Layout Fix */
             .lg\:grid-cols-12 {
                 display: block !important;
@@ -891,9 +896,9 @@
                 width: 100% !important;
                 max-width: 100% !important;
             }
-            
+
             /* Aggressive hiding */
-            header, nav, footer, aside, #sidebar, .view-switcher-container, #survey-floating-bar, 
+            header, nav, footer, aside, #sidebar, .view-switcher-container, #survey-floating-bar,
             .status-banner, button:not(.print-hide), x-slot[name="header"] a,
             .animate-pulse, .ai-assistant-container, .telegram-widget-container, .quick-notes-container {
                 display: none !important;
@@ -915,7 +920,7 @@
          @window:touchend="stopDrag"
          class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-4 z-50 flex items-center gap-2 p-2.5 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl opacity-0 pointer-events-none transition-all duration-300 whitespace-nowrap cursor-move"
          :class="isDragging ? 'scale-105 shadow-[0_20px_50px_rgba(0,0,0,0.2)]' : ''">
-        
+
         <a href="{{ route($routePrefix . 'index', $contextTeam ? [$contextTeam] : []) }}"
            class="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-indigo-600 transition-colors rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-500/10">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
@@ -933,12 +938,12 @@
         <div class="w-px h-5 bg-gray-100 dark:bg-gray-800"></div>
 
         <div class="flex items-center gap-1">
-            <button onclick="window.print()" class="p-2 text-gray-400 hover:text-indigo-600 transition-colors rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-500/10" title="{{ __('Imprimir Informe') }}">
+            <button onclick="promptSurveyPrint()" class="p-2 text-gray-400 hover:text-indigo-600 transition-colors rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-500/10" title="{{ __('Imprimir Informe') }}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
             </button>
 
             @can('update', $survey)
-            <a href="{{ route($routePrefix . 'edit', $contextTeam ? [$contextTeam, $survey] : [$survey]) }}" 
+            <a href="{{ route($routePrefix . 'edit', $contextTeam ? [$contextTeam, $survey] : [$survey]) }}"
                class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 transition-all">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                 <span>{{ __('Editar') }}</span>
@@ -947,23 +952,6 @@
         </div>
     </div>
 
-    <script>
-        (function() {
-            const bar = document.getElementById('survey-floating-bar');
-            if (!bar) return;
-
-            window.addEventListener('scroll', () => {
-                const scrollY = window.scrollY || document.documentElement.scrollTop;
-                if (scrollY > 150) {
-                    bar.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
-                    bar.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
-                } else {
-                    bar.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
-                    bar.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
-                }
-            }, { passive: true });
-        })();
-    </script>
     @if ($isGlobal)
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
         <style>
@@ -1023,4 +1011,90 @@
             </script>
         @endpush
     @endif
+
+    <script>
+        function promptSurveyPrint() {
+            const isDark = document.documentElement.classList.contains('dark');
+            Swal.fire({
+                title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Opciones de Impresión</span>',
+                background: isDark ? '#0f172a' : '#ffffff',
+                color: isDark ? '#f3f4f6' : '#1f2937',
+                showConfirmButton: false,
+                showCloseButton: true,
+                customClass: {
+                    popup: 'rounded-[2.5rem] shadow-2xl border border-gray-200 dark:border-gray-800 p-6',
+                },
+                html: `
+                    <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-6 text-center px-4">
+                        ¿Deseas incluir las cabeceras corporativas y la marca de agua de SientiaMTX?
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-2">
+                        <button type="button" id="print-btn-with" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-indigo-100 dark:border-indigo-950 bg-indigo-50/50 dark:bg-indigo-950/30 hover:border-indigo-600 transition-all text-center group">
+                            <div class="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform shadow-sm">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            </div>
+                            <div class="font-black text-[10px] uppercase tracking-widest text-indigo-700 dark:text-indigo-300">Con Cabeceras</div>
+                            <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Reporte oficial</div>
+                        </button>
+                        <button type="button" id="print-btn-without" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-slate-900 hover:border-gray-600 transition-all text-center group">
+                            <div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 group-hover:scale-110 transition-transform shadow-sm">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                            </div>
+                            <div class="font-black text-[10px] uppercase tracking-widest text-gray-700 dark:text-gray-300">Sin Cabeceras</div>
+                            <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Contenido limpio</div>
+                        </button>
+                    </div>
+                `,
+                didOpen: () => {
+                    document.getElementById('print-btn-with').onclick = () => {
+                        window._sientiaPrintWithHeader = true;
+                        Swal.close();
+                    };
+                    document.getElementById('print-btn-without').onclick = () => {
+                        window._sientiaPrintWithHeader = false;
+                        Swal.close();
+                    };
+                }
+            }).then(() => {
+                if (typeof window._sientiaPrintWithHeader !== 'undefined') {
+                    executeSurveyPrint(window._sientiaPrintWithHeader);
+                    delete window._sientiaPrintWithHeader;
+                }
+            });
+        }
+
+        function executeSurveyPrint(withHeaders) {
+            let headerEl = document.getElementById('mtx-survey-print-header');
+            if (withHeaders) {
+                if (!headerEl) {
+                    headerEl = document.createElement('div');
+                    headerEl.id = 'mtx-survey-print-header';
+                    headerEl.className = 'print-only-header hidden';
+                    headerEl.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #e5e7eb; padding-bottom: 12px; margin-bottom: 24px;">
+                            <div>
+                                <h1 style="font-size: 24pt; font-weight: 900; color: #111827; margin: 0; letter-spacing: -0.02em;">sientia<em style="color:#7c3aed; font-style:normal;">MTX</em></h1>
+                                <div style="font-size: 10pt; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px;">Reporte de Encuesta</div>
+                            </div>
+                            <div style="text-align: right; font-size: 9pt; color: #9ca3af;">
+                                <div>{{ $survey->title }}</div>
+                                <div>Generado el ${new Date().toLocaleDateString()}</div>
+                            </div>
+                        </div>
+                    `;
+                    document.body.prepend(headerEl);
+                }
+                headerEl.style.display = 'block';
+            } else {
+                if (headerEl) headerEl.style.display = 'none';
+            }
+            
+            // Allow DOM to update and Swal to fully unmount before printing
+            setTimeout(() => {
+                window.print();
+                if (headerEl) headerEl.style.display = 'none';
+            }, 600);
+        }
+    </script>
+
 </x-app-layout>

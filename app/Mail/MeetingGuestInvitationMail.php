@@ -39,8 +39,9 @@ class MeetingGuestInvitationMail extends Mailable implements ShouldQueue
      */
     public function envelope(): Envelope
     {
+        $prefix = $this->activity->type === 'reminder' ? '🔔 Recordatorio: ' : 'Invitación a Reunión: ';
         return new Envelope(
-            subject: 'Invitación a Reunión: ' . $this->activity->title,
+            subject: $prefix . $this->activity->title,
         );
     }
 

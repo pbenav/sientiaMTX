@@ -146,6 +146,7 @@ class Activity extends Model
      */
     protected $fillable = [
         'uuid',
+        'team_id',
         'created_by_id',
         'parent_id',
         'expediente_id',
@@ -171,6 +172,8 @@ class Activity extends Model
         'google_calendar_event_id',
         'google_calendar_id',
         'google_synced_at',
+        'converted_from_id',
+        'original_metadata',
     ];
 
     /**
@@ -477,13 +480,14 @@ class Activity extends Model
 
     /**
      * Obtiene la nota privada del usuario autenticado actual.
-     * Compatibilidad con Task.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne<\App\Models\TaskPrivateNote, $this>
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne<\App\Models\ActivityNote, $this>
      */
     public function currentPrivateNote()
     {
-        return $this->hasOne(\App\Models\TaskPrivateNote::class, 'task_id')->where('user_id', auth()->id());
+        return $this->hasOne(ActivityNote::class, 'activity_id')
+            ->where('user_id', auth()->id())
+            ->where('visibility', 'private');
     }
 
     /**
@@ -608,8 +612,8 @@ class Activity extends Model
      * Actualiza la prioridad de forma automática basándose en el tiempo restante.
      *
      * Reglas:
-     * - Si no tiene auto_priority habilitado, due_date, o ya está completada: no hace nada
-     * - Si la fecha de vencimiento ya pasó: priority = 'critical'
+     * - Si no tiene auto_priority habilitado, fecha objetivo, o ya está completada: no hace nada
+     * - Si la fecha ya pasó: priority = 'critical'
      * - Si queda menos del 10% del tiempo: 'critical'
      * - Si queda menos del 25%: 'high'
      * - Si queda menos del 50%: 'medium'
@@ -618,19 +622,26 @@ class Activity extends Model
      */
     public function updateAutoPriority()
     {
-        if (!$this->auto_priority || !$this->due_date || $this->status === 'completed') {
+        $targetDate = $this->type === 'meeting'
+            ? ($this->scheduled_date ?: $this->due_date)
+            : ($this->due_date ?: $this->scheduled_date);
+
+        if (!$this->auto_priority || !$targetDate || $this->isCompleted()) {
             return;
         }
 
-        $start = $this->scheduled_date ?: $this->created_at;
         $now = now();
-        $due = $this->due_date;
+        $due = $targetDate;
 
         if ($now->gt($due)) {
             $this->priority = 'critical';
             $this->save();
             return;
         }
+
+        $start = ($this->scheduled_date && $this->due_date && $this->scheduled_date->lt($this->due_date) && $this->type !== 'meeting')
+            ? $this->scheduled_date
+            : ($this->created_at ?: $now);
 
         $totalDuration = $start->diffInSeconds($due);
         if ($totalDuration <= 0) return;
@@ -678,13 +689,13 @@ class Activity extends Model
 
     /**
      * Determina si la actividad aparece en el diagrama Gantt.
-     * Solo los tipos en GANTT_TYPES con due_date asignado aparecen.
+     * Solo los tipos en GANTT_TYPES no archivados aparecen.
      *
-     * @return bool True si el tipo está en GANTT_TYPES y tiene due_date
+     * @return bool True si el tipo está en GANTT_TYPES y no está archivada
      */
     public function isInGantt(): bool
     {
-        return in_array($this->type, self::GANTT_TYPES) && $this->due_date !== null;
+        return in_array($this->type, self::GANTT_TYPES) && !$this->is_archived;
     }
 
     /**

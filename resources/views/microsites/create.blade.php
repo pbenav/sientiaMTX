@@ -21,7 +21,7 @@
 
     <div class="pt-12 pb-32 px-4">
         <div class="max-w-5xl mx-auto">
-            
+
             @if ($errors->any())
                 <div class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
                     <div class="flex items-center gap-2 text-red-600 dark:text-red-400 font-bold mb-2">
@@ -189,25 +189,4 @@
         </button>
     </div>
 
-    <script>
-        (function() {
-            const bar = document.getElementById('microsite-create-floating-bar');
-
-            const checkScroll = (e) => {
-                const target = e.target === document ? document.documentElement : e.target;
-                const scrollY = target.scrollTop || 0;
-                const finalScroll = scrollY || window.scrollY || 0;
-                
-                if (finalScroll > 150) {
-                    bar.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
-                    bar.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
-                } else {
-                    bar.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
-                    bar.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
-                }
-            };
-
-            window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
-        })();
-    </script>
 </x-app-layout>

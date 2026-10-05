@@ -76,10 +76,11 @@ class ActivityController extends Controller
         $activities = $this->activityService->paginate($team, $filters, $perPage, $sort, $dir);
 
         $members = $team->members()->orderBy('name')->get();
-        $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->orderBy('name')->get();
+        $skills = \App\Models\Skill::forTeam($team->id)->orderBy('name')->get();
         $expedientes = $team->expedientes()->orderBy('title')->get();
 
-        return view('teams.activities.index', compact('team', 'activities', 'filters', 'sort', 'dir', 'members', 'skills', 'expedientes'));
+        $allStatusesWithTypes = \App\Services\ActivityStatusManager::getAllStatusesWithTypes();
+        return view('teams.activities.index', compact('team', 'activities', 'filters', 'sort', 'dir', 'members', 'skills', 'expedientes', 'allStatusesWithTypes'));
     }
 
     /**
@@ -162,18 +163,18 @@ class ActivityController extends Controller
         $members = $team->members()->select('users.id', 'users.name', 'users.email')->orderBy('users.name')->get();
         $groups  = $team->groups()->with('users:id')->select('groups.id', 'groups.name')->orderBy('groups.name')->get();
         $expedientes = $team->expedientes()->select('expedientes.id', 'expedientes.code', 'expedientes.title')->orderBy('expedientes.title')->get();
-        
+
         // Actividades padre disponibles para jerarquía (no circulares)
-        $parentActivities = Activity::with('creator:id,name')
+        $parentActivities = Activity::with(['creator:id,name', 'assignedUser:users.id,users.name', 'expediente:id,code'])
             ->byTeam($team->id)
             ->active()
             ->where('is_template', false)
-            ->select('id', 'title', 'created_by_id', 'created_at')
+            ->select('id', 'title', 'created_by_id', 'created_at', 'expediente_id')
             ->latest()
             ->limit(50)
             ->get();
 
-        $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->orderBy('name')->get();
+        $skills = \App\Models\Skill::forTeam($team->id)->orderBy('name')->get();
         $services = $team->services()->orderBy('name')->get();
         $priorities = ['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'];
 
@@ -187,28 +188,12 @@ class ActivityController extends Controller
      * @param  Team  $team
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(StoreActivityRequest $request, Team $team)
+    public function store(\App\Http\Requests\StoreActivityRequest $request, \App\Models\Team $team)
     {
-        \Illuminate\Support\Facades\Log::info("STORE PAYLOAD:", $request->all());
         $validated = $request->validated();
         $type = $validated['type'];
-        
-        // Inject top-level toggle into metadata
-        if ($request->has('is_timeline_locked')) {
-            $validated['metadata']['is_timeline_locked'] = $request->boolean('is_timeline_locked');
-        } else {
-            $validated['metadata']['is_timeline_locked'] = false;
-        }
 
-        // Quota check de archivos
-        if ($request->hasFile('attachments')) {
-            $totalUploadSize = collect($request->file('attachments'))->sum(fn($file) => $file->getSize());
-            if (!$team->hasAvailableQuota($totalUploadSize)) {
-                return back()->withInput()->withErrors(['attachments' => '⚠️ El equipo ha alcanzado su límite de almacenamiento. Libera espacio para subir más archivos.']);
-            }
-        }
-
-        \Illuminate\Support\Facades\Log::info("ActivityController@store: drive_attachments = " . $request->input('drive_attachments'));
+        $validated['auto_priority'] = $request->boolean('auto_priority');
 
         $activity = $this->activityService->create(
             $team,
@@ -273,64 +258,23 @@ class ActivityController extends Controller
         $groups  = $team->groups()->with('users:id')->select('groups.id', 'groups.name')->orderBy('groups.name')->get();
         $expedientes = $team->expedientes()->select('expedientes.id', 'expedientes.code', 'expedientes.title')->orderBy('expedientes.title')->get();
 
-        
-        $parentActivities = Activity::with('creator:id,name')
+
+        $parentActivities = Activity::with(['creator:id,name', 'assignedUser:users.id,users.name', 'expediente:id,code'])
             ->byTeam($team->id)
             ->active()
             ->where('id', '!=', $activity->id)
             ->where('is_template', false)
-            ->select('id', 'title', 'created_by_id', 'created_at')
+            ->select('id', 'title', 'created_by_id', 'created_at', 'expediente_id')
             ->latest()
             ->limit(50)
             ->get();
 
-        $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->orderBy('name')->get();
+        $skills = \App\Models\Skill::forTeam($team->id)->orderBy('name')->get();
         $services = $team->services()->orderBy('name')->get();
         $priorities = ['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'];
-        $allStatuses = [
-            'pending'     => 'Pendiente',
-            'in_progress' => 'En Progreso',
-            'completed'   => 'Completada',
-            'cancelled'   => 'Cancelada',
-            'blocked'     => 'Bloqueada',
-            'draft'       => 'Borrador',
-            'active'      => 'Activo',
-            'proposed'    => 'Propuesto',
-            'scheduled'   => 'Programado',
-            'uploaded'    => 'Subido',
-            'editing'     => 'En Edición',
-            'reviewed'    => 'Revisado',
-            'archived'    => 'Archivado',
-            'reviewing'   => 'En Revisión',
-            'approved'    => 'Aprobado',
-            'rejected'    => 'Rechazado',
-            'broken'      => 'Roto',
-            'published'   => 'Publicado',
-            'triggered'   => 'Disparado',
-            'dismissed'   => 'Descartado',
-            'deprecated'  => 'Deprecado'
-        ];
-        $templateLoader = app(\App\Services\TemplateLoader::class);
-        $template = $templateLoader->getTemplate($activity->type);
-        $allowedStates = array_keys($template['states'] ?? []);
+                $allStatusesWithTypes = \App\Services\ActivityStatusManager::getAllStatusesWithTypes();
 
-        $statuses = [];
-        if (!empty($allowedStates)) {
-            foreach ($allowedStates as $state) {
-                $statuses[$state] = $allStatuses[$state] ?? ucfirst($state);
-            }
-        } else {
-            $statuses = [
-                'pending'     => 'Pendiente',
-                'in_progress' => 'En Progreso',
-                'completed'   => 'Completada',
-                'cancelled'   => 'Cancelada',
-                'blocked'     => 'Bloqueada',
-            ];
-        }
-
-        return view('teams.activities.edit', compact('team', 'activity', 'members', 'groups', 'expedientes', 'parentActivities', 'skills', 'services', 'priorities', 'statuses'));
-    }
+        return view('teams.activities.edit', compact('team', 'activity', 'members', 'groups', 'expedientes', 'parentActivities', 'skills', 'services', 'priorities', 'allStatusesWithTypes'));    }
 
     /**
      * Actualiza una actividad, verificando cuota de almacenamiento y protegiendo integridad de acuerdos firmados.
@@ -343,53 +287,30 @@ class ActivityController extends Controller
      * @param  Activity  $activity
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(StoreActivityRequest $request, Team $team, Activity $activity)
+    public function update(\App\Http\Requests\StoreActivityRequest $request, \App\Models\Team $team, \App\Models\Activity $activity, \App\Actions\Activities\UpdateActivityAction $updateAction)
     {
         if ($activity->team_id !== $team->id) {
             return redirect()->route('teams.dashboard', $team)->with('warning', __('activities.not_found'));
         }
 
-        if (auth()->user()->cannot('update', $activity)) {
+        $isParallel = $request->boolean('create_as_parallel');
+
+        if (!$isParallel && auth()->user()->cannot('update', $activity)) {
             abort(403, 'No tienes permiso para modificar esta actividad.');
+        }
+
+        if ($isParallel && auth()->user()->cannot('create', [\App\Models\Activity::class, $team])) {
+            abort(403, 'No tienes permiso para crear actividades en este equipo.');
         }
 
         $validated = $request->validated();
         
-        // Inject top-level toggle into metadata
-        if ($request->has('is_timeline_locked')) {
-            $validated['metadata']['is_timeline_locked'] = $request->boolean('is_timeline_locked');
-        } else {
-            $validated['metadata']['is_timeline_locked'] = false;
+        $result = $updateAction->execute($team, $activity, $validated, $request, $isParallel);
+
+        if ($isParallel) {
+            return redirect()->route('teams.activities.show', ['team' => $team, 'activity' => $result])
+                ->with('success', '✨ Actividad paralela creada con éxito para la misma fecha y hora sin modificar la original.');
         }
-
-        if ($request->hasFile('attachments')) {
-            $totalUploadSize = collect($request->file('attachments'))->sum(fn($file) => $file->getSize());
-            if (!$team->hasAvailableQuota($totalUploadSize)) {
-                return back()->withInput()->withErrors(['attachments' => '⚠️ El equipo ha alcanzado su límite de almacenamiento.']);
-            }
-        }
-
-        // Protección de integridad: si el acuerdo ya tiene firmas,
-        // ignorar cualquier intento de modificar los términos del documento.
-        if ($activity->type === 'agreement') {
-            $meta = $activity->metadata ?? [];
-            $hasMemberSig = collect($meta['member_signatures'] ?? [])->contains(fn($s) => !empty($s['signed_at']));
-            $hasGuestSig  = collect($meta['guests'] ?? [])->contains(fn($g) => !empty($g['signed_at']));
-
-            if ($hasMemberSig || $hasGuestSig) {
-                // Descartar el campo terms del payload para que no se sobreescriba
-                if (isset($validated['metadata']['terms'])) {
-                    unset($validated['metadata']['terms']);
-                }
-            }
-        }
-
-        $this->activityService->update(
-            $activity, 
-            $validated, 
-            $request->file('attachments') ?? [],
-            $request->input('drive_attachments')
-        );
 
         $tab = $request->input('tab', 'general');
         return redirect()->route('teams.activities.show', ['team' => $team, 'activity' => $activity, 'tab' => $tab])
@@ -613,7 +534,7 @@ class ActivityController extends Controller
      * @param  Activity  $activity
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function restoreMetadata(Request $request, Team $team, Activity $activity)
+    public function restoreMetadata(\Illuminate\Http\Request $request, \App\Models\Team $team, \App\Models\Activity $activity, \App\Actions\Activities\RestoreMetadataAction $action)
     {
         if ($activity->team_id !== $team->id) {
             abort(404);
@@ -629,45 +550,43 @@ class ActivityController extends Controller
             return back()->with('error', 'No se encontró el historial de conversión original.');
         }
 
-        // Recuperar campos genéricos
-        $activity->type = $ancestor->type;
-        $activity->description = $ancestor->description;
-        $activity->due_date = $ancestor->due_date;
-        $activity->scheduled_date = $ancestor->scheduled_date;
-        $activity->original_due_date = $ancestor->original_due_date;
-        $activity->priority = $ancestor->priority;
-        $activity->auto_priority = $ancestor->auto_priority;
-
-        // Recuperar la estructura de metadatos del ancestro, pero mantener la trazabilidad
-        $currentMetadata = $activity->metadata ?? [];
-        $ancestorMetadata = $ancestor->metadata ?? [];
-        
-        // Mantener las claves de conversión de la actividad actual para no perder el enlace "vidas pasadas"
-        $internalKeys = ['converted_from_uuid', 'converted_from_id'];
-        $conversionLinks = [];
-        foreach ($internalKeys as $k) {
-            if (isset($currentMetadata[$k])) {
-                $conversionLinks[$k] = $currentMetadata[$k];
-            }
-        }
-
-        // Limpiar claves del ancestro que marcan que está deprecado
-        unset($ancestorMetadata['converted_to_uuid'], $ancestorMetadata['converted_to_id'], $ancestorMetadata['is_deprecated']);
-
-        // Metadatos finales: los del ancestro más los enlaces de conversión
-        $finalMetadata = array_merge($ancestorMetadata, $conversionLinks);
-        
-        $activity->metadata = $finalMetadata;
-
-        $activity->saveQuietly();
-
-        $activity->histories()->create([
-            'user_id' => auth()->id(),
-            'action' => 'restored_metadata',
-            'details' => json_encode(['from_uuid' => $ancestor->uuid])
-        ]);
+        $action->execute($activity, $ancestor);
 
         return back()->with('success', 'Metadatos y configuraciones de la versión original restaurados correctamente.');
     }
+
+    /**
+     * Reenvía el correo de invitación a un invitado externo de una reunión.
+     *
+     * @param  Request  $request
+     * @param  Team     $team
+     * @param  Activity $activity
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function resendMeetingInvitation(\Illuminate\Http\Request $request, \App\Models\Team $team, \App\Models\Activity $activity, \App\Actions\Activities\ResendMeetingInvitationAction $action)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        if ($activity->team_id !== $team->id) {
+            return response()->json(['error' => __('activities.not_found')], 404);
+        }
+
+        if (auth()->user()->cannot('update', $activity)) {
+            return response()->json(['error' => 'No tienes permiso para gestionar invitaciones en esta actividad.'], 403);
+        }
+
+        if (!in_array($activity->type, ['meeting', 'reminder'])) {
+            return response()->json(['error' => 'Esta actividad no admite invitaciones a destinatarios externos.'], 422);
+        }
+
+        $result = $action->execute($activity, $request->email);
+
+        if (!$result['success']) {
+            return response()->json(['error' => $result['error']], $result['code']);
+        }
+
+        return response()->json(['success' => true, 'message' => $result['message']]);
+    }
 }
+
 

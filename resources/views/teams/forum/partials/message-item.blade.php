@@ -3,7 +3,7 @@
     $isFirst = $isRoot && ($index ?? 0) === 0 && ($currentPage ?? 1) === 1;
 @endphp
 
-<div id="msg-{{ $message->id }}" class="flex gap-4 {{ $isCurrentUser ? 'flex-row-reverse' : '' }} scroll-mt-24 {{ !$isRoot ? 'scale-95 origin-left opacity-90' : '' }}">
+<div id="msg-{{ $message->id }}" class="flex gap-4 scroll-mt-24 {{ !$isRoot ? 'scale-95 origin-left opacity-90' : '' }}">
     <!-- Avatar -->
     <div class="flex-shrink-0 mt-1">
         <img src="{{ $message->user->profile_photo_url }}" alt="{{ $message->user->name }}" 
@@ -11,7 +11,7 @@
     </div>
 
     <!-- Message Bubble -->
-    <div class="flex flex-col {{ $isCurrentUser ? 'items-end' : 'items-start' }} w-full {{ $isRoot ? 'max-w-[85%]' : 'max-w-[92%]' }}">
+    <div class="flex flex-col items-start w-full {{ $isRoot ? 'max-w-[85%]' : 'max-w-[92%]' }}">
         <div class="flex items-center justify-between w-full mb-1 px-1 gap-4">
             <div class="flex items-baseline gap-2 min-w-0">
                 <span class="text-xs font-bold text-gray-700 dark:text-gray-300 truncate">{{ $message->user->name }}</span>
@@ -133,7 +133,7 @@
         <div class="relative group w-full">
             <!-- View Mode -->
             <div id="message-view-{{ $message->id }}"
-                class="p-4 rounded-2xl shadow-sm border {{ $isCurrentUser ? 'bg-violet-50 border-violet-100 dark:bg-violet-900/10 dark:border-violet-800/50 rounded-tr-none text-violet-900 dark:text-violet-100' : 'bg-white border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-tl-none text-gray-800 dark:text-gray-200' }} {{ !$isRoot ? 'py-3' : '' }}">
+                class="p-4 rounded-2xl shadow-sm border {{ $isCurrentUser ? 'bg-violet-50 border-violet-100 dark:bg-violet-900/10 dark:border-violet-800/50 rounded-tl-none text-violet-900 dark:text-violet-100' : 'bg-white border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-tl-none text-gray-800 dark:text-gray-200' }} {{ !$isRoot ? 'py-3' : '' }}">
                 <div x-data="{ expanded: false, isOverflowing: false }"
                      x-init="$nextTick(() => { if ($refs.contentBox.scrollHeight > 300) isOverflowing = true })"
                      class="relative">

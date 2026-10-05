@@ -235,17 +235,29 @@ class GoogleService
     }
 
     /**
-     * Create a calendar event in Google Calendar.
+     * Create a calendar event in Google Calendar and return the full Event object.
      */
-    public function createEvent(array $data, string $calendarId = 'primary', array $optParams = []): ?string
+    public function createCalendarEvent(array $data, string $calendarId = 'primary', array $optParams = []): ?\Google\Service\Calendar\Event
     {
         $service = new Calendar($this->client);
         try {
             $event = new \Google\Service\Calendar\Event($data);
-            $result = $service->events->insert($calendarId, $event, $optParams);
-            return $result->getId();
+            return $service->events->insert($calendarId, $event, $optParams);
         } catch (\Exception $e) {
             Log::error('Error creating Google Calendar event: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Create a calendar event in Google Calendar.
+     */
+    public function createEvent(array $data, string $calendarId = 'primary', array $optParams = []): ?string
+    {
+        try {
+            $result = $this->createCalendarEvent($data, $calendarId, $optParams);
+            return $result?->getId();
+        } catch (\Exception $e) {
             return null;
         }
     }
@@ -325,9 +337,17 @@ class GoogleService
             ]);
 
             // Extract Meet URL
-            $meetUrl = $created->getConferenceData()?->getEntryPoints()[0]?->getUri() ?? null;
+            $meetUrl = $created->getHangoutLink() ?: ($created->getConferenceData()?->getEntryPoints()[0]?->getUri() ?? null);
 
             Log::info('GoogleService@createMeetViaCalendar: Meet URL obtained via Calendar', ['uri' => $meetUrl, 'event_id' => $created->getId()]);
+
+            // Limpieza inmediata del evento efímero para no ensuciar el calendario del usuario
+            try {
+                $service->events->delete('primary', $created->getId());
+            } catch (\Exception $delEx) {
+                // No crítico si falla la eliminación inmediata
+            }
+
             return $meetUrl;
         } catch (\Exception $e) {
             Log::error('GoogleService@createMeetViaCalendar error: ' . $e->getMessage());

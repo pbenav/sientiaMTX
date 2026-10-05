@@ -71,19 +71,19 @@
                         <option value="">Estado</option>
                         @php
                             $selectedType = $filters['type'] ?? '';
-                            $statuses = [];
-                            if ($selectedType === 'document') {
-                                $statuses = \App\Models\Activities\DocumentActivity::STATUSES;
-                            } elseif ($selectedType === 'task') {
-                                $statuses = \App\Models\Activities\TaskActivity::STATUSES;
-                            } else {
-                                $statuses = array_unique(array_merge(\App\Models\Activities\TaskActivity::STATUSES, \App\Models\Activities\DocumentActivity::STATUSES));
-                            }
                         @endphp
-                        @foreach($statuses as $statusKey)
-                            <option value="{{ $statusKey }}" {{ ($filters['status'] ?? '') === $statusKey ? 'selected' : '' }}>
-                                {{ __("activities.statuses.{$statusKey}") }}
-                            </option>
+                        @foreach($allStatusesWithTypes as $statusKey => $data)
+                            @if(empty($selectedType) || in_array($selectedType, $data['types']))
+                                <option value="{{ $statusKey }}"
+                                    data-types="{{ implode(',', $data['types']) }}"
+                                    {{ ($filters['status'] ?? '') === $statusKey ? 'selected' : '' }}>
+                                    {{ $data['label'] }}
+                                </option>
+                            @else
+                                <option value="{{ $statusKey }}" disabled class="text-gray-400 dark:text-gray-600 line-through">
+                                    {{ $data['label'] }}
+                                </option>
+                            @endif
                         @endforeach
                     </select>
                 </div>
@@ -173,12 +173,13 @@
 
                 <!-- Selects & Actions -->
                 <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto flex-1">
-                    <select onchange="applyBulkUpdate('status', this.value)" class="flex-1 min-w-[120px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 py-2.5 pl-3 pr-6 focus:ring-2 focus:ring-violet-500/50 outline-none">
+                    <select id="bulkStatusSelect" onchange="applyBulkUpdate('status', this.value)" class="flex-1 min-w-[120px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 py-2.5 pl-3 pr-6 focus:ring-2 focus:ring-violet-500/50 outline-none">
                         <option value="">🎯 Estado</option>
-                        <option value="pending">Pendiente</option>
-                        <option value="in_progress">En Progreso</option>
-                        <option value="completed">Completada</option>
-                        <option value="blocked">Bloqueada</option>
+                        @foreach($allStatusesWithTypes as $statusKey => $data)
+                            <option value="{{ $statusKey }}" data-types="{{ implode(',', $data['types']) }}">
+                                {{ $data['label'] }}
+                            </option>
+                        @endforeach
                     </select>
                     <select onchange="applyBulkUpdate('priority', this.value)" class="flex-1 min-w-[120px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 py-2.5 pl-3 pr-6 focus:ring-2 focus:ring-violet-500/50 outline-none">
                         <option value="">⚡ Prioridad</option>
@@ -186,6 +187,13 @@
                         <option value="medium">Media</option>
                         <option value="high">Alta</option>
                         <option value="critical">Crítica</option>
+                    </select>
+                    <select onchange="applyBulkUpdate('expediente_id', this.value)" class="flex-1 min-w-[120px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 py-2.5 pl-3 pr-6 focus:ring-2 focus:ring-violet-500/50 outline-none">
+                        <option value="">📁 Expediente</option>
+                        <option value="none">-- Sin Expediente --</option>
+                        @foreach ($expedientes as $expediente)
+                            <option value="{{ $expediente->id }}">{{ \Illuminate\Support\Str::limit($expediente->title ?? $expediente->code, 25) }}</option>
+                        @endforeach
                     </select>
                     <select onchange="applyBulkUpdate('assigned_user_id', this.value)" class="flex-1 min-w-[120px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 py-2.5 pl-3 pr-6 focus:ring-2 focus:ring-violet-500/50 outline-none">
                         <option value="">👤 Asignar</option>
@@ -288,7 +296,7 @@
                                 data-href="{{ route('teams.activities.show', [$team, $activity]) }}"
                                 onclick="if(!event.target.closest('button, a, input, select')) window.location=this.dataset.href">
                                 <td class="px-4 py-4 w-10 text-center" onclick="event.stopPropagation()">
-                                    <input type="checkbox" value="{{ $activity->id }}"
+                                    <input type="checkbox" value="{{ $activity->id }}" data-type="{{ $activity->type }}"
                                         class="activity-checkbox rounded border-gray-300 text-red-600 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 cursor-pointer transition-colors"
                                         onchange="updateSelectedCount()">
                                 </td>
@@ -597,7 +605,7 @@
                                     data-parent="{{ $activity->id }}"
                                     onclick="if(!event.target.closest('button, a, input, select')) window.location='{{ route('teams.activities.show', [$team, $subtask]) }}'">
                                     <td class="px-4 py-3 w-10 text-center" onclick="event.stopPropagation()">
-                                        <input type="checkbox" value="{{ $subtask->id }}"
+                                        <input type="checkbox" value="{{ $subtask->id }}" data-type="{{ $subtask->type }}"
                                             class="activity-checkbox rounded border-gray-300 text-red-600 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 cursor-pointer transition-colors"
                                             onchange="updateSelectedCount()">
                                     </td>
@@ -794,7 +802,8 @@
                 }
 
                 function updateSelectedCount() {
-                    const selected = document.querySelectorAll('.activity-checkbox:checked').length;
+                    const checkboxes = document.querySelectorAll('.activity-checkbox:checked');
+                    const selected = checkboxes.length;
                     const counter = document.getElementById('selectedCount');
                     if (counter) counter.textContent = selected;
 
@@ -802,6 +811,33 @@
                     if (bulkBar) {
                         if (selected > 0) {
                             bulkBar.classList.remove('hidden');
+                            
+                            // Get types of selected activities
+                            const selectedTypes = Array.from(checkboxes).map(cb => cb.dataset.type);
+                            const uniqueTypes = [...new Set(selectedTypes)];
+                            
+                            // Filter the bulk status dropdown
+                            const statusSelect = document.getElementById('bulkStatusSelect');
+                            if (statusSelect) {
+                                Array.from(statusSelect.options).forEach(option => {
+                                    if (option.value === '') return;
+                                    const optionTypes = (option.dataset.types || '').split(',');
+                                    // Status is compatible if ALL unique selected types support this status
+                                    const isCompatible = uniqueTypes.every(t => optionTypes.includes(t));
+                                    
+                                    if (isCompatible) {
+                                        option.disabled = false;
+                                        option.classList.remove('text-gray-300', 'dark:text-gray-600', 'line-through');
+                                    } else {
+                                        option.disabled = true;
+                                        option.classList.add('text-gray-300', 'dark:text-gray-600', 'line-through');
+                                    }
+                                });
+                                // If current selected value is now disabled, reset
+                                if (statusSelect.options[statusSelect.selectedIndex] && statusSelect.options[statusSelect.selectedIndex].disabled) {
+                                    statusSelect.value = '';
+                                }
+                            }
                         } else {
                             bulkBar.classList.add('hidden');
                         }
@@ -848,7 +884,8 @@
                     const fieldLabels = {
                         'status': 'Estado',
                         'priority': 'Prioridad',
-                        'assigned_user_id': 'Responsable'
+                        'assigned_user_id': 'Responsable',
+                        'expediente_id': 'Expediente'
                     };
 
                     Swal.fire({

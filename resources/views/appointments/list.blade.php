@@ -353,7 +353,7 @@
                                                 </span>
                                                 @if($cita->activity_id || $cita->task_id)
                                                     <button type="button" 
-                                                        onclick="event.stopPropagation(); fetch('{{ route('time-logs.toggle-task', $cita->activity_id ?? $cita->task_id) }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } }).then(r => r.json()).then(() => { if (window.Alpine && Alpine.store('timer')) Alpine.store('timer').stop(); window.location.reload(); });"
+                                                        onclick="event.stopPropagation(); fetch('{{ route('time-logs.toggle-task', $cita->activity_id ?? $cita->task_id) }}', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, body: JSON.stringify({ intent: 'stop' }) }).then(r => r.json()).then(() => { if (window.Alpine && Alpine.store('timer')) Alpine.store('timer').stop(); window.location.reload(); });"
                                                         class="text-[10px] font-black text-rose-600 dark:text-rose-400 hover:underline cursor-pointer">
                                                         [Parar]
                                                     </button>

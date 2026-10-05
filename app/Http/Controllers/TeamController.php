@@ -165,7 +165,7 @@ class TeamController extends Controller
      * @param  Team  $team
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, Team $team)
+    public function update(Request $request, Team $team, \App\Actions\Teams\UpdateTeamAction $action)
     {
         $this->authorize('update', $team);
 
@@ -178,56 +178,16 @@ class TeamController extends Controller
             'soft_disk_quota_gb' => 'nullable|numeric|min:0.1',
         ];
 
-        if (auth()->user()->is_admin) {
+        $isAdmin = auth()->user()->is_admin;
+        if ($isAdmin) {
             $rules['disk_quota_gb'] = 'required|numeric|min:0.1';
         }
 
         $validated = $request->validate($rules);
+        
+        $action->execute($team, $validated, (bool)$isAdmin, $request->soft_disk_quota_gb);
 
-        if (isset($validated['telegram_chat_id'])) {
-            $validated['telegram_chat_id'] = trim($validated['telegram_chat_id']);
-        }
-        if (isset($validated['whatsapp_chat_id'])) {
-            $validated['whatsapp_chat_id'] = trim($validated['whatsapp_chat_id']);
-        }
-
-        if (auth()->user()->is_admin && $request->has('disk_quota_gb')) {
-            $validated['disk_quota'] = (int)($request->disk_quota_gb * 1024 * 1024 * 1024);
-        }
-
-        if ($request->has('soft_disk_quota_gb') && $request->soft_disk_quota_gb !== null) {
-            $softLimitBytes = (int)($request->soft_disk_quota_gb * 1024 * 1024 * 1024);
-            // El soft limit no puede exceder el hard limit real del equipo
-            if ($softLimitBytes > $team->disk_quota) {
-                $softLimitBytes = $team->disk_quota;
-            }
-            $validated['settings'] = $validated['settings'] ?? $team->settings ?? [];
-            $validated['settings']['soft_disk_quota'] = $softLimitBytes;
-        }
-
-        // Proteger el estado Premium de WhatsApp y Citas Previas para que solo un administrador global pueda modificarlo
-        if (isset($validated['settings'])) {
-            $validated['settings'] = array_merge($team->settings ?? [], $validated['settings']);
-            
-            if (!auth()->user()->is_admin) {
-                $validated['settings']['has_whatsapp'] = $team->settings['has_whatsapp'] ?? false;
-                $validated['settings']['has_appointments'] = $team->settings['has_appointments'] ?? false;
-                $validated['settings']['surveys_enabled'] = $team->settings['surveys_enabled'] ?? false;
-            } else {
-                $validated['settings']['has_whatsapp'] = filter_var($validated['settings']['has_whatsapp'] ?? false, FILTER_VALIDATE_BOOLEAN);
-                $validated['settings']['has_appointments'] = filter_var($validated['settings']['has_appointments'] ?? false, FILTER_VALIDATE_BOOLEAN);
-                $validated['settings']['microsites_enabled'] = filter_var($validated['settings']['microsites_enabled'] ?? false, FILTER_VALIDATE_BOOLEAN);
-                $validated['settings']['surveys_enabled'] = filter_var($validated['settings']['surveys_enabled'] ?? false, FILTER_VALIDATE_BOOLEAN);
-            }
-        }
-
-        $validated['slug'] = str($validated['name'])->slug();
-
-        $team->update($validated);
-
-        // Nos quedamos en la misma vista (edit) para no romper el flujo de trabajo del usuario
-        return redirect()->back()
-            ->with('success', __('teams.updated'));
+        return redirect()->back()->with('success', __('teams.updated'));
     }
 
     /**
@@ -259,7 +219,7 @@ class TeamController extends Controller
      * @param  Team  $team
      * @return \Illuminate\View\View
      */
-    public function dashboard(Team $team)
+    public function dashboard(Team $team, \App\Services\TeamDashboardService $dashboardService)
     {
         if (auth()->user()->cannot('view', $team)) {
             return redirect()->back()->with('warning', __('teams.unauthorized_access'));
@@ -267,95 +227,20 @@ class TeamController extends Controller
 
         $user = auth()->user();
         $isManager = $team->isManager($user);
-
-        $query = $team->activities()
-            ->with([
-                'assignedTo', 'assignedGroups', 'tags', 'assignedUser', 'skills', 'parent', 'creator', 'service',
-                'children' => function($q) use ($user, $isManager) {
-                    $q->visibleTo($user, $isManager);
-                },
-                'children.assignedUser'
-            ])
-            ->visibleTo($user, $isManager)
-            ->notEphemeral()
-            ->forMatrix()
-            ->focusedFor($user, $team)
-            ->when(request('skill_id'), function ($q, $skillId) {
-                $q->where(function ($sq) use ($skillId) {
-                    $sq->where('metadata->skill_id', $skillId)
-                        ->orWhereHas('skills', fn($sk) => $sk->where('skills.id', $skillId));
-                });
-            });
-
-        // Matrix-specific filter for managers (as requested: ensure owner visibility + backlog)
-        // Note: Hierarchy (filtering children/instances) is now handled by scopeOperationalFor
-        if ($isManager) {
-            $query->where(function ($q) use ($user) {
-                // Return tasks that have NO one specifically assigned yet (Backlog/Masters)
-                // OR tasks explicitly created by the user (Ownership)
-                // OR tasks assigned specifically to the user (Direct work)
-                $q->where(function ($backlog) {
-                    $backlog->whereDoesntHave('assignedTo')
-                            ->whereDoesntHave('assignedGroups')
-                            ->whereNotExists(function ($sub) {
-                                $sub->select(\DB::raw(1))
-                                    ->from('activity_task_mapping')
-                                    ->join('task_assignments', 'activity_task_mapping.task_id', '=', 'task_assignments.task_id')
-                                    ->whereColumn('activity_task_mapping.activity_id', 'activities.id');
-                            });
-                })
-                ->orWhere('created_by_id', $user->id)
-                ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $user->id))
-                ->orWhereHas('assignedGroups', fn($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
-            });
-        }
-
-        $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->get();
-
-
-        $allTasks = $query->get();
-        $tasks = $allTasks; // Stay compatible with view expecting $tasks
-
-        // Group tasks by quadrant, excluding completed ones
-        $quadrants = [
-            1 => [],
-            2 => [],
-            3 => [],
-            4 => [],
-        ];
-
+        
+        $hideCompleted = request()->has('filter_matrix') ? request()->has('hide_completed') : session('hide_completed_tasks', true);
         if (request()->has('filter_matrix')) {
-            $hideCompleted = request()->has('hide_completed');
             session(['hide_completed_tasks' => $hideCompleted]);
-        } else {
-            $hideCompleted = session('hide_completed_tasks', true);
-        }
-        $completedLimit = (int) config('settings.kanban_completed_limit', 10);
-
-        foreach ($allTasks as $task) {
-            $isFinished = $task->isCompleted() || $task->status_value === 'deprecated' || $task->status_value === 'legacy' || $task->is_archived;
-            if (!$isFinished) {
-                $quadrant = $this->getQuadrant($task);
-                $quadrants[$quadrant][] = $task;
-            }
         }
 
-        // Handle completed and deprecated tasks separately with limit
-        $completedTasks = $allTasks->filter(fn($t) => $t->isCompleted() || $t->status_value === 'deprecated' || $t->status_value === 'legacy' || $t->is_archived)
-            ->sortByDesc('updated_at')
-            ->take($completedLimit);
-
-        // Sort each quadrant by matrix_order (nulls last, preserving user-defined positions)
-        foreach ($quadrants as &$qTasks) {
-            usort($qTasks, function ($a, $b) {
-                if ($a->matrix_order === null && $b->matrix_order === null) return 0;
-                if ($a->matrix_order === null) return 1;
-                if ($b->matrix_order === null) return -1;
-                return $a->matrix_order <=> $b->matrix_order;
-            });
-        }
-        unset($qTasks);
-
+        $data = $dashboardService->getDashboardData($team, $user, $isManager, request('skill_id'), $hideCompleted);
+        
+        $quadrants = $data['quadrants'];
+        $tasks = $data['tasks'];
+        $completedTasks = $data['completedTasks'];
+        $completedLimit = $data['completedLimit'];
+        
+        $skills = \App\Models\Skill::forTeam($team->id)->get();
         $services = $team->services()->with(['reports' => function($q) {
             $q->latest()->limit(5);
         }])->get();
@@ -418,7 +303,7 @@ class TeamController extends Controller
      * @param  Team  $team
      * @return \Illuminate\Http\JsonResponse
      */
-    public function updateQuadrantColor(Request $request, Team $team)
+    public function updateQuadrantColor(Request $request, Team $team, \App\Actions\Teams\UpdateQuadrantColorAction $action)
     {
         $this->authorize('update', $team);
 
@@ -427,19 +312,12 @@ class TeamController extends Controller
             'color' => ['required', 'string', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'],
         ]);
 
-        // Normalize color to 6 digits hex
         $color = $validated['color'];
         if (strlen($color) === 4) {
             $color = '#' . $color[1] . $color[1] . $color[2] . $color[2] . $color[3] . $color[3];
         }
 
-        $colors = $team->quadrant_colors ?? [];
-        $colors[$validated['quadrant']] = $color;
-
-        $team->update(['quadrant_colors' => $colors]);
-        $team->save(); // Forzado de guardado
-
-        \Log::emergency("CRITICAL DEBUG: Team {$team->id} color saved. Q: {$validated['quadrant']}, Color: {$color}. Total array: " . json_encode($colors));
+        $action->execute($team, 'q'.$validated['quadrant'], $color);
 
         return response()->json(['success' => true]);
     }

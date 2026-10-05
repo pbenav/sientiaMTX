@@ -14,7 +14,7 @@
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ route('login.two-factor') }}">
+    <form method="POST" action="{{ route('login.two-factor') }}" x-data="{ submitting: false }" @submit="submitting = true">
         @csrf
 
         <!-- Verification Code -->
@@ -38,8 +38,9 @@
                 {{ __('Volver al Login') }}
             </a>
 
-            <x-primary-button class="ms-3">
-                {{ __('Verificar y Acceder') }}
+            <x-primary-button class="ms-3" x-bind:disabled="submitting" x-bind:class="{ 'opacity-50 cursor-not-allowed': submitting }">
+                <span x-show="!submitting">{{ __('Verificar y Acceder') }}</span>
+                <span x-show="submitting" x-cloak>{{ __('Verificando...') }}</span>
             </x-primary-button>
         </div>
     </form>

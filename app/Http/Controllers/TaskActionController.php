@@ -234,7 +234,7 @@ class TaskActionController extends Controller
                             ->whereIn('priority', $priorityValues)
                             ->whereIn('urgency', $urgencyValues)
                             ->whereNotNull('matrix_order')
-                            ->orderBy('matrix_order', 'asc')
+                            ->orderBy('matrix_order', 'asc')->toBase()
                             ->pluck('id')
                             ->toArray();
                         
@@ -262,7 +262,7 @@ class TaskActionController extends Controller
                             ->whereIn('priority', $priorityValues)
                             ->whereIn('urgency', $urgencyValues)
                             ->whereNotNull('matrix_order')
-                            ->orderBy('matrix_order', 'asc')
+                            ->orderBy('matrix_order', 'asc')->toBase()
                             ->pluck('id')
                             ->toArray();
                         
@@ -609,7 +609,7 @@ class TaskActionController extends Controller
                 'success' => true,
                 'auto_priority' => $task->auto_priority,
                 'priority' => $task->priority,
-                'priority_label' => __('tasks.priorities.' . $task->priority)
+                'priority_label' => __('activities.priorities.' . $task->priority)
             ]);
         } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
             \Log::error("Toggle AutoPriority AUTH FAILED: " . $e->getMessage());

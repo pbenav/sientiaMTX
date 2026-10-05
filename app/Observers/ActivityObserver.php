@@ -15,6 +15,14 @@ class ActivityObserver
      */
     public function saving(Activity $activity): void
     {
+        // Garantizar que toda actividad hija herede estrictamente el expediente de su padre.
+        if (!empty($activity->parent_id)) {
+            $parent = $activity->parent ?? \App\Models\Activity::find($activity->parent_id);
+            if ($parent && $activity->expediente_id !== $parent->expediente_id) {
+                $activity->expediente_id = $parent->expediente_id;
+            }
+        }
+
         if ($activity->isDirty('progress_percentage') || $activity->isDirty('status')) {
             $statusValue = $activity->status_value;
             $progress = $activity->progress_percentage;
@@ -61,6 +69,16 @@ class ActivityObserver
      */
     public function saved(Activity $activity): void
     {
+        // Si el expediente de un padre cambia, propagarlo a todos sus hijos directos
+        if ($activity->wasChanged('expediente_id') || $activity->wasChanged('parent_id')) {
+            foreach ($activity->children as $child) {
+                if ($child->expediente_id !== $activity->expediente_id) {
+                    $child->expediente_id = $activity->expediente_id;
+                    $child->save(); // Esto disparará su propio observer (y sincronización legacy)
+                }
+            }
+        }
+
         if (static::$isSyncing || TaskObserver::$isSyncing) {
             return;
         }
@@ -106,6 +124,8 @@ class ActivityObserver
                             'matrix_order'        => $activity->matrix_order ?? 0,
                             'is_archived'         => $activity->is_archived ?? false,
                             'is_template'         => $activity->is_template ?? false,
+                            'is_autoprogrammable' => (bool) data_get($activity->metadata, 'is_autoprogrammable', false),
+                            'is_timeline_locked'  => (bool) data_get($activity->metadata, 'is_timeline_locked', false),
                             'google_task_id'      => $activity->google_task_id,
                             'google_task_list_id' => $activity->google_task_list_id,
                             'google_calendar_event_id' => $activity->google_calendar_event_id,

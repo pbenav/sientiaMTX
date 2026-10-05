@@ -69,8 +69,8 @@ class ActivityNoteController extends Controller
             'content' => 'nullable|string',
         ]);
 
-        \App\Models\TaskPrivateNote::updateOrCreate(
-            ['task_id' => $activity->id, 'user_id' => auth()->id()],
+        \App\Models\ActivityNote::updateOrCreate(
+            ['activity_id' => $activity->id, 'user_id' => auth()->id(), 'visibility' => 'private'],
             ['content' => $validated['content'] ?? '']
         );
 

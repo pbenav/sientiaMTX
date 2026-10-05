@@ -103,173 +103,21 @@ class AppointmentController extends Controller
     /**
      * Lista completa de citas con filtros.
      */
-    public function list(Team $team, Request $request)
+    public function list(\App\Models\Team $team, \Illuminate\Http\Request $request, \App\Actions\Appointments\FilterAppointmentsAction $filterAction)
     {
-        $user  = auth()->user();
-
         if ($request->has('clear')) {
-            session()->forget("appointments_filters_{$team->id}");
+            $filterAction->execute($team, $request); // This handles session forget
             return redirect()->route('appointments.list', $team);
         }
 
-        // Persistencia de filtros
-        $filterKeys = ['status', 'service_id', 'date_from', 'date_to', 'search', 'sort_by', 'sort_dir', 'per_page'];
+        $appointments = $filterAction->execute($team, $request);
         
-        if (!$request->anyFilled($filterKeys) && !$request->hasAny($filterKeys)) {
-            $sessionFilters = session("appointments_filters_{$team->id}", []);
-            if (!empty($sessionFilters)) {
-                $request->merge($sessionFilters);
-            } else {
-                $request->merge([
-                    'date_from' => now()->toDateString(),
-                    'date_to'   => now()->toDateString(),
-                    'sort_by'   => 'appointment_date',
-                    'sort_dir'  => 'asc',
-                ]);
-            }
-        } else {
-            session(["appointments_filters_{$team->id}" => $request->only($filterKeys)]);
-        }
-
-        $query = Appointment::where('appointments.user_id', $user->id)
-            ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
-            ->with(['service', 'visitor', 'activity', 'task']);
-
-        $sortBy = $request->get('sort_by', 'appointment_date');
-        $sortDir = $request->get('sort_dir', 'asc') === 'desc' ? 'desc' : 'asc';
-
-        if ($sortBy === 'appointment_date') {
-            $query->orderBy('appointments.appointment_date', $sortDir)->orderBy('appointments.appointment_time', $sortDir);
-        } elseif ($sortBy === 'created_at' || $sortBy === 'localizador' || $sortBy === 'status') {
-            $query->orderBy('appointments.' . $sortBy, $sortDir);
-        } elseif ($sortBy === 'visitor') {
-            $query->join('appointment_visitors', 'appointments.visitor_id', '=', 'appointment_visitors.id')
-                  ->orderBy('appointment_visitors.first_name', $sortDir)
-                  ->select('appointments.*');
-        } elseif ($sortBy === 'service') {
-            $query->join('appointment_services', 'appointments.service_id', '=', 'appointment_services.id')
-                  ->orderBy('appointment_services.name', $sortDir)
-                  ->select('appointments.*');
-        } elseif ($sortBy === 'time') {
-            $taskSum = \Illuminate\Support\Facades\DB::table('time_logs')
-                ->whereColumn('time_logs.task_id', 'appointments.task_id')
-                ->selectRaw('COALESCE(SUM(TIMESTAMPDIFF(SECOND, start_at, end_at)), 0)');
-
-            $activitySum = \Illuminate\Support\Facades\DB::table('time_logs')
-                ->whereColumn('time_logs.task_id', 'appointments.activity_id')
-                ->selectRaw('COALESCE(SUM(TIMESTAMPDIFF(SECOND, start_at, end_at)), 0)');
-
-            $query->select('appointments.*')
-                  ->selectSub($taskSum, 'task_time')
-                  ->selectSub($activitySum, 'activity_time')
-                  ->orderByRaw("(COALESCE(task_time, 0) + COALESCE(activity_time, 0)) $sortDir");
-        } else {
-            $query->orderBy('appointments.appointment_date', 'asc')->orderBy('appointments.appointment_time', 'asc');
-        }
-
-        if ($request->filled('status')) {
-            $query->where('appointments.status', $request->status);
-        }
-        if ($request->filled('service_id')) {
-            $query->where('appointments.service_id', $request->service_id);
-        }
-        if ($request->filled('date_from')) {
-            $query->where('appointments.appointment_date', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $query->where('appointments.appointment_date', '<=', $request->date_to);
-        }
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('appointments.localizador', 'like', "%{$search}%")
-                  ->orWhereHas('visitor', function($vq) use ($search) {
-                      $vq->where('first_name', 'like', "%{$search}%")
-                         ->orWhere('last_name', 'like', "%{$search}%")
-                         ->orWhere('dni', 'like', "%{$search}%")
-                         ->orWhere('email', 'like', "%{$search}%");
-                  });
-            });
-        }
-
-        $perPage = (int) $request->get('per_page', 15);
-        if ($perPage < 1) $perPage = 15;
-        if ($perPage > 100) $perPage = 100;
-
-        $appointments = $query->paginate($perPage)->withQueryString();
-        $services     = $user->appointmentServices()->where('team_id', $team->id)->active()->get();
-
-        foreach ($appointments as $app) {
-            \App\Jobs\SyncAppointmentWithGoogleJob::dispatch($app);
-        }
-
-        $statsBaseQuery = Appointment::where('user_id', $user->id)
-            ->whereHas('service', fn($q) => $q->where('team_id', $team->id));
-
-        if ($request->filled('service_id')) {
-            $statsBaseQuery->where('service_id', $request->service_id);
-        }
-        if ($request->filled('date_from')) {
-            $statsBaseQuery->where('appointment_date', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $statsBaseQuery->where('appointment_date', '<=', $request->date_to);
-        }
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $statsBaseQuery->where(function($q) use ($search) {
-                $q->where('localizador', 'like', "%{$search}%")
-                  ->orWhereHas('visitor', function($vq) use ($search) {
-                      $vq->where('first_name', 'like', "%{$search}%")
-                         ->orWhere('last_name', 'like', "%{$search}%")
-                         ->orWhere('dni', 'like', "%{$search}%")
-                         ->orWhere('email', 'like', "%{$search}%");
-                  });
-            });
-        }
-
-        $periodStats = (clone $statsBaseQuery)
-            ->select('status', \Illuminate\Support\Facades\DB::raw('count(*) as total'))
-            ->groupBy('status')
-            ->pluck('total', 'status')
-            ->toArray();
-
-        // Stats: duración de citas (del periodo filtrado)
-        $pastAppointments = (clone $statsBaseQuery)
-            ->where('status', 'completed')
-            ->with(['activity', 'task'])
+        $services = \App\Models\AppointmentService::where('team_id', $team->id)
+            ->where('user_id', auth()->id())
+            ->orderBy('name')
             ->get();
 
-        $durations = [];
-        foreach ($pastAppointments as $app) {
-            $seconds = 0;
-            if ($app->activity) {
-                $seconds = $app->activity->totalTrackedSeconds();
-            } elseif ($app->task) {
-                $seconds = $app->task->totalTrackedSeconds();
-            }
-            if ($seconds > 0) {
-                $durations[] = $seconds;
-            }
-        }
-
-        $moda = 0;
-        if (count($durations) > 0) {
-            $durationsInMinutes = array_map(fn($d) => (int) floor($d / 60), $durations);
-            $counts = array_count_values($durationsInMinutes);
-            arsort($counts);
-            $moda = array_key_first($counts) * 60;
-        }
-
-        $statsDuration = [
-            'min' => count($durations) > 0 ? min($durations) : 0,
-            'max' => count($durations) > 0 ? max($durations) : 0,
-            'avg' => count($durations) > 0 ? array_sum($durations) / count($durations) : 0,
-            'mode' => $moda,
-            'count' => count($durations)
-        ];
-
-        return view('appointments.list', compact('appointments', 'services', 'team', 'periodStats', 'statsDuration'));
+        return view('appointments.list', compact('team', 'appointments', 'services'));
     }
 
     /**
@@ -335,7 +183,7 @@ class AppointmentController extends Controller
     /**
      * Muestra/edita una cita concreta.
      */
-    public function show(Team $team, Appointment $appointment)
+    public function show(\App\Models\Team $team, \App\Models\Appointment $appointment, \Illuminate\Http\Request $request, \App\Actions\Appointments\FilterAppointmentsAction $filterAction)
     {
         $this->authorize('view', $appointment);
         if ($appointment->service->team_id !== $team->id) {
@@ -345,70 +193,22 @@ class AppointmentController extends Controller
         
         \App\Jobs\SyncAppointmentWithGoogleJob::dispatchSync($appointment);
         
-        // --- Buscar siguiente cita (Next Appointment) ---
-        $user = auth()->user();
-        $sessionFilters = session("appointments_filters_{$team->id}", []);
+        // Use the Action to get the filtered/sorted query without pagination
+        $query = $filterAction->execute($team, $request, false);
+        $query->whereNotIn('appointments.status', ['completed', 'cancelled', 'blocked']);
         
-        $query = Appointment::where('user_id', $user->id)
-            ->whereHas('service', fn($q) => $q->where('team_id', $team->id));
-
-        // Aplicar filtros de sesión
-        if (!empty($sessionFilters['service_id'])) {
-            $query->where('service_id', $sessionFilters['service_id']);
-        }
-        if (!empty($sessionFilters['date_from'])) {
-            $query->where('appointment_date', '>=', $sessionFilters['date_from']);
-        }
-        if (!empty($sessionFilters['date_to'])) {
-            $query->where('appointment_date', '<=', $sessionFilters['date_to']);
-        }
-        if (!empty($sessionFilters['search'])) {
-            $search = $sessionFilters['search'];
-            $query->where(function($q) use ($search) {
-                $q->where('localizador', 'like', "%{$search}%")
-                  ->orWhereHas('visitor', function($vq) use ($search) {
-                      $vq->where('first_name', 'like', "%{$search}%")
-                         ->orWhere('last_name', 'like', "%{$search}%")
-                         ->orWhere('dni', 'like', "%{$search}%")
-                         ->orWhere('email', 'like', "%{$search}%");
-                  });
-            });
-        }
-        
-        // Saltar las completadas, canceladas o bloqueadas
-        $query->whereNotIn('status', ['completed', 'cancelled', 'blocked']);
-        
-        // Aplicar el mismo orden de la lista
-        $sortBy = $sessionFilters['sort_by'] ?? 'appointment_date';
-        $sortDir = ($sessionFilters['sort_dir'] ?? 'asc') === 'desc' ? 'desc' : 'asc';
-
-        if ($sortBy === 'appointment_date') {
-            $query->orderBy('appointment_date', $sortDir)->orderBy('appointment_time', $sortDir);
-        } elseif ($sortBy === 'created_at' || $sortBy === 'localizador' || $sortBy === 'status') {
-            $query->orderBy('appointments.' . $sortBy, $sortDir);
-        } elseif ($sortBy === 'visitor') {
-            $query->join('appointment_visitors', 'appointments.visitor_id', '=', 'appointment_visitors.id')
-                  ->orderBy('appointment_visitors.first_name', $sortDir)
-                  ->select('appointments.*');
-        } elseif ($sortBy === 'service') {
-            $query->join('appointment_services', 'appointments.service_id', '=', 'appointment_services.id')
-                  ->orderBy('appointment_services.name', $sortDir)
-                  ->select('appointments.*');
-        } else {
-            $query->orderBy('appointment_date', 'asc')->orderBy('appointment_time', 'asc');
-        }
-
         $orderedIds = $query->pluck('appointments.id')->toArray();
         
         $nextAppointment = null;
         $currentIndex = array_search($appointment->id, $orderedIds);
         
         if ($currentIndex !== false && isset($orderedIds[$currentIndex + 1])) {
-            $nextAppointment = Appointment::find($orderedIds[$currentIndex + 1]);
+            $nextAppointment = \App\Models\Appointment::find($orderedIds[$currentIndex + 1]);
         } elseif ($currentIndex === false && count($orderedIds) > 0) {
-             if (in_array($sortBy, ['appointment_date', ''])) {
+            $sortBy = session("appointments_filters_{$team->id}", [])['sort_by'] ?? 'appointment_date';
+            if (in_array($sortBy, ['appointment_date', ''])) {
                  $nextAppId = null;
-                 $apps = Appointment::whereIn('id', $orderedIds)
+                 $apps = \App\Models\Appointment::whereIn('id', $orderedIds)
                      ->select('id', 'appointment_date', 'appointment_time')
                      ->get()
                      ->keyBy('id');
@@ -424,12 +224,12 @@ class AppointmentController extends Controller
                      }
                  }
                  if ($nextAppId) {
-                     $nextAppointment = Appointment::find($nextAppId);
+                     $nextAppointment = \App\Models\Appointment::find($nextAppId);
                  } else {
-                     $nextAppointment = Appointment::find($orderedIds[0]);
+                     $nextAppointment = \App\Models\Appointment::find($orderedIds[0]);
                  }
              } else {
-                 $nextAppointment = Appointment::find($orderedIds[0]);
+                 $nextAppointment = \App\Models\Appointment::find($orderedIds[0]);
              }
         }
         
@@ -534,179 +334,15 @@ class AppointmentController extends Controller
     /**
      * Actualiza una cita (mover fecha/hora, notas, expediente).
      */
-    public function update(Team $team, Request $request, Appointment $appointment)
+    public function update(\App\Models\Team $team, \App\Http\Requests\Appointments\UpdatePrivateAppointmentRequest $request, \App\Models\Appointment $appointment, \App\Actions\Appointments\UpdatePrivateAppointmentAction $action)
     {
-        $this->authorize('update', $appointment);
-        if ($appointment->service->team_id !== $team->id) {
-            abort(403);
+        $result = $action->execute($appointment, $request->validated());
+
+        if (isset($result['success']) && !$result['success']) {
+            return back()->withErrors([$result['error_field'] => $result['message']]);
         }
 
-        $data = $request->validate([
-            'appointment_date'  => 'sometimes|date',
-            'appointment_time'  => 'sometimes|string',
-            'status'            => 'sometimes|in:pending,confirmed,cancelled,completed,blocked,no_show',
-            'member_notes'      => 'nullable|string|max:2000',
-            'expediente_id'     => 'nullable|exists:expedientes,id',
-            'cancellation_reason' => 'nullable|string|max:500',
-            'visitor_full_name' => 'nullable|string|max:255',
-            'visitor_dni'       => 'nullable|string|max:50',
-            'visitor_email'     => 'nullable|email|max:255',
-            'visitor_phone'     => 'nullable|string|max:50',
-            'visitor_city'      => 'nullable|string|max:255',
-            'visitor_postal_code' => 'nullable|string|max:50',
-            'visitor_observations' => 'nullable|string|max:2000',
-            'tracked_time_format' => 'nullable|string|regex:/^\d{1,3}:\d{2}:\d{2}$/',
-            'custom_fields_values' => 'nullable|array',
-        ]);
-
-        // Si cambia fecha/hora, revalidar disponibilidad
-        if (isset($data['appointment_date']) || isset($data['appointment_time'])) {
-            $newDate = Carbon::parse($data['appointment_date'] ?? $appointment->appointment_date);
-            $newTime = $data['appointment_time'] ?? $appointment->appointment_time;
-
-            $isOwnSlot = $appointment->appointment_date->eq($newDate) && $appointment->appointment_time === $newTime . ':00';
-
-            if (!$isOwnSlot && !$this->availability->isSlotAvailable($appointment->service, $newDate, $newTime)) {
-                return back()->withErrors(['appointment_time' => 'El tramo seleccionado no está disponible.']);
-            }
-        }
-
-        $originalDate = $appointment->appointment_date;
-        $originalTime = $appointment->appointment_time;
-
-        if (isset($data['status']) && in_array($data['status'], ['cancelled', 'blocked'])) {
-            $data['cancelled_at'] = now();
-            $this->deleteGoogleEvent($appointment);
-            $this->deleteGoogleTask($appointment);
-        }
-
-        $appointment->update($data);
-
-        if ($request->has('visitor_full_name')) {
-            $appointment->visitor->update([
-                'full_name'    => $request->input('visitor_full_name'),
-                'dni'          => $request->input('visitor_dni') ? strtoupper(trim($request->input('visitor_dni'))) : null,
-                'email'        => $request->input('visitor_email') ? strtolower(trim($request->input('visitor_email'))) : null,
-                'phone'        => $request->input('visitor_phone'),
-                'city'         => $request->input('visitor_city'),
-                'postal_code'  => $request->input('visitor_postal_code'),
-                'observations' => $request->input('visitor_observations'),
-            ]);
-        }
-
-        // Actualizar campos personalizados del servicio si se proporcionan
-        if ($request->has('custom_fields_values') && is_array($request->input('custom_fields_values'))) {
-            $currentValues = $appointment->custom_fields_values ?? [];
-            $newValues = array_merge($currentValues, $request->input('custom_fields_values'));
-            $appointment->update(['custom_fields_values' => $newValues]);
-        }
-
-        // Si cambió la fecha o la hora, y el visitante consintió el email, le notificamos
-        $dateChanged = isset($data['appointment_date']) && Carbon::parse($data['appointment_date'])->ne($originalDate);
-        $timeChanged = isset($data['appointment_time']) && $data['appointment_time'] . ':00' !== $originalTime;
-
-        if (($dateChanged || $timeChanged) && $appointment->visitor->consent_email && $appointment->visitor->email) {
-            try {
-                \Mail::to($appointment->visitor->email)
-                    ->locale(app()->getLocale())
-                    ->send(new \App\Mail\AppointmentModifiedMail($appointment));
-            } catch (\Throwable $e) {
-                \Log::warning("AppointmentModified mail failed: " . $e->getMessage());
-            }
-        }
-
-        $task = $appointment->task;
-        if (!$task && !$appointment->activity && $appointment->localizador) {
-            $task = \App\Models\Task::where('title', 'like', "% — {$appointment->localizador}")->first();
-            if ($task) {
-                $appointment->update(['task_id' => $task->id]);
-            }
-        }
-
-        // 1. Update Legacy Task (if exists)
-        if ($task) {
-            $taskData = [];
-            if (isset($data['appointment_date']) || isset($data['appointment_time'])) {
-                $taskData['due_date'] = $appointment->end_datetime;
-            }
-            if (array_key_exists('expediente_id', $data)) {
-                $taskData['expediente_id'] = $data['expediente_id'];
-            }
-            if (isset($data['status'])) {
-                if ($data['status'] === 'completed') {
-                    $taskData['status'] = 'completed';
-                    $taskData['progress_percentage'] = 100;
-                } elseif (in_array($data['status'], ['pending', 'confirmed'])) {
-                    if ($task->status === 'completed') {
-                        $taskData['status'] = 'in_progress';
-                        $taskData['progress_percentage'] = 0;
-                    }
-                }
-            }
-            if (!empty($taskData)) {
-                $task->update($taskData);
-            }
-        }
-
-        // 2. Update New Activity (if exists)
-        $activity = $appointment->activity;
-        if ($activity) {
-            $activityData = [];
-            if (isset($data['appointment_date']) || isset($data['appointment_time'])) {
-                $activityData['due_date'] = $appointment->end_datetime;
-                $activityData['scheduled_date'] = $appointment->appointment_datetime;
-            }
-            if (array_key_exists('expediente_id', $data)) {
-                $activityData['expediente_id'] = $data['expediente_id'];
-            }
-            if (isset($data['status'])) {
-                if ($data['status'] === 'completed') {
-                    $activityData['status'] = ['value' => 'completed'];
-                    $activityData['progress_percentage'] = 100;
-                } elseif (in_array($data['status'], ['pending', 'confirmed'])) {
-                    if (($activity->status['value'] ?? '') === 'completed') {
-                        $activityData['status'] = ['value' => 'scheduled'];
-                        $activityData['progress_percentage'] = 0;
-                    }
-                }
-            }
-            if (!empty($activityData)) {
-                $activity->update($activityData);
-            }
-        }
-
-        if ($request->has('tracked_time_format') && ($appointment->activity || $appointment->task)) {
-            $taskObj = $appointment->activity ?? $appointment->task;
-            $timeFormat = $request->input('tracked_time_format');
-            $parts = explode(':', $timeFormat);
-            $totalSeconds = 0;
-            if (count($parts) === 3) {
-                $totalSeconds = ($parts[0] * 3600) + ($parts[1] * 60) + $parts[2];
-            }
-            
-            // Borrar time logs de tipo task para esta actividad/tarea
-            $taskObj->timeLogs()->delete();
-            
-            if ($totalSeconds > 0) {
-                // Crear un único log de la duración deseada
-                $start = Carbon::parse($appointment->appointment_date->format('Y-m-d') . ' ' . $appointment->appointment_time);
-                $end = $start->copy()->addSeconds($totalSeconds);
-                
-                $taskObj->timeLogs()->create([
-                    'user_id' => $appointment->user_id ?? auth()->id(),
-                    'type' => 'task',
-                    'start_at' => $start,
-                    'end_at' => $end,
-                    'note' => 'Ajuste manual de duración desde edición de cita',
-                ]);
-            }
-        }
-
-        if (isset($data['status']) && $data['status'] === 'completed') {
-            $taskObj = $appointment->activity ?? $appointment->task;
-            if ($taskObj) {
-                $taskObj->timeLogs()->whereNull('end_at')->update(['end_at' => now()]);
-            }
+        if (isset($result['status']) && $result['status'] === 'completed') {
             if (!$request->wantsJson()) {
                 return redirect()->route('appointments.list', $team)->with('success', 'Cita completada correctamente.');
             }
@@ -717,7 +353,7 @@ class AppointmentController extends Controller
             $taskObj = $taskObj ? $taskObj->fresh() : null;
             return response()->json([
                 'success' => true,
-                'timer_stopped' => isset($data['status']) && $data['status'] === 'completed',
+                'timer_stopped' => isset($result['status']) && $result['status'] === 'completed',
                 'task_id' => $taskObj ? $taskObj->id : null,
                 'total_human_time' => $taskObj && method_exists($taskObj, 'totalTrackedTimeHuman') ? $taskObj->totalTrackedTimeHuman() : null,
             ]);
@@ -837,35 +473,4 @@ class AppointmentController extends Controller
             'appointments' => $appointments,
             'blocks'       => $blocks,
         ]);
-    }
-
-    private function deleteGoogleEvent(Appointment $appointment): void
-    {
-        if ($appointment->google_event_id) {
-            try {
-                $googleService = new \App\Services\GoogleService();
-                if ($googleService->setTokenForUser($appointment->member)) {
-                    $googleService->deleteEvent($appointment->google_event_id);
-                    $appointment->update(['google_event_id' => null]);
-                }
-            } catch (\Throwable $e) {
-                \Log::error("Error eliminando cita en Google Calendar: " . $e->getMessage());
-            }
-        }
-    }
-
-    private function deleteGoogleTask(Appointment $appointment): void
-    {
-        if ($appointment->google_task_id) {
-            try {
-                $googleService = new \App\Services\GoogleService();
-                if ($googleService->setTokenForUser($appointment->member)) {
-                    $googleService->updateTask('@default', $appointment->google_task_id, ['status' => 'cancelled']);
-                    $appointment->update(['google_task_id' => null]);
-                }
-            } catch (\Throwable $e) {
-                \Log::error("Error cancelando tarea en Google Tasks: " . $e->getMessage());
-            }
-        }
-    }
-}
+    }}

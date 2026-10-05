@@ -113,6 +113,10 @@ class ActivityService
                 $this->syncDistributedInstances($activity, $assignedUserIds, $data);
             }
 
+            if ($activity->auto_priority && method_exists($activity, 'updateAutoPriority')) {
+                $activity->updateAutoPriority();
+            }
+
             $this->notifyGuests($activity);
 
             return $activity->fresh();
@@ -220,6 +224,10 @@ class ActivityService
                     ->each(fn($c) => $c->delete());
             }
 
+            if ($activity->auto_priority && method_exists($activity, 'updateAutoPriority')) {
+                $activity->updateAutoPriority();
+            }
+
             $this->notifyGuests($activity);
 
             return $activity->fresh();
@@ -266,7 +274,7 @@ class ActivityService
         DB::transaction(function () use ($activity) {
             $this->recordHistory($activity, auth()->user(), 'deleted');
 
-            // Delete remote Google items to prevent orphans
+            // Delete remote Google items to prevent orphans (solo si somos los dueños del evento)
             try {
                 if ($activity->google_task_id || $activity->google_calendar_event_id) {
                     $googleService = app(\App\Services\GoogleService::class);
@@ -275,7 +283,10 @@ class ActivityService
                         if ($activity->google_task_id && $activity->google_task_list_id) {
                             $googleService->deleteTask($activity->google_task_list_id, $activity->google_task_id);
                         }
-                        if ($activity->google_calendar_event_id) {
+                        $isExternalEvent = data_get($activity->metadata, 'google_is_organizer') === false 
+                            || data_get($activity->metadata, 'is_external_event') === true;
+
+                        if ($activity->google_calendar_event_id && !$isExternalEvent) {
                             $googleService->deleteEvent($activity->google_calendar_event_id, $activity->google_calendar_id ?? 'primary');
                         }
                     }
@@ -593,8 +604,7 @@ class ActivityService
                       ->orderBy('created_at')
                       ->visibleTo($user, $isManager);
                 }
-            ])
-            ->notEphemeral();
+            ]);
 
         // Visibilidad y Control de Jerarquía
         if ($isManager) {
@@ -800,6 +810,24 @@ class ActivityService
             unset($base['chapter_title'], $base['chapter_content']);
         }
 
+        // --- Injected Top-Level Toggles from Request ---
+        if (request()->has('is_timeline_locked')) {
+            $base['is_timeline_locked'] = request()->boolean('is_timeline_locked');
+        } elseif (!isset($base['is_timeline_locked'])) {
+            $base['is_timeline_locked'] = false;
+        }
+
+        if (request()->has('is_autoprogrammable')) {
+            $base['is_autoprogrammable'] = request()->boolean('is_autoprogrammable');
+        } elseif (!isset($base['is_autoprogrammable'])) {
+            $base['is_autoprogrammable'] = false;
+        }
+
+        if (request()->has('autoprogram_settings')) {
+            $base['autoprogram_settings'] = request()->input('autoprogram_settings');
+        }
+
+
         $loader = app(\App\Services\TemplateLoader::class);
         $template = $loader->getTemplate($type);
 
@@ -819,6 +847,18 @@ class ActivityService
         // Permitimos valores nulos para que el usuario pueda vaciar campos explícitamente
         if (isset($data['urgency'])) {
             $base['urgency'] = $data['urgency'];
+        }
+
+        // Compatibilidad hacia atrás si los campos de reunión vienen en primer nivel
+        foreach (['modality', 'duration_minutes', 'location', 'agenda', 'post_meeting_acta'] as $meetingKey) {
+            if (isset($data[$meetingKey]) && !isset($base[$meetingKey])) {
+                $base[$meetingKey] = $data[$meetingKey];
+            }
+        }
+
+        // Si guests se envía como cadena vacía (sentinel al borrar todos los invitados), normalizar a array vacío
+        if (array_key_exists('guests', $base) && (!is_array($base['guests']) || empty($base['guests']))) {
+            $base['guests'] = [];
         }
 
         return array_merge($base, $specifics);

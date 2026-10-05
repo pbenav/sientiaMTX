@@ -14,7 +14,7 @@
                 @include('teams.partials.breadcrumb')
                 <div class="flex items-center gap-4">
                     <h1 class="text-xl font-bold text-gray-900 dark:text-white heading truncate">
-                        Editar Actividad: {{ $activity->title }} 
+                        Editar Actividad: {{ $activity->title }}
                         <span class="ml-2 text-sm font-medium text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400 px-2 py-1 rounded-md">
                             @if ($activity->is_template)
                                 @if(isset($activity->metadata['assignment_mode']) && $activity->metadata['assignment_mode'] === 'shared')
@@ -33,28 +33,61 @@
     </x-slot>
 
     <div class="w-full sm:px-6 lg:px-8 py-6">
-        <div class="flex flex-col transition-all duration-300" x-data="{ activeTab: '{{ request('tab', 'general') }}' }">
+        <div class="flex flex-col transition-all duration-300" x-data="{ 
+    activeTab: '{{ request('tab', 'general') }}',
+    setActiveTab(t) {
+        this.activeTab = t;
+        const url = new URL(window.location);
+        url.searchParams.set('tab', t);
+        window.history.replaceState({}, '', url);
+    }
+}">
             <form id="edit-activity-form" method="POST" action="{{ route('teams.activities.update', [$team, $activity]) }}" class="contents" enctype="multipart/form-data">
                 @csrf
                 @method('PATCH')
                 <input type="hidden" name="type" value="{{ $activity->type }}">
                 <input type="hidden" name="tab" :value="activeTab">
 
-                
-    
-                <div>
+                @php
+                    $isAnotherUserCreator = $activity->created_by_id && $activity->created_by_id !== auth()->id();
+                    $isExternalEvent = data_get($activity->metadata, 'is_external_event', false)
+                        || data_get($activity->metadata, 'google_is_organizer') === false;
+                    $originalOwnerName = $isExternalEvent
+                        ? (data_get($activity->metadata, 'google_organizer_name') ?: data_get($activity->metadata, 'google_organizer_email', 'un organizador externo'))
+                        : ($activity->creator?->name ?? 'otro usuario');
+                    $hasAutoprogram = (bool) $activity->is_autoprogrammable;
+                    $autoSettings = data_get($activity->metadata, 'autoprogram_settings', []);
+                @endphp
+
+                @if ($isAnotherUserCreator || $isExternalEvent)
+                    <div class="mb-6 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 rounded-2xl p-4 flex items-center gap-3">
+                        <div class="shrink-0 p-2 bg-amber-100 dark:bg-amber-800/40 text-amber-600 dark:text-amber-300 rounded-xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-bold text-amber-900 dark:text-amber-200">
+                                {{ $isExternalEvent ? 'Evento de organizador externo (Google Calendar)' : 'Actividad programada por otra persona' }}
+                            </p>
+                            <p class="text-[11px] text-amber-700 dark:text-amber-300/80 mt-0.5">
+                                Esta actividad fue convocada originalmente por <strong>{{ $originalOwnerName }}</strong>. Al guardar cambios podrás elegir entre modificar la original o <strong>crear una actividad paralela</strong> para la misma fecha y hora sin alterar la de otra persona.
+                            </p>
+                        </div>
+                    </div>
+                @endif
                     <!-- Tabs Nav -->
                     <div class="flex gap-4 border-b border-gray-200 dark:border-gray-800 pb-2 mb-6 overflow-x-auto">
-                        <button type="button" @click="activeTab = 'general'" :class="activeTab === 'general' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">General</button>
+                        <button type="button" @click="setActiveTab('general')" :class="activeTab === 'general' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">General</button>
                         @if($activity->type === 'document')
                             <button type="button" @click="activeTab = 'chapters'" :class="activeTab === 'chapters' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">Capítulos</button>
                         @endif
                         <button type="button" @click="activeTab = 'planning'" :class="activeTab === 'planning' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">Planificación y Estado</button>
                         <button type="button" @click="activeTab = 'team'" :class="activeTab === 'team' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">Equipo y Ejecución</button>
                         <button type="button" @click="activeTab = 'context'" :class="activeTab === 'context' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">Contexto y Vinculaciones</button>
-                        <button type="button" @click="activeTab = 'attachments'" :class="activeTab === 'attachments' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">Adjuntos</button>
+                        <button type="button" @click="setActiveTab('attachments')" :class="activeTab === 'attachments' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">Adjuntos</button>
                     </div>
-    
+
                     <div x-show="activeTab === 'general'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                         <!-- BLOCK: Título de la Actividad -->
     <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-1">
@@ -85,10 +118,6 @@
         </div>
     </div>
 
-    
-                    </div>
-        
-                    <div x-show="activeTab === 'general'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                         <!-- BLOCK: Descripción -->
     <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-2">
         <div class="absolute top-0 right-0 p-8 opacity-5">
@@ -107,8 +136,8 @@
         </div>
         <div class="space-y-6 relative z-10">
             <div>
-                    <x-markdown-editor 
-                        name="description" 
+                    <x-markdown-editor
+                        name="description"
                         id="description"
                         :value="old('description', $activity->description)"
                         :label="__('Descripción o Contenido')"
@@ -120,15 +149,9 @@
         </div>
     </div>
 
-    
-                    </div>
-        
-                    <div x-show="activeTab === 'general'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
-                        <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
-                            <div>
                         <!-- BLOCK: Información Específica -->
     @if (in_array($activity->type, ['document', 'link', 'agreement', 'meeting']))
-    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md h-full group relative overflow-hidden order-4">
+    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-4">
         <div class="absolute top-0 right-0 p-8 opacity-5">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
         </div>
@@ -198,8 +221,8 @@
                                         {!! str(data_get($activity->metadata, 'terms', ''))->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
                                     </div>
                                 @else
-                                    <x-markdown-editor 
-                                        name="metadata[terms]" 
+                                    <x-markdown-editor
+                                        name="metadata[terms]"
                                         id="metadata_terms"
                                         :value="old('metadata.terms', data_get($activity->metadata, 'terms', ''))"
                                         label="Términos del Acuerdo (Documento a Firmar)"
@@ -215,32 +238,26 @@
                                 <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Fecha del Acuerdo</label>
                                 <input type="date" name="metadata[agreement_date]" value="{{ old('metadata.agreement_date', data_get($activity->metadata, 'agreement_date', now()->format('Y-m-d'))) }}" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none">
                             </div>
-                            
-                            <div class="md:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Partes Externas Involucradas (Firmantes)</label>
-                                <p class="text-[10px] text-gray-500 mb-3 leading-tight">Añade a las personas externas al equipo que deberán ratificar/firmar este acuerdo. Se les enviará un correo seguro con el documento.</p>
-                                <x-guest-crud :initialGuests="old('metadata.guests', data_get($activity->metadata, 'guests', []))" :initialMessage="old('metadata.invitation_message', data_get($activity->metadata, 'invitation_message', ''))" />
-                            </div>
                         </div>
                     @elseif ($activity->type === 'meeting')
                         <!-- REUNIÓN ESPECÍFICO -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Modalidad</label>
-                                <select name="modality" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none cursor-pointer">
-                                    <option value="remote" {{ old('modality', data_get($activity->metadata, 'modality')) == 'remote' ? 'selected' : '' }}>💻 En remoto / Online</option>
-                                    <option value="presential" {{ old('modality', data_get($activity->metadata, 'modality', 'presential')) == 'presential' ? 'selected' : '' }}>🏢 Presencial</option>
-                                    <option value="hybrid" {{ old('modality', data_get($activity->metadata, 'modality')) == 'hybrid' ? 'selected' : '' }}>🤝 Híbrido</option>
+                                <select name="metadata[modality]" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none cursor-pointer">
+                                    <option value="remote" {{ old('metadata.modality', data_get($activity->metadata, 'modality')) == 'remote' ? 'selected' : '' }}>💻 En remoto / Online</option>
+                                    <option value="presential" {{ old('metadata.modality', data_get($activity->metadata, 'modality', 'presential')) == 'presential' ? 'selected' : '' }}>🏢 Presencial</option>
+                                    <option value="hybrid" {{ old('metadata.modality', data_get($activity->metadata, 'modality')) == 'hybrid' ? 'selected' : '' }}>🤝 Híbrido</option>
                                 </select>
                             </div>
 
                             <div>
                                 <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Duración (Minutos)</label>
-                                <input type="number" name="duration_minutes" value="{{ old('duration_minutes', data_get($activity->metadata, 'duration_minutes', 60)) }}" min="1" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none">
+                                <input type="number" name="metadata[duration_minutes]" value="{{ old('metadata.duration_minutes', data_get($activity->metadata, 'duration_minutes', 60)) }}" min="1" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none">
                             </div>
 
                             <div class="md:col-span-2" x-data="{
-                                link: '{{ old('location', data_get($activity->metadata, 'location')) }}',
+                                link: '{{ old('metadata.location', data_get($activity->metadata, 'location')) }}',
                                 generateJitsi() {
                                     this.link = 'https://meet.jit.si/SientiaMTX-' + Math.random().toString(36).substring(2, 12);
                                 },
@@ -292,24 +309,15 @@
                                         </button>
                                     </div>
                                 </div>
-                                <input type="text" name="location" x-model="link" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none" placeholder="Ej. Sala de juntas principal o Enlace de Google Meet/Teams">
-                            </div>
-                            <div class="md:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Invitados Externos a la Reunión</label>
-                                <p class="text-[10px] text-gray-500 mb-3 leading-tight">Añade a las personas externas al equipo que asistirán a la reunión. Se les enviará una invitación por correo con los detalles.</p>
-                                <x-guest-crud :initialGuests="old('metadata.guests', data_get($activity->metadata, 'guests', []))" :initialMessage="old('metadata.invitation_message', data_get($activity->metadata, 'invitation_message', ''))" />
+                                <input type="text" name="metadata[location]" x-model="link" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none" placeholder="Ej. Sala de juntas principal o Enlace de Google Meet/Teams">
                             </div>
                         </div>
                     @endif
         </div>
     </div>
     @endif
-
-    
-                            </div>
-                            <div>
                         <!-- BLOCK: Nivel de Visibilidad -->
-    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md h-full group relative overflow-hidden order-7">
+    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-7">
         <div class="absolute top-0 right-0 p-8 opacity-5">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
         </div>
@@ -355,7 +363,7 @@
                             </label>
                         </div>
                     </div>
-                    
+
                     <div class="flex flex-col justify-center">
                         <label class="relative flex items-center gap-3 cursor-pointer group w-full bg-violet-50/50 dark:bg-violet-900/10 border border-violet-100/50 dark:border-violet-800/50 rounded-2xl p-4 transition-all">
                             <input type="hidden" name="metadata[is_ephemeral]" value="0">
@@ -368,14 +376,6 @@
                     </div>
                 </div>
         </div>
-    </div>
-
-    
-                            </div>
-                        </div>
-                    </div>
-        
-                    <div x-show="activeTab === 'general'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                         <!-- BLOCK: Observaciones -->
     <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-5">
         <div class="absolute top-0 right-0 p-8 opacity-5">
@@ -394,8 +394,8 @@
         </div>
         <div class="space-y-6 relative z-10">
             <div>
-                    <x-markdown-editor 
-                        name="metadata[observations]" 
+                    <x-markdown-editor
+                        name="metadata[observations]"
                         id="observations"
                         :value="old('metadata.observations', data_get($activity->metadata, 'observations'))"
                         :label="__('tasks.observations')"
@@ -407,9 +407,10 @@
         </div>
     </div>
 
-    
+
                     </div>
-        
+
+                    </div>
                     <div x-show="activeTab === 'team'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                         <!-- BLOCK: Miembros Asignados -->
     <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-6">
@@ -512,12 +513,119 @@
                     @endif
                 </div>
         </div>
+
+        <!-- BLOCK: Invitados Externos y Destinatarios -->
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-7">
+            <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800 relative z-10">
+                <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 shadow-inner border border-violet-100/50 dark:border-violet-500/10 group-hover:scale-110 transition-transform duration-300">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
+                        Invitados Externos y Destinatarios
+                    </h3>
+                    <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Asistentes externos, firmantes de acuerdos o destinatarios de avisos</p>
+                </div>
+            </div>
+            <div class="relative z-10">
+                <x-guest-crud :initialGuests="old('metadata.guests', data_get($activity->metadata, 'guests', []))" :initialMessage="old('metadata.invitation_message', data_get($activity->metadata, 'invitation_message', ''))" />
+            </div>
+        </div>
+
+        <!-- BLOCK: Gamificación, Impacto y Bienestar -->
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-12">
+            <div class="absolute top-0 right-0 p-8 opacity-5">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            </div>
+            <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800 relative z-10">
+                <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-400 shadow-inner border border-amber-100/50 dark:border-amber-500/10 group-hover:scale-110 transition-transform duration-300">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
+                        Gamificación, Impacto y Bienestar
+                    </h3>
+                    <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Métricas humanas, resiliencia y esfuerzo mental</p>
+                </div>
+            </div>
+            <div class="space-y-8 relative z-10">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Columna 1: Impacto Humano y Gamificación -->
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">
+                                Impacto Social / Humano (Puntos)
+                            </label>
+                            <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-3">Valor externo generado para la ciudadanía</p>
+                            <input type="number" name="metadata[impact_human_metric]" value="{{ old('metadata.impact_human_metric', data_get($activity->metadata, 'impact_human_metric', 0)) }}" min="0" max="100" class="w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all shadow-inner">
+                        </div>
+
+                        <div class="flex flex-col gap-3">
+                            <label class="relative flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-violet-300 dark:hover:border-violet-500/50 transition-all group shadow-inner">
+                                <input type="checkbox" name="metadata[is_out_of_skill_tree]" value="1" {{ old('metadata.is_out_of_skill_tree', data_get($activity->metadata, 'is_out_of_skill_tree', false)) ? 'checked' : '' }} class="accent-violet-600 rounded w-5 h-5 focus:ring-violet-500/20">
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Fuera de mi Skill Tree</span>
+                                    <span class="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-0.5">+ Puntos de Resiliencia</span>
+                                </div>
+                            </label>
+
+                            <label class="relative flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-emerald-300 dark:hover:border-emerald-500/50 transition-all group shadow-inner">
+                                <input type="checkbox" name="metadata[is_backstage]" value="1" {{ old('metadata.is_backstage', data_get($activity->metadata, 'is_backstage', false)) ? 'checked' : '' }} class="accent-emerald-600 rounded w-5 h-5 focus:ring-emerald-500/20">
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Backstage / Preparación</span>
+                                    <span class="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-0.5">Visibiliza el esfuerzo invisible</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Columna 2: Skills -->
+                    <div x-data="{ selectedSkills: {{ json_encode(old('skills', $activity->skills->pluck('id')->toArray())) }} }">
+                        <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                            Árbol de Capacidades
+                        </label>
+                        <select name="skills[]" multiple class="w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all text-gray-900 dark:text-white h-64 resize-y shadow-inner">
+                            @foreach($skills as $skill)
+                                <option value="{{ $skill->id }}" :selected="selectedSkills.includes({{ $skill->id }})">
+                                    {{ $skill->name }} ({{ $skill->category }})
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-2 flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Mantén presionado Ctrl (o Cmd) para selección múltiple
+                        </p>
+                    </div>
+
+                    <!-- Columna 3: Carga Cognitiva -->
+                    <div x-data="{ load: {{ old('metadata.cognitive_load', data_get($activity->metadata, 'cognitive_load', 1)) }} }">
+                        <label class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center justify-between">
+                            <span>Carga Cognitiva (Drenaje de Energía)</span>
+                            <span :class="{
+                                'text-emerald-500': load <= 3,
+                                'text-blue-500': load > 3 && load <= 6,
+                                'text-amber-500': load > 6 && load <= 8,
+                                'text-red-500': load > 8
+                            }" class="font-black tabular-nums transition-colors text-lg" x-text="load"></span>
+                        </label>
+                        <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-3 -mt-3">Coste de esfuerzo interno y desgaste mental</p>
+                        <div class="relative pt-2">
+                            <input type="range" name="metadata[cognitive_load]" min="1" max="10" step="1" x-model="load"
+                                class="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-amber-500 shadow-inner">
+                            <div class="flex justify-between text-[10px] text-gray-400 mt-3 font-black uppercase tracking-tighter">
+                                <span>Baja (1)</span>
+                                <span>Media (5)</span>
+                                <span>Extrema (10)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    
+
                     </div>
-        
-        
                     <div x-show="activeTab === 'planning'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                         <!-- BLOCK: Prioridad, Urgencia y Estado -->
     <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-8">
@@ -565,9 +673,11 @@
                     <div>
                         <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">{{ __('activities.status') ?? 'Estado' }}</label>
                         <select name="status" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none cursor-pointer">
-                            @foreach ($statuses as $val => $label)
-                                <option value="{{ $val }}" {{ old('status', $activity->status_value) === $val ? 'selected' : '' }}>
-                                    {{ $label }}
+                            @foreach ($allStatusesWithTypes as $statusKey => $data)
+                                <option value="{{ $statusKey }}"
+                                    {{ old('status', $activity->status_value) === $statusKey ? 'selected' : '' }}
+                                    {{ in_array($activity->type, $data['types']) ? '' : 'disabled class="text-gray-400 dark:text-gray-600 line-through"' }}>
+                                    {{ $data['label'] }}
                                 </option>
                             @endforeach
                         </select>
@@ -577,12 +687,41 @@
                     </div>
 
                 </div>
-@if($activity->type === 'task')
+                @if($activity->type === 'task')
                     <!-- Eisenhower Matrix Preview -->
                     <div id="quadrant-preview" class="rounded-xl border p-3 text-xs hidden transition-all">
                         <span class="font-bold uppercase tracking-wider" id="qp-label"></span>
                         <span class="text-gray-500 dark:text-gray-400 ml-1 italic font-medium" id="qp-desc"></span>
                     </div>
+                @endif
+
+                <!-- Prioridad Automática -->
+                @if(in_array($activity->type, ['task', 'meeting', 'reminder']))
+                <div class="bg-gray-50/50 dark:bg-gray-800/20 p-5 rounded-3xl border border-gray-150 dark:border-gray-800 flex items-center justify-between shadow-sm hover:border-violet-200 dark:hover:border-violet-800/50 transition-all">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-10 h-10 rounded-2xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-violet-600 dark:text-violet-400 shrink-0 border border-violet-200/50 dark:border-violet-700/30 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 {{ $activity->auto_priority ? 'animate-pulse' : '' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white">{{ __('Prioridad Automática') }}</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                @if($activity->type === 'meeting')
+                                    {{ __('La prioridad aumentará automáticamente conforme se acerque la fecha de la reunión.') }}
+                                @elseif($activity->type === 'reminder')
+                                    {{ __('La prioridad aumentará automáticamente conforme se acerque la fecha límite del recordatorio.') }}
+                                @else
+                                    {{ __('La prioridad aumentará automáticamente (Media -> Alta -> Crítica) conforme se acerque la fecha de entrega.') }}
+                                @endif
+                            </span>
+                        </div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer select-none">
+                        <input type="checkbox" name="auto_priority" value="1" {{ old('auto_priority', $activity->auto_priority) ? 'checked' : '' }} class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-focus:ring-4 peer-focus:ring-violet-500/20 dark:peer-focus:ring-violet-800/20 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-violet-600"></div>
+                    </label>
+                </div>
                 @endif
 <div class='my-8 border-t border-gray-100 dark:border-gray-800'></div>
 <div class="bg-gray-50/30 dark:bg-gray-800/10 p-6 rounded-3xl border border-gray-150 dark:border-gray-800">
@@ -605,12 +744,6 @@
                     </div>
                 </div>
         </div>
-    </div>
-
-    
-                    </div>
-        
-                    <div x-show="activeTab === 'planning'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                         <!-- BLOCK: Fechas y Bloqueo -->
     <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-9">
         <div class="absolute top-0 right-0 p-8 opacity-5">
@@ -705,8 +838,8 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="md:col-span-2">
                                 <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Canales de Notificación</label>
-                                @php 
-                                    $channels = data_get($activity->metadata, 'channels', ['email']); 
+                                @php
+                                    $channels = data_get($activity->metadata, 'channels', ['email']);
                                     $isWhatsappEnabled = config('services.whatsapp.enabled', true) && ($team->settings['has_whatsapp'] ?? false);
                                 @endphp
                                 <div class="flex flex-wrap gap-4 mt-2">
@@ -719,8 +852,8 @@
                                         <span class="text-sm text-gray-700 dark:text-gray-300"> Notificación en la App (Push/Nudge)</span>
                                     </label>
                                     <label class="flex items-center gap-2 {{ !$isWhatsappEnabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer' }}">
-                                        <input type="checkbox" name="metadata[channels][]" value="whatsapp" 
-                                               {{ in_array('whatsapp', $channels) ? 'checked' : '' }} 
+                                        <input type="checkbox" name="metadata[channels][]" value="whatsapp"
+                                               {{ in_array('whatsapp', $channels) ? 'checked' : '' }}
                                                {{ !$isWhatsappEnabled ? 'disabled' : '' }}
                                                class="accent-violet-600 rounded disabled:opacity-50">
                                         <span class="text-sm text-gray-700 dark:text-gray-300"> WhatsApp
@@ -747,17 +880,12 @@
                                 <input type="time" name="metadata[notify_at_hour]" value="{{ old('metadata.notify_at_hour', data_get($activity->metadata, 'notify_at_hour')) }}" step="60" class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all">
                                 <p class="text-[10px] text-gray-400 mt-1">Si se establece, se notifica a esa hora exacta en la fecha de due_date. No se puede usar junto con "minutos antes".</p>
                             </div>
+
                         </div>
                     </div>
                     @endif
                 </div>
         </div>
-    </div>
-
-    
-                    </div>
-        
-                    <div x-show="activeTab === 'planning'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                         <!-- BLOCK: Autoprogramación -->
     <div id="recurrence-block" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-10">
         <div class="absolute top-0 right-0 p-8 opacity-5">
@@ -776,10 +904,10 @@
         </div>
         <div class="space-y-6 relative z-10">
             @php
-                            $hasAutoprogram = data_get($activity->metadata, 'autoprogram_settings') !== null;
-                            $autoSettings = data_get($activity->metadata, 'autoprogram_settings', []);
-                        @endphp
-                        <div x-data="{ 
+                $hasAutoprogram = (bool) $activity->is_autoprogrammable;
+                $autoSettings = data_get($activity->metadata, 'autoprogram_settings', []);
+            @endphp
+                        <div x-data="{
                             isAutoprogrammable: {{ old('is_autoprogrammable', $hasAutoprogram ? 1 : 0) ? 'true' : 'false' }},
                             frequency: '{{ old('autoprogram_settings.frequency', $autoSettings['frequency'] ?? 'daily') }}',
                             monthlyType: '{{ old('autoprogram_settings.monthly_type', $autoSettings['monthly_type'] ?? 'date') }}',
@@ -802,14 +930,14 @@
                                         <span class="text-[11px] text-gray-500 dark:text-gray-400">Permite que esta actividad se duplique automáticamente según el patrón definido.</span>
                                     </div>
                                 </div>
-                                
+
                                 <div class="flex p-1 bg-gray-200 dark:bg-gray-950/50 rounded-xl w-fit self-start sm:self-center border border-transparent dark:border-gray-800">
-                                    <button type="button" @click="isAutoprogrammable = false" 
+                                    <button type="button" @click="isAutoprogrammable = false"
                                         :class="!isAutoprogrammable ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
                                         class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-200">
                                         Desactivado
                                     </button>
-                                    <button type="button" @click="isAutoprogrammable = true" 
+                                    <button type="button" @click="isAutoprogrammable = true"
                                         :class="isAutoprogrammable ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/20' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
                                         class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-200">
                                         Activo
@@ -850,7 +978,7 @@
                                             @php $selectedDays = $autoSettings['days'] ?? []; @endphp
                                             @foreach(['1' => 'L', '2' => 'M', '3' => 'X', '4' => 'J', '5' => 'V', '6' => 'S', '7' => 'D'] as $val => $label)
                                                 <label class="relative cursor-pointer">
-                                                    <input type="checkbox" name="autoprogram_settings[days][]" value="{{ $val }}" 
+                                                    <input type="checkbox" name="autoprogram_settings[days][]" value="{{ $val }}"
                                                         {{ in_array($val, old('autoprogram_settings.days', $selectedDays)) ? 'checked' : '' }}
                                                         class="peer sr-only">
                                                     <div class="w-9 h-9 rounded-xl border-2 border-gray-100 dark:border-gray-800 flex items-center justify-center text-xs font-black text-gray-400 peer-checked:border-violet-500 peer-checked:bg-violet-50 dark:peer-checked:bg-violet-900/30 peer-checked:text-violet-600 transition-all hover:border-violet-200 shadow-sm">
@@ -881,7 +1009,7 @@
                                                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Un día específico de la semana</span>
                                             </label>
                                         </div>
-                                        
+
                                         <div x-show="monthlyType === 'ordinal'" class="flex items-center gap-2 mt-3" x-transition>
                                             <span class="text-sm text-gray-500">El</span>
                                             <select name="autoprogram_settings[monthly_ordinal]" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-3 py-1.5 text-sm text-gray-900 dark:text-white outline-none">
@@ -959,9 +1087,11 @@
         </div>
     </div>
 
-    
+
                     </div>
-        
+
+                    </div>
+                    </div>
                     <div x-show="activeTab === 'context'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                         <!-- BLOCK: Contexto y Vinculaciones -->
     <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-11">
@@ -987,14 +1117,26 @@
                             </svg>
                         </div>
                         <div>
-                            
+
                             <p class="text-[10px] text-gray-500 dark:text-gray-400">Asocia esta actividad a un expediente o dependencias.</p>
                         </div>
                     </div>
 
                     <!-- Expediente Vinculado -->
                     <div>
-                        <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Expediente Vinculado</label>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400">
+                                {{ __('Expediente Vinculado') }}
+                            </label>
+                            @if(!($activity->parent_id && !$activity->is_template))
+                                <button type="button" onclick="quickCreateExpediente({{ $team->id }})" class="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                    <span>{{ __('Nuevo Expediente') }}</span>
+                                </button>
+                            @endif
+                        </div>
                         @if($activity->parent_id && !$activity->is_template)
                             <div class="flex items-center justify-between bg-gray-50 dark:bg-gray-900 p-3 rounded-xl border border-gray-200 dark:border-gray-700">
                                 <div class="flex items-center gap-3">
@@ -1035,7 +1177,8 @@
                                 <option value="">(Ninguna)</option>
                                 @foreach ($parentActivities as $parent)
                                     <option value="{{ $parent->id }}" {{ old('parent_id', $activity->parent_id) == $parent->id ? 'selected' : '' }}
-                                        data-assignee="{{ $parent->creator ? $parent->creator->name : 'Sin asignar' }}">
+                                        data-assignee="{{ $parent->creator ? $parent->creator->name : 'Sin asignar' }}"
+                                        data-expediente="{{ $parent->expediente ? $parent->expediente->code : '' }}">
                                         {{ $parent->title }}
                                     </option>
                                 @endforeach
@@ -1058,108 +1201,9 @@
         </div>
     </div>
 
-    
-                    </div>
-        
-                    <div x-show="activeTab === 'team'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
-                        <!-- BLOCK: Gamificación, Impacto y Bienestar -->
-    <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-12">
-        <div class="absolute top-0 right-0 p-8 opacity-5">
-            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-        </div>
-        <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800 relative z-10">
-            <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-400 shadow-inner border border-amber-100/50 dark:border-amber-500/10 group-hover:scale-110 transition-transform duration-300">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-            </div>
-            <div>
-                <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
-                    Gamificación, Impacto y Bienestar
-                </h3>
-                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Métricas humanas, resiliencia y esfuerzo mental</p>
-            </div>
-        </div>
-        <div class="space-y-8 relative z-10">
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                
-                <!-- Columna 1: Impacto Humano y Gamificación -->
-                <div class="space-y-6">
-                    <div>
-                        <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">
-                            Impacto Social / Humano (Puntos)
-                        </label>
-                        <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-3">Valor externo generado para la ciudadanía</p>
-                        <input type="number" name="metadata[impact_human_metric]" value="{{ old('metadata.impact_human_metric', data_get($activity->metadata, 'impact_human_metric', 0)) }}" min="0" max="100" class="w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all shadow-inner">
-                    </div>
-                    
-                    <div class="flex flex-col gap-3">
-                        <label class="relative flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-violet-300 dark:hover:border-violet-500/50 transition-all group shadow-inner">
-                            <input type="checkbox" name="metadata[is_out_of_skill_tree]" value="1" {{ old('metadata.is_out_of_skill_tree', data_get($activity->metadata, 'is_out_of_skill_tree', false)) ? 'checked' : '' }} class="accent-violet-600 rounded w-5 h-5 focus:ring-violet-500/20">
-                            <div class="flex flex-col">
-                                <span class="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Fuera de mi Skill Tree</span>
-                                <span class="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-0.5">+ Puntos de Resiliencia</span>
-                            </div>
-                        </label>
-                        
-                        <label class="relative flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-emerald-300 dark:hover:border-emerald-500/50 transition-all group shadow-inner">
-                            <input type="checkbox" name="metadata[is_backstage]" value="1" {{ old('metadata.is_backstage', data_get($activity->metadata, 'is_backstage', false)) ? 'checked' : '' }} class="accent-emerald-600 rounded w-5 h-5 focus:ring-emerald-500/20">
-                            <div class="flex flex-col">
-                                <span class="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Backstage / Preparación</span>
-                                <span class="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-0.5">Visibiliza el esfuerzo invisible</span>
-                            </div>
-                        </label>
-                    </div>
-                </div>
 
-                <!-- Columna 2: Skills -->
-                <div x-data="{ selectedSkills: {{ json_encode(old('skills', $activity->skills->pluck('id')->toArray())) }} }">
-                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
-                        Árbol de Capacidades
-                    </label>
-                    <select name="skills[]" multiple class="w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all text-gray-900 dark:text-white h-64 resize-y shadow-inner">
-                        @foreach($skills as $skill)
-                            <option value="{{ $skill->id }}" :selected="selectedSkills.includes({{ $skill->id }})">
-                                {{ $skill->name }} ({{ $skill->category }})
-                            </option>
-                        @endforeach
-                    </select>
-                    <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-2 flex items-center gap-1">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        Mantén presionado Ctrl (o Cmd) para selección múltiple
-                    </p>
-                </div>
-
-                <!-- Columna 3: Carga Cognitiva -->
-                <div x-data="{ load: {{ old('metadata.cognitive_load', data_get($activity->metadata, 'cognitive_load', 1)) }} }">
-                    <label class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center justify-between">
-                        <span>Carga Cognitiva (Drenaje de Energía)</span>
-                        <span :class="{
-                            'text-emerald-500': load <= 3,
-                            'text-blue-500': load > 3 && load <= 6,
-                            'text-amber-500': load > 6 && load <= 8,
-                            'text-red-500': load > 8
-                        }" class="font-black tabular-nums transition-colors text-lg" x-text="load"></span>
-                    </label>
-                    <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-3 -mt-3">Coste de esfuerzo interno y desgaste mental</p>
-                    <div class="relative pt-2">
-                        <input type="range" name="metadata[cognitive_load]" min="1" max="10" step="1" x-model="load"
-                            class="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-amber-500 shadow-inner">
-                        <div class="flex justify-between text-[10px] text-gray-400 mt-3 font-black uppercase tracking-tighter">
-                            <span>Baja (1)</span>
-                            <span>Media (5)</span>
-                            <span>Extrema (10)</span>
-                        </div>
                     </div>
-                </div>
-                
-            </div>
-            
-        </div>
-    </div>
 
-    
-                    </div>
-        
                     <div x-show="activeTab === 'attachments'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                         <!-- BLOCK: Archivos Adjuntos -->
     <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-[13]">
@@ -1277,7 +1321,7 @@
                                                 <span class="text-[9px] text-gray-400">{{ number_format($attach->file_size / 1024, 1) }} KB</span>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="flex items-center gap-1">
                                             @if($attach->is_office_compatible)
                                                 <a href="{{ route('onlyoffice.activity.edit', $attach) }}" target="_blank" rel="noopener noreferrer"
@@ -1288,7 +1332,7 @@
                                                     </svg>
                                                 </a>
                                             @endif
-                                            
+
                                             <a href="{{ route('teams.activities.attachments.download', [$team, $activity, $attach]) }}"
                                                class="text-gray-500 hover:text-violet-600 p-1 hover:bg-violet-50 dark:hover:bg-violet-950/20 rounded-lg transition-all"
                                                title="Descargar">
@@ -1318,12 +1362,20 @@
     </div>
 
                     </div>
-        
-                </div>
+
 <!-- Botones de Acción -->
-                <div class="flex justify-end gap-3 pt-6 border-t border-gray-100 dark:border-gray-800 order-[20]">
+                <div class="flex flex-wrap items-center justify-end gap-3 pt-6 border-t border-gray-100 dark:border-gray-800 order-[20]">
                     <a href="{{ route('teams.activities.show', [$team, $activity]) }}"
-                        class="text-sm text-gray-500 hover:text-gray-900 px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 transition-all font-medium">Cancelar</a>
+                        class="text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 transition-all font-medium">Cancelar</a>
+
+                    @if ($isAnotherUserCreator || $isExternalEvent)
+                        <button type="button" id="btn-create-parallel"
+                            class="text-sm bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-lg hover:shadow-emerald-500/25 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
+                            Crear como Paralela
+                        </button>
+                    @endif
+
                     <button type="submit"
                         class="text-sm bg-violet-600 hover:bg-violet-500 text-white px-8 py-2.5 rounded-xl font-bold transition-all shadow-lg hover:shadow-violet-500/25">
                         Guardar Cambios
@@ -1448,8 +1500,8 @@
                                     </div>
                                     <div style="height: 220px; max-height: none; overflow-y: auto;" class="resize-y min-h-[150px] overflow-y-auto custom-scrollbar border border-gray-100 dark:border-gray-800 rounded-2xl p-2 bg-white dark:bg-gray-900 shadow-sm">
                                         <label class="block text-[10px] uppercase font-bold text-gray-400 mb-1">Contenido (Markdown)</label>
-                                        <x-markdown-editor 
-                                            name="chapter_content" 
+                                        <x-markdown-editor
+                                            name="chapter_content"
                                             id="edit-chap-{{ $chapter['id'] }}"
                                             :value="$chapter['content'] ?? ''"
                                             :label="null"
@@ -1485,8 +1537,7 @@
     @push('scripts')
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
-    <style>
-        .ts-wrapper {
+    <style>@media print{/* -- Print Mode Code Block Fix -- */pre,code,pre *,code *,.prose pre,.prose code{background-color:transparent!important;color:#000!important}div[class*=bg-gray-8],div[class*=bg-gray-9],div[class*=bg-slate-8],div[class*=bg-slate-9],div[style*=background],.prose div,.markdown-body div,.bg-gray-800,.bg-gray-900,.dark\\:bg-gray-800,.dark\\:bg-gray-900{background-color:transparent!important}pre,.prose pre{border:1px solid #cbd5e1!important;border-radius:0.25rem!important;white-space:pre-wrap!important;word-break:break-all!important;padding:0.5rem!important}code,.prose code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace!important}}.ts-wrapper {
             border: none !important;
             background: transparent !important;
             padding: 0 !important;
@@ -1505,13 +1556,13 @@
             cursor: pointer !important;
             transition: all 0.2s ease !important;
         }
-        .ts-control input { 
-            font-size: 14px !important; 
-            padding: 0 !important; 
-            margin: 0 !important; 
-            background: transparent !important; 
-            border: none !important; 
-            outline: none !important; 
+        .ts-control input {
+            font-size: 14px !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            background: transparent !important;
+            border: none !important;
+            outline: none !important;
             box-shadow: none !important;
             line-height: 1 !important;
             height: auto !important;
@@ -1520,22 +1571,22 @@
         }
         .ts-control input::placeholder { color: #9ca3af !important; font-weight: 500 !important; }
         .ts-control.has-items input::placeholder { color: transparent !important; }
-        
+
         .dark .ts-control {
             background-color: #1f2937 !important;
             border-color: #374151 !important;
             color: #f3f4f6 !important;
         }
-        
+
         .ts-wrapper.focus .ts-control {
             border-color: #7c3aed !important;
             box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2) !important;
         }
-        
-        .ts-wrapper .clear-button { 
-            right: 1rem !important; 
-            top: 50% !important; 
-            transform: translateY(-50%) !important; 
+
+        .ts-wrapper .clear-button {
+            right: 1rem !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
             font-size: 1.25rem !important;
             color: #9ca3af !important;
             opacity: 0.7 !important;
@@ -1543,29 +1594,29 @@
         }
         .ts-wrapper .clear-button:hover { opacity: 1 !important; color: #ef4444 !important; }
         .ts-wrapper .ts-control { padding-right: 2.5rem !important; }
-        
-        .ts-dropdown { 
-            border-radius: 1rem !important; 
+
+        .ts-dropdown {
+            border-radius: 1rem !important;
             border: 1px solid #e5e7eb !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important; 
-            margin-top: 6px !important; 
-            padding: 0.5rem !important; 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+            margin-top: 6px !important;
+            padding: 0.5rem !important;
             z-index: 9999 !important;
         }
         .dark .ts-dropdown { background-color: #111827 !important; border-color: #374151 !important; }
-        
-        .ts-dropdown .option { 
-            padding: 0.625rem 0.75rem !important; 
-            border-radius: 0.6rem !important; 
-            margin-bottom: 2px !important; 
+
+        .ts-dropdown .option {
+            padding: 0.625rem 0.75rem !important;
+            border-radius: 0.6rem !important;
+            margin-bottom: 2px !important;
             transition: all 0.15s ease !important;
             color: #374151 !important;
         }
         .dark .ts-dropdown .option { color: #e5e7eb !important; }
-        
-        .ts-dropdown .active { 
-            background-color: #f5f3ff !important; 
-            color: #4f46e5 !important; 
+
+        .ts-dropdown .active {
+            background-color: #f5f3ff !important;
+            color: #4f46e5 !important;
         }
         .dark .ts-dropdown .active { background-color: #4f46e5 !important; color: #ffffff !important; }
     </style>
@@ -1607,6 +1658,84 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            // --- Confirmación Consciente para Actividades Ajenas o Externas ---
+            const editForm = document.getElementById('edit-activity-form');
+            if (editForm) {
+                const isAnotherUser = @json($isAnotherUserCreator);
+                const isExternal = @json($isExternalEvent);
+                const ownerName = @json($originalOwnerName);
+
+                if (isAnotherUser || isExternal) {
+                    let userConfirmed = false;
+
+                    const submitAsParallel = () => {
+                        let parallelInput = document.createElement('input');
+                        parallelInput.type = 'hidden';
+                        parallelInput.name = 'create_as_parallel';
+                        parallelInput.value = '1';
+                        editForm.appendChild(parallelInput);
+                        userConfirmed = true;
+                        editForm.submit();
+                    };
+
+                    const btnParallel = document.getElementById('btn-create-parallel');
+                    if (btnParallel) {
+                        btnParallel.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            submitAsParallel();
+                        });
+                    }
+
+                    editForm.addEventListener('submit', function(e) {
+                        if (userConfirmed) return;
+                        e.preventDefault();
+
+                        const isDark = document.documentElement.classList.contains('dark');
+                        Swal.fire({
+                            title: '⚠️ ¿Modificar actividad ajena?',
+                            html: `
+                                <div class="text-left mt-2 text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                                    <p class="mb-3">
+                                        Esta actividad fue programada originalmente por <strong class="text-gray-900 dark:text-white font-black">${ownerName}</strong>.
+                                    </p>
+                                    <p class="text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 p-3 rounded-2xl border border-amber-200 dark:border-amber-800 leading-normal mb-3">
+                                        <strong>Atención:</strong> Si modificas la original, alterarás el evento o tarea que pertenece a otra persona.
+                                    </p>
+                                    <p class="text-xs text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 p-3 rounded-2xl border border-emerald-200 dark:border-emerald-800 leading-normal">
+                                        <strong>Opción paralela:</strong> Puedes <strong>crear una actividad paralela</strong> para la misma fecha y hora con los datos actuales, de tu propiedad y sin modificar la original.
+                                    </p>
+                                </div>
+                            `,
+                            icon: 'warning',
+                            showCancelButton: true,
+                            showDenyButton: true,
+                            confirmButtonText: 'Modificar original',
+                            denyButtonText: 'Crear actividad paralela',
+                            cancelButtonText: 'Cancelar',
+                            confirmButtonColor: '#7c3aed',
+                            denyButtonColor: '#059669',
+                            cancelButtonColor: '#6b7280',
+                            background: isDark ? '#0f172a' : '#ffffff',
+                            color: isDark ? '#f1f5f9' : '#1e293b',
+                            customClass: {
+                                popup: 'rounded-[2rem]',
+                                actions: 'flex flex-wrap gap-2 justify-center',
+                                confirmButton: 'rounded-xl font-black uppercase text-xs tracking-wider px-4 py-3',
+                                denyButton: 'rounded-xl font-black uppercase text-xs tracking-wider px-4 py-3 bg-emerald-600 hover:bg-emerald-700',
+                                cancelButton: 'rounded-xl font-black uppercase text-xs tracking-wider px-4 py-3'
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                userConfirmed = true;
+                                editForm.submit();
+                            } else if (result.isDenied) {
+                                submitAsParallel();
+                            }
+                        });
+                    });
+                }
+            }
+
             // --- Eisenhower Matrix Preview ---
             const quadrantData = {
                 1: { label: 'Urgente e Importante', description: 'Hacer de inmediato' },
@@ -1650,6 +1779,135 @@
                 updatePreview();
             }
 
+            // --- Quick Create Expediente ---
+            window.quickCreateExpediente = function(teamId) {
+                if (typeof Swal === 'undefined') {
+                    alert('Error: SweetAlert2 no está disponible.');
+                    return;
+                }
+
+                Swal.fire({
+                    title: '{{ __("Crear Nuevo Expediente") }}',
+                    html: `
+                        <div class="text-left space-y-4 pt-2">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
+                                    {{ __("Título del Expediente") }} <span class="text-red-500">*</span>
+                                </label>
+                                <input id="swal-exp-title" type="text" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="{{ __("Ej. Expediente de Contratación 2026") }}">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
+                                    {{ __("Descripción (Opcional)") }}
+                                </label>
+                                <textarea id="swal-exp-desc" rows="2" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="{{ __("Resumen o notas sobre este expediente...") }}"></textarea>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
+                                        {{ __("Prioridad") }}
+                                    </label>
+                                    <select id="swal-exp-priority" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                                        <option value="low">{{ __("Baja") }}</option>
+                                        <option value="medium" selected>{{ __("Media") }}</option>
+                                        <option value="high">{{ __("Alta") }}</option>
+                                        <option value="critical">{{ __("Crítica") }}</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
+                                        {{ __("Visibilidad") }}
+                                    </label>
+                                    <select id="swal-exp-visibility" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                                        <option value="public" selected>{{ __("Pública (Equipo)") }}</option>
+                                        <option value="private">{{ __("Privada") }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    `,
+                    focusConfirm: false,
+                    showCancelButton: true,
+                    confirmButtonText: '{{ __("Crear y Asignar") }}',
+                    cancelButtonText: '{{ __("Cancelar") }}',
+                    customClass: {
+                        popup: 'rounded-2xl dark:bg-gray-800 dark:text-white',
+                        confirmButton: 'bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors',
+                        cancelButton: 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 text-gray-700 dark:text-gray-300 font-bold px-4 py-2 rounded-xl text-sm transition-colors mr-2'
+                    },
+                    buttonsStyling: false,
+                    preConfirm: () => {
+                        const title = document.getElementById('swal-exp-title').value.trim();
+                        const description = document.getElementById('swal-exp-desc').value.trim();
+                        const priority = document.getElementById('swal-exp-priority').value;
+                        const visibility = document.getElementById('swal-exp-visibility').value;
+
+                        if (!title) {
+                            Swal.showValidationMessage('{{ __("Por favor, introduce el título del expediente") }}');
+                            return false;
+                        }
+
+                        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+                        return fetch(`/teams/${teamId}/expedientes`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': token
+                            },
+                            body: JSON.stringify({
+                                title: title,
+                                description: description,
+                                priority: priority,
+                                visibility: visibility,
+                                status: 'open'
+                            })
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                return response.json().then(err => {
+                                    throw new Error(err.message || '{{ __("Error al crear el expediente") }}');
+                                });
+                            }
+                            return response.json();
+                        })
+                        .catch(error => {
+                            Swal.showValidationMessage(`Error: ${error.message}`);
+                        });
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed && result.value && result.value.success) {
+                        const exp = result.value.expediente;
+                        const selectEl = document.getElementById('expediente_id_select');
+
+                        if (selectEl) {
+                            if (selectEl.tomselect) {
+                                selectEl.tomselect.addOption({
+                                    value: exp.id,
+                                    text: exp.display_name
+                                });
+                                selectEl.tomselect.setValue(exp.id);
+                            } else {
+                                const option = new Option(exp.display_name, exp.id, true, true);
+                                selectEl.add(option);
+                                selectEl.value = exp.id;
+                            }
+                        }
+
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: '{{ __("Expediente creado y vinculado") }}',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true
+                        });
+                    }
+                });
+            };
+
             // --- TomSelect for Expedientes ---
             const expedSelectEl = document.getElementById('expediente_id_select');
             if (expedSelectEl) {
@@ -1691,6 +1949,7 @@
                     create: false,
                     sortField: { field: "text", direction: "asc" },
                     placeholder: 'Buscar actividad padre...',
+                    dropdownParent: 'body',
                     render: {
                         option: function(data, escape) {
                             return '<div class="flex items-center gap-3">' +
@@ -1699,18 +1958,20 @@
                                 '</div>' +
                                 '<div class="flex flex-col min-w-0">' +
                                     '<span class="font-bold text-gray-900 dark:text-white truncate text-xs">' + escape(data.text) + '</span>' +
-                                    '<span class="text-[10px] text-gray-700 dark:text-gray-200 font-black uppercase tracking-widest mt-0.5 flex items-center gap-1.5">' + 
+                                    '<span class="text-[10px] text-gray-700 dark:text-gray-200 font-black uppercase tracking-widest mt-0.5 flex items-center gap-1.5">' +
                                         '<span class="w-1.5 h-1.5 rounded-full bg-violet-400"></span>' +
-                                        escape(data.assignee) + 
+                                        escape(data.assignee) +
+                                        (data.expediente ? '<span class="ml-1.5 px-1 bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400 rounded-sm font-mono">[' + escape(data.expediente) + ']</span>' : '') +
                                     '</span>' +
                                 '</div>' +
                             '</div>';
                         },
                         item: function(data, escape) {
-                            return '<div class="flex items-center gap-2">' + 
+                            return '<div class="flex items-center gap-2">' +
                                 '<span class="text-[10px] font-mono font-bold text-violet-500 bg-violet-50 dark:bg-violet-900/30 px-1.5 py-0.5 rounded">#' + escape(data.value) + '</span>' +
                                 '<span class="font-medium text-gray-900 dark:text-white">' + escape(data.text) + '</span>' +
                                 '<span class="text-[9px] text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 font-black uppercase tracking-tighter">@' + escape(data.assignee) + '</span>' +
+                                (data.expediente ? '<span class="text-[9px] text-violet-500 bg-violet-50 dark:bg-violet-900/30 dark:text-violet-400 px-1.5 py-0.5 rounded border border-violet-100 dark:border-violet-800 font-mono font-bold uppercase tracking-tighter">[' + escape(data.expediente) + ']</span>' : '') +
                             '</div>';
                         }
                     }
@@ -1750,7 +2011,7 @@
         function loadDriveFolder(folderId) {
             const container = document.getElementById('drive-contents');
             const teamId = '{{ $team->id }}';
-            
+
             fetch(`{{ route('google.drive.list') }}?team_id=${teamId}&folderId=${folderId}`)
                 .then(response => response.json())
                 .then(data => {
@@ -1760,7 +2021,7 @@
                     }
 
                     container.innerHTML = '';
-                    
+
                     if (folderId !== 'root') {
                         const backBtn = document.createElement('button');
                         backBtn.className = 'p-2 text-blue-600 font-bold text-sm mb-2';
@@ -1850,7 +2111,7 @@
                     const isImage = file.type.startsWith('image/');
                     const div = document.createElement('div');
                     div.className = 'flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700/50';
-                    
+
                     let imagePreview = '';
                     if (isImage) {
                         const objectUrl = URL.createObjectURL(file);
@@ -1965,6 +2226,7 @@
 
         <button type="button"
                 onclick="document.getElementById('edit-activity-form').submit()"
+                onclick="const f = document.getElementById('edit-activity-form'); if (f) { typeof f.requestSubmit === 'function' ? f.requestSubmit() : f.submit(); }"
            style="display:flex;align-items:center;gap:0.375rem;font-size:0.75rem;font-weight:700;color:#fff;background:#7c3aed;padding:0.375rem 0.75rem;border-radius:0.625rem;text-decoration:none;transition:background 0.15s ease;border:none;cursor:pointer;"
            onmouseover="this.style.background='#6d28d9'"
            onmouseout="this.style.background='#7c3aed'">
@@ -1975,157 +2237,6 @@
         </button>
     </div>
 
-    <script>
-        (function() {
-            const bar = document.getElementById('activity-edit-floating-bar');
-            if (bar) {
-                const checkScroll = (e) => {
-                    const target = e.target === document ? document.documentElement : e.target;
-                    const scrollY = target.scrollTop || 0;
-                    const finalScroll = scrollY || window.scrollY || 0;
-                    
-                    if (finalScroll > 150) {
-                        bar.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
-                        bar.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
-                    } else {
-                        bar.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
-                        bar.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
-                    }
-                };
-                window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
-            }
-        })();
-
-        function printSection(sectionLabel, contentId) {
-            const el = document.getElementById(contentId);
-            if (!el) {
-                console.error('Print section element not found:', contentId);
-                return;
-            }
-            const content = el.innerHTML;
-            const activityTitle = @json($activity->title);
-            if (typeof SientiaPrint === 'undefined' || typeof SientiaPrint.print === 'undefined') {
-                console.warn('SientiaPrint not available, using fallback print');
-                const printWin = window.open('', '_blank', 'width=850,height=900');
-                printWin.document.write('<!DOCTYPE html><html><head><title>' + activityTitle + '</title><style>body{font-family:system-ui,sans-serif;padding:2rem;line-height:1.6;color:#1e293b}h1,h2,h3{margin-top:1.5rem;margin-bottom:.75rem}img{max-width:100%}table{border-collapse:collapse;width:100%}td,th{border:1px solid #e2e8f0;padding:.5rem}pre{background:#f1f5f9;padding:1rem;border-radius:.5rem;overflow-x:auto}code{background:#f1f5f9;padding:.125rem .25rem;border-radius:.25rem}</style></head><body>' + content + '</body></html>');
-                printWin.document.close();
-                setTimeout(() => { printWin.print(); }, 500);
-                return;
-            }
-            SientiaPrint.print(activityTitle, content, { brand: 'Sientia MTX • ' + sectionLabel });
-        }
-
-        function printPrivateNotes() {
-            const editor = document.getElementById('reply-content-private');
-            let rawContent = editor ? editor.value : '';
-            const activityTitle = @json($activity->title);
-            if (typeof SientiaPrint === 'undefined' || typeof SientiaPrint.print === 'undefined') {
-                const printWin = window.open('', '_blank', 'width=850,height=900');
-                let htmlContent = typeof marked !== 'undefined' ? marked.parse(rawContent) : rawContent.replace(/\n/g, '<br>');
-                printWin.document.write('<!DOCTYPE html><html><head><title>' + activityTitle + '</title><style>body{font-family:system-ui,sans-serif;padding:2rem;line-height:1.6;color:#1e293b}h1,h2,h3{margin-top:1.5rem;margin-bottom:.75rem}img{max-width:100%}</style></head><body>' + htmlContent + '</body></html>');
-                printWin.document.close();
-                setTimeout(() => { printWin.print(); }, 500);
-                return;
-            }
-            let htmlContent = typeof marked !== 'undefined' ? marked.parse(rawContent) : rawContent.replace(/\n/g, '<br>');
-            SientiaPrint.print(activityTitle, htmlContent, { brand: 'Sientia MTX • Notas Privadas' });
-        }
-
-        function printDocumentBook() {
-            const printWin = window.open('', '_blank');
-            const title = @json($activity->title);
-            const teamName = @json($team->name);
-            const docVersion = @json($activity->metadata['version'] ?? '1.0.0');
-            const chapters = @json($activity->metadata['chapters'] ?? []);
-            
-            let chaptersHtml = '';
-            let tocHtml = '';
-            
-            chapters.forEach((chap, idx) => {
-                tocHtml += `
-                    <div class="toc-item">
-                        <span class="toc-title">${idx + 1}. ${chap.title}</span>
-                        <span class="toc-dots"></span>
-                        <span class="toc-page">Capítulo ${idx + 1}</span>
-                    </div>
-                `;
-                
-                chaptersHtml += `
-                    <div class="chapter-page">
-                        <div class="chapter-header">
-                            <span class="chapter-num">CAPÍTULO ${idx + 1}</span>
-                            <h2 class="chapter-title">${chap.title}</h2>
-                            <div class="chapter-meta">Por ${chap.author_name || 'Autor'} • ${chap.updated_at}</div>
-                        </div>
-                        <div class="chapter-body">${marked.parse ? marked.parse(chap.content) : chap.content}</div>
-                    </div>
-                `;
-            });
-
-            printWin.document.write(`
-                <!DOCTYPE html>
-                <html>
-                    <head>
-                        <title>${title} - Libro Digital</title>
-                        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
-                        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"><\/script>
-                        <style>
-                            @page { size: A4; margin: 2.5cm 2cm; }
-                            body { font-family: 'Merriweather', serif; color: #1e293b; line-height: 1.8; margin: 0; padding: 0; font-size: 14px; }
-                            h1, h2, h3, h4, h5, h6, .outfit { font-family: 'Outfit', sans-serif; }
-                            
-                            /* Portada */
-                            .cover-page { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; page-break-after: always; padding: 2rem; box-sizing: border-box; }
-                            .cover-team { font-size: 16px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 2rem; font-family: 'Outfit', sans-serif; }
-                            .cover-title { font-size: 42px; font-weight: 900; color: #0f172a; line-height: 1.2; margin-bottom: 2rem; font-family: 'Outfit', sans-serif; }
-                            .cover-badge { display: inline-block; background: #f1f5f9; color: #475569; padding: 8px 24px; border-radius: 50px; font-size: 14px; font-weight: 700; margin-bottom: 4rem; font-family: 'Outfit', sans-serif; border: 1px solid #e2e8f0; }
-                            .cover-footer { margin-top: auto; font-size: 14px; color: #64748b; font-family: 'Outfit', sans-serif; }
-                            
-                            /* Índice */
-                            .toc-page { page-break-after: always; padding: 2rem 0; }
-                            .toc-main-title { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 3rem; font-family: 'Outfit', sans-serif; border-bottom: 2px solid #e2e8f0; padding-bottom: 1rem; }
-                            .toc-item { display: flex; align-items: baseline; margin-bottom: 1.5rem; font-family: 'Outfit', sans-serif; font-size: 16px; }
-                            .toc-title { font-weight: 600; color: #334155; }
-                            .toc-dots { flex: 1; border-bottom: 1px dotted #cbd5e1; margin: 0 12px; }
-                            .toc-page { font-weight: 700; color: #64748b; font-size: 14px; }
-                            
-                            /* Capítulos */
-                            .chapter-page { page-break-before: always; padding: 2rem 0; }
-                            .chapter-header { margin-bottom: 3rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 2rem; }
-                            .chapter-num { font-size: 14px; font-weight: 800; color: #8b5cf6; text-transform: uppercase; letter-spacing: 3px; font-family: 'Outfit', sans-serif; display: block; margin-bottom: 0.5rem; }
-                            .chapter-title { font-size: 32px; font-weight: 800; color: #0f172a; margin: 0 0 1rem 0; font-family: 'Outfit', sans-serif; line-height: 1.2; }
-                            .chapter-meta { font-size: 13px; color: #64748b; font-family: 'Outfit', sans-serif; }
-                            .chapter-body { color: #334155; }
-                            .chapter-body p { margin-bottom: 1.5rem; }
-                            .chapter-body h1, .chapter-body h2, .chapter-body h3 { font-family: 'Outfit', sans-serif; color: #0f172a; margin-top: 2.5rem; margin-bottom: 1rem; font-weight: 700; }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="cover-page">
-                            <div class="cover-team">${teamName}</div>
-                            <h1 class="cover-title">${title}</h1>
-                            <div class="cover-badge">DOCUMENTO VERSIÓN ${docVersion}</div>
-                            <div class="cover-footer">Sientia MTX • Exportado el ${new Date().toLocaleDateString('es-ES')}</div>
-                        </div>
-                        
-                        <div class="toc-page">
-                            <h2 class="toc-main-title">Índice General</h2>
-                            ${tocHtml}
-                        </div>
-
-                        ${chaptersHtml}
-                        
-                        <script>
-                            window.onload = () => {
-                                setTimeout(() => window.print(), 500);
-                            };
-                        <\/script>
-                    </body>
-                </html>
-            `);
-            printWin.document.close();
-        }
-    </script>
 
     <!-- MODAL DE AÑADIR CAPÍTULO A DOCUMENTO -->
     <div x-data="{ show: false }"
@@ -2140,7 +2251,7 @@
         x-transition:leave-end="opacity-0"
         x-cloak
         @click.self="show = false">
-        
+
         <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl border border-gray-100 dark:border-gray-800 transform transition-all text-left flex flex-col max-h-[90vh]"
             x-transition:enter="transition ease-out duration-300 transform"
             x-transition:enter-start="opacity-0 scale-95"
@@ -2148,7 +2259,7 @@
             x-transition:leave="transition ease-in duration-200 transform"
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95">
-            
+
             <div class="px-8 py-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-violet-50/50 dark:bg-violet-955/20">
                 <div>
                     <div class="flex items-center gap-2 mb-1">
@@ -2182,8 +2293,8 @@
                         <label class="block text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">
                             Contenido (Markdown)
                         </label>
-                        <x-markdown-editor 
-                            name="chapter_content" 
+                        <x-markdown-editor
+                            name="chapter_content"
                             id="new-chap-content"
                             :value="''"
                             :label="null"

@@ -52,39 +52,49 @@
 </div>
 
 <script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('linkCrud', (initial) => ({
-            links: initial || [],
-            newTitle: '',
-            newUrl: '',
-            
-            get isValid() {
-                return this.newTitle.trim().length > 0 && this.isValidUrl(this.newUrl);
-            },
-            
-            isValidUrl(string) {
-                try {
-                    new URL(string);
-                    return true;
-                } catch (_) {
-                    return false;  
-                }
-            },
-            
-            addLink() {
-                if (this.isValid) {
-                    this.links.push({
-                        title: this.newTitle.trim(),
-                        url: this.newUrl.trim()
-                    });
-                    this.newTitle = '';
-                    this.newUrl = '';
-                }
-            },
-            
-            removeLink(index) {
-                this.links.splice(index, 1);
+    (function() {
+        const initLinkCrud = () => {
+            if (typeof Alpine !== 'undefined' && !Alpine.data('linkCrud')) {
+                Alpine.data('linkCrud', (initial) => ({
+                    links: Array.isArray(initial) ? initial : [],
+                    newTitle: '',
+                    newUrl: '',
+                    
+                    get isValid() {
+                        return this.newTitle.trim().length > 0 && this.isValidUrl(this.newUrl);
+                    },
+                    
+                    isValidUrl(string) {
+                        try {
+                            new URL(string);
+                            return true;
+                        } catch (_) {
+                            return false;  
+                        }
+                    },
+                    
+                    addLink() {
+                        if (this.isValid) {
+                            this.links.push({
+                                title: this.newTitle.trim(),
+                                url: this.newUrl.trim()
+                            });
+                            this.newTitle = '';
+                            this.newUrl = '';
+                        }
+                    },
+                    
+                    removeLink(index) {
+                        this.links.splice(index, 1);
+                    }
+                }));
             }
-        }));
-    });
+        };
+
+        if (window.Alpine && window.Alpine.data) {
+            initLinkCrud();
+        } else {
+            document.addEventListener('alpine:init', initLinkCrud);
+        }
+    })();
 </script>

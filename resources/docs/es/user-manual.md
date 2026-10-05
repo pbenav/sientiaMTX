@@ -102,8 +102,9 @@ Gestión visual mediante columnas (Pendiente > En Progreso > Completado) con sop
 
 ### Diagrama de Gantt (Roadmap)
 Visualización temporal optimizada. Las etiquetas de las tareas son visibles incluso en barras cortas, permitiendo una lectura fluida del cronograma.
-- **⚠️ REQUISITO OBLIGATORIO**: Para que cualquier actividad aparezca en el Gantt, **debe tener asignada una fecha de vencimiento (`due_date`)**. Si creas una tarea sin fecha, el sistema no podrá ubicarla en la línea de tiempo y **no se mostrará** en esta vista.
-- **Qué muestra**: Todos los tipos de actividades (Tareas, Acuerdos, Documentos, Recordatorios, Reuniones), siempre que tengan fecha y no estén completadas.
+- **Actividades con fecha límite**: Se muestran con barras sólidas y límites temporales definidos.
+- **Actividades sin fecha límite (Plazo abierto ⏳)**: Se representan con **borde discontinuo y un degradado difuminado hacia la derecha**, proyectando visualmente que la tarea está activa o abierta. Arrastrando el extremo derecho de la barra directamente en el Gantt, puedes asignarle una fecha límite en tiempo real.
+- **Qué muestra**: Todos los tipos de actividades (Tareas, Acuerdos, Documentos, Recordatorios, Reuniones) que no estén completadas ni archivadas.
 
 ### Red Activa (Active Network)
 Un widget en tiempo real que muestra qué miembros del equipo están conectados, en qué ubicación están trabajando y si tienen alguna tarea activa en ese momento (indicador verde/rojo).

@@ -1,10 +1,10 @@
 @props(['column', 'team', 'quadrantConfig' => []])
 
-<div class="shrink-0 flex flex-col rounded-[2.5rem] border-2 border-black/10 dark:border-white/10 transition-all duration-500 shadow-xl hover:shadow-2xl animate-fade-in group relative overflow-hidden kanban-column" 
-     style="--col-bg: {{ $column->color ?? '#f9fafb' }}; border-color: {{ ($column->color ?? '#f9fafb') }}40;"
+<div class="shrink-0 flex flex-col rounded-2xl border border-gray-200/80 dark:border-gray-800/80 transition-all duration-300 shadow-sm hover:shadow-md animate-fade-in group relative overflow-hidden kanban-column" 
+     style="--col-accent: {{ $column->color ?? '#8b5cf6' }};"
      data-column-id="{{ $column->id }}">
     <!-- Accent Top Bar -->
-    <div class="absolute top-0 left-0 right-0 h-2 kanban-column-accent" style="background-color: {{ $column->color ?? '#f9fafb' }};"></div>
+    <div class="h-1.5 w-full shrink-0 kanban-column-accent" style="background-color: {{ $column->color ?? '#8b5cf6' }};"></div>
     
     <!-- Column Header -->
     <div class="p-3 sm:p-3.5 md:p-4 flex flex-col gap-1.5 sm:gap-2 cursor-grab active:cursor-grabbing column-handle">

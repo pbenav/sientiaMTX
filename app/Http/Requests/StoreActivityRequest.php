@@ -20,6 +20,10 @@ class StoreActivityRequest extends FormRequest
         $team = $this->route('team');
         $activity = $this->route('activity');
 
+        if ($this->boolean('create_as_parallel')) {
+            return auth()->user()->can('view', $team) && auth()->user()->can('create', [Activity::class, $team]);
+        }
+
         if ($activity) {
             return auth()->user()->can('view', $team) && auth()->user()->can('update', $activity);
         }
@@ -30,12 +34,28 @@ class StoreActivityRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      */
+    public function after(): array
+    {
+        return [
+            function (\Illuminate\Validation\Validator $validator) {
+                if ($this->hasFile('attachments')) {
+                    $team = $this->route('team');
+                    $totalUploadSize = collect($this->file('attachments'))->sum(fn($file) => $file->getSize());
+                    if (!$team->hasAvailableQuota($totalUploadSize)) {
+                        $validator->errors()->add('attachments', '⚠️ El equipo ha alcanzado su límite de almacenamiento. Libera espacio para subir más archivos.');
+                    }
+                }
+            }
+        ];
+    }
+
     public function rules(): array
     {
         $team = $this->route('team');
         $activityTypes = array_keys(Activity::SUBTYPES);
 
         $rules = [
+            'create_as_parallel' => 'nullable|boolean',
             'type' => [
                 $this->isMethod('post') ? 'required' : 'nullable',
                 'string',
@@ -59,6 +79,9 @@ class StoreActivityRequest extends FormRequest
                 Rule::exists('activities', 'id')->where('team_id', $team->id),
             ],
             'is_timeline_locked' => 'nullable|boolean',
+            'is_autoprogrammable' => 'nullable|boolean',
+            'autoprogram_settings' => 'nullable|array',
+            'autoprogram_settings.*' => 'nullable',
             'expediente_id' => [
                 'nullable',
                 Rule::exists('expedientes', 'id')->where('team_id', $team->id),
@@ -98,7 +121,9 @@ class StoreActivityRequest extends FormRequest
                     $fieldRules = [];
 
                     // 1. Required o Nullable
-                    if (in_array($key, $requiredFields, true)) {
+                    $isPropRequired = in_array($key, $requiredFields, true) || (isset($propRules['required']) && $propRules['required'] === true);
+                    
+                    if ($isPropRequired) {
                         // Solo exigimos required absoluto si es un POST y no hay default
                         // (Si hay default, se autocompletará luego en el service, o podemos dejarlo required)
                         $fieldRules[] = isset($propRules['default']) ? 'nullable' : 'required';
@@ -144,7 +169,11 @@ class StoreActivityRequest extends FormRequest
                         $fieldRules[] = 'exists:skills,id';
                     }
 
-                    $rules[$key] = $fieldRules;
+                    // Determinar si la regla debe aplicarse en la raíz o dentro del array metadata
+                    $isBaseField = in_array($key, ['title', 'description', 'status', 'url', 'priority', 'urgency', 'progress_percentage', 'due_date', 'scheduled_date']);
+                    $ruleKey = $isBaseField ? $key : "metadata.{$key}";
+
+                    $rules[$ruleKey] = $fieldRules;
                 }
             }
         }

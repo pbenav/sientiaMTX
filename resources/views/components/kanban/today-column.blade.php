@@ -1,10 +1,10 @@
 @props(['activities' => [], 'quadrantConfig' => [], 'team' => null, 'column' => null, 'showProgress' => true, 'showBadges' => true, 'showFooter' => true])
 
 @if(is_array($activities) ? !empty($activities) : $activities->isNotEmpty())
-<div class="shrink-0 flex flex-col rounded-[2.5rem] border-2 border-violet-200 dark:border-violet-800 transition-all duration-500 shadow-xl hover:shadow-2xl animate-fade-in group relative overflow-hidden kanban-column"
-     style="--col-bg: #f5f3ff; border-color: #8b5cf640;"
+<div class="shrink-0 flex flex-col rounded-2xl border border-violet-200/80 dark:border-violet-800/60 transition-all duration-300 shadow-sm hover:shadow-md animate-fade-in group relative overflow-hidden kanban-column"
+     style="--col-accent: #8b5cf6;"
      data-column-id="today">
-    <div class="absolute top-0 left-0 right-0 h-2 kanban-column-accent" style="background-color: #8b5cf6;"></div>
+    <div class="h-1.5 w-full shrink-0 kanban-column-accent bg-violet-500"></div>
 
     <!-- Column Header -->
     <div class="p-3 sm:p-3.5 md:p-4 flex flex-col gap-1.5 sm:gap-2 cursor-grab active:cursor-grabbing column-handle">

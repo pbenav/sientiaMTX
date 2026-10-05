@@ -49,9 +49,14 @@
     
     toggle() {
         this.loading = true;
+        const intent = this.working ? 'stop' : 'start';
         fetch('{{ route('time-logs.toggle-workday') }}', {
             method: 'POST',
-            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}' 
+            },
+            body: JSON.stringify({ intent: intent })
         })
         .then(res => res.json())
         .then(data => {

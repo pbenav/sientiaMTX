@@ -9,7 +9,7 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('login') }}">
+    <form method="POST" action="{{ route('login') }}" x-data="{ submitting: false }" @submit="submitting = true">
         @csrf
 
         <!-- Email Address -->
@@ -47,8 +47,9 @@
                 </a>
             @endif
 
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
+            <x-primary-button class="ms-3" x-bind:disabled="submitting" x-bind:class="{ 'opacity-50 cursor-not-allowed': submitting }">
+                <span x-show="!submitting">{{ __('Log in') }}</span>
+                <span x-show="submitting" x-cloak>{{ __('Iniciando...') }}</span>
             </x-primary-button>
         </div>
     </form>

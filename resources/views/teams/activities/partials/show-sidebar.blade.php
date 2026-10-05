@@ -262,7 +262,11 @@
                             </svg>
                         </div>
                         <div class="min-w-0">
-                            <p class="text-[10px] font-black text-violet-700 dark:text-violet-400 uppercase tracking-widest">{{ __('Plan Maestro Relacionado') }}</p>
+                            @php
+                                $parentIsTemplate = $activity->parent?->is_template ?? false;
+                                $parentTypeStr = $parentIsTemplate ? __('Plan Maestro Relacionado') : __('Actividad Padre');
+                            @endphp
+                            <p class="text-[10px] font-black text-violet-700 dark:text-violet-400 uppercase tracking-widest">{{ $parentTypeStr }}</p>
                             @if ($team->isCoordinator(auth()->user()))
                                 <div class="mt-1">
                                     <select onchange="reassignTask({{ $activity->id }}, this.value)" class="w-full text-[10px] bg-white dark:bg-violet-900 border border-violet-100 dark:border-violet-800 rounded-lg px-2 py-1 shadow-sm font-bold text-violet-700 dark:text-violet-300 cursor-pointer">
@@ -279,13 +283,13 @@
                         </div>
                     </div>
                     <a href="{{ route('teams.activities.show', [$team, $activity->parent_id]) }}" class="block w-full text-center text-[10px] font-black uppercase tracking-widest text-violet-600 dark:text-violet-300 hover:bg-violet-600 hover:text-white dark:hover:bg-violet-500 py-2 bg-white dark:bg-violet-500/10 rounded-xl border border-violet-100 dark:border-violet-500/20 transition-all">
-                        {{ __('VER PLAN MAESTRO') }}
+                        {{ $parentIsTemplate ? __('VER PLAN MAESTRO') : __('VER ACTIVIDAD PADRE') }}
                     </a>
                 </div>
             @endif
 
             <!-- 2. TU EJECUCIÓN Card -->
-            @if ($activity->type === 'task')
+            @if (in_array($activity->type, ['task', 'meeting']))
             @if ($personalInstance)
                 <div class="bg-violet-50/40 dark:bg-violet-900/10 border border-violet-100/50 dark:border-violet-800/50 rounded-2xl p-5 space-y-5 shadow-sm transition-colors relative overflow-hidden">
                     <p class="text-[10px] text-violet-600 dark:text-violet-400 uppercase tracking-widest font-black flex items-center gap-2">
@@ -353,7 +357,7 @@
             @endif
 
             <!-- 3. TIEMPO DEDICADO Card -->
-            @if ($activity->type === 'task')
+            @if (in_array($activity->type, ['task', 'meeting']))
             <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm transition-colors">
                 <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-black mb-4">{{ __('TIEMPO DEDICADO') }}</p>
                 <div class="flex items-center justify-between">
@@ -389,18 +393,46 @@
 
             <!-- 5. Propietario Card -->
             <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm dark:shadow-none">
-                <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold mb-3">
-                    {{ __('activities.owner') }}
-                </p>
-                <div class="flex items-center gap-3">
-                    <img src="{{ $activity->creator ? $activity->creator->profile_photo_url : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF' }}" 
-                        alt="{{ $activity->creator?->name ?? '?' }}"
-                        class="w-10 h-10 rounded-xl object-cover shadow-sm border border-gray-100 dark:border-gray-800 shrink-0">
-                    <div class="min-w-0">
-                        <p class="text-sm font-bold text-gray-700 dark:text-gray-300 truncate">{{ $activity->creator?->name ?? '—' }}</p>
-                        <p class="text-[10px] text-gray-500 dark:text-gray-600 uppercase font-black tracking-tighter">{{ $activity->created_at->format('d M Y') }}</p>
-                    </div>
+                @php
+                    $isExternalEvent = data_get($activity->metadata, 'is_external_event') === true 
+                        || data_get($activity->metadata, 'google_is_organizer') === false;
+                    $extOrgName = data_get($activity->metadata, 'google_organizer_name');
+                    $extOrgEmail = data_get($activity->metadata, 'google_organizer_email');
+                @endphp
+                <div class="flex items-center justify-between mb-3">
+                    <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold">
+                        {{ $isExternalEvent ? 'Organizador Externo' : __('activities.owner') }}
+                    </p>
+                    @if($isExternalEvent)
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50" title="Evento creado externamente en Google Calendar">
+                            🌐 Externo
+                        </span>
+                    @endif
                 </div>
+                @if($isExternalEvent && ($extOrgName || $extOrgEmail))
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 flex items-center justify-center text-amber-600 dark:text-amber-400 font-black text-sm shrink-0">
+                            {{ strtoupper(substr($extOrgName ?: $extOrgEmail, 0, 2)) }}
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-bold text-gray-700 dark:text-gray-300 truncate">{{ $extOrgName ?: $extOrgEmail }}</p>
+                            @if($extOrgEmail && $extOrgName !== $extOrgEmail)
+                                <p class="text-[10px] text-gray-500 dark:text-gray-600 truncate">{{ $extOrgEmail }}</p>
+                            @endif
+                            <p class="text-[9px] text-gray-400 dark:text-gray-500 uppercase font-medium mt-0.5">Google Calendar</p>
+                        </div>
+                    </div>
+                @else
+                    <div class="flex items-center gap-3">
+                        <img src="{{ $activity->creator ? $activity->creator->profile_photo_url : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF' }}" 
+                            alt="{{ $activity->creator?->name ?? '?' }}"
+                            class="w-10 h-10 rounded-xl object-cover shadow-sm border border-gray-100 dark:border-gray-800 shrink-0">
+                        <div class="min-w-0">
+                            <p class="text-sm font-bold text-gray-700 dark:text-gray-300 truncate">{{ $activity->creator?->name ?? '—' }}</p>
+                            <p class="text-[10px] text-gray-500 dark:text-gray-600 uppercase font-black tracking-tighter">{{ $activity->created_at->format('d M Y') }}</p>
+                        </div>
+                    </div>
+                @endif
             </div>
 
             <!-- 6. Estado, Prioridad y Visibilidad Card -->
@@ -414,10 +446,10 @@
                         </span>
                     </div>
                     <!-- Prioridad -->
-                    @if ($activity->type === 'task')
+                    @if (in_array($activity->type, ['task', 'meeting']))
                     <div>
                         <span class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide font-bold block mb-1.5">{{ __('activities.priority') }}</span>
-                        <span class="text-xs font-semibold text-gray-800 dark:text-gray-200 js-priority-label">{{ __('activities.priorities.' . $activity->priority) }}</span>
+                        <span class="text-xs font-semibold text-gray-800 dark:text-gray-200 js-priority-label">{{ __('activities.priorities.' . ($activity->priority ?: 'medium')) }}</span>
                     </div>
                     @else
                     <div>
@@ -427,9 +459,9 @@
                     @endif
                 </div>
 
+                @if (in_array($activity->type, ['task', 'meeting']))
                 <div class="grid grid-cols-2 gap-4">
                     <!-- Urgencia -->
-                    @if ($activity->type === 'task')
                     <div>
                         <span class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide font-bold block mb-1.5">{{ __('activities.urgency') }}</span>
                         <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">{{ __('activities.urgencies.' . $activity->urgency) }}</span>
@@ -441,17 +473,8 @@
                             Q{{ $q }}: {{ __('activities.quadrants.' . $q . '.label') }}
                         </span>
                     </div>
-                    @else
-                    <div>
-                        <span class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide font-bold block mb-1.5">&nbsp;</span>
-                        <span class="text-xs text-gray-300 dark:text-gray-600">&nbsp;</span>
-                    </div>
-                    <div>
-                        <span class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide font-bold block mb-1.5">&nbsp;</span>
-                        <span class="text-xs text-gray-300 dark:text-gray-600">&nbsp;</span>
-                    </div>
-                    @endif
                 </div>
+                @endif
 
                 <div class="border-t border-gray-100 dark:border-gray-800 pt-3">
                     <div class="flex items-center justify-between">
@@ -460,25 +483,25 @@
                             @if($activity->privacy_level === 'private')
                                 <div class="w-2 h-2 rounded-full bg-amber-500"></div>
                                 <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">
-                                    {{ __('activities.private') }}
+                                     {{ __('activities.private') }}
                                 </span>
                             @elseif($activity->privacy_level === 'semi-private')
                                 <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
                                 <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">
-                                    {{ __('Semiprivada') }}
+                                     {{ __('Semiprivada') }}
                                 </span>
                             @else
                                 <div class="w-2 h-2 rounded-full bg-violet-500"></div>
                                 <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">
-                                    {{ __('activities.public') }}
+                                     {{ __('activities.public') }}
                                 </span>
                             @endif
                         </div>
                     </div>
                 </div>
 
-                <!-- Prioridad Automática (solo tasks) -->
-                @if ($activity->type === 'task')
+                <!-- Prioridad Automática (tasks, meetings y reminders) -->
+                @if (in_array($activity->type, ['task', 'meeting', 'reminder']))
                 <div class="pt-2 border-t border-gray-50 dark:border-gray-800/50">
                     <button id="btn-auto-priority" onclick="toggleAutoPriority()" 
                         class="w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all duration-300 {{ $activity->auto_priority ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-800' : 'bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 border border-transparent hover:border-gray-200 dark:hover:border-gray-700' }}">
@@ -492,9 +515,15 @@
                             <span class="pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ $activity->auto_priority ? 'translate-x-3' : 'translate-x-0' }}"></span>
                         </div>
                     </button>
-                    @if($activity->due_date)
+                    @if($activity->due_date || $activity->scheduled_date)
                         <p class="text-[9px] text-gray-400 mt-1.5 px-1 italic">
-                            {{ __('La prioridad escalará según el tiempo restante hasta la entrega.') }}
+                            @if($activity->type === 'meeting')
+                                {{ __('La prioridad escalará según el tiempo restante hasta la reunión.') }}
+                            @elseif($activity->type === 'reminder')
+                                {{ __('La prioridad escalará según el tiempo restante hasta la fecha límite del recordatorio.') }}
+                            @else
+                                {{ __('La prioridad escalará según el tiempo restante hasta la entrega.') }}
+                            @endif
                         </p>
                     @endif
                 </div>
@@ -801,8 +830,12 @@
                 Swal.fire({
                     title: isBulk ? '¿Enviar recordatorio masivo?' : '¿Enviar recordatorio?',
                     html: `
-                        <p class="text-sm text-gray-500 mb-4">${isBulk ? 'Se enviará un recordatorio a todos los miembros seleccionados.' : 'Se enviará un recordatorio al miembro responsable.'}</p>
-                        <textarea id="nudge-message" class="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm focus:ring-violet-500 min-h-[100px] p-3 shadow-inner" placeholder="Escribe un mensaje personalizado del coordinador (opcional)..."></textarea>
+                        <p class="text-sm text-gray-500 mb-3">${isBulk ? 'Se enviará un recordatorio a todos los miembros seleccionados.' : 'Se enviará un recordatorio al miembro responsable.'}</p>
+                        <div class="text-left space-y-1.5">
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Mensaje personalizado (Markdown & menciones @)</label>
+                            <textarea id="nudge-message" class="w-full rounded-2xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:ring-2 focus:ring-violet-500 focus:border-violet-500 min-h-[110px] p-3.5 shadow-inner text-gray-900 dark:text-gray-100 font-sans" placeholder="Escribe un mensaje personalizado del coordinador (opcional)..."></textarea>
+                            <span class="text-[9px] font-bold text-gray-400 dark:text-gray-500 block">Soporta sintaxis Markdown (negrita, cursiva, listas) y menciones a usuarios (@nombre).</span>
+                        </div>
                     `,
                     icon: 'question',
                     showCancelButton: true,

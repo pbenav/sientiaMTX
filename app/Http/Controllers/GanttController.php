@@ -25,7 +25,7 @@ class GanttController extends Controller
             return redirect()->back()->with('warning', __('teams.unauthorized_access'));
         }
         $members = $team->members()->get();
-        $skills = \App\Models\Skill::forTeamOrGlobal($team->id)->get();
+        $skills = \App\Models\Skill::forTeam($team->id)->get();
         $expedientes = $team->expedientes()->orderBy('created_at', 'desc')->get();
 
         // Get the exact task set that would be visible in the Gantt chart with current filters
@@ -57,7 +57,7 @@ class GanttController extends Controller
                 if ($t->parent && in_array($t->parent->status_value, ['completed', 'cancelled'])) return false;
 
                 $start = $t->scheduled_date ?? $t->created_at;
-                $end = $t->due_date ?? $start;
+                $end = $t->due_date ?? (now()->greaterThan($start) ? now() : $start->copy()->addDays(2));
                 return $currentDay->between($start->startOfDay(), $end->endOfDay());
             });
 
@@ -82,8 +82,16 @@ class GanttController extends Controller
 
             // Map to Frappe Gantt format
             $formattedTasks = $tasks->map(function (Activity $task) use ($request) {
+                $isUndated = $task->due_date === null;
                 $start = $task->scheduled_date ?: ($task->created_at ?: now());
-                $end   = $task->due_date       ?: $start->copy()->addDay();
+                if ($task->due_date) {
+                    $end = $task->due_date;
+                } else {
+                    $end = now()->greaterThan($start) ? now()->addDay() : $start->copy()->addDays(2);
+                }
+                if ($end->lessThanOrEqualTo($start)) {
+                    $end = $start->copy()->addDay();
+                }
                 $progress = $task->progress;
 
                 // Distinguish template vs instance vs recurring in the label
@@ -96,6 +104,10 @@ class GanttController extends Controller
                     $label = $task->title;
                 }
 
+                if ($isUndated) {
+                    $label = '⏳ ' . $label;
+                }
+
                 $label = $lockIcon . $label;
 
                 if ($task->parent_id) $label = '   ↳ ' . $label;
@@ -105,6 +117,7 @@ class GanttController extends Controller
                 $isReadonly = ($task->is_template && auth()->user()->cannot('update', $task)) || data_get($task->metadata, 'is_timeline_locked');
                 $readonlyClass = $isReadonly ? 'gantt-readonly' : '';
                 $colorClass = $task->getGanttColorClass();
+                $undatedClass = $isUndated ? 'gantt-undated' : '';
 
                 return [
                     'id'           => (string) $task->id,
@@ -113,7 +126,8 @@ class GanttController extends Controller
                     'end'          => $end->format('Y-m-d'),
                     'progress'     => $progress,
                     'dependencies' => '',
-                    'custom_class' => "{$typeClass} {$colorClass} {$readonlyClass}",
+                    'custom_class' => "{$typeClass} {$colorClass} {$readonlyClass} {$undatedClass}",
+                    'is_undated'   => $isUndated,
                     'readonly'     => $isReadonly,
                     'status'       => $task->status_value,
                     'status_label' => __("tasks.statuses.{$task->status_value}"),
@@ -122,12 +136,12 @@ class GanttController extends Controller
                     'urgency'      => $task->urgency,
                     'is_template'  => $task->is_template,
                     'has_children' => $task->children->count() > 0,
-                    'assigned_to'  => $task->assignedUser?->name ?? ($task->children->count() > 0 ? 'Equipo' : 'Sin asignar'),
-                    'user_name'    => $task->assignedUser?->name ?? ($task->children->count() > 0 ? 'Equipo' : 'Sin asignar'),
-                    'user_initials' => ($task->assignedUser) 
-                                        ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($task->assignedUser->name, 0, 2)) 
-                                        : ($task->children->count() > 0 ? 'EQ' : '??'),
-                    'user_id'      => $task->assigned_user_id ?? $task->created_by_id,
+                    'assigned_to'  => ($task->is_template || $task->children->count() > 0) ? ($task->creator?->name ?? 'Equipo') : ($task->assignedUser?->name ?? $task->creator?->name ?? 'Sin asignar'),
+                    'user_name'    => ($task->is_template || $task->children->count() > 0) ? ($task->creator?->name ?? 'Equipo') : ($task->assignedUser?->name ?? $task->creator?->name ?? 'Sin asignar'),
+                    'user_initials' => ($task->is_template || $task->children->count() > 0)
+                                        ? ($task->creator ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($task->creator->name, 0, 2)) : 'EQ')
+                                        : ($task->assignedUser ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($task->assignedUser->name, 0, 2)) : ($task->creator ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($task->creator->name, 0, 2)) : '??')),
+                    'user_id'      => ($task->is_template || $task->children->count() > 0) ? $task->created_by_id : ($task->assigned_user_id ?? $task->created_by_id),
                     'user_ids'     => $task->relationLoaded('assignedTo') && $task->assignedTo->isNotEmpty()
                                         ? $task->assignedTo->pluck('id')->push($task->created_by_id)->filter()->unique()->values()->toArray()
                                         : array_values(array_filter([$task->assigned_user_id, $task->created_by_id])),

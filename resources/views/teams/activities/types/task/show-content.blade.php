@@ -36,7 +36,8 @@
                         class="text-sm text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none prose-sm leading-relaxed resize-y min-h-[250px] custom-scrollbar pr-4 py-2"
                         x-data="{ content: `{{ base64_encode($displayDescription) }}` }"
                         x-init="$nextTick(() => { 
-                           const decoded = decodeURIComponent(escape(window.atob(content)));
+                           const decodeB64 = (s) => { try { return new TextDecoder().decode(Uint8Array.from(atob(s), c => c.charCodeAt(0))); } catch(_) { try { return decodeURIComponent(escape(atob(s))); } catch(e) { return atob(s); } } };
+                           const decoded = decodeB64(content);
                            $el.innerHTML = typeof marked !== 'undefined' ? marked.parse(decoded, {breaks: true, gfm: true}) : decoded; 
                         })">
                         <div class="flex items-center justify-center p-4">
@@ -78,7 +79,8 @@
                         class="text-sm text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none prose-sm leading-relaxed resize-y min-h-[250px] custom-scrollbar pr-4 py-2"
                         x-data="{ content: `{{ base64_encode($displayObservations) }}` }"
                         x-init="$nextTick(() => { 
-                           const decoded = decodeURIComponent(escape(window.atob(content)));
+                           const decodeB64 = (s) => { try { return new TextDecoder().decode(Uint8Array.from(atob(s), c => c.charCodeAt(0))); } catch(_) { try { return decodeURIComponent(escape(atob(s))); } catch(e) { return atob(s); } } };
+                           const decoded = decodeB64(content);
                            $el.innerHTML = typeof marked !== 'undefined' ? marked.parse(decoded, {breaks: true, gfm: true}) : decoded; 
                         })">
                         <div class="flex items-center justify-center p-4">

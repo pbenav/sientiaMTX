@@ -15,14 +15,14 @@
     $h2_weight = $getStyle('h2_weight', '700');
     $h3_size = $getStyle('h3_size', '1.25rem');
     $h3_weight = $getStyle('h3_weight', '600');
-    
+
     $text_size = $getStyle('text_size', '1rem');
     $text_min_size = $getStyle('text_min_size', '0.6875rem');
     $accent = $getStyle('accent_color', '#4f46e5');
-    
+
     $bq_color = $getStyle('bq_color', $accent);
     $bq_width = $getStyle('bq_width', '4px');
-    
+
     $bullet_color = $getStyle('bullet_color', $accent);
 @endphp
 
@@ -206,11 +206,43 @@
         background: transparent !important;
     }
 
+    .emoji-icon {
+        display: inline-block !important;
+        min-width: 1.25em !important;
+        height: auto !important;
+        width: 1.35em !important;
+        min-width: 1.35em !important;
+        height: 1.35em !important;
+        line-height: 1.35em !important;
+        vertical-align: -0.15em !important;
+        margin-right: 0.25em !important;
+        margin-right: 0.35em !important;
+        text-align: center !important;
+        overflow: visible !important;
+        font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+    }
+
     @media print {
         .markdown-content *, .prose * {
             font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
         }
-        
+
+        .emoji-icon {
+            display: inline-block !important;
+            min-width: 1.25em !important;
+            height: auto !important;
+            width: 1.35em !important;
+            min-width: 1.35em !important;
+            height: 1.35em !important;
+            line-height: 1.35em !important;
+            vertical-align: -0.15em !important;
+            margin-right: 0.25em !important;
+            margin-right: 0.35em !important;
+            text-align: center !important;
+            overflow: visible !important;
+            font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+        }
+
         .markdown-content img.emoji, .prose img.emoji {
             width: 1em !important;
             height: 1em !important;

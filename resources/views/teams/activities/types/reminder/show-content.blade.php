@@ -62,6 +62,120 @@
     </div>
 </div>
 
+{{-- Destinatarios / Invitados al Recordatorio --}}
+@php
+    $reminderGuests = $meta['guests'] ?? [];
+@endphp
+
+@if(!empty($reminderGuests))
+<div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm">
+    <div class="flex items-center justify-between pb-4 mb-4 border-b border-gray-100 dark:border-gray-800">
+        <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-pink-50 dark:bg-pink-900/30 flex items-center justify-center text-pink-600 dark:text-pink-400 shrink-0 border border-pink-100 dark:border-pink-800/40">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-sm font-bold text-gray-900 dark:text-white">
+                    Destinatarios / Invitados ({{ count($reminderGuests) }})
+                </h3>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400">
+                    Personas configuradas para recibir este aviso por correo electrónico
+                </p>
+            </div>
+        </div>
+        <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300 border border-pink-200 dark:border-pink-800/30">
+            {{ count($reminderGuests) }} {{ count($reminderGuests) === 1 ? 'destinatario' : 'destinatarios' }}
+        </span>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+        @foreach($reminderGuests as $guest)
+            <div class="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-gray-800/40 border border-gray-150 dark:border-gray-800">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-8 h-8 rounded-xl bg-pink-100 dark:bg-pink-900/40 border border-pink-200 dark:border-pink-800/40 flex items-center justify-center text-pink-700 dark:text-pink-300 text-xs font-bold shrink-0">
+                        {{ strtoupper(substr($guest['name'] ?? $guest['email'] ?? '?', 0, 1)) }}
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-xs font-bold text-gray-900 dark:text-white truncate">
+                            {{ $guest['name'] ?? 'Invitado' }}
+                        </p>
+                        <p class="text-[11px] text-gray-500 dark:text-gray-400 truncate font-mono">{{ $guest['email'] ?? '' }}</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-1.5 shrink-0">
+                    @if(!empty($guest['notify']))
+                        <span class="px-2 py-0.5 rounded-md text-[9px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/30" title="Notificación por email activa">
+                            Notificar
+                        </span>
+                    @endif
+
+                    @can('update', $activity)
+                        @if(!empty($guest['email']))
+                            <button type="button" 
+                                    onclick="resendReminderNotification('{{ $guest['email'] }}', '{{ addslashes($guest['name'] ?? 'Invitado') }}')"
+                                    class="p-1.5 text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/30 rounded-lg transition-colors" 
+                                    title="Enviar aviso por correo ahora">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                            </button>
+                        @endif
+                    @endcan
+                </div>
+            </div>
+        @endforeach
+    </div>
+</div>
+
+@can('update', $activity)
+<script>
+    function resendReminderNotification(email, name) {
+        Swal.fire({
+            title: '¿Enviar recordatorio por correo?',
+            text: 'Se enviará el aviso con los detalles del recordatorio a ' + (name ? name + ' (' + email + ')' : email),
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, enviar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#ec4899',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Enviando...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                fetch('{{ route('teams.activities.resend_meeting_invitation', [$team, $activity]) }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ email: email })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({ icon: 'success', title: '¡Enviado!', text: data.message, timer: 2500, showConfirmButton: false });
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Error', text: data.error || 'No se pudo enviar el aviso.' });
+                    }
+                })
+                .catch(err => {
+                    Swal.fire({ icon: 'error', title: 'Error de red', text: 'Ocurrió un fallo en la conexión.' });
+                });
+            }
+        });
+    }
+</script>
+@endcan
+@endif
+
 {{-- Description --}}
 @php
     $displayDescription = $activity->description ?: ($activity->parent?->description ?? null);

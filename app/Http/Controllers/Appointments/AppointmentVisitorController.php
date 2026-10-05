@@ -163,9 +163,10 @@ class AppointmentVisitorController extends Controller
     }
 
     /**
-     * Elimina un visitante.
+     * Elimina un visitante y todas sus citas asociadas (ley del olvido).
      *
-     * No permite la eliminación si el visitante tiene citas asociadas.
+     * Al eliminar un visitante, se borran también todas las citas registradas
+     * en cualquier momento (pasado, presente o futuro).
      *
      * @param Team $team
      * @param AppointmentVisitor $visitor
@@ -181,17 +182,16 @@ class AppointmentVisitorController extends Controller
             abort(403);
         }
 
-        // Si eliminamos el visitante, ¿qué pasa con sus citas? 
-        // Tal vez no deberíamos permitir eliminarlo si tiene citas.
-        // O si lo eliminamos, las citas asociadas se perderán. Generalmente es mejor no eliminar.
-        if ($visitor->appointments()->count() > 0) {
-            return redirect()->route('appointments.visitors.index', $team)
-                ->with('error', 'No se puede eliminar la persona porque tiene citas asociadas.');
-        }
+        $appointmentCount = $visitor->appointments()->count();
 
         $visitor->delete();
 
+        $message = 'Persona eliminada correctamente.';
+        if ($appointmentCount > 0) {
+            $message = 'Persona eliminada correctamente. Se han borrado también todas las citas asociadas (' . $appointmentCount . ') en cumplimiento de la ley del olvido.';
+        }
+
         return redirect()->route('appointments.visitors.index', $team)
-            ->with('success', 'Persona eliminada correctamente.');
+            ->with('success', $message);
     }
 }

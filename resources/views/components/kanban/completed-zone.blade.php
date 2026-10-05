@@ -1,7 +1,7 @@
 @props(['completedTasks' => [], 'hideCompleted' => false, 'team' => null])
 
 <div class="mt-16 w-full px-4 pb-16" x-show="{{ $hideCompleted ? 'false' : 'true' }}" x-transition>
-    <div class="bg-gray-50/50 dark:bg-gray-950/20 border border-gray-200 dark:border-gray-800/40 rounded-[2.5rem] overflow-hidden shadow-sm dark:shadow-none transition-colors">
+    <div class="bg-gray-50/50 dark:bg-gray-950/20 border border-gray-200 dark:border-gray-800/40 rounded-2xl overflow-hidden shadow-sm dark:shadow-none transition-colors">
             <div class="px-8 py-5 border-b border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-gray-900/10 flex items-center justify-between">
                 <div class="flex items-center gap-4">
                     <div class="p-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5">
