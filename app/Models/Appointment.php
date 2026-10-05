@@ -80,20 +80,7 @@ class Appointment extends Model
         'blocked'   => 'gray',
     ];
 
-    /**
-     * Genera un localizador único con formato MTXCITA-{8 caracteres aleatorios}.
-     *
-     * @return string Localizador único
-     */
-    public static function generateLocalizador(): string
-    {
-        do {
-            $localizador = 'MTXCITA-' . strtoupper(Str::random(8));
-        } while (self::where('localizador', $localizador)->exists());
-
-        return $localizador;
-    }
-
+    
     /**
      * Usuario/miembro asociado a la cita.
      */
