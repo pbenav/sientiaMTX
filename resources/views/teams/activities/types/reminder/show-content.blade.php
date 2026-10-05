@@ -6,12 +6,16 @@
     if ($firingDate) {
         $now = \Carbon\Carbon::now();
         $firing = \Carbon\Carbon::parse($firingDate);
-        if ($firing->isPast()) {
-            $countdownText = 'Vencido hace ' . $firing->diffForHumans($now, false);
-        } elseif ($firing->isFuture()) {
-            $countdownText = 'Faltan ' . $firing->diffForHumans($now, false);
+        if ($activity->status_value === 'completed' || $activity->status_value === 'dismissed' || $activity->status_value === 'cancelled') {
+            $countdownText = 'Finalizado';
         } else {
-            $countdownText = 'Hora de activación: ' . $firing->format('H:i');
+            if ($firing->isPast()) {
+                $countdownText = 'Vencido hace ' . $firing->diffForHumans($now, false);
+            } elseif ($firing->isFuture()) {
+                $countdownText = 'Faltan ' . $firing->diffForHumans($now, false);
+            } else {
+                $countdownText = 'Hora de activación: ' . $firing->format('H:i');
+            }
         }
     }
 @endphp
