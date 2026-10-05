@@ -374,9 +374,7 @@
             }).setView([lat, lng], 13);
 
             const isDark = document.documentElement.classList.contains('dark');
-            const cartoUrl = isDark ?
-                'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' :
-                'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+            const cartoUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
             L.tileLayer(cartoUrl, {
                 maxZoom: 20
