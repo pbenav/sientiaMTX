@@ -7,7 +7,12 @@
         $now = \Carbon\Carbon::now();
         $firing = \Carbon\Carbon::parse($firingDate);
         if ($activity->status_value === 'completed' || $activity->status_value === 'dismissed' || $activity->status_value === 'cancelled') {
-            $countdownText = 'Finalizado';
+            if ($activity->status_value === 'completed' && isset($meta['completed_at'])) {
+                $completedDate = \Carbon\Carbon::parse($meta['completed_at'])->timezone(config('app.timezone'));
+                $countdownText = 'Completado el ' . $completedDate->format('d/m/Y \a \l\a\s H:i');
+            } else {
+                $countdownText = 'Finalizado';
+            }
         } else {
             if ($firing->isPast()) {
                 $countdownText = 'Vencido hace ' . $firing->diffForHumans($now, false);

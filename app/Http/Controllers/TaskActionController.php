@@ -68,6 +68,9 @@ class TaskActionController extends Controller
                     };
                     if ($task instanceof Activity) {
                         $task->status = ['value' => $newSt];
+                        $metadata = $task->metadata ?? [];
+                        $metadata['completed_at'] = now()->toIso8601String();
+                        $task->metadata = $metadata;
                     } else {
                         $task->status = $newSt;
                     }
@@ -130,8 +133,23 @@ class TaskActionController extends Controller
 
             if ($currentStVal === 'completed') {
                 $task->progress_percentage = 100;
+                if ($task instanceof Activity) {
+                    $metadata = $task->metadata ?? [];
+                    $metadata['completed_at'] = now()->toIso8601String();
+                    $task->metadata = $metadata;
+                }
             } elseif (in_array($currentStVal, ['pending', 'in_progress', 'blocked']) && $task->progress_percentage === 100) {
                 $task->progress_percentage = 90;
+            }
+            
+            if (!in_array($currentStVal, ['completed', 'done', 'approved', 'accepted', 'finished', 'triggered'])) {
+                if ($task instanceof Activity) {
+                    $metadata = $task->metadata ?? [];
+                    if (isset($metadata['completed_at'])) {
+                        unset($metadata['completed_at']);
+                        $task->metadata = $metadata;
+                    }
+                }
             }
 
             // Automatic de-completion for parents
