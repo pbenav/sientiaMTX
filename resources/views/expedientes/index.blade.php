@@ -27,61 +27,110 @@
 
         @include('teams.partials.team-view-nav')
 
-        <div class="mt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-gray-100 dark:border-gray-800 pt-3">
+        <div class="mt-2">
             <x-demo-hint>
                 Los expedientes son contenedores lógicos que agrupan y estructuran conjuntos de tareas, notas y documentos relacionados con un mismo asunto o proyecto. Facilitan la trazabilidad y la gestión documental dentro del equipo.
             </x-demo-hint>
-            
-            <div class="shrink-0 self-start sm:self-center">
+        </div>
+
+        <!-- Action Buttons Row -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-2 border-t border-gray-100 dark:border-gray-800 pt-3">
+            <div class="flex items-center gap-3 shrink-0">
                 <a href="{{ route('teams.expedientes.create', $team) }}"
-                    class="flex items-center gap-2 text-xs bg-violet-600 hover:bg-violet-500 text-white px-4 py-2 rounded-xl transition-all font-bold shadow-sm active:scale-95 group">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:rotate-90 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    class="flex items-center gap-1.5 text-xs bg-violet-600 hover:bg-violet-500 text-white px-4 py-2.5 rounded-xl transition-all font-bold shadow-lg shadow-violet-500/20 active:scale-95 shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                     </svg>
                     <span class="hidden sm:inline">Nuevo Expediente</span>
                 </a>
             </div>
-        </div>
 
-    </x-slot>
+            <!-- Filters & Search -->
+            <form action="{{ route('teams.expedientes.index', $team) }}" method="GET" class="flex flex-col sm:flex-row items-center gap-3 flex-1 justify-end">
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <select name="sort" onchange="this.form.submit()" class="flex-1 sm:flex-none bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold py-2.5 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all cursor-pointer text-gray-700 dark:text-gray-300">
+                        <option value="updated_at_desc" {{ ($filters['sort'] ?? '') === 'updated_at_desc' ? 'selected' : '' }}>Nuevos</option>
+                        <option value="updated_at_asc" {{ ($filters['sort'] ?? '') === 'updated_at_asc' ? 'selected' : '' }}>Antiguos</option>
+                        <option value="title_asc" {{ ($filters['sort'] ?? '') === 'title_asc' ? 'selected' : '' }}>Alfabético</option>
+                    </select>
 
-    <div class="space-y-6">
-        
-        <!-- Search & Filters -->
-        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm">
-            <form action="{{ route('teams.expedientes.index', $team) }}" method="GET" class="flex gap-4">
-                <div class="relative flex-1 group">
+                    <select name="limit" onchange="this.form.submit()" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold py-2.5 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all cursor-pointer text-gray-700 dark:text-gray-300">
+                        <option value="15" {{ ($filters['limit'] ?? 15) == 15 ? 'selected' : '' }}>15</option>
+                        <option value="30" {{ ($filters['limit'] ?? 15) == 30 ? 'selected' : '' }}>30</option>
+                        <option value="50" {{ ($filters['limit'] ?? 15) == 50 ? 'selected' : '' }}>50</option>
+                        <option value="100" {{ ($filters['limit'] ?? 15) == 100 ? 'selected' : '' }}>100</option>
+                    </select>
+                </div>
+
+                <div class="relative group w-full sm:w-auto min-w-[250px]">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="h-4 w-4 text-gray-400 group-focus-within:text-violet-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        <svg class="h-4 w-4 text-gray-400 group-focus-within:text-violet-500 transition-colors" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </div>
-                    <input type="text" name="search" value="{{ request('search') }}"
-                        placeholder="Buscar por título o código..."
-                        enterkeyhint="search"
-                        class="w-full pl-10 pr-12 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 dark:text-white transition-all shadow-sm">
-                    <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-violet-600 transition-colors" title="Filtrar">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                    </button>
+                    <input type="text" name="search" value="{{ $filters['search'] ?? request('search') }}"
+                           placeholder="Buscar por título o código..."
+                           enterkeyhint="search"
+                           class="block w-full pl-10 pr-12 py-2.5 {{ !empty($filters['search'] ?? request('search')) ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700' }} border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all shadow-sm placeholder:text-gray-400 dark:text-white">
+
+                    <div class="absolute inset-y-0 right-2 flex items-center gap-1">
+                        @if(!empty($filters['search'] ?? request('search')))
+                            <a href="{{ route('teams.expedientes.index', [$team, 'reset_filters' => 1]) }}" class="p-1.5 text-gray-400 hover:text-red-500 transition-colors" title="Limpiar búsqueda">
+                                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </a>
+                        @endif
+                        <button type="submit" class="p-1.5 text-gray-400 hover:text-violet-600 transition-colors" title="Buscar">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
+    </x-slot>
 
+    <div class="space-y-6">
         <!-- Listing Grid -->
         @if($expedientes->isEmpty())
-            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-12 text-center flex flex-col items-center justify-center">
-                <div class="w-24 h-24 bg-violet-50 dark:bg-violet-900/20 rounded-full flex items-center justify-center text-violet-500 mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-12 text-center shadow-sm">
+                <div class="w-16 h-16 bg-violet-50 dark:bg-violet-900/30 text-violet-500 rounded-2xl flex items-center justify-center mx-auto mb-4 rotate-[-5deg] hover:rotate-0 transition-all duration-300 shadow-sm border border-violet-100 dark:border-violet-800/50">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                     </svg>
                 </div>
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white">No hay expedientes</h3>
-                <p class="text-gray-500 dark:text-gray-400 mt-1 mb-6">Comienza creando el primer expediente para agrupar tareas y documentación.</p>
-                <a href="{{ route('teams.expedientes.create', $team) }}" class="px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold shadow-lg transition-all">
-                    Crear Primer Expediente
-                </a>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                    @if(!empty($filters['search'] ?? request('search')))
+                        No se encontraron resultados para tu búsqueda
+                    @else
+                        No hay expedientes
+                    @endif
+                </h3>
+                <p class="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                    @if(!empty($filters['search'] ?? request('search')))
+                        Prueba con otros términos o limpia el buscador.
+                    @else
+                        Comienza creando el primer expediente para agrupar tareas y documentación.
+                    @endif
+                </p>
+
+                @if(!empty($filters['search'] ?? request('search')))
+                    <a href="{{ route('teams.expedientes.index', [$team, 'reset_filters' => 1]) }}"
+                        class="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold py-2.5 px-6 rounded-xl transition-all border border-gray-200 dark:border-gray-700">
+                        Limpiar búsqueda
+                    </a>
+                @else
+                    <a href="{{ route('teams.expedientes.create', $team) }}"
+                        class="inline-flex items-center gap-2 bg-gradient-to-r from-violet-600 to-violet-600 hover:from-violet-500 hover:to-violet-500 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-violet-500/25">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Crear Primer Expediente
+                    </a>
+                @endif
             </div>
         @else
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">

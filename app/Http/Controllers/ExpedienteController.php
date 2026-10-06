@@ -10,9 +10,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\AttachmentLog;
+use App\Traits\HandlesPersistentFilters;
 
 class ExpedienteController extends Controller
 {
+    use HandlesPersistentFilters;
+
     /**
      * Display a listing of the expedientes for a team.
      */
@@ -41,18 +44,60 @@ class ExpedienteController extends Controller
               });
         });
 
-        // Simple search if provided
-        if ($request->has('search')) {
-            $search = $request->search;
+        $filters = $this->getPersistentFilters($request, 'expedientes', [
+            'search', 'status', 'sort', 'limit'
+        ], [
+            'sort' => 'updated_at_desc',
+            'limit' => 15,
+        ]);
+
+        $search = $filters['search'] ?? null;
+        $status = $filters['status'] ?? null;
+        $sort = $filters['sort'] ?? 'updated_at_desc';
+        $limit = (int)($filters['limit'] ?? 15);
+        if (!in_array($limit, [15, 30, 50, 100])) {
+            $limit = 15;
+        }
+
+        // Search
+        if ($search) {
             $query->where(function($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
                   ->orWhere('code', 'like', "%{$search}%");
             });
         }
 
-        $expedientes = $query->latest()->paginate(15);
+        // Status
+        if ($status) {
+            $query->where('status', $status);
+        }
 
-        return view('expedientes.index', compact('team', 'expedientes'));
+        // Sort
+        switch ($sort) {
+            case 'updated_at_asc':
+                $query->oldest('updated_at');
+                break;
+            case 'created_at_desc':
+                $query->latest('created_at');
+                break;
+            case 'created_at_asc':
+                $query->oldest('created_at');
+                break;
+            case 'title_asc':
+                $query->orderBy('title', 'asc');
+                break;
+            case 'title_desc':
+                $query->orderBy('title', 'desc');
+                break;
+            case 'updated_at_desc':
+            default:
+                $query->latest('updated_at');
+                break;
+        }
+
+        $expedientes = $query->paginate($limit)->withQueryString();
+
+        return view('expedientes.index', compact('team', 'expedientes', 'filters'));
     }
 
     /**
