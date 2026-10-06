@@ -124,3 +124,4 @@ Route::post('/onlyoffice/callback/{attachment}', [OnlyOfficeController::class, '
 | "Invalid Signature" on download | Public domain used instead of internal IP | Confirm `config('onlyoffice.internal_app_url')` resolves to LAN IP |
 | "Failed to save document" | JWT secret mismatch | Verify `ONLYOFFICE_SECRET` is identical on both servers |
 | Table `task_result` does not exist | OnlyOffice DB uninitialized | Run `createdb.sql` on the OnlyOffice server |
+

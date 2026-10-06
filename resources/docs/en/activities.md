@@ -137,3 +137,4 @@ Ax.ia integrates seamlessly into the activity lifecycle:
    - Internal team collaboration notes.
    - New chapter inside a Document activity (`DocumentActivity`).
    - New forum discussion thread.
+

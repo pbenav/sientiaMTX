@@ -137,3 +137,4 @@ Ax.ia interactúa directamente con el ciclo de vida de las actividades:
    - Nota interna de equipo en el hilo de trabajo.
    - Nuevo capítulo en un documento (`DocumentActivity`).
    - Nueva publicación en el foro del equipo.
+

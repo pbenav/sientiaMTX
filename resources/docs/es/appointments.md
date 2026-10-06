@@ -90,3 +90,4 @@ SientiaMTX implementa herramientas estrictas para cumplir con el Reglamento Gene
 
 - **Registro Aislado de Visitantes (`AppointmentVisitor`)**: Los datos identificativos del ciudadano se gestionan de forma estructurada e independiente.
 - **Anonimización Definitiva**: El sistema permite procesar solicitudes del Derecho al Olvido (Art. 17 RGPD), anonimizando irreversiblemente los datos de carácter personal del visitante (nombre, DNI, teléfono, email) mientras preserva los datos numéricos y estadísticos para auditorías de servicio público.
+

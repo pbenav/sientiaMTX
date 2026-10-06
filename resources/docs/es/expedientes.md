@@ -78,3 +78,4 @@ Los expedientes pueden vincularse entre sí de forma bidireccional (`relatedExpe
 Cuando un ciudadano o cliente agenda una cita en el portal público o es atendido en despacho:
 - La cita puede asociarse directamente a un expediente existente desde la ficha de atención.
 - Los profesionales pueden consultar el historial completo de citas atendidas en el contexto del expediente, midiendo tiempos acumulados y notas de cada sesión presencial o por videoconferencia.
+

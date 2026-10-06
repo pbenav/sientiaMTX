@@ -166,3 +166,4 @@ Ensure WebSocket upgrades are proxied properly:
 - [ ] `systemctl status rabbitmq-server` is active (running)
 - [ ] `systemctl status postgresql` is active (running)
 - [ ] Document opens in SientiaMTX with live collaborative editing working as expected
+

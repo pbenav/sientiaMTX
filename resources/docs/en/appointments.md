@@ -90,3 +90,4 @@ SientiaMTX implements strict European data protection standards:
 
 - **Isolated Visitor Registry (`AppointmentVisitor`)**: Personal identification data is structured and isolated from system users.
 - **Definitive Anonymization**: Fulfill Right to Erasure requests (GDPR Art. 17) by irreversibly scrubbing all personal identifiers (name, ID number, phone, email) while preserving operational statistical counts for public service reporting.
+

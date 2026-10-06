@@ -78,3 +78,4 @@ Dossiers can be linked bidirectionally (`relatedExpedientes`):
 When a client or citizen books a consultation through the public portal or is received in an office:
 - The appointment can be directly attached to an existing dossier from the attention desk.
 - Operators can view the complete consultation history within the context of the dossier, tracking cumulative face-to-face or video time alongside session notes.
+
