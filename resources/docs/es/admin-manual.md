@@ -1,97 +1,165 @@
-# 🛡️ Manual del Administrador — SientiaMTX (v0.9.8.RC3)
+# 🛡️ Manual del Administrador — SientiaMTX (v1.2.0)
 
-Como **Coordinador** o **Administrador** de SientiaMTX, tienes herramientas avanzadas para gestionar equipos, supervisar el progreso global y mantener la infraestructura del sistema en perfecto estado.
+Este manual está dirigido a **Coordinadores de Equipo** y **Administradores Globales de Sistemas**. Describe la configuración avanzada de la plataforma, la gestión de infraestructura, la seguridad corporativa y los comandos de mantenimiento periódico de SientiaMTX.
 
 ---
 
 ## 👥 1. Gestión de Usuarios y Seguridad
 
-### Roles y Jerarquía
-SientiaMTX utiliza una jerarquía de roles estricta para proteger la integridad de los datos:
-- **Administrador Global**: Acceso a toda la configuración del sistema y gestión de usuarios.
-- **Propietario de Equipo**: Creador del equipo. Su rol está protegido y no puede ser degradado por coordinadores.
-- **Coordinador**: Puede gestionar miembros y tareas dentro de su equipo, pero **no puede** editar perfiles globales de otros usuarios (email/nombre).
-- **Miembro**: Colabora en las tareas del equipo.
+### Jerarquía de Roles
+SientiaMTX implementa un control de acceso basado en roles con separación estricta de privilegios:
+- **Administrador Global (`is_admin`)**: Acceso a la configuración del sistema, creación de equipos, dominios personalizados, configuración ENS y auditorías globales.
+- **Propietario de Equipo (*Team Owner*)**: Creador del equipo. Su rango está protegido y no puede ser degradado ni expulsado por coordinadores.
+- **Coordinador**: Administra miembros, grupos y cuotas dentro de su propio equipo. Por seguridad, **no puede** modificar credenciales de otros usuarios ni vulnerar la Privacidad Profunda de expedientes privados ajenos.
+- **Miembro**: Colaborador operativo dentro del equipo.
 
-### Auditoría de Seguridad Reciente
-Se han implementado estándares de seguridad de nivel empresarial:
-- **Protección de Perfiles**: Los coordinadores ya no pueden modificar el email de los miembros para evitar riesgos de suplantación.
-- **Autorización WhatsApp Premium**: Como administrador, puedes otorgar a usuarios específicos el permiso para vincular su WhatsApp personal desde el panel de edición de usuario, habilitándoles su propio canal privado de notificaciones y chat aislado.
-- **Integridad de Archivos**: Las subidas de archivos en Foros y Tareas están validadas por membresía de equipo y cuotas de disco.
+### Privacidad Profunda (*Strict Deep Privacy*)
+El sistema de seguridad garantiza que los expedientes y tareas marcados como privados son estrictamente confidenciales:
+- Ningún administrador ni coordinador tiene visibilidad de expedientes o tareas privadas en los que no figure explícitamente como participante o creador.
+- Esta garantía protege datos de recursos humanos, auditorías y asuntos de alta sensibilidad ante inspecciones indebidas.
 
----
-
-## 🏢 2. Gestión de Equipos
-
-### Cuotas de Disco
-Cada equipo tiene una cuota de disco configurable por el administrador:
-1. Ve a **Configuración → Equipos**.
-2. Ajusta el límite de GB permitidos para ese equipo.
-3. El sistema bloqueará nuevas subidas si se alcanza el límite.
-
-### Grupos de Trabajo
-Crea grupos para asignaciones masivas. Al asignar una tarea a un grupo, SientiaMTX crea automáticamente una instancia para cada miembro del grupo.
+### Autenticación Multifactor y Cumplimiento ENS
+SientiaMTX cumple con las exigencias del Esquema Nacional de Seguridad (ENS):
+- Permite forzar o habilitar MFA globalmente desde **Configuración del Sistema ➔ Seguridad**.
+- Soporte para **TOTP (RFC 6238)** con generación de QR en el cliente (sin dependencias externas) y verificación por **Código de Correo**.
+- Registro de eventos críticos en `SecurityLog` y encabezados de auditoría `X-Request-ID`.
 
 ---
 
-## 📊 3. Supervisión y Dashboard
+## ☁️ 2. Servidor de Documentos: OnlyOffice & Filerobot
 
-### Red Activa (Active Network)
-Como coordinador, puedes ver en tiempo real quién está trabajando, su ubicación geográfica (si está habilitada) y su carga de trabajo actual. Esto facilita la delegación inteligente basada en la disponibilidad real.
+### Arquitectura de Red Interna (LAN)
+Para evitar bloqueos por *Hairpin NAT* y garantizar una edición en tiempo real fluida, SientiaMTX y OnlyOffice Document Server se comunican directamente a nivel de red interna:
 
-### Empujones (Nudges)
-Si detectas una tarea Q1 (Crítica) estancada, usa el botón 🔔 para enviar un recordatorio inmediato por Telegram/Email al responsable.
+```
+[Navegador del Usuario] ──HTTPS──▶ [Proxy Reverso Apache/Nginx]
+                                            │
+                                            ├──▶ mtx.sientia.com (Laravel)
+                                            └──▶ office.sientia.com (OnlyOffice)
+                                                   ▲
+    LAN Interna Directa (HTTP 192.168.10.x)        │
+    Laravel 192.168.10.151 ────────────────────────┘
+```
+
+### Variables de Entorno (`.env`)
+```env
+APP_URL=https://mtx.sientia.com
+
+# OnlyOffice Document Server
+ONLYOFFICE_URL=https://office.sientia.com/
+ONLYOFFICE_SECRET="clave_secreta_jwt_compartida"
+ONLYOFFICE_INTERNAL_APP_URL=http://192.168.10.151
+ONLYOFFICE_INTERNAL_SERVER_URL=http://192.168.10.152
+```
+
+> [!IMPORTANT]
+> Tras modificar variables de entorno en producción, es imprescindible refrescar la caché:
+> ```bash
+> php artisan config:cache && php artisan cache:clear
+> ```
 
 ---
 
-## ☁️ 4. Gestión de Almacenamiento (Purga)
+## 📆 3. Gestión del Módulo de Cita Previa
 
-Para mantener el servidor optimizado, puedes purgar archivos antiguos:
-1. Ve a **Configuración → Almacenamiento**.
-2. Elige el periodo de tiempo (ej. más de 30 días).
-3. Selecciona qué purgar: Archivos de Telegram, Adjuntos obsoletos o Logs de IA.
-4. El sistema liberará espacio físico en el disco inmediatamente.
-
----
-
-## 🤖 5. Configuración de IA (Ax.ia)
-
-SientiaMTX utiliza modelos **Gemini** (Google AI). Como administrador:
-- Configura la **API Key** global en el archivo `.env` o permite que cada equipo use su propia clave desde su panel de ajustes.
-- Recomendamos el modelo `gemini-1.5-flash` por su equilibrio entre velocidad y coste.
-- [Ver el Manual de Configuración de Ax.ia (Google Gemini API)](axia.md)
+Como administrador, dispones de herramientas de supervisión integral de las agendas:
+1. **Configuración de Servicios (`AppointmentService`)**: Alta de servicios presenciales, telemáticos (Sientia Meet / Google Meet), asignación de miembros y definición de cuotas por franja horaria.
+2. **Plantillas Horarias y Bloqueos**: Configura turnos semanales (`AppointmentSchedule`) y crea bloqueos (`AppointmentBlock`) para festivos o paradas técnicas.
+3. **Control Extraordinario**:
+   - Capacidad exclusiva para registrar citas en fechas pasadas para dejar constancia de atenciones no programadas.
+   - Habilitación de slots extraordinarios con validación en tiempo real.
+4. **Cumplimiento RGPD (Art. 17)**: Desde la gestión de visitantes (`AppointmentVisitor`), puedes ejecutar la anonimización definitiva de datos de ciudadanos a petición del interesado, manteniendo el conteo estadístico para auditorías de servicio.
 
 ---
 
-## 🔧 6. Mantenimiento del Servidor
+## 🤖 4. Motor de Inteligencia Artificial (Ax.ia)
 
-### Comandos Esenciales (CLI)
+SientiaMTX integra modelos Google Gemini con gestión flexible de claves:
+- **Clave Global del Sistema**:
+  ```env
+  GEMINI_API_KEY="tu_clave_api_de_google_ai_studio"
+  ```
+- **Claves por Equipo**: Los equipos pueden definir su propia API Key cifrada desde sus ajustes de equipo para no consumir la cuota global del servidor.
+- **Cadena de Modelos Fallback**: El servicio utiliza por defecto `gemini-1.5-flash` o `gemini-2.0-flash`, con degradación controlada ante saturación de cuota hacia `gemini-1.5-pro`.
 
-**Limpiar archivos huérfanos:**
+---
+
+## 📲 5. Canales Externos y Notificaciones
+
+- **WhatsApp Web Bridge**: Requiere autorización previa del administrador en la ficha del usuario (`whatsapp_enabled`). El controlador está protegido mediante el middleware `EnsureWhatsappIsEnabled`.
+- **Telegram Bot**: Configura el token del bot en el `.env` y ejecuta `php artisan telegram:setup-webhook` para habilitar el canal bidireccional.
+- **Google Workspace API**: Habilita sincronización de Google Calendar y Google Tasks siguiendo la [Guía de Configuración Google API](google-setup.md).
+
+---
+
+## 🔧 6. Catálogo de Comandos de Mantenimiento (CLI)
+
+SientiaMTX dispone de comandos de consola especializados para la automatización y mantenimiento del servidor:
+
+### Control Horario y Jornadas
 ```bash
+# Revisa y marca jornadas que superan el horario del usuario o el hard-cap de 10h
+php artisan timelogs:mark-anomalous
+
+# Modo simulación (no escribe cambios)
+php artisan timelogs:mark-anomalous --dry-run
+
+# Analizar un usuario específico
+php artisan timelogs:mark-anomalous --user=42
+```
+
+### Recordatorios y Reuniones
+```bash
+# Dispara los recordatorios pendientes según sus canales (Telegram, WhatsApp, Mail, Push)
+php artisan reminders:trigger
+
+# Forzar disparo de una actividad concreta en pruebas
+php artisan reminders:trigger --activity=108
+
+# Marca como completadas automáticamente las reuniones pasadas
+php artisan app:autocomplete-meetings
+
+# Despierta actividades y tareas autoprogramadas recurrentes
+php artisan sientia:activities-autoprogram-wakeup
+```
+
+### Almacenamiento y Optimización
+```bash
+# Elimina archivos huérfanos sin referencias en la base de datos
 php artisan media:clean-orphans
-```
 
-**Sincronizar cuotas de disco:**
-```bash
+# Recalcula y sincroniza el uso de disco de todos los equipos
 php artisan disk:sync-all
+
+# Purga mensajes antiguos del chat de equipo según política de retención
+php artisan chat:purge-old-messages
+
+# Vacía elementos de la papelera que superan el periodo de retención
+php artisan tasks:cleanup-trash
 ```
 
-**Actualización del Sistema:**
+### Monitorización de Salud (Sentinel)
 ```bash
+# Ejecuta comprobaciones de salud sobre todos los servicios monitorizados
+php artisan app:check-sentinel
+
+# Forzar comprobación inmediata ignorando intervalos
+php artisan app:check-sentinel --force
+```
+
+### Procedimiento Estándar de Despliegue en Producción
+```bash
+cd /var/www/sientiaMTX
 git pull origin main
-composer install --optimize-autoloader --no-dev
+composer install --no-dev --optimize-autoloader
 php artisan migrate --force
 php artisan optimize:clear
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
 npm run build
 ```
 
 ---
 
-## 🛡️ 7. Buenas Prácticas
-- **HTTPS Obligatorio**: Necesario para la integración con Telegram y Google.
-- **Backups**: Realiza un dump semanal de la base de datos y de la carpeta `storage/app/public`.
-- **API Keys**: Nunca compartas el `.env` ni las claves de Gemini.
-
----
-**Sientia MTX: Seguridad y control total para equipos de alto rendimiento.**
+**SientiaMTX: Control total, fiabilidad técnica y seguridad para entornos corporativos.**

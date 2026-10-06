@@ -1,6 +1,6 @@
 # Sientia MTX: Guía Maestra de Funcionalidades (v1.2.0)
 
-SientiaMTX es un ecosistema de productividad de alto rendimiento que fusiona la metodología de Eisenhower con Inteligencia Artificial avanzada.
+SientiaMTX es un ecosistema de productividad de alto rendimiento que fusiona la metodología de Eisenhower con Inteligencia Artificial avanzada, gestión documental colaborativa y atención ciudadana.
 
 ---
 
@@ -39,47 +39,52 @@ El centro de mando donde converge el esfuerzo del equipo y el pulso de los servi
 *   **Previsualización Premium**: Sistema de previsualización antes de publicar con renderizado completo de Markdown e imágenes.
 
 ### 🤖 Ax.ia: Tu Copiloto de Productividad
-*   **IA Everywhere**: Integrada en tareas, foros y notas rápidas.
+*   **IA Everywhere**: Integrada en tareas, foros y notas rápidas con soporte para modelos Gemini 2.0 Flash y 1.5 Pro.
 *   **Voz a Texto**: Transcripción automática de notas de voz en segundos.
-*   **Payloads Inteligentes**: La IA genera resúmenes y desgloses de tareas que se inyectan directamente en el flujo de trabajo.
+*   **AI Content Transfer**: Inyección de resúmenes, actas y desgloses directamente en descripciones, notas internas, capítulos de documentos o foros.
 
 ---
 
-## 📋 3. Gestión de Tareas de Próxima Generación
+## 📋 3. Modelo Universal de Actividades y Expedientes
 
-### 🔘 Vistas Dinámicas
-*   **Kanban Reactivo**: Movimiento de tareas automatizado por porcentaje con transiciones suaves FLIP para eliminar recargas y ofrecer una experiencia SPA.
-*   **Gantt Optimizado**: Roadmap visual interactivo con **etiquetas de lectura directa en las barras** (sin hover necesario) para una visibilidad de plazos insuperable.
-*   **Red Activa (Active Network)**: Widget mejorado de presencia y mapa GPS que rastrea de forma inteligente y dinámica la actividad de cada colaborador (En Labor 🔴, Activo 🟢, Inactivo/Dormido 🟡).
-*   **Métricas de Equipos**: El panel de administración de equipos incluye un desglose con la cantidad total de tareas gestionadas por cada grupo.
+### ⚡ Los 7 Tipos de Actividades
+*   **Tareas (`task`)**: Ejecución operativa, subtareas jerárquicas y cálculo de fecha de finalización (`completed_at`).
+*   **Documentos (`document`)**: Suite OnlyOffice integrada en vivo y editor de imágenes Filerobot.
+*   **Notas (`note`)**: Apuntes rápidos con dictado por voz y fijado (`pinned`).
+*   **Enlaces (`link`)**: Tarjetas de recursos web con extracción automática de OpenGraph.
+*   **Acuerdos (`agreement`)**: Registro de decisiones de equipo con justificación, alternativas, nivel de impacto y firmas digitales internas.
+*   **Reuniones (`meeting`)**: Sesiones presenciales, salas Jitsi o Google Meet con agendas y actas.
+*   **Recordatorios (`reminder`)**: Notificaciones multicanal (Telegram, WhatsApp, Mail, Push) con cuenta atrás y toggle switch interactivo.
 
-### 🧩 Automatización y Planes Maestros
-*   **Tareas Recurrentes**: Autoprogramación con lógica de antelación.
-*   **Distribución Masiva**: Capacidad de repartir un Plan Maestro entre decenas de miembros, creando instancias individuales automáticamente.
-
----
-
-## 🔗 4. Integración y Portabilidad
-
-*   **Google Workspace**: Sincronización con Drive, Calendar y Tasks.
-*   **Telegram Bot**: Centro de notificaciones móvil con Chat ID securizado.
-*   **Exportación JSON**: Toda la inteligencia de una tarea o equipo puede exportarse para ser replicada o archivada.
+### 📂 Expedientes y Privacidad Profunda (Deep Privacy)
+*   **Código Oficial**: Identificador único secuencial `EXP-YYYY-NNNN`.
+*   **Aislamiento Estricto**: Los expedientes privados solo son visibles para su creador y los colaboradores expresamente asignados, quedando protegidos incluso frente a administradores no participantes.
+*   **Relaciones Cruzadas**: Vinculación bidireccional entre expedientes relacionados.
 
 ---
 
-## 🎮 5. Gamificación: El Skill Tree
+## ⏱️ 4. Control de Tiempo y Jornadas
 
-*   **Evolución Profesional**: Las tareas alimentan un árbol de habilidades (Soporte, Desarrollo, Sistemas, etc.), permitiendo ver el crecimiento real de cada colaborador.
+*   **Cronómetro en Tiempo Real**: Medición con precisión en segundos y banner flotante superior de actividad en curso.
+*   **Widget de Contabilidad de Esfuerzo**: Auditoría del tiempo dedicado por usuario y actividad con filtrado estricto de tareas privadas.
+*   **Detección de Jornadas Anómalas**: Normalización de olvidos de fichaje con límite estricto de 10 horas y cálculo de `effectiveMinutes` (`timelogs:mark-anomalous`).
+
+---
+
+## 📆 5. Cita Previa y Atención al Público
+
+*   **Portal Público de Reservas**: Agendamiento autoservicio con selección de modalidad (presencial, videollamada) y selector de huecos con aforo en tiempo real.
+*   **Localizador Único**: Código simplificado (ej: `25C-B4A1`) para consultar o cancelar la cita.
+*   **Mesa Operativa**: Botón "Atender Ahora" para ajustar el inicio a la hora real, cronómetro de consulta y notas de atención.
+*   **Analítica de Duración**: Cálculo de tiempos mínimo, medio, moda y máximo en los últimos 30 días.
+
+---
+
+## 🎮 6. Gamificación: El Skill Tree
+
+*   **Evolución Profesional**: Las actividades alimentan un árbol de habilidades (Soporte, Desarrollo, Sistemas, etc.), permitiendo ver el crecimiento real de cada colaborador.
 *   **Puntos de Resiliencia**: Reconocimiento especial para quienes aceptan retos fuera de su área de especialidad.
 
 ---
 
-## 📈 6. Analítica y Gestión Integral de Actividades
-
-*   **Módulo Centralizado de Actividades**: Gestión unificada de todas las operaciones (Notas, Reuniones, Llamadas, Tareas, etc.) con estadísticas avanzadas.
-*   **Analítica de Tiempos en Citas**: Cálculo automático en tiempo real de estadísticas de duración (Mínima, Media, Moda, Máxima) para las citas previas de los últimos 30 días, optimizando la planificación de agendas.
-*   **Inyección Inteligente de IA**: Ax.ia es capaz de generar contenido y transferirlo dinámicamente a los campos adecuados de las actividades (Ej. Notas, Descripciones o Metadatos).
-*   **Cumplimiento GDPR y Privacidad**: Herramientas integrales de exportación de datos en formato JSON y eliminación definitiva (anonimización) aplicando el Derecho al Olvido (Art. 17 GDPR).
-
----
 **Sientia MTX: Inteligencia Colectiva para Equipos de Alto Rendimiento.**

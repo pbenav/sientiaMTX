@@ -1,6 +1,6 @@
 # Sientia MTX: Feature Master Guide (v1.2.0)
 
-SientiaMTX is a high-performance productivity ecosystem that merges the Eisenhower methodology with advanced Artificial Intelligence.
+SientiaMTX is a high-performance productivity ecosystem that merges the Eisenhower methodology with advanced Artificial Intelligence, collaborative document management, and citizen appointments.
 
 ---
 
@@ -39,47 +39,52 @@ The command center where team effort and service pulse converge.
 *   **Premium Preview**: Preview system before publishing with full rendering of Markdown and images.
 
 ### 🤖 Ax.ia: Your Productivity Copilot
-*   **AI Everywhere**: Integrated into tasks, forums, and quick notes.
+*   **AI Everywhere**: Integrated into tasks, forums, and quick notes with Gemini 2.0 Flash and 1.5 Pro model support.
 *   **Voice to Text**: Automatic transcription of voice notes in seconds.
-*   **Intelligent Payloads**: The AI generates summaries and task breakdowns that are injected directly into the workflow.
+*   **AI Content Transfer**: Inject summaries, minutes, and breakdowns directly into descriptions, team notes, document chapters, or forum threads.
 
 ---
 
-## 📋 3. Next-Generation Task Management
+## 📋 3. Universal Activities & Case Management (Expedientes)
 
-### 🔘 Dynamic Views
-*   **Reactive Kanban**: Percentage-based automatic task card movement with smooth FLIP transitions to eliminate page reloads and offer a full SPA experience.
-*   **Optimized Gantt**: Interactive visual roadmap with **direct-reading labels on the bars** (no hover required) for unparalleled deadline visibility.
-*   **Active Network**: Enhanced presence widget and GPS map that dynamically tracks the activity of each collaborator (In Labor 🔴, Active 🟢, Inactive/Sleeping 🟡).
-*   **Team Metrics**: The team administration panel includes a breakdown displaying the total count of tasks managed by each group.
+### ⚡ The 7 Activity Types
+*   **Tasks (`task`)**: Operational execution, hierarchical subtasks, and exact completion timestamp (`completed_at`).
+*   **Documents (`document`)**: Live OnlyOffice office editing and Filerobot graphic manipulation.
+*   **Notes (`note`)**: Rich markdown notes with voice dictation and pin support (`pinned`).
+*   **Links (`link`)**: Web reference cards with automatic Open Graph metadata fetching.
+*   **Agreements (`agreement`)**: Formal records of team decisions with rationale, alternatives, impact levels, and internal digital approvals.
+*   **Meetings (`meeting`)**: In-person sessions, Jitsi rooms, or Google Meet with agendas and recorded minutes.
+*   **Reminders (`reminder`)**: Multi-channel alerts (Telegram, WhatsApp, Mail, Push) with live countdown and interactive toggle switches.
 
-### 🧩 Automation and Master Plans
-*   **Recurring Tasks**: Self-scheduling with advance logic.
-*   **Mass Distribution**: Ability to distribute a Master Plan among dozens of members, creating individual instances automatically.
-
----
-
-## 🔗 4. Integration and Portability
-
-*   **Google Workspace**: Synchronization with Drive, Calendar, and Tasks.
-*   **Telegram Bot**: Mobile notification center with secured Chat ID.
-*   **JSON Export**: All the intelligence of a task or team can be exported to be replicated or archived.
+### 📂 Case Management & Deep Privacy
+*   **Official Sequential Code**: Unique identifier `EXP-YYYY-NNNN`.
+*   **Strict Deep Privacy**: Private files remain strictly confidential to the creator and assigned members, shielded even from non-participating administrators.
+*   **Cross-Dossier Relations**: Bidirectional linking between related case files.
 
 ---
 
-## 🎮 5. Gamification: The Skill Tree
+## ⏱️ 4. Time Tracking & Workday Governance
 
-*   **Professional Evolution**: Tasks feed a skill tree (Support, Development, Systems, etc.), allowing for the real growth of each collaborator to be seen.
-*   **Resilience Points**: Special recognition for those who take on challenges outside their usual area of expertise.
+*   **Real-Time Stopwatch**: High-precision display (hours, minutes, seconds) with a sticky top banner across all views.
+*   **Effort Accounting Widget**: Audit time invested per activity and member with strict privacy filtering.
+*   **Anomalous Workday Detection**: Automatically identifies forgotten stopwatches with a 10-hour hard cap and computes normalized `effectiveMinutes` (`timelogs:mark-anomalous`).
+
+---
+
+## 📆 5. Citizen Appointments & Public Booking
+
+*   **Public Booking Portal**: Self-service scheduling with modality selection (in-person, video) and real-time slot capacity counters.
+*   **Unique Locator**: Simplified code (e.g., `25C-B4A1`) for appointment verification or self-service cancellation.
+*   **Attention Desk**: "Attend Now" button shifts appointments to the current moment, launches the consultation stopwatch, and records session notes.
+*   **Duration Analytics**: 30-day KPI cards tracking minimum, average, mode, and maximum consultation lengths.
 
 ---
 
-## 📈 6. Analytics and Unified Activity Management
+## 🎮 6. Gamification: The Skill Tree
 
-*   **Centralized Activity Module**: Unified management of all operations (Notes, Meetings, Calls, Tasks, etc.) with advanced statistics.
-*   **Appointment Time Analytics**: Automatic real-time calculation of duration statistics (Minimum, Average, Mode, Maximum) for appointments over the last 30 days, optimizing schedule planning.
-*   **Intelligent AI Injection**: Ax.ia can generate content and dynamically transfer it to the appropriate fields within activities (e.g., Notes, Descriptions, or Metadata).
-*   **GDPR Compliance and Privacy**: Comprehensive tools for exporting data in JSON format and permanent deletion (anonymization) in compliance with the Right to be Forgotten (GDPR Art. 17).
+*   **Professional Evolution**: Work activities feed a skill tree (Support, Development, Systems, etc.), reflecting the authentic growth of each team member.
+*   **Resilience Points**: Special recognition for taking on challenges outside primary specialty areas.
 
 ---
+
 **Sientia MTX: Collective Intelligence for High-Performance Teams.**
