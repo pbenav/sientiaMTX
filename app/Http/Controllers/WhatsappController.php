@@ -6,23 +6,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\EnsureWhatsappIsEnabled;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class WhatsappController extends Controller
+class WhatsappController extends Controller implements HasMiddleware
 {
-    public function __construct()
+    public static function middleware(): array
     {
-        $this->middleware(function ($request, $next) {
-            if (!config('services.whatsapp.enabled', true)) {
-                if ($request->expectsJson()) {
-                    return response()->json(['success' => false, 'error' => 'El módulo de WhatsApp está globalmente desactivado.'], 403);
-                }
-                abort(403, 'El módulo de WhatsApp está globalmente desactivado.');
-            }
-            return $next($request);
-        })->except(['webhook']);
+        return [
+            EnsureWhatsappIsEnabled::class,
+        ];
     }
 
     /**
