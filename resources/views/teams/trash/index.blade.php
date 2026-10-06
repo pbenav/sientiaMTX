@@ -23,6 +23,12 @@
             </div>
         </div>
 
+        <div class="mt-2">
+            <x-demo-hint>
+                La Papelera del Equipo conserva temporalmente las actividades y expedientes eliminados antes de su purga definitiva. Los coordinadores pueden restaurar elementos borrados por error o forzar su eliminación permanente para liberar espacio.
+            </x-demo-hint>
+        </div>
+
         @include('teams.partials.team-view-nav', ['showCreateActions' => false])
     </x-slot>
 

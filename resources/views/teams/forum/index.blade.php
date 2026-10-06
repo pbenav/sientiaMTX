@@ -27,13 +27,13 @@
             </div>
         </div>
 
-        @include('teams.partials.team-view-nav')
-
         <div class="mt-2">
             <x-demo-hint>
                 El Foro del equipo es un espacio de debate organizado por hilos. Permite discutir ideas, vincular conversaciones a tareas concretas, adjuntar archivos desde Google Drive y mantener un registro permanente del conocimiento y las decisiones grupales.
             </x-demo-hint>
         </div>
+
+        @include('teams.partials.team-view-nav')
 
         <!-- Action Buttons Row -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-2 border-t border-gray-100 dark:border-gray-800 pt-3">

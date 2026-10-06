@@ -94,13 +94,13 @@
             </div>
         </div>
 
-        @include('teams.partials.team-view-nav', ['showCreateActions' => true])
-
         <div class="mt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <x-demo-hint>
                 El tablero Kanban organiza las tareas en columnas personalizables, permitiendo un seguimiento visual del flujo de trabajo (Workflow). Puedes arrastrar tarjetas entre estados y actualizar su progreso rápidamente.
             </x-demo-hint>
         </div>
+
+        @include('teams.partials.team-view-nav', ['showCreateActions' => true])
     </x-slot>
 
     <div class="py-4 space-y-4">

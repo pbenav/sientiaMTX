@@ -33,8 +33,6 @@
         </div>
     </div>
     
-    @include('appointments.partials.nav')
-
     <div class="mt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-gray-100 dark:border-gray-800 pt-3">
         <x-demo-hint>
             Este es el <strong>Escritorio Principal de Citas</strong>. Aquí el equipo tiene una visión global del día, estadísticas de rendimiento y acceso rápido a la agenda. Cada miembro solo visualiza las estadísticas y citas de los servicios en los que está asignado.
@@ -49,6 +47,8 @@
         </a>
         @endif
     </div>
+
+    @include('appointments.partials.nav')
 </x-slot>
 
 <div class="py-8">

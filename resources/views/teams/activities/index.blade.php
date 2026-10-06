@@ -27,6 +27,12 @@
             </div>
         </div>
 
+        <div class="mt-2">
+            <x-demo-hint>
+                El Gestor de Actividades permite supervisar todas las tareas, documentos, acuerdos, reuniones, notas, enlaces y recordatorios del equipo en una tabla centralizada. Puedes filtrar por tipo, estado, responsable o expediente, realizar búsquedas en tiempo real y gestionar operaciones masivas.
+            </x-demo-hint>
+        </div>
+
         @include('teams.partials.team-view-nav', ['showCreateActions' => true])
     </x-slot>
 

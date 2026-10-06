@@ -25,13 +25,13 @@
             </div>
         </div>
 
-        @include('teams.partials.team-view-nav')
-
         <div class="mt-2">
             <x-demo-hint>
                 Los expedientes son contenedores lógicos que agrupan y estructuran conjuntos de tareas, notas y documentos relacionados con un mismo asunto o proyecto. Facilitan la trazabilidad y la gestión documental dentro del equipo.
             </x-demo-hint>
         </div>
+
+        @include('teams.partials.team-view-nav')
 
         <!-- Action Buttons Row -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-2 border-t border-gray-100 dark:border-gray-800 pt-3">

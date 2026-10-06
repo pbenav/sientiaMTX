@@ -21,6 +21,12 @@
             </div>
             @include('teams.partials.header-toolbar', ['class' => 'self-start'])
         </div>
+
+        <div class="mt-2">
+            <x-demo-hint>
+                El panel de Medallas del equipo permite activar, desactivar o personalizar los reconocimientos e insignias gamificadas que pueden obtener los miembros por su rendimiento, resiliencia y esfuerzo colaborativo.
+            </x-demo-hint>
+        </div>
         
         @include('teams.partials.team-view-nav', ['switcherClass' => 'mt-4 mb-2 flex w-full'])
     </x-slot>

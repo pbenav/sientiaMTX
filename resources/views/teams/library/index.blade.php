@@ -26,6 +26,12 @@
             </div>
         </div>
 
+        <div class="mt-2">
+            <x-demo-hint>
+                La Biblioteca de Documentos centraliza el conocimiento y la wiki del equipo. Permite consultar, categorizar y editar en vivo documentos ofimáticos (mediante OnlyOffice) y notas de referencia, manteniendo un índice jerárquico accesible para todos los colaboradores.
+            </x-demo-hint>
+        </div>
+
         @include('teams.partials.team-view-nav', ['showCreateActions' => false])
     </x-slot>
 

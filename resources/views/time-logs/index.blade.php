@@ -35,13 +35,13 @@
             </div>
         </div>
 
-        @include('teams.partials.team-view-nav')
-        
         <div class="mt-2">
             <x-demo-hint>
                 El Escritorio de Equipo, o tablero de Resiliencia Colectiva, actúa como el pulso vital de la organización. Aquí se monitoriza la energía y progreso global (XP/RP), el mapa térmico territorial de intervenciones, el estado de los servidores (Sentinel) y se fomenta la moral enviando "Kudos" a los compañeros.
             </x-demo-hint>
         </div>
+
+        @include('teams.partials.team-view-nav')
     </x-slot>
 
     <div x-data="{ teamModalOpen: false }" class="py-8">

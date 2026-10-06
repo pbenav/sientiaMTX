@@ -117,6 +117,13 @@
                 @include('teams.partials.header-toolbar', ['withCreate' => true])
             </div>
         </div>
+
+        <div class="mt-2">
+            <x-demo-hint>
+                El Diagrama de Gantt ofrece un cronograma visual del trabajo planificado. Las actividades con fecha límite muestran barras continuas, mientras que las tareas abiertas sin fecha fija se representan con un borde discontinuo y degradado difuminado que puedes estirar directamente para asignarles un plazo en tiempo real.
+            </x-demo-hint>
+        </div>
+
         @include('teams.partials.team-view-nav')
     </x-slot>
 

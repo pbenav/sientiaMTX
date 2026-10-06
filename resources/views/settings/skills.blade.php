@@ -23,6 +23,12 @@
                 @include('teams.partials.header-toolbar', ['class' => 'self-start'])
             </div>
 
+            <div class="mt-2">
+                <x-demo-hint>
+                    El Catálogo de Habilidades del equipo permite gestionar las competencias técnicas y operativas asignables a los miembros. Estas habilidades influyen en la asignación inteligente y en las métricas de evolución profesional.
+                </x-demo-hint>
+            </div>
+
             @include('teams.partials.team-view-nav', ['switcherClass' => 'mt-4 mb-2 flex w-full'])
         @else
             <div class="flex items-center justify-between">

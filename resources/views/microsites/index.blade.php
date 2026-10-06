@@ -27,6 +27,12 @@
             </div>
         </div>
 
+        <div class="mt-2">
+            <x-demo-hint>
+                Los Micrositios permiten publicar portales web públicos e independientes para tu equipo o proyectos. Puedes definir dominios o subdominios propios, personalizar el diseño, enlazar encuestas o agendas y compartir información corporativa abierta al exterior.
+            </x-demo-hint>
+        </div>
+
         @include('partials.cross-module-nav')
     </x-slot>
 
