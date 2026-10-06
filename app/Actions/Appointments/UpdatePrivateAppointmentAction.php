@@ -109,7 +109,7 @@ class UpdatePrivateAppointmentAction
             $taskObj = $appointment->activity ?? $appointment->task;
             $timeFormat = $data['tracked_time_format'];
             
-            $taskObj->timeEntries()->where('description', 'Cita ' . $appointment->localizador)->delete();
+            $taskObj->timeLogs()->where('note', 'Cita ' . $appointment->localizador)->delete();
             
             if ($timeFormat !== '0:00:00') {
                 $parts = explode(':', $timeFormat);
@@ -118,14 +118,16 @@ class UpdatePrivateAppointmentAction
                     $seconds = ($parts[0] * 3600) + ($parts[1] * 60) + $parts[2];
                 }
                 if ($seconds > 0) {
-                    $taskObj->timeEntries()->create([
+                    $taskObj->timeLogs()->create([
                         'user_id' => auth()->id() ?? $appointment->service->team->users()->first()->id,
-                        'description' => 'Cita ' . $appointment->localizador,
-                        'duration_seconds' => $seconds,
+                        'note' => 'Cita ' . $appointment->localizador,
+                        'type' => 'task',
+                        'start_at' => now()->subSeconds($seconds),
+                        'end_at' => now(),
                     ]);
                 }
             }
-            $taskObj->updateTrackedTime();
+            
         }
 
         
