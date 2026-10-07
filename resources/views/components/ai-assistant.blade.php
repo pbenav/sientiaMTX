@@ -1294,25 +1294,37 @@
                 let cleanText = text.trim();
                 
                 // 1. Limpieza de respuestas JSON (Deep Research / Intent formats)
+                let jsonParsedSuccesfully = false;
                 try {
                     if (cleanText.startsWith('{') && cleanText.includes('"content"')) {
                         const parsed = JSON.parse(this.cleanJson(cleanText));
-                        if (parsed.content) cleanText = parsed.content;
+                        if (parsed.content) { cleanText = parsed.content; jsonParsedSuccesfully = true; }
                     } else if (cleanText.includes('```json') && cleanText.includes('"content"')) {
                         const match = cleanText.match(/```json\s*([\s\S]*?)\s*```/);
                         if (match && match[1]) {
                             const parsed = JSON.parse(this.cleanJson(match[1]));
-                            if (parsed.content) cleanText = cleanText.replace(match[0], parsed.content);
+                            if (parsed.content) { cleanText = cleanText.replace(match[0], parsed.content); jsonParsedSuccesfully = true; }
                         }
                     } else if (cleanText.startsWith('```') && cleanText.includes('"content"')) {
                         const match = cleanText.match(/```\s*([\s\S]*?)\s*```/);
                         if (match && match[1] && match[1].trim().startsWith('{')) {
                             const parsed = JSON.parse(this.cleanJson(match[1]));
-                            if (parsed.content) cleanText = cleanText.replace(match[0], parsed.content);
+                            if (parsed.content) { cleanText = cleanText.replace(match[0], parsed.content); jsonParsedSuccesfully = true; }
                         }
                     }
                 } catch (e) {
                     console.error("Ax.ia json parse error in renderMarkdown:", e);
+                }
+                
+                // Fallback robusto si el parseo falla (ej. JSON truncado o saltos de línea sin escapar)
+                if (!jsonParsedSuccesfully && cleanText.includes('"intent"') && cleanText.includes('"content"')) {
+                    let fallbackMatch = cleanText.match(/"content"\s*:\s*"([\s\S]*?)"\s*(?:}|,)/);
+                    if (!fallbackMatch) {
+                        fallbackMatch = cleanText.match(/"content"\s*:\s*"([\s\S]*)$/);
+                    }
+                    if (fallbackMatch && fallbackMatch[1]) {
+                        cleanText = fallbackMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
+                    }
                 }
 
                 // 2. Extracción de [PAYLOAD] para evitar que marked los rompa
@@ -1622,8 +1634,10 @@
 
                 // Si parece JSON, lo ponemos bonito
                 if (content.trim().startsWith('{') || content.trim().startsWith('[')) {
+                    let jsonParsedSuccesfully = false;
                     try {
                         const obj = JSON.parse(this.cleanJson(content));
+                        jsonParsedSuccesfully = true;
                         if (obj.content && obj.intent) {
                             return highlightPatterns(typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(marked.parse(obj.content)) : marked.parse(obj.content).replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').replace(/on[a-z]+=/gi, ''));
                         }
@@ -1637,6 +1651,18 @@
                         }
                         return `<pre class="bg-gray-900/95 text-violet-400 p-4 rounded-2xl text-[10px] overflow-x-auto shadow-inner border border-gray-800 font-mono">${JSON.stringify(obj, null, 4)}</pre>`;
                     } catch (e) { /* Fallback */ }
+                    
+                    // Fallback robusto si el parseo falla (ej. truncado) en el payload
+                    if (!jsonParsedSuccesfully && content.includes('"intent"') && content.includes('"content"')) {
+                        let fallbackMatch = content.match(/"content"\s*:\s*"([\s\S]*?)"\s*(?:}|,)/);
+                        if (!fallbackMatch) {
+                            fallbackMatch = content.match(/"content"\s*:\s*"([\s\S]*)$/);
+                        }
+                        if (fallbackMatch && fallbackMatch[1]) {
+                            const fallbackContent = fallbackMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
+                            return highlightPatterns(typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(marked.parse(fallbackContent)) : marked.parse(fallbackContent).replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').replace(/on[a-z]+=/gi, ''));
+                        }
+                    }
                 }
 
                 try {
