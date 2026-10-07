@@ -305,13 +305,16 @@ class AiContentTransferController extends Controller
                     $taskDesc = $taskItem['description'] ?? '';
                     
                     try {
-                        app(\App\Services\ActivityService::class)->create([
-                            'type' => 'task',
-                            'title' => $taskTitle,
-                            'description' => $taskDesc,
-                            'visibility' => 'private',
-                            'status' => 'pending',
-                        ], $team);
+                        app(\App\Services\ActivityService::class)->create(
+                            $team,
+                            'task',
+                            [
+                                'title' => $taskTitle,
+                                'description' => $taskDesc,
+                                'visibility' => 'private',
+                                'status' => 'pending',
+                            ]
+                        );
                         $createdCount++;
                     } catch (\Exception $e) {
                         Log::error("Ax.ia Bulk Activity Creation Error: " . $e->getMessage());
@@ -392,14 +395,17 @@ class AiContentTransferController extends Controller
             }
             
             try {
-                $task = app(\App\Services\ActivityService::class)->create([
-                    'type' => $activityType,
-                    'title' => $title ?: '📝 Actividad de Ax.ia: ' . now()->format('d/m H:i'),
-                    'description' => $desc,
-                    'visibility' => 'private',
-                    'status' => $status,
-                    'metadata' => $metadata
-                ], $team);
+                $task = app(\App\Services\ActivityService::class)->create(
+                    $team,
+                    $activityType,
+                    [
+                        'title' => $title ?: '📝 Actividad de Ax.ia: ' . now()->format('d/m H:i'),
+                        'description' => $desc,
+                        'visibility' => 'private',
+                        'status' => $status,
+                        'metadata' => $metadata
+                    ]
+                );
                 
                 if (!empty($obs)) {
                     $task->notes()->create([
