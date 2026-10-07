@@ -89,9 +89,21 @@ class TeamDashboardService
 
     private function getQuadrant($task): int
     {
-        if ($task->is_urgent && $task->is_important) return 1;
-        if (!$task->is_urgent && $task->is_important) return 2;
-        if ($task->is_urgent && !$task->is_important) return 3;
+        // Usa la lógica estandarizada del trait HandlesEisenhowerMatrix
+        if (method_exists($task, 'getQuadrant')) {
+            return $task->getQuadrant($task);
+        }
+
+        // Fallback porsia
+        $priority = $task->priority;
+        $urgency = $task->urgency ?? data_get($task->metadata ?? [], 'urgency', 'medium');
+        
+        $isPriority = in_array($priority, ['high', 'critical']);
+        $isUrgent = in_array($urgency, ['high', 'critical']);
+
+        if ($isPriority && $isUrgent) return 1;
+        if ($isPriority && !$isUrgent) return 2;
+        if (!$isPriority && $isUrgent) return 3;
         return 4;
     }
 }
