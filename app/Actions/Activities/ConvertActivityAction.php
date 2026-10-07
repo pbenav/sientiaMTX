@@ -92,11 +92,31 @@ class ConvertActivityAction
                 $defaultStatus = $template['properties']['status']['default'] ?? 'pending';
 
                 if ($allowedStatuses !== null && !in_array($currentStatusValue, $allowedStatuses, true)) {
-                    if ($currentStatusValue === 'pending' && in_array('scheduled', $allowedStatuses, true)) {
-                        $currentStatusValue = 'scheduled';
-                    } elseif ($currentStatusValue === 'scheduled' && in_array('pending', $allowedStatuses, true)) {
-                        $currentStatusValue = 'pending';
-                    } else {
+                    // Mapeo inteligente extendido
+                    $map = [
+                        'pending' => ['scheduled', 'draft', 'proposed'],
+                        'scheduled' => ['pending', 'draft'],
+                        'in_progress' => ['editing', 'reviewed', 'active'],
+                        'editing' => ['in_progress', 'pending'],
+                        'completed' => ['published', 'approved', 'signed', 'completed'],
+                        'published' => ['completed'],
+                        'approved' => ['completed'],
+                        'signed' => ['completed'],
+                        'cancelled' => ['archived', 'cancelled'],
+                    ];
+                    
+                    $mapped = false;
+                    if (isset($map[$currentStatusValue])) {
+                        foreach ($map[$currentStatusValue] as $candidate) {
+                            if (in_array($candidate, $allowedStatuses, true)) {
+                                $currentStatusValue = $candidate;
+                                $mapped = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (!$mapped) {
                         $currentStatusValue = $defaultStatus;
                     }
                 }
