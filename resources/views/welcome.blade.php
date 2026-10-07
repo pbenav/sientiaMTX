@@ -5,15 +5,15 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>sientiaMTX —
-        {{ app()->getLocale() === 'es' ? 'Gestión de tareas con la Matriz de Eisenhower' : 'Task Management with the Eisenhower Matrix' }}
+        {{ app()->getLocale() === 'es' ? 'Gestión Unificada de Actividades y Productividad' : 'Unified Activity & Productivity Management' }}
     </title>
     <meta name="description"
-        content="{{ app()->getLocale() === 'es' ? 'sientiaMTX te ayuda a priorizar lo que importa de verdad usando la Matriz de Eisenhower. Organiza tu equipo, no pierdas el foco.' : 'sientiaMTX helps you prioritize what truly matters using the Eisenhower Matrix. Organize your team, stay focused.' }}">
+        content="{{ app()->getLocale() === 'es' ? 'Gestiona mucho más que tareas: actividades, encuestas, citas, documentos y colaboración, todo potenciado por inteligencia artificial.' : 'Manage much more than tasks: activities, surveys, appointments, documents, and collaboration, all powered by AI.' }}">
 
     <!-- Metadatos de Nombre de Sitio para Google (SEO / Open Graph) -->
     <meta property="og:site_name" content="Sientia Open Labs">
-    <meta property="og:title" content="sientiaMTX — {{ app()->getLocale() === 'es' ? 'Gestión de tareas con la Matriz de Eisenhower' : 'Task Management with the Eisenhower Matrix' }}">
-    <meta property="og:description" content="{{ app()->getLocale() === 'es' ? 'sientiaMTX te ayuda a priorizar lo que importa de verdad usando la Matriz de Eisenhower. Organiza tu equipo, no pierdas el foco.' : 'sientiaMTX helps you prioritize what truly matters using the Eisenhower Matrix. Organize your team, stay focused.' }}">
+    <meta property="og:title" content="sientiaMTX — {{ app()->getLocale() === 'es' ? 'Gestión Unificada de Actividades y Productividad' : 'Unified Activity & Productivity Management' }}">
+    <meta property="og:description" content="{{ app()->getLocale() === 'es' ? 'Gestiona mucho más que tareas: actividades, encuestas, citas, documentos y colaboración, todo potenciado por inteligencia artificial.' : 'Manage much more than tasks: activities, surveys, appointments, documents, and collaboration, all powered by AI.' }}">
     <meta property="og:url" content="https://mtx.sientia.com/">
     <meta property="og:type" content="website">
 
@@ -728,9 +728,7 @@
             <span class="gradient">{{ app()->getLocale() === 'es' ? 'El centro de mando de tu equipo.' : 'Your team\'s command center.' }}</span>
         </h1>
         <p class="hero-sub anim anim-d3">
-            {{ app()->getLocale() === 'es'
-                ? 'sientiaMTX combina la Matriz de Eisenhower, Diagramas de Gantt y Tableros Kanban en un ecosistema inteligente de productividad.'
-                : 'sientiaMTX combines the Eisenhower Matrix, Gantt Charts, and Kanban Boards in a smart productivity ecosystem.' }}
+            {{ app()->getLocale() === 'es' ? 'sientiaMTX evoluciona la gestión clásica. Centraliza actividades, encuestas, documentos y citas en un ecosistema inteligente de productividad.' : 'sientiaMTX evolves classic management. Centralize activities, surveys, documents, and appointments in a smart productivity ecosystem.' }}
         </p>
         <div class="hero-ctas anim anim-d3">
             @auth
@@ -767,10 +765,10 @@
                         </div>
                         <div class="q-tasks">
                             <div class="q-task" style="color:#3b82f6">
-                                {{ app()->getLocale() === 'es' ? 'Planificar la estrategia Q2' : 'Plan Q2 strategy' }}
+                                {{ app()->getLocale() === 'es' ? 'Acuerdo: Plan Estratégico Q2' : 'Agreement: Q2 Strategy' }}
                             </div>
                             <div class="q-task" style="color:#3b82f6">
-                                {{ app()->getLocale() === 'es' ? 'Escribir documentación' : 'Write documentation' }}
+                                {{ app()->getLocale() === 'es' ? 'Documento: Manual de uso' : 'Document: User manual' }}
                             </div>
                         </div>
                     </div>
@@ -782,10 +780,10 @@
                             {{ app()->getLocale() === 'es' ? 'Importante · Urgente' : 'Important · Urgent' }}</div>
                         <div class="q-tasks">
                             <div class="q-task" style="color:#ef4444">
-                                {{ app()->getLocale() === 'es' ? 'Resolver caída del servidor' : 'Fix server outage' }}
+                                {{ app()->getLocale() === 'es' ? 'Reunión: Incidente Crítico' : 'Meeting: Critical Incident' }}
                             </div>
                             <div class="q-task" style="color:#ef4444">
-                                {{ app()->getLocale() === 'es' ? 'Incidente de seguridad' : 'Security incident' }}
+                                {{ app()->getLocale() === 'es' ? 'Cita: Auditoría de Seguridad' : 'Appointment: Security Audit' }}
                             </div>
                         </div>
                     </div>
@@ -798,7 +796,7 @@
                         </div>
                         <div class="q-tasks">
                             <div class="q-task" style="color:#6b7280">
-                                {{ app()->getLocale() === 'es' ? 'Ordenar carpetas antiguas' : 'Sort old folders' }}
+                                {{ app()->getLocale() === 'es' ? 'Biblioteca: Organizar archivos' : 'Library: Organize files' }}
                             </div>
                         </div>
                     </div>
@@ -811,7 +809,7 @@
                         </div>
                         <div class="q-tasks">
                             <div class="q-task" style="color:#f59e0b">
-                                {{ app()->getLocale() === 'es' ? 'Reunión de equipo' : 'Team meeting' }}</div>
+                                {{ app()->getLocale() === 'es' ? 'Encuesta: Clima laboral' : 'Survey: Work environment' }}</div>
                         </div>
                     </div>
                 </div>
@@ -831,7 +829,7 @@
         </p>
         <div class="steps">
             @php $locale = app()->getLocale(); @endphp
-            @foreach ([['1', $locale === 'es' ? 'Crea tu equipo' : 'Create your team', $locale === 'es' ? 'Invita a los miembros de tu equipo y asigna roles de coordinador o usuario.' : 'Invite your team members and assign coordinator or user roles.'], ['2', $locale === 'es' ? 'Añade tareas' : 'Add tasks', $locale === 'es' ? 'Define título, descripción, prioridad (importancia) y urgencia para cada tarea.' : 'Define title, description, priority (importance) and urgency for each task.'], ['3', $locale === 'es' ? 'Visualiza la matriz' : 'View the matrix', $locale === 'es' ? 'sientiaMTX clasifica automáticamente cada tarea en el cuadrante correcto.' : 'sientiaMTX automatically classifies each task in the right quadrant.'], ['4', $locale === 'es' ? 'Actúa con foco' : 'Act with focus', $locale === 'es' ? 'Haz primero lo urgente-importante, planifica el resto, delega y elimina el ruido.' : 'Do urgent-important things first, plan the rest, delegate and cut the noise.']] as [$num, $title, $desc])
+            @foreach ([['1', $locale === 'es' ? 'Crea tu equipo' : 'Create your team', $locale === 'es' ? 'Invita a los miembros y organiza el trabajo mediante roles y permisos detallados.' : 'Invite members and organize work through detailed roles and permissions.'], ['2', $locale === 'es' ? 'Añade actividades' : 'Add activities', $locale === 'es' ? 'Registra documentos, reuniones, encuestas o citas, y define su prioridad y urgencia.' : 'Log documents, meetings, surveys, or appointments, and define their priority and urgency.'], ['3', $locale === 'es' ? 'Visualiza el entorno' : 'View the ecosystem', $locale === 'es' ? 'sientiaMTX clasifica automáticamente cada actividad en matrices, tableros y cronogramas.' : 'sientiaMTX automatically classifies each activity into matrices, boards, and timelines.'], ['4', $locale === 'es' ? 'Actúa con IA' : 'Act with AI', $locale === 'es' ? 'Delega en Ax.ia, atiende citas y encuestas, y cierra los acuerdos más urgentes primero.' : 'Delegate to Ax.ia, handle appointments and surveys, and close the most urgent agreements first.']] as [$num, $title, $desc])
                 <div class="step">
                     <div class="step-num">{{ $num }}</div>
                     <h3>{{ $title }}</h3>
@@ -869,7 +867,7 @@
                                 '📋',
                                 'bg:#164e63',
                                 'Método Kanban',
-                                'Flujo de trabajo ágil: controla el estado de tus tareas moviéndolas a través de tu tablero.',
+                                'Flujo de trabajo ágil: controla el estado de tus actividades moviéndolas a través de tu tablero.',
                             ],
                             [
                                 '⚡',
@@ -943,7 +941,7 @@
                                 '📋',
                                 'bg:#164e63',
                                 'Kanban Boards',
-                                'Agile workflow: control the state of your daily tasks by moving them through your custom board.',
+                                'Agile workflow: control the state of your daily activities by moving them through your custom board.',
                             ],
                             [
                                 '⚡',
