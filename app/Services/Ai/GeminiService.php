@@ -732,6 +732,19 @@ MS;
                         ],
                         'required' => ['query']
                     ]
+                ],
+                [
+                    'name' => 'read_system_docs',
+                    'description' => 'Lee los manuales y documentación del sistema SientiaMTX (funcionalidades, uso, módulos). Úsalo cuando el usuario te pregunte cómo funciona algo en SientiaMTX.',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'topic' => [
+                                'type' => 'string',
+                                'description' => 'Tema a consultar (opcional, ej: "features", "activities", "appointments", "user-manual")'
+                            ]
+                        ]
+                    ]
                 ]
             ]
         ]];
@@ -816,6 +829,22 @@ MS;
                         $result = $this->searchService->searchTasks($this->teamId, $args['query'] ?? '');
                     } elseif ($fnName === 'search_forum') {
                         $result = $this->searchService->searchForum($this->teamId, $args['query'] ?? '');
+                    } elseif ($fnName === 'read_system_docs') {
+                        $topic = $args['topic'] ?? '';
+                        $docsPath = resource_path('docs/es');
+                        if (!empty($topic) && file_exists($docsPath . '/' . $topic . '.md')) {
+                            $result = file_get_contents($docsPath . '/' . $topic . '.md');
+                        } else {
+                            // Devolver un resumen de todos los docs principales
+                            $files = ['features.md', 'user-manual.md', 'activities.md', 'axia.md', 'gamification.md'];
+                            $result = "DOCUMENTACIÓN DEL SISTEMA:\n\n";
+                            foreach ($files as $f) {
+                                if (file_exists($docsPath . '/' . $f)) {
+                                    $result .= "--- ARCHIVO: $f ---\n" . file_get_contents($docsPath . '/' . $f) . "\n\n";
+                                }
+                            }
+                            $result .= "\n(Existen más archivos como admin-manual.md, expedientes.md, appointments.md. Si necesitas más detalle, pide el topic específico).";
+                        }
                     }
 
                     // Meter la llamada del modelo en el historial
