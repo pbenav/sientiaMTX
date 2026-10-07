@@ -387,17 +387,17 @@ class GeminiService implements AiAssistantInterface
         $systemInstruction .= "INTENCIONES DE PAYLOAD ADMITIDAS:\n";
         $systemInstruction .= "1. 'simple_text': Para responder preguntas generales, análisis, resúmenes, explicaciones y traducciones. Estructura: {\"intent\": \"simple_text\", \"content\": \"Contenido en Markdown\"}.\n";
         $systemInstruction .= "2. 'search_results': Para mostrar resultados de búsqueda.\n";
-        $systemInstruction .= "3. 'full_task': Para CREAR TAREAS nuevas (cuando el usuario lo pida, sugiera o cuando la tarea requiera ser registrada en el sistema). Estructura: {\"intent\": \"full_task\", \"task_data\": {\"title\": \"Título de la tarea\", \"description\": \"Resumen/Descripción breve\", \"observations\": \"Desarrollo paso a paso u observaciones detalladas\"}}.\n";
+        $systemInstruction .= "3. 'full_task': Para CREAR ACTIVIDADES nuevas (cuando el usuario solicite un documento, reunión, acuerdo, recordatorio o tarea). Estructura: {\"intent\": \"full_task\", \"task_data\": {\"type\": \"task|document|meeting|agreement|reminder\", \"title\": \"Título\", \"description\": \"Breve descripción\", \"observations\": \"Desarrollo detallado\"}}.\n";
         $systemInstruction .= "4. 'generate_survey': Para diseñar o generar ENCUESTAS cuando el usuario lo solicite. Estructura JSON: {\"intent\": \"generate_survey\", \"survey_data\": [{\"title\": \"Pregunta 1\", \"type\": \"single_choice|multiple_choice|rating|text\", \"options\": [\"A\", \"B\"], \"is_required\": true}]}.\n";
-        $systemInstruction .= "5. 'bulk_tasks': Para CREAR MÚLTIPLES TAREAS de una vez (especialmente al extraer varias tareas de un texto o documento PDF). Estructura: {\"intent\": \"bulk_tasks\", \"tasks\": [{\"title\": \"...\", \"description\": \"...\"}]}.\n";
+        $systemInstruction .= "5. 'bulk_tasks': Para CREAR MÚLTIPLES ACTIVIDADES de una vez (al extraer varias acciones de un texto). Estructura: {\"intent\": \"bulk_tasks\", \"tasks\": [{\"type\": \"task|document|meeting\", \"title\": \"...\", \"description\": \"...\"}]}.\n";
         $systemInstruction .= $this->getMicrositeDesignInstructions();
         
         $systemInstruction .= "ANÁLISIS DE DOCUMENTOS Y ARCHIVOS:\n";
         $systemInstruction .= "- Si se te proporciona un archivo adjunto o directo (multimodal o texto), PRIORIZA su lectura exhaustiva. Extrae conclusiones clave, listas ordenadas, resúmenes organizados o responde con total precisión técnica sobre el contenido del documento usando la intención 'simple_text'.\n";
         $systemInstruction .= "- Si vas a generar un micrositio y necesitas mostrar, incrustar o enlazar el archivo adjunto, utiliza SIEMPRE la 'URL para incrustar/enlazar (OBLIGATORIA, copiar exacta)' del contexto, sin modificarla (ej. en <iframe src=\"...\"> o <a href=\"...\">). PROHIBIDO inventar rutas como /files/, /storage/ o usar solo el nombre del archivo.\n\n";
         
-        $systemInstruction .= "CREACIÓN DE TAREAS:\n";
-        $systemInstruction .= "- Si el usuario te pide crear, programar, generar, registrar o planificar una tarea, debes utilizar la intención 'full_task' para que el sistema la cree automáticamente. No te limites por estar dentro de una tarea de edición; si se solicita una nueva tarea, créala.\n\n";
+        $systemInstruction .= "CREACIÓN DE ACTIVIDADES:\n";
+        $systemInstruction .= "- SientiaMTX soporta múltiples tipos de actividades: 'task' (tareas), 'document' (documentos largos/informes), 'meeting' (reuniones/citas), 'agreement' (acuerdos) y 'reminder' (recordatorios). Si el usuario pide crear alguna de estas cosas, usa la intención 'full_task' y especifica correctamente el campo 'type' en el JSON. Créala siempre de forma proactiva si te lo piden.\n\n";
         
         $systemInstruction .= "SOBRE BÚSQUEDAS: Si no hay resultados, explica por qué y ofrece ayuda para refinar la búsqueda. No respondas con un payload vacío.\n";
         $systemInstruction .= "IMPORTANTE: Cierra siempre tus bloques con [/PAYLOAD].\n";

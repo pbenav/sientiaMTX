@@ -1218,7 +1218,8 @@
                             if (pData.intent === 'bulk_tasks') {
                                 setTimeout(() => window.dispatchEvent(new CustomEvent('ai:inject-bulk-tasks', { detail: { json: JSON.stringify(pData.tasks) } })), 500);
                             } else if (pData.intent === 'full_task') {
-                                setTimeout(() => this.submitServerTransfer('task', raw), 500);
+                                const actType = (pData.task_data && pData.task_data.type) ? pData.task_data.type : 'task';
+                                setTimeout(() => this.submitServerTransfer('task', raw, null, actType), 500);
                             }
                         }
                     } catch (e) { console.error('Auto-trigger parse error:', e); }
@@ -2084,7 +2085,7 @@
                 });
 
                 if (!typeSelection) return;
-                this.submitServerTransfer('task', rawPayload, null, typeSelection);
+                this.submitServerTransfer('task', rawPayload, null, typeSelection || autoType);
             } else if (firstLevelSelection === 'quick-note') {
             this.submitServerTransfer('quick-note', rawPayload);
             } else if (firstLevelSelection === 'active-editor') {
