@@ -65,25 +65,53 @@
     "states": {
         "uploaded": {
             "transitions": [
+                "draft",
                 "editing",
                 "reviewed",
                 "archived"
             ]
         },
+        "draft": {
+            "transitions": [
+                "editing",
+                "reviewed",
+                "approved",
+                "archived"
+            ]
+        },
         "editing": {
             "transitions": [
-                "uploaded",
-                "reviewed"
+                "draft",
+                "reviewed",
+                "approved",
+                "archived"
             ]
         },
         "reviewed": {
             "transitions": [
+                "draft",
+                "editing",
+                "approved",
+                "archived"
+            ]
+        },
+        "approved": {
+            "transitions": [
+                "published",
                 "archived",
-                "uploaded"
+                "draft",
+                "editing"
+            ]
+        },
+        "published": {
+            "transitions": [
+                "archived",
+                "draft"
             ]
         },
         "archived": {
             "transitions": [
+                "draft",
                 "uploaded"
             ]
         }
