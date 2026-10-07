@@ -1294,34 +1294,32 @@
                 
                 let cleanText = text.trim();
 
-                // Para mensajes del usuario, escapamos HTML para que no se renderice y se purgue, 
-                // pero respetamos si están usando bloques de código markdown nativo.
-                if (role === 'user') {
-                    let inCodeBlock = false;
-                    let inInlineCode = false;
-                    let result = '';
-                    for (let i = 0; i < cleanText.length; i++) {
-                        if (cleanText.substring(i, i+3) === '```') {
-                            inCodeBlock = !inCodeBlock;
-                            result += '```';
-                            i += 2;
-                            continue;
-                        }
-                        if (cleanText[i] === '`' && !inCodeBlock) {
-                            inInlineCode = !inInlineCode;
-                            result += '`';
-                            continue;
-                        }
-                        if (!inCodeBlock && !inInlineCode) {
-                            if (cleanText[i] === '<') result += '&lt;';
-                            else if (cleanText[i] === '>') result += '&gt;';
-                            else result += cleanText[i];
-                        } else {
-                            result += cleanText[i];
-                        }
+                // Para todos los mensajes (usuario e IA), escapamos HTML que no esté dentro de bloques de código 
+                // para evitar que DOMPurify lo elimine silenciosamente y el usuario pierda fragmentos de código.
+                let inCodeBlock = false;
+                let inInlineCode = false;
+                let result = '';
+                for (let i = 0; i < cleanText.length; i++) {
+                    if (cleanText.substring(i, i+3) === '```') {
+                        inCodeBlock = !inCodeBlock;
+                        result += '```';
+                        i += 2;
+                        continue;
                     }
-                    cleanText = result;
+                    if (cleanText[i] === '`' && !inCodeBlock) {
+                        inInlineCode = !inInlineCode;
+                        result += '`';
+                        continue;
+                    }
+                    if (!inCodeBlock && !inInlineCode) {
+                        if (cleanText[i] === '<') result += '&lt;';
+                        else if (cleanText[i] === '>') result += '&gt;';
+                        else result += cleanText[i];
+                    } else {
+                        result += cleanText[i];
+                    }
                 }
+                cleanText = result;
                 
                 // 1. Limpieza de respuestas JSON (Deep Research / Intent formats)
                 let jsonParsedSuccesfully = false;
