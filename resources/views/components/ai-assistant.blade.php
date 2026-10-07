@@ -244,6 +244,9 @@
                                 <template x-if="msg.role === 'ai'">
                                     <div class="absolute -bottom-10 right-0 flex items-center gap-2">
                                         <div class="flex space-x-1 text-sans">
+                                            <button @click="injectText(msg.content)" class="bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-indigo-600 dark:text-indigo-400" title="Inyectar en el campo de texto">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                            </button>
                                             <button @click="copyToClipboard(msg.content)" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-gray-500 dark:text-gray-300" title="Copiar al portapapeles">
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
                                             </button>
@@ -1714,6 +1717,45 @@
                 } catch (e) {
                     return highlightPatterns(content.substring(0, 250)) + '...';
                 }
+            },
+
+            injectText(text) {
+                let finalContent = text;
+                const match = text.match(/\[PAYLOAD\]([\s\S]*?)\[\/PAYLOAD\]/);
+                if (match) {
+                    finalContent = match[1].trim();
+                } else {
+                    finalContent = text.replace(/\[PAYLOAD\]|\[\/PAYLOAD\]/g, '').trim();
+                }
+
+                try {
+                    if (finalContent.startsWith('{') && finalContent.includes('"content"')) {
+                        const parsed = JSON.parse(this.cleanJson(finalContent));
+                        if (parsed.content) finalContent = parsed.content;
+                    }
+                } catch (e) {
+                    if (finalContent.includes('"intent"') && finalContent.includes('"content"')) {
+                        let fallbackMatch = finalContent.match(/"content"\s*:\s*"([\s\S]*?)"\s*(?:}|,)/);
+                        if (!fallbackMatch) fallbackMatch = finalContent.match(/"content"\s*:\s*"([\s\S]*)$/);
+                        if (fallbackMatch && fallbackMatch[1]) {
+                            finalContent = fallbackMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
+                        }
+                    }
+                }
+                
+                // Si la IA devolvió un JSON complejo que no tiene 'content' (ej: generate_survey), no lo inyectamos como texto plano
+                if (finalContent.startsWith('{') && finalContent.includes('"intent"')) {
+                    // Tratar de inyectar el crudo no es útil, se muestra aviso
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Inyección especial',
+                        text: 'Este tipo de respuesta tiene su propio botón de inyección en la tarjeta visual (por ejemplo, para crear tareas o encuestas).',
+                        confirmButtonColor: '#4f46e5'
+                    });
+                    return;
+                }
+
+                window.dispatchEvent(new CustomEvent('ai:smart-inject', { detail: { content: finalContent } }));
             },
 
             copyToClipboard(text) {
