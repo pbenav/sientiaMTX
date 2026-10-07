@@ -266,7 +266,7 @@
                                                 @include('tasks.partials.task-timer-button', ['task' => $task])
                                                 <!-- Owner initials -->
                                                 <!-- Owner photo -->
-                                                <img src="{{ $task->creator ? $task->creator->profile_photo_url : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF' }}" 
+                                                <img src="{{ $task->creator ? $task->creator->profile_photo_url : 'https://api.dicebear.com/7.x/initials/svg?seed=?&color=7F9CF5&background=EBF4FF' }}" 
                                                     alt="{{ $task->creator?->name ?? '?' }}"
                                                     class="shrink-0 w-4 h-4 rounded-full object-cover shadow-sm border border-white dark:border-gray-800"
                                                     title="{{ __('tasks.owner') }}: {{ $task->creator?->name }}">

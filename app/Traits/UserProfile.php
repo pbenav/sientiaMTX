@@ -32,7 +32,7 @@ trait UserProfile
             return mb_substr($segment, 0, 1);
         })->join(' '));
 
-        return 'https://ui-avatars.com/api/?name='.urlencode($name).'&color=7F9CF5&background=EBF4FF';
+        return 'https://api.dicebear.com/7.x/initials/svg?seed='.urlencode($name).'&color=7F9CF5&background=EBF4FF';
     }
 
     /**

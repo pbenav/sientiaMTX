@@ -240,7 +240,7 @@
                                     <div class="w-8 text-center font-black text-xl {{ $index === 0 ? 'text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]' : ($index === 1 ? 'text-gray-300' : ($index === 2 ? 'text-amber-700' : 'text-gray-600')) }}">
                                         #{{ $index + 1 }}
                                     </div>
-                                    <img src="{{ $user->profile_photo_path ? '/storage/'.$user->profile_photo_path : 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=1f2937&color=fff' }}" class="w-10 h-10 rounded-full border border-gray-700 shadow-sm group-hover:border-blue-500 transition-colors">
+                                    <img src="{{ $user->profile_photo_path ? '/storage/'.$user->profile_photo_path : 'https://api.dicebear.com/7.x/initials/svg?seed='.urlencode($user->name).'&background=1f2937&color=fff' }}" class="w-10 h-10 rounded-full border border-gray-700 shadow-sm group-hover:border-blue-500 transition-colors">
                                     <div>
                                         <h3 class="text-sm font-bold text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-white">{{ $user->name }}</h3>
                                         <p class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Motor Operativo</p>

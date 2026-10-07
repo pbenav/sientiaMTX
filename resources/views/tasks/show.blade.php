@@ -756,7 +756,7 @@
                                         <td class="px-4 py-4 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors" onclick="event.stopPropagation()">
                                             <div class="flex items-center gap-4">
                                                     <div class="relative">
-                                                        <img src="{{ $instMember ? $instMember->profile_photo_url : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF' }}"
+                                                        <img src="{{ $instMember ? $instMember->profile_photo_url : 'https://api.dicebear.com/7.x/initials/svg?seed=?&color=7F9CF5&background=EBF4FF' }}"
                                                             alt="{{ $instMemberName }}"
                                                             class="w-10 h-10 rounded-2xl object-cover shadow-inner border border-white dark:border-gray-800 {{ $isInstActive ? 'ring-2 ring-red-500 ring-offset-2 dark:ring-offset-gray-900 animate-pulse' : '' }}">
                                                         @if($isInstActive)

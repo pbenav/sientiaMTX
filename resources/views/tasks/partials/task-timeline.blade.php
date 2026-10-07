@@ -27,7 +27,7 @@
                                     </div>
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center gap-2">
-                                            <img src="{{ $log->user ? $log->user->profile_photo_url : 'https://ui-avatars.com/api/?name=S&color=7c3aed&background=f5f3ff' }}" 
+                                            <img src="{{ $log->user ? $log->user->profile_photo_url : 'https://api.dicebear.com/7.x/initials/svg?seed=S&color=7c3aed&background=f5f3ff' }}" 
                                                 alt="{{ $log->user?->name ?? 'System' }}"
                                                 class="w-6 h-6 rounded-full object-cover border border-white dark:border-gray-800 shadow-sm">
                                             <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Realizó cambios en los detalles de la tarea</p>

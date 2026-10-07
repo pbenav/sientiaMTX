@@ -424,7 +424,7 @@
                     </div>
                 @else
                     <div class="flex items-center gap-3">
-                        <img src="{{ $activity->creator ? $activity->creator->profile_photo_url : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF' }}" 
+                        <img src="{{ $activity->creator ? $activity->creator->profile_photo_url : 'https://api.dicebear.com/7.x/initials/svg?seed=?&color=7F9CF5&background=EBF4FF' }}" 
                             alt="{{ $activity->creator?->name ?? '?' }}"
                             class="w-10 h-10 rounded-xl object-cover shadow-sm border border-gray-100 dark:border-gray-800 shrink-0">
                         <div class="min-w-0">
@@ -732,7 +732,7 @@
                                     </div>
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center gap-2">
-                                            <img src="{{ $log->user ? $log->user->profile_photo_url : 'https://ui-avatars.com/api/?name=S&color=7c3aed&background=f5f3ff' }}" 
+                                            <img src="{{ $log->user ? $log->user->profile_photo_url : 'https://api.dicebear.com/7.x/initials/svg?seed=S&color=7c3aed&background=f5f3ff' }}" 
                                                 alt="{{ $log->user?->name ?? 'System' }}"
                                                 class="w-6 h-6 rounded-full object-cover border border-white dark:border-gray-800 shadow-sm">
                                             <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Realizó cambios en los detalles de la tarea</p>
@@ -1657,7 +1657,7 @@
                                     <span class="text-[10px] bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full font-bold tabular-nums">${date}</span>
                                 </div>
                                 <div class="flex items-center gap-2 group">
-                                    <img src="${log.user ? (log.user.profile_photo_path ? '/storage/' + log.user.profile_photo_path : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(log.user.name) + '&color=7F9CF5&background=EBF4FF') : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF'}" 
+                                    <img src="${log.user ? (log.user.profile_photo_path ? '/storage/' + log.user.profile_photo_path : 'https://api.dicebear.com/7.x/initials/svg?seed=' + encodeURIComponent(log.user.name) + '&color=7F9CF5&background=EBF4FF') : 'https://api.dicebear.com/7.x/initials/svg?seed=?&color=7F9CF5&background=EBF4FF'}" 
                                         class="w-5 h-5 rounded-full object-cover shadow-sm" alt="${log.user?.name || '?'}">
                                     <span class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-tighter">${log.user?.name || 'Sistema'}</span>
                                     ${log.ip_address ? `<span class="text-[9px] text-gray-400 font-mono bg-gray-50 dark:bg-gray-800/50 px-1.5 py-0.5 rounded">IP: ${log.ip_address}</span>` : ''}

@@ -185,7 +185,7 @@
                             </td>
                             <td class="py-3 px-3 text-gray-600 dark:text-gray-300">
                                 <div class="flex items-center gap-2">
-                                    <img src="{{ $bottleneck['activity']->assignedUser?->profile_photo_url ?? 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF' }}"
+                                    <img src="{{ $bottleneck['activity']->assignedUser?->profile_photo_url ?? 'https://api.dicebear.com/7.x/initials/svg?seed=?&color=7F9CF5&background=EBF4FF' }}"
                                          alt="" class="w-5 h-5 rounded-full object-cover">
                                     {{ $bottleneck['activity']->assignedUser?->name ?? '—' }}
                                 </div>
@@ -455,7 +455,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             @forelse($kudosBoard as $kudo)
                 <div class="flex items-start gap-3 p-3 rounded-xl bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/10 dark:to-yellow-900/10 border border-amber-100 dark:border-amber-800/30 hover:shadow-md transition-shadow">
-                    <img src="{{ $kudo->sender?->profile_photo_url ?? 'https://ui-avatars.com/api/?name=?&color=F59E0B&background=FEF3C7' }}"
+                    <img src="{{ $kudo->sender?->profile_photo_url ?? 'https://api.dicebear.com/7.x/initials/svg?seed=?&color=F59E0B&background=FEF3C7' }}"
                          alt="" class="w-8 h-8 rounded-full object-cover border-2 border-amber-200 dark:border-amber-700/50">
                     <div class="min-w-0">
                         <p class="text-xs text-gray-700 dark:text-gray-300">
@@ -499,7 +499,7 @@
             <div class="space-y-2 max-h-[300px] overflow-y-auto pr-1">
                 @forelse($overloadedMembers as $member)
                     <div class="flex items-center gap-3 p-2.5 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-800/30">
-                        <img src="{{ $member['profile_photo'] ?? 'https://ui-avatars.com/api/?name=?&color=EF4444&background=FEF2F2' }}"
+                        <img src="{{ $member['profile_photo'] ?? 'https://api.dicebear.com/7.x/initials/svg?seed=?&color=EF4444&background=FEF2F2' }}"
                              alt="" class="w-8 h-8 rounded-full object-cover">
                         <div class="flex-1 min-w-0">
                             <p class="text-xs font-medium text-gray-900 dark:text-white truncate">{{ $member['name'] ?? '—' }}</p>
@@ -531,7 +531,7 @@
             <div class="space-y-2 max-h-[300px] overflow-y-auto pr-1">
                 @forelse($underloadedMembers as $member)
                     <div class="flex items-center gap-3 p-2.5 rounded-xl bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30">
-                        <img src="{{ $member['profile_photo'] ?? 'https://ui-avatars.com/api/?name=?&color=3B82F6&background=EFF6FF' }}"
+                        <img src="{{ $member['profile_photo'] ?? 'https://api.dicebear.com/7.x/initials/svg?seed=?&color=3B82F6&background=EFF6FF' }}"
                              alt="" class="w-8 h-8 rounded-full object-cover">
                         <div class="flex-1 min-w-0">
                             <p class="text-xs font-medium text-gray-900 dark:text-white truncate">{{ $member['name'] ?? '—' }}</p>

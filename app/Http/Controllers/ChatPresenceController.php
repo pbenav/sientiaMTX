@@ -71,7 +71,7 @@ class ChatPresenceController extends Controller
                     'id'           => $msg->id,
                     'sender_id'    => $msg->chat_group_id ? 'group_' . $msg->chat_group_id : $msg->sender_id,
                     'sender_name'  => $msg->chat_group_id ? ($msg->group?->name ?? 'Chat Grupal') : ($msg->sender?->name ?? 'Usuario'),
-                    'sender_photo' => $msg->chat_group_id ? 'https://ui-avatars.com/api/?name=Grupo&color=10b981&background=ecfdf5' : $msg->sender?->profile_photo_url,
+                    'sender_photo' => $msg->chat_group_id ? 'https://api.dicebear.com/7.x/initials/svg?seed=Grupo&color=10b981&background=ecfdf5' : $msg->sender?->profile_photo_url,
                     'sender_team'  => null,
                     'text'         => ($msg->chat_group_id ? $msg->sender?->name . ': ' : '') . $msg->message,
                     'file_name'    => $msg->file_name,

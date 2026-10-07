@@ -902,7 +902,7 @@
                     <div class="p-6 space-y-4 max-h-[400px] overflow-y-auto no-scrollbar">
                         @forelse(auth()->user()->receivedKudos()->with('sender')->orderBy('created_at', 'desc')->limit(5)->get() as $kudo)
                             <div class="flex items-start gap-4 p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50">
-                                <img src="{{ $kudo->sender ? $kudo->sender->profile_photo_url : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF' }}" 
+                                <img src="{{ $kudo->sender ? $kudo->sender->profile_photo_url : 'https://api.dicebear.com/7.x/initials/svg?seed=?&color=7F9CF5&background=EBF4FF' }}" 
                                     alt="{{ $kudo->sender->name ?? '?' }}"
                                     class="w-10 h-10 rounded-full object-cover shadow-sm border border-white dark:border-gray-800 shrink-0">
                                 <div class="min-w-0">
@@ -933,7 +933,7 @@
                     <div class="p-6 space-y-4 max-h-[400px] overflow-y-auto no-scrollbar">
                         @forelse(auth()->user()->givenKudos()->with('receiver')->orderBy('created_at', 'desc')->limit(5)->get() as $kudo)
                             <div class="flex items-start gap-4 p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50">
-                                <img src="{{ $kudo->receiver ? $kudo->receiver->profile_photo_url : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF' }}" 
+                                <img src="{{ $kudo->receiver ? $kudo->receiver->profile_photo_url : 'https://api.dicebear.com/7.x/initials/svg?seed=?&color=7F9CF5&background=EBF4FF' }}" 
                                     alt="{{ $kudo->receiver->name ?? '?' }}"
                                     class="w-10 h-10 rounded-full object-cover shadow-sm border border-white dark:border-gray-800 shrink-0">
                                 <div class="min-w-0">
@@ -1276,7 +1276,7 @@
                                 detail: {
                                     id: p.user_id,
                                     name: p.name,
-                                    photo: p.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&color=7F9CF5&background=EBF4FF`
+                                    photo: p.photo || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(p.name)}&color=7F9CF5&background=EBF4FF`
                                 }
                             }));
                         }

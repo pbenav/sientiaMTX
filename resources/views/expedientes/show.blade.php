@@ -771,7 +771,7 @@
                     <div>
                         <label class="text-[10px] font-black uppercase text-gray-400 block mb-1">Creado por</label>
                         <div class="flex items-center gap-2 mt-1">
-                            <img src="{{ $expediente->creator->profile_photo_url ?? 'https://ui-avatars.com/api/?name='.urlencode($expediente->creator->name) }}" class="w-5 h-5 rounded-full">
+                            <img src="{{ $expediente->creator->profile_photo_url ?? 'https://api.dicebear.com/7.x/initials/svg?seed='.urlencode($expediente->creator->name) }}" class="w-5 h-5 rounded-full">
                             <span class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ $expediente->creator->name }}</span>
                         </div>
                     </div>
@@ -810,7 +810,7 @@
                     @foreach($usersWithAccess as $userWithAccess)
                         <div class="flex items-center justify-between p-2 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
                             <div class="flex items-center gap-2.5 min-w-0">
-                                <img src="{{ $userWithAccess->profile_photo_url ?? 'https://ui-avatars.com/api/?name='.urlencode($userWithAccess->name) }}" 
+                                <img src="{{ $userWithAccess->profile_photo_url ?? 'https://api.dicebear.com/7.x/initials/svg?seed='.urlencode($userWithAccess->name) }}" 
                                      class="w-7 h-7 rounded-xl object-cover shrink-0 border border-gray-100 dark:border-gray-800 shadow-sm"
                                      alt="{{ $userWithAccess->name }}">
                                 <div class="min-w-0">

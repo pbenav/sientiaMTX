@@ -192,7 +192,7 @@
                                 <span>{{ $expediente->activities_count }} Actividades</span>
                             </div>
                             <div class="flex items-center gap-1">
-                                <img src="{{ $expediente->creator->profile_photo_url ?? 'https://ui-avatars.com/api/?name='.urlencode($expediente->creator->name) }}" class="w-4 h-4 rounded-full border border-white dark:border-gray-800">
+                                <img src="{{ $expediente->creator->profile_photo_url ?? 'https://api.dicebear.com/7.x/initials/svg?seed='.urlencode($expediente->creator->name) }}" class="w-4 h-4 rounded-full border border-white dark:border-gray-800">
                                 <span class="truncate max-w-[80px]">{{ explode(' ', $expediente->creator->name)[0] }}</span>
                             </div>
                         </div>

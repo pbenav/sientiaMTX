@@ -73,7 +73,7 @@ class ChatGroup extends Model
      */
     public function getAvatarAttribute()
     {
-        return 'https://ui-avatars.com/api/?name=Grupo&color=10b981&background=ecfdf5';
+        return 'https://api.dicebear.com/7.x/initials/svg?seed=Grupo&color=10b981&background=ecfdf5';
     }
 
     /**

@@ -124,11 +124,11 @@ Route::get('/locale/{locale}', [LocaleController::class, 'switch'])
 Route::get('/dashboard', function () {
     $user = auth()->user();
     $firstTeam = $user->teams()->first();
-    
+
     if ($firstTeam) {
         return redirect()->route('teams.time-reports', $firstTeam);
     }
-    
+
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -136,7 +136,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile/sessions/{sessionId}', [\App\Http\Controllers\ProfileSessionController::class, 'destroy'])->name('profile.sessions.logout');
-    
+
     // Multi-Factor Authentication (MFA / 2FA) Routes under ENS Guidelines
     Route::post('/profile/two-factor/enable', [\App\Http\Controllers\TwoFactorAuthController::class, 'enable'])->name('profile.two-factor.enable');
     Route::post('/profile/two-factor/confirm', [\App\Http\Controllers\TwoFactorAuthController::class, 'confirm'])->name('profile.two-factor.confirm');
@@ -338,7 +338,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/teams/{team}/forum/{thread}', [ForumController::class, 'update'])->name('teams.forum.update');
     Route::delete('/teams/{team}/forum/{thread}', [ForumController::class, 'destroy'])->name('teams.forum.destroy');
     Route::post('/teams/{team}/forum/cleanup', [ForumController::class, 'cleanupOrphans'])->name('teams.forum.cleanup');
-    
+
     // Forum messages
     Route::post('/teams/{team}/forum/{thread}/messages', [ForumMessageController::class, 'store'])->name('teams.forum.messages.store');
     Route::patch('/teams/{team}/forum/messages/{message}', [ForumMessageController::class, 'update'])->name('teams.forum.messages.update');
@@ -347,7 +347,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/teams/{team}/forum/upload-image', [ForumMessageController::class, 'uploadImage'])->name('teams.forum.upload_image');
     Route::post('/teams/{team}/forum/replace-inline-image', [ForumMessageController::class, 'replaceInlineImage'])->name('teams.forum.replace_inline_image');
     Route::post('/teams/{team}/forum/upload-attachment', [ForumMessageController::class, 'uploadAttachment'])->name('teams.forum.upload_attachment');
-    
+
     // Attachment routes (shared - TaskAttachmentController handles TaskAttachment model)
     Route::prefix('teams/{team}')->group(function () {
         Route::get('attachments/{attachment}/download', [TaskAttachmentController::class, 'downloadAttachment'])->name('teams.attachments.download');
@@ -392,7 +392,7 @@ Route::middleware('auth')->group(function () {
 
     // Micrositios (Backoffice)
     Route::resource('teams.microsites', MicrositeController::class)->except(['show']);
-    
+
     // Theme route
     Route::post('/theme', [\App\Http\Controllers\ThemeController::class, 'update'])->name('theme.update');
     Route::post('/layout', [\App\Http\Controllers\LayoutController::class, 'update'])->name('layout.update');
@@ -417,7 +417,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/settings/users/{user}/force-logout', [\App\Http\Controllers\AdminUserController::class, 'forceLogout'])->name('settings.users.force-logout');
         Route::post('/settings/users/{user}/invitations/{invitation}/accept', [\App\Http\Controllers\AdminUserController::class, 'acceptInvitation'])->name('settings.users.accept-invitation');
         Route::post('/settings/users/{user}/approve', [\App\Http\Controllers\AdminUserController::class, 'approve'])->name('settings.users.approve');
-        
+
         // Legal Settings
         Route::get('/settings/legal', [\App\Http\Controllers\LegalSettingsController::class, 'edit'])->name('settings.legal');
         Route::post('/settings/legal', [\App\Http\Controllers\LegalSettingsController::class, 'update'])->name('settings.legal.update');
@@ -637,7 +637,7 @@ use App\Http\Controllers\OnlyOfficeController;
 Route::middleware(['auth'])->group(function () {
     Route::get('/attachments/{attachment}/edit', [OnlyOfficeController::class, 'edit'])->name('onlyoffice.edit');
     Route::get('/activity-attachments/{attachment}/edit', [OnlyOfficeController::class, 'editActivity'])->name('onlyoffice.activity.edit');
-    
+
     // Crear un documento nuevo vacío directamente desde una tarea y abrir el editor
     Route::post('/teams/{team}/tasks/{task}/documents/create', [OnlyOfficeController::class, 'createDocument'])->name('onlyoffice.create');
     Route::post('/teams/{team}/activities/{activity}/documents/create', [OnlyOfficeController::class, 'createActivityDocument'])->name('onlyoffice.activity.create');

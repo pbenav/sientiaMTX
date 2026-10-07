@@ -192,7 +192,7 @@
                     {{ __('tasks.owner') }}
                 </p>
                 <div class="flex items-center gap-3">
-                    <img src="{{ $task->creator ? $task->creator->profile_photo_url : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF' }}" 
+                    <img src="{{ $task->creator ? $task->creator->profile_photo_url : 'https://api.dicebear.com/7.x/initials/svg?seed=?&color=7F9CF5&background=EBF4FF' }}" 
                         alt="{{ $task->creator?->name ?? '?' }}"
                         class="w-10 h-10 rounded-xl object-cover shadow-sm border border-gray-100 dark:border-gray-800 shrink-0">
                     <div class="min-w-0">

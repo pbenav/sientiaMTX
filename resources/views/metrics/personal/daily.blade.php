@@ -345,7 +345,7 @@
                     <div class="space-y-3">
                         @foreach($kudosToday as $kudo)
                             <div class="flex items-start gap-3 p-4 rounded-2xl bg-white dark:bg-gray-800 shadow-sm border border-rose-50 dark:border-gray-700/50 transition-transform hover:-translate-y-0.5">
-                                <img src="{{ $kudo->sender->profile_photo_url ?? 'https://ui-avatars.com/api/?name=User' }}" class="w-8 h-8 rounded-full shadow-sm mt-0.5">
+                                <img src="{{ $kudo->sender->profile_photo_url ?? 'https://api.dicebear.com/7.x/initials/svg?seed=User' }}" class="w-8 h-8 rounded-full shadow-sm mt-0.5">
                                 <div>
                                     <p class="text-sm font-medium text-gray-800 dark:text-gray-200 leading-snug">"{{ $kudo->message ?? 'Gran trabajo en equipo hoy.' }}"</p>
                                     <p class="text-[10px] text-gray-400 mt-1 font-semibold uppercase tracking-wider">— {{ $kudo->sender->name ?? 'Compañero' }}</p>

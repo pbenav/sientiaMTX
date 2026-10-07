@@ -488,7 +488,7 @@
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap hidden lg:table-cell">
                                     <div class="flex items-center gap-2">
-                                        <img src="{{ $activity->creator ? $activity->creator->profile_photo_url : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF' }}" 
+                                        <img src="{{ $activity->creator ? $activity->creator->profile_photo_url : 'https://api.dicebear.com/7.x/initials/svg?seed=?&color=7F9CF5&background=EBF4FF' }}" 
                                             alt="{{ $activity->creator?->name ?? '?' }}"
                                             class="w-5 h-5 rounded-full object-cover shadow-sm border border-white dark:border-gray-800">
                                         <span class="text-xs text-gray-600 dark:text-gray-400">{{ $activity->creator?->name ?? '—' }}</span>
@@ -530,7 +530,7 @@
                                          </div>
                                      @else
                                         <div class="flex items-center gap-2 opacity-75">
-                                            <img src="{{ $activity->creator ? $activity->creator->profile_photo_url : 'https://ui-avatars.com/api/?name=?&color=7F9CF5&background=EBF4FF' }}" 
+                                            <img src="{{ $activity->creator ? $activity->creator->profile_photo_url : 'https://api.dicebear.com/7.x/initials/svg?seed=?&color=7F9CF5&background=EBF4FF' }}" 
                                                 alt="{{ $activity->creator?->name ?? '?' }}"
                                                 class="w-5 h-5 rounded-full object-cover shadow-sm border border-white dark:border-gray-800">
                                             <div class="flex flex-col">
