@@ -776,6 +776,12 @@ MS;
 
         $payload = [
             'contents' => $this->messagesHistory,
+            'safetySettings' => [
+                ['category' => 'HARM_CATEGORY_HARASSMENT', 'threshold' => 'BLOCK_NONE'],
+                ['category' => 'HARM_CATEGORY_HATE_SPEECH', 'threshold' => 'BLOCK_NONE'],
+                ['category' => 'HARM_CATEGORY_SEXUALLY_EXPLICIT', 'threshold' => 'BLOCK_NONE'],
+                ['category' => 'HARM_CATEGORY_DANGEROUS_CONTENT', 'threshold' => 'BLOCK_NONE']
+            ]
         ];
         
         if ($supportsTools) {
@@ -831,6 +837,10 @@ MS;
                 }
 
                 // 2. Respuesta de Texto normal
+                $finishReason = $candidate['finishReason'] ?? 'UNKNOWN';
+                if ($finishReason !== 'STOP') {
+                    Log::warning("Ax.ia: Generación interrumpida. Finish Reason: {$finishReason}");
+                }
                 return $part['text'] ?? 'No se recibió contenido de la IA.';
             }
 
