@@ -1346,14 +1346,23 @@
                     console.error("Ax.ia json parse error in renderMarkdown:", e);
                 }
                 
-                // Fallback robusto si el parseo falla (ej. JSON truncado o saltos de línea sin escapar)
-                if (!jsonParsedSuccesfully && cleanText.includes('"intent"') && cleanText.includes('"content"')) {
+                // Fallback robusto para JSON truncado o malformado
+                if (!jsonParsedSuccesfully && cleanText.includes('"intent"')) {
+                    // Si el JSON se rompió, extraemos directamente el contenido del intent simple_text
                     let fallbackMatch = cleanText.match(/"content"\s*:\s*"([\s\S]*?)"\s*(?:}|,)/);
                     if (!fallbackMatch) {
                         fallbackMatch = cleanText.match(/"content"\s*:\s*"([\s\S]*)$/);
                     }
                     if (fallbackMatch && fallbackMatch[1]) {
-                        cleanText = fallbackMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
+                        cleanText = fallbackMatch[1];
+                        // Si el JSON quedó truncado, a veces termina con un cierre de comillas aleatorio.
+                        cleanText = cleanText.replace(/"\s*$/, '');
+                        cleanText = cleanText.replace(/\\n/g, '\n').replace(/\\"/g, '"');
+                    } else if (cleanText.startsWith('[PAYLOAD]')) {
+                        // Si no pudimos extraer el content, al menos quitamos las etiquetas y mostramos lo que hay
+                        cleanText = cleanText.replace(/\[PAYLOAD\]|\[\/PAYLOAD\]/g, '').trim();
+                        // Intentamos quitar el inicio del JSON para que no se vea feo
+                        cleanText = cleanText.replace(/^\s*{\s*"intent"\s*:\s*"[^"]*",\s*"content"\s*:\s*"/, '');
                     }
                 }
 
@@ -1703,8 +1712,32 @@
             },
 
             copyToClipboard(text) {
+                let finalContent = text;
                 const match = text.match(/\[PAYLOAD\]([\s\S]*?)\[\/PAYLOAD\]/);
-                const finalContent = match ? match[1].trim() : text.replace(/\[PAYLOAD\]|\[\/PAYLOAD\]/g, '').trim();
+                if (match) {
+                    finalContent = match[1].trim();
+                } else {
+                    finalContent = text.replace(/\[PAYLOAD\]|\[\/PAYLOAD\]/g, '').trim();
+                }
+
+                // Si es un JSON, extraemos solo el texto útil
+                try {
+                    if (finalContent.startsWith('{') && finalContent.includes('"content"')) {
+                        const parsed = JSON.parse(this.cleanJson(finalContent));
+                        if (parsed.content) finalContent = parsed.content;
+                    }
+                } catch (e) {
+                    // Fallback para JSON truncado
+                    if (finalContent.includes('"intent"') && finalContent.includes('"content"')) {
+                        let fallbackMatch = finalContent.match(/"content"\s*:\s*"([\s\S]*?)"\s*(?:}|,)/);
+                        if (!fallbackMatch) {
+                            fallbackMatch = finalContent.match(/"content"\s*:\s*"([\s\S]*)$/);
+                        }
+                        if (fallbackMatch && fallbackMatch[1]) {
+                            finalContent = fallbackMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
+                        }
+                    }
+                }
 
                 navigator.clipboard.writeText(finalContent).then(() => {
                     const btn = event.currentTarget;
