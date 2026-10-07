@@ -1321,24 +1321,31 @@
                 }
                 cleanText = result;
                 
-                // 1. Limpieza de respuestas JSON (Deep Research / Intent formats)
+                // 1. Detección de Intents JSON sin [PAYLOAD] (Auto-sanación)
                 let jsonParsedSuccesfully = false;
                 try {
-                    if (cleanText.startsWith('{') && cleanText.includes('"content"')) {
-                        const parsed = JSON.parse(this.cleanJson(cleanText));
-                        if (parsed.content) { cleanText = parsed.content; jsonParsedSuccesfully = true; }
-                    } else if (cleanText.includes('```json') && cleanText.includes('"content"')) {
+                    const checkAndWrap = (textToTest, fullMatch, replacementTarget) => {
+                        try {
+                            const parsed = JSON.parse(this.cleanJson(textToTest));
+                            if (parsed.intent) {
+                                if (parsed.intent === 'simple_text' && parsed.content) {
+                                    cleanText = cleanText.replace(replacementTarget, parsed.content);
+                                    jsonParsedSuccesfully = true;
+                                } else {
+                                    cleanText = cleanText.replace(replacementTarget, '[PAYLOAD]\n' + JSON.stringify(parsed) + '\n[/PAYLOAD]');
+                                }
+                            }
+                        } catch(e) {}
+                    };
+
+                    if (cleanText.startsWith('{')) {
+                        checkAndWrap(cleanText, cleanText, cleanText);
+                    } else if (cleanText.includes('```json')) {
                         const match = cleanText.match(/```json\s*([\s\S]*?)\s*```/);
-                        if (match && match[1]) {
-                            const parsed = JSON.parse(this.cleanJson(match[1]));
-                            if (parsed.content) { cleanText = cleanText.replace(match[0], parsed.content); jsonParsedSuccesfully = true; }
-                        }
-                    } else if (cleanText.startsWith('```') && cleanText.includes('"content"')) {
+                        if (match && match[1]) checkAndWrap(match[1], match[0], match[0]);
+                    } else if (cleanText.includes('```')) {
                         const match = cleanText.match(/```\s*([\s\S]*?)\s*```/);
-                        if (match && match[1] && match[1].trim().startsWith('{')) {
-                            const parsed = JSON.parse(this.cleanJson(match[1]));
-                            if (parsed.content) { cleanText = cleanText.replace(match[0], parsed.content); jsonParsedSuccesfully = true; }
-                        }
+                        if (match && match[1] && match[1].trim().startsWith('{')) checkAndWrap(match[1], match[0], match[0]);
                     }
                 } catch (e) {
                     console.error("Ax.ia json parse error in renderMarkdown:", e);
