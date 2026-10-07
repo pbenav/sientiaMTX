@@ -163,7 +163,7 @@
                         <div class="flex flex-col items-center w-full my-2 mb-4">
                             <div class="self-center px-4 py-1.5 bg-gray-100 dark:bg-gray-800/50 rounded-full border border-gray-200 dark:border-gray-700 text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.15em] flex items-center gap-2 shadow-sm">
                                 <svg class="w-3 h-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                <span x-html="renderMarkdown(msg.content)"></span>
+                                <span x-html="renderMarkdown(msg.content, msg.role)"></span>
                             </div>
                             
                             <!-- Attachment in system message -->
@@ -188,7 +188,7 @@
                         <div class="flex flex-col w-full mb-8 last:mb-12">
                             <div :class="msg.role === 'user' ? 'self-end bg-indigo-600 text-white rounded-3xl rounded-tr-none shadow-indigo-500/20' : 'self-start bg-white dark:bg-gray-800 dark:text-gray-100 text-gray-800 rounded-3xl rounded-tl-none shadow-black/5 border border-gray-100 dark:border-gray-700/50'" 
                                  class="px-5 py-3.5 max-w-[90%] text-sm relative group shadow-xl transition-all">
-                                <div x-html="renderMarkdown(msg.content)" 
+                                <div x-html="renderMarkdown(msg.content, msg.role)" 
                                      :class="msg.role === 'user' ? 'prose-invert text-white' : 'dark:prose-invert text-gray-800 dark:text-gray-100'" 
                                      class="leading-relaxed prose prose-sm max-w-none"></div>
 
@@ -1289,10 +1289,39 @@
                 }, 100);
             },
             
-            renderMarkdown(text) {
+            renderMarkdown(text, role = 'ai') {
                 if (!text) return '';
                 
                 let cleanText = text.trim();
+
+                // Para mensajes del usuario, escapamos HTML para que no se renderice y se purgue, 
+                // pero respetamos si están usando bloques de código markdown nativo.
+                if (role === 'user') {
+                    let inCodeBlock = false;
+                    let inInlineCode = false;
+                    let result = '';
+                    for (let i = 0; i < cleanText.length; i++) {
+                        if (cleanText.substring(i, i+3) === '```') {
+                            inCodeBlock = !inCodeBlock;
+                            result += '```';
+                            i += 2;
+                            continue;
+                        }
+                        if (cleanText[i] === '`' && !inCodeBlock) {
+                            inInlineCode = !inInlineCode;
+                            result += '`';
+                            continue;
+                        }
+                        if (!inCodeBlock && !inInlineCode) {
+                            if (cleanText[i] === '<') result += '&lt;';
+                            else if (cleanText[i] === '>') result += '&gt;';
+                            else result += cleanText[i];
+                        } else {
+                            result += cleanText[i];
+                        }
+                    }
+                    cleanText = result;
+                }
                 
                 // 1. Limpieza de respuestas JSON (Deep Research / Intent formats)
                 let jsonParsedSuccesfully = false;
