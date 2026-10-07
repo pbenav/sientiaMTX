@@ -250,7 +250,12 @@ class TaskActionController extends Controller
                         // Gather all task IDs in this quadrant (both from DB and full_order)
                         $activitiesInQ = \App\Models\Activity::where('team_id', $team->id)
                             ->whereIn('priority', $priorityValues)
-                            ->whereIn('urgency', $urgencyValues)
+                            ->where(function ($query) use ($urgencyValues) {
+                                $query->whereIn('metadata->urgency', $urgencyValues);
+                                if (in_array('medium', $urgencyValues)) {
+                                    $query->orWhereNull('metadata->urgency');
+                                }
+                            })
                             ->whereNotNull('matrix_order')
                             ->orderBy('matrix_order', 'asc')->toBase()
                             ->pluck('id')
