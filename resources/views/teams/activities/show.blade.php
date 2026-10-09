@@ -931,6 +931,19 @@
                         {!! $activity->type_icon !!} {{ $activity->type_label }}
                     </span>
                     {{ $activity->title }}
+                    
+                    @if($activity->google_task_id)
+                        <span class="ml-2 px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200/50 dark:border-blue-700/50 shadow-sm inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider align-middle" title="Sincronizada con Google Tasks">
+                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                            Google Tasks
+                        </span>
+                    @endif
+                    @if($activity->google_calendar_event_id)
+                        <span class="ml-2 px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-700/50 shadow-sm inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider align-middle" title="Sincronizada con Google Calendar">
+                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                            Google Calendar
+                        </span>
+                    @endif
                 </p>
             </div>
 
