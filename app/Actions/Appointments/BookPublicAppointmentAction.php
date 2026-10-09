@@ -104,6 +104,13 @@ class BookPublicAppointmentAction
         if (!empty($data['dni']) || !empty($data['email'])) {
             $existingAppointment = Appointment::where('service_id', $service->id)
                 ->whereIn('status', ['confirmed', 'pending'])
+                ->where(function($q) {
+                    $q->where('appointment_date', '>', now()->toDateString())
+                      ->orWhere(function($subQ) {
+                          $subQ->where('appointment_date', '=', now()->toDateString())
+                               ->where('appointment_time', '>=', now()->toTimeString());
+                      });
+                })
                 ->whereHas('visitor', function ($query) use ($data, $normalizedEmail) {
                     $query->where(function ($q) use ($data, $normalizedEmail) {
                         if (!empty($data['dni'])) {
