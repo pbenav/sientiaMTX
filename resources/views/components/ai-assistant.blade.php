@@ -1296,104 +1296,96 @@
                 if (!text) return '';
                 
                 let cleanText = text.trim();
+                const payloads = [];
 
-                // Para todos los mensajes (usuario e IA), escapamos HTML que no esté dentro de bloques de código 
-                // para evitar que DOMPurify lo elimine silenciosamente y el usuario pierda fragmentos de código.
+                const storePayload = (jsonStr) => {
+                    const id = `[[[PAYLOAD_${payloads.length}]]]`;
+                    payloads.push({
+                        id: id,
+                        html: this.generatePayloadCard(jsonStr.trim())
+                    });
+                    return id;
+                };
+
+                // 1. Extraer explícitos [PAYLOAD]...[/PAYLOAD]
+                cleanText = cleanText.replace(/\[PAYLOAD\]([\s\S]*?)\[\/PAYLOAD\]/gi, (match, content) => {
+                    return storePayload(content);
+                });
+
+                // 2. Extraer bloques de código Markdown que contienen JSON con intent
+                cleanText = cleanText.replace(/```(?:json)?\s*([\s\S]*?)\s*```/gi, (match, content) => {
+                    if (content.trim().startsWith('{') && content.includes('"intent"')) {
+                        return storePayload(content);
+                    }
+                    return match;
+                });
+
+                // 3. Extraer JSON crudo incrustado en el texto sin bloque de código (Auto-sanación robusta)
+                while (true) {
+                    const startIndex = cleanText.search(/{\s*"intent"\s*:/);
+                    if (startIndex === -1) break;
+                    
+                    let braceCount = 0;
+                    let inString = false;
+                    let escape = false;
+                    let foundEnd = false;
+                    
+                    for (let i = startIndex; i < cleanText.length; i++) {
+                        const char = cleanText[i];
+                        if (escape) { escape = false; continue; }
+                        if (char === '\\') { escape = true; continue; }
+                        if (char === '"') { inString = !inString; continue; }
+                        
+                        if (!inString) {
+                            if (char === '{') braceCount++;
+                            else if (char === '}') braceCount--;
+                            
+                            if (braceCount === 0) {
+                                const jsonCandidate = cleanText.substring(startIndex, i + 1);
+                                cleanText = cleanText.substring(0, startIndex) + storePayload(jsonCandidate) + cleanText.substring(i + 1);
+                                foundEnd = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!foundEnd) break;
+                }
+
+                // 4. Escapar HTML del texto restante (fuera de bloques de código y payloads)
+                // para evitar que DOMPurify elimine silenciosamente código HTML del usuario.
                 let inCodeBlock = false;
                 let inInlineCode = false;
-                let result = '';
+                let escapedText = '';
                 for (let i = 0; i < cleanText.length; i++) {
                     if (cleanText.substring(i, i+3) === '```') {
                         inCodeBlock = !inCodeBlock;
-                        result += '```';
+                        escapedText += '```';
                         i += 2;
                         continue;
                     }
                     if (cleanText[i] === '`' && !inCodeBlock) {
                         inInlineCode = !inInlineCode;
-                        result += '`';
+                        escapedText += '`';
                         continue;
                     }
                     if (!inCodeBlock && !inInlineCode) {
-                        if (cleanText[i] === '<') result += '&lt;';
-                        else if (cleanText[i] === '>') result += '&gt;';
-                        else result += cleanText[i];
+                        if (cleanText[i] === '<') escapedText += '&lt;';
+                        else if (cleanText[i] === '>') escapedText += '&gt;';
+                        else escapedText += cleanText[i];
                     } else {
-                        result += cleanText[i];
-                    }
-                }
-                cleanText = result;
-                
-                // 1. Detección de Intents JSON sin [PAYLOAD] (Auto-sanación)
-                let jsonParsedSuccesfully = false;
-                try {
-                    const checkAndWrap = (textToTest, fullMatch, replacementTarget) => {
-                        try {
-                            const parsed = JSON.parse(this.cleanJson(textToTest));
-                            if (parsed.intent) {
-                                if (parsed.intent === 'simple_text' && parsed.content) {
-                                    cleanText = cleanText.replace(replacementTarget, parsed.content);
-                                    jsonParsedSuccesfully = true;
-                                } else {
-                                    cleanText = cleanText.replace(replacementTarget, '[PAYLOAD]\n' + JSON.stringify(parsed) + '\n[/PAYLOAD]');
-                                }
-                            }
-                        } catch(e) {}
-                    };
-
-                    if (cleanText.startsWith('{')) {
-                        checkAndWrap(cleanText, cleanText, cleanText);
-                    } else if (cleanText.includes('```json')) {
-                        const match = cleanText.match(/```json\s*([\s\S]*?)\s*```/);
-                        if (match && match[1]) checkAndWrap(match[1], match[0], match[0]);
-                    } else if (cleanText.includes('```')) {
-                        const match = cleanText.match(/```\s*([\s\S]*?)\s*```/);
-                        if (match && match[1] && match[1].trim().startsWith('{')) checkAndWrap(match[1], match[0], match[0]);
-                    }
-                } catch (e) {
-                    console.error("Ax.ia json parse error in renderMarkdown:", e);
-                }
-                
-                // Fallback robusto para JSON truncado o malformado
-                if (!jsonParsedSuccesfully && cleanText.includes('"intent"')) {
-                    // Si el JSON se rompió, extraemos directamente el contenido del intent simple_text
-                    let fallbackMatch = cleanText.match(/"content"\s*:\s*"([\s\S]*?)"\s*(?:}|,)/);
-                    if (!fallbackMatch) {
-                        fallbackMatch = cleanText.match(/"content"\s*:\s*"([\s\S]*)$/);
-                    }
-                    if (fallbackMatch && fallbackMatch[1]) {
-                        cleanText = fallbackMatch[1];
-                        // Si el JSON quedó truncado, a veces termina con un cierre de comillas aleatorio.
-                        cleanText = cleanText.replace(/"\s*$/, '');
-                        cleanText = cleanText.replace(/\\n/g, '\n').replace(/\\"/g, '"');
-                    } else if (cleanText.startsWith('[PAYLOAD]')) {
-                        // Si no pudimos extraer el content, al menos quitamos las etiquetas y mostramos lo que hay
-                        cleanText = cleanText.replace(/\[PAYLOAD\]|\[\/PAYLOAD\]/g, '').trim();
-                        // Intentamos quitar el inicio del JSON para que no se vea feo
-                        cleanText = cleanText.replace(/^\s*{\s*"intent"\s*:\s*"[^"]*",\s*"content"\s*:\s*"/, '');
+                        escapedText += cleanText[i];
                     }
                 }
 
-                // 2. Extracción de [PAYLOAD] para evitar que marked los rompa
-                const payloads = [];
-                let textWithPlaceholders = cleanText.replace(/\[PAYLOAD\]([\s\S]*?)\[\/PAYLOAD\]/g, (match, content) => {
-                    const id = `[[[PAYLOAD_${payloads.length}]]]`;
-                    payloads.push({
-                        id: id,
-                        html: this.generatePayloadCard(content.trim())
-                    });
-                    return id;
-                });
-
-                // 3. Renderizado de Markdown del texto restante
+                // 5. Renderizado de Markdown y saneado
                 let rendered;
                 try {
-                    rendered = typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(marked.parse(textWithPlaceholders)) : marked.parse(textWithPlaceholders).replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').replace(/on[a-z]+=/gi, '');
+                    rendered = typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(marked.parse(escapedText)) : marked.parse(escapedText).replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').replace(/on[a-z]+=/gi, '');
                 } catch (e) {
-                    rendered = textWithPlaceholders.replace(/\n/g, '<br>');
+                    rendered = escapedText.replace(/\n/g, '<br>');
                 }
 
-                // 4. Re-inyección de las tarjetas de Payload protegidas
+                // 6. Re-inyección de las tarjetas de Payload protegidas
                 payloads.forEach(p => {
                     rendered = rendered.replace(p.id, p.html);
                 });
