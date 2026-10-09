@@ -813,14 +813,16 @@
         ][$q];
 
         $statusColor = match ($activity->status_value) {
-            'completed'
+            'completed', 'approved', 'published', 'active'
                 => 'text-emerald-600 bg-emerald-50 border-emerald-100 dark:text-emerald-400 dark:bg-emerald-400/10 dark:border-emerald-800',
-            'in_progress'
+            'in_progress', 'review'
                 => 'text-blue-600 bg-blue-50 border-blue-100 dark:text-blue-400 dark:bg-blue-400/10 dark:border-blue-800',
-            'cancelled'
+            'cancelled', 'rejected', 'broken', 'dismissed'
                 => 'text-red-600 bg-red-50 border-red-100 dark:text-red-400 dark:bg-red-400/10 dark:border-red-800',
             'blocked'
                 => 'text-white bg-red-600 border-red-700 dark:bg-red-500 dark:border-red-600 font-bold animate-pulse',
+            'archived'
+                => 'text-gray-500 bg-gray-50 border-gray-200 dark:text-gray-400 dark:bg-gray-800 dark:border-gray-700',
             default
                 => 'text-amber-600 bg-amber-50 border-amber-100 dark:text-yellow-400 dark:bg-yellow-400/10 dark:border-yellow-800',
         };

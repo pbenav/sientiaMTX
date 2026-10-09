@@ -193,7 +193,7 @@
 
 
             <!-- 1. Plan Maestro Related (Only if template/child) -->
-            @if ($activity->is_template)
+            @if ($activity->is_template && in_array($activity->type, ['task', 'meeting']))
                 @php
                     $isCollaborativeSidebar = isset($activity->metadata['assignment_mode']) && $activity->metadata['assignment_mode'] === 'shared';
                 @endphp
@@ -442,13 +442,13 @@
                     <div>
                         <span class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide font-bold block mb-1.5">{{ __('activities.status') }}</span>
                         @if ($activity->type === 'reminder')
-                            <button onclick="updateTaskStatus('{{ $activity->status_value === 'completed' ? 'pending' : 'completed' }}')" class="flex items-center gap-2 group transition-opacity hover:opacity-80" title="{{ __('Marcar como ' . ($activity->status_value === 'completed' ? 'pendiente' : 'completada')) }}">
+                            <button onclick="updateTaskStatus('{{ $activity->status_value === 'dismissed' ? 'pending' : 'dismissed' }}')" class="flex items-center gap-2 group transition-opacity hover:opacity-80" title="{{ __('Marcar como ' . ($activity->status_value === 'dismissed' ? 'pendiente' : 'descartada')) }}">
                                 <span class="text-[11px] font-bold px-3 py-1 rounded-full border {{ $statusColor }} uppercase tracking-wider transition-colors">
                                     {{ __('activities.statuses.' . $activity->status_value) }}
                                 </span>
                                 <!-- switch icon -->
-                                <div class="relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out {{ $activity->status_value === 'completed' ? 'bg-emerald-500' : 'bg-gray-200 dark:bg-gray-700' }}">
-                                    <span class="pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ $activity->status_value === 'completed' ? 'translate-x-3' : 'translate-x-0' }}"></span>
+                                <div class="relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out {{ $activity->status_value === 'dismissed' ? 'bg-emerald-500' : 'bg-gray-200 dark:bg-gray-700' }}">
+                                    <span class="pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ $activity->status_value === 'dismissed' ? 'translate-x-3' : 'translate-x-0' }}"></span>
                                 </div>
                             </button>
                         @else
