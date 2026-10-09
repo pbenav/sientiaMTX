@@ -42,7 +42,7 @@ class ActivityService
      */
     public function create(Team $team, string $type, array $data, array $files = [], ?string $driveAttachmentsJson = null): Activity
     {
-        // Fallback: Asegurar que los campos del primer capítulo no se pierdan 
+        // Fallback: Asegurar que los campos del primer capítulo no se pierdan
         if (request()->has('metadata.chapter_title') && empty($data['metadata']['chapter_title'])) {
             $data['metadata']['chapter_title'] = request()->input('metadata.chapter_title');
         }
@@ -283,7 +283,7 @@ class ActivityService
                         if ($activity->google_task_id && $activity->google_task_list_id) {
                             $googleService->deleteTask($activity->google_task_list_id, $activity->google_task_id);
                         }
-                        $isExternalEvent = data_get($activity->metadata, 'google_is_organizer') === false 
+                        $isExternalEvent = data_get($activity->metadata, 'google_is_organizer') === false
                             || data_get($activity->metadata, 'is_external_event') === true;
 
                         if ($activity->google_calendar_event_id && !$isExternalEvent) {
@@ -387,7 +387,7 @@ class ActivityService
                     $previousNotifyUserIds = $previousNotifyUserIds->merge($group->users->pluck('id'));
                 }
             }
-            
+
             $newUserIdsToNotify = array_diff($uniqueNotifyUserIds, $previousNotifyUserIds->unique()->toArray());
 
             foreach ($newUserIdsToNotify as $userId) {
@@ -425,14 +425,14 @@ class ActivityService
                   ->orWhere('metadata->is_occurrence', 'false');
             })
             ->get();
-            
+
         $existingUserIds = [];
         foreach ($existingInstances as $instance) {
             // Buscamos a quién pertenece esta instancia usando metadata para ser más fiables,
             // o recurrimos al primer assignment si es legacy.
-            $assignedUserId = data_get($instance->metadata, 'distributed_user_id') 
+            $assignedUserId = data_get($instance->metadata, 'distributed_user_id')
                 ?? $instance->assignments()->whereNotNull('user_id')->first()?->user_id;
-                
+
             if ($assignedUserId) {
                 $existingUserIds[$assignedUserId] = $instance;
             }
@@ -440,13 +440,13 @@ class ActivityService
 
         $userIdsToKeep = array_intersect(array_keys($existingUserIds), $userIds);
         $userIdsToDelete = array_diff(array_keys($existingUserIds), $userIds);
-        
+
         foreach ($userIdsToDelete as $id) {
             $existingUserIds[$id]->delete();
         }
 
         $userIdsToCreate = array_diff($userIds, array_keys($existingUserIds));
-        
+
         foreach ($userIdsToCreate as $userId) {
             $childData = $data;
             $childData['title'] = $parent->title;
@@ -457,7 +457,7 @@ class ActivityService
             $childData['is_template'] = false;
             $childData['assigned_to'] = [$userId];
             $childData['assigned_groups'] = [];
-            
+
             $childData['metadata'] = array_merge($parent->metadata ?? [], [
                 'is_distributed_instance' => true,
                 'assignment_mode' => 'shared',
@@ -502,7 +502,7 @@ class ActivityService
                 }
             }
         }
-        
+
         foreach ($userIdsToKeep as $id) {
             $instance = $existingUserIds[$id];
             $instance->update([
@@ -530,14 +530,10 @@ class ActivityService
 
             $path = $file->store("activities/{$activity->id}", 'local');
 
-            $originalName = $file->getClientOriginalName();
-            $datePrefix = date('Y-m-d-');
-            $fileName = str_starts_with($originalName, $datePrefix) ? $originalName : $datePrefix . $originalName;
-
             ActivityAttachment::create([
                 'activity_id'    => $activity->id,
                 'uploaded_by_id' => auth()->id(),
-                'file_name'      => $fileName,
+                'file_name'      => $file->getClientOriginalName(),
                 'file_path'      => $path,
                 'disk'           => 'local',
                 'mime_type'      => $file->getMimeType(),
@@ -553,14 +549,10 @@ class ActivityService
         $driveFiles = json_decode($driveAttachmentsJson, true);
         if (is_array($driveFiles)) {
             foreach ($driveFiles as $file) {
-                $originalName = $file['name'] ?? 'Google Drive File';
-                $datePrefix = date('Y-m-d-');
-                $fileName = str_starts_with($originalName, $datePrefix) ? $originalName : $datePrefix . $originalName;
-
                 ActivityAttachment::create([
                     'activity_id'    => $activity->id,
                     'uploaded_by_id' => auth()->id(),
-                    'file_name'      => $fileName,
+                    'file_name'      => $file['name'] ?? 'Google Drive File',
                     'file_path'      => $file['webViewLink'] ?? "https://drive.google.com/file/d/" . ($file['id'] ?? '') . "/view",
                     'disk'           => 'google_drive',
                     'mime_type'      => $file['mimeType'] ?? 'application/octet-stream',
@@ -918,8 +910,8 @@ class ActivityService
             'activity_id' => $activity->id,
             'user_id'     => $user?->id ?? auth()->id() ?? $activity->created_by_id ?? 1,
             'action'      => $action,
-            'old_values'  => $oldValues,
-            'new_values'  => $newValues,
+            'old_values'  => $oldValues ?? [],
+            'new_values'  => $newValues ?? [],
             'notes'       => $notes,
         ]);
     }
@@ -973,7 +965,7 @@ class ActivityService
         if ($activity->type === 'agreement') {
             // Forzamos la recarga para ignorar caché y traemos también los grupos
             $activity->load(['assignedTo', 'assignedGroups.users']);
-            
+
             $assignedUsers = $activity->assignedTo;
             foreach ($activity->assignedGroups as $group) {
                 $assignedUsers = $assignedUsers->merge($group->users);
