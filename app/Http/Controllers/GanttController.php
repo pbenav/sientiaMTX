@@ -257,10 +257,11 @@ class GanttController extends Controller
         }
 
         foreach ($baseTasks as $task) {
-            $isTaskCompleted = in_array($task->status_value, ['completed', 'cancelled']);
+            $terminalStatuses = ['completed', 'cancelled', 'approved', 'published', 'rejected', 'archived', 'done', 'finished'];
+            $isTaskCompleted = in_array($task->status_value, $terminalStatuses) || $task->isCompleted();
 
             // Si el padre está completado, consideramos esta tarea completada
-            if ($task->parent && in_array($task->parent->status_value, ['completed', 'cancelled'])) {
+            if ($task->parent && (in_array($task->parent->status_value, $terminalStatuses) || $task->parent->isCompleted())) {
                 $isTaskCompleted = true;
             }
 
