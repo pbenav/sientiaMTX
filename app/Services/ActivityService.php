@@ -530,10 +530,14 @@ class ActivityService
 
             $path = $file->store("activities/{$activity->id}", 'local');
 
+            $originalName = $file->getClientOriginalName();
+            $datePrefix = date('Y-m-d-');
+            $fileName = str_starts_with($originalName, $datePrefix) ? $originalName : $datePrefix . $originalName;
+
             ActivityAttachment::create([
                 'activity_id'    => $activity->id,
                 'uploaded_by_id' => auth()->id(),
-                'file_name'      => $file->getClientOriginalName(),
+                'file_name'      => $fileName,
                 'file_path'      => $path,
                 'disk'           => 'local',
                 'mime_type'      => $file->getMimeType(),
@@ -549,10 +553,14 @@ class ActivityService
         $driveFiles = json_decode($driveAttachmentsJson, true);
         if (is_array($driveFiles)) {
             foreach ($driveFiles as $file) {
+                $originalName = $file['name'] ?? 'Google Drive File';
+                $datePrefix = date('Y-m-d-');
+                $fileName = str_starts_with($originalName, $datePrefix) ? $originalName : $datePrefix . $originalName;
+
                 ActivityAttachment::create([
                     'activity_id'    => $activity->id,
                     'uploaded_by_id' => auth()->id(),
-                    'file_name'      => $file['name'] ?? 'Google Drive File',
+                    'file_name'      => $fileName,
                     'file_path'      => $file['webViewLink'] ?? "https://drive.google.com/file/d/" . ($file['id'] ?? '') . "/view",
                     'disk'           => 'google_drive',
                     'mime_type'      => $file['mimeType'] ?? 'application/octet-stream',
