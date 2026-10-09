@@ -25,7 +25,7 @@ use App\Contracts\ExportableActivityInterface;
  */
 class DocumentActivity extends Activity implements ExportableActivityInterface
 {
-    public const STATUSES = ['draft', 'review', 'approved', 'rejected', 'archived'];
+    public const STATUSES = ['draft', 'review', 'approved', 'rejected', 'published', 'archived'];
 
     protected static function booted(): void
     {

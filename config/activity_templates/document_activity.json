@@ -50,48 +50,31 @@
         "status": {
             "type": "string",
             "required": false,
-            "default": "uploaded",
+            "default": "draft",
             "enum": [
-                "uploaded",
                 "draft",
-                "editing",
-                "reviewed",
+                "review",
                 "approved",
+                "rejected",
                 "published",
                 "archived"
             ]
         }
     },
     "states": {
-        "uploaded": {
-            "transitions": [
-                "draft",
-                "editing",
-                "reviewed",
-                "archived"
-            ]
-        },
         "draft": {
             "transitions": [
-                "editing",
-                "reviewed",
+                "review",
                 "approved",
+                "rejected",
                 "archived"
             ]
         },
-        "editing": {
+        "review": {
             "transitions": [
                 "draft",
-                "reviewed",
                 "approved",
-                "archived"
-            ]
-        },
-        "reviewed": {
-            "transitions": [
-                "draft",
-                "editing",
-                "approved",
+                "rejected",
                 "archived"
             ]
         },
@@ -100,7 +83,13 @@
                 "published",
                 "archived",
                 "draft",
-                "editing"
+                "review"
+            ]
+        },
+        "rejected": {
+            "transitions": [
+                "draft",
+                "archived"
             ]
         },
         "published": {
@@ -111,8 +100,7 @@
         },
         "archived": {
             "transitions": [
-                "draft",
-                "uploaded"
+                "draft"
             ]
         }
     },
