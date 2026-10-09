@@ -515,14 +515,7 @@ function printDocumentBook() {
         teamName: @json($team->name ?? ''),
         version:  @json($activeDocument->metadata['version'] ?? '1.0.0'),
         chapters: @json($activeDocument->metadata['chapters'] ?? []),
-        attachments: @json(isset($activeDocument) && $activeDocument->attachments ? $activeDocument->attachments->map(function($att) use ($team, $activeDocument) {
-            return [
-                'name' => $att->file_name,
-                'url' => route('teams.activities.attachments.view', [$team, $activeDocument, $att]),
-                'mime_type' => $att->mime_type,
-                'is_image' => str_starts_with($att->mime_type, 'image/')
-            ];
-        }) : [])
+        attachments: {!! json_encode(isset($activeDocument) && $activeDocument->attachments ? $activeDocument->attachments->map(fn($att) => ['name' => $att->file_name, 'url' => route('teams.activities.attachments.view', [$team, $activeDocument, $att]), 'mime_type' => $att->mime_type, 'is_image' => str_starts_with($att->mime_type, 'image/')])->toArray() : []) !!}
     });
 }
 </script>@endif
