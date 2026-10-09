@@ -1092,11 +1092,28 @@
                 }
             },
 
-            printDocumentBook: function(docData) {
+            printDocumentBook: async function(docData) {
                 const title = docData.title || 'Documento';
                 const teamName = docData.teamName || '';
                 const docVersion = docData.version || '1.0.0';
                 const chapters = docData.chapters || [];
+                const attachments = docData.attachments || [];
+
+                let includeAttachments = false;
+                if (attachments.length > 0 && typeof Swal !== 'undefined') {
+                    const result = await Swal.fire({
+                        title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Imprimir Anexos</span>',
+                        html: '<div class="text-sm text-gray-500 dark:text-gray-400 mt-2">El documento tiene <strong>' + attachments.length + '</strong> archivo(s) adjunto(s).<br><br>¿Deseas añadirlos al final del libro como anexos? (Las imágenes se imprimirán, otros archivos se listarán).</div>',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sí, incluir anexos',
+                        cancelButtonText: 'No, solo el documento',
+                        confirmButtonColor: '#4f46e5',
+                        cancelButtonColor: '#94a3b8',
+                        customClass: { popup: 'rounded-[2rem] shadow-2xl border border-gray-200 dark:border-gray-800' }
+                    });
+                    includeAttachments = result.isConfirmed;
+                }
 
                 let chaptersHtml = '';
                 let tocHtml = '';
@@ -1150,7 +1167,7 @@
                     </style>
                 `;
 
-                const bodyHtml = `
+                let bodyHtml = `
                     <div class="cover-page">
                         <div class="cover-team">${teamName}</div>
                         <h1 class="cover-title">${title}</h1>
@@ -1165,6 +1182,32 @@
 
                     ${chaptersHtml}
                 `;
+
+                if (includeAttachments && attachments.length > 0) {
+                    let annexHtml = '';
+                    attachments.forEach((att, i) => {
+                        annexHtml += `<div style="margin-bottom: 2rem;">`;
+                        annexHtml += `<h3 style="font-family: 'Outfit', sans-serif; font-size: 18px; margin-bottom: 1rem; color: #0f172a;">Anexo ${i + 1}: ${att.name}</h3>`;
+                        if (att.is_image) {
+                            annexHtml += `<img src="${att.url}" style="max-width: 100%; height: auto; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 1rem;" />`;
+                        } else {
+                            annexHtml += `<div style="padding: 1rem; background: #f1f5f9; border-radius: 8px; color: #64748b; font-size: 14px;">[Archivo adjunto: ${att.name}] <br> *Formato no imprimible directamente (${att.mime_type})*</div>`;
+                        }
+                        annexHtml += `</div>`;
+                    });
+
+                    bodyHtml += `
+                        <div class="chapter-page">
+                            <div class="chapter-header">
+                                <span class="chapter-num">ANEXOS</span>
+                                <h2 class="chapter-title">Archivos Adjuntos</h2>
+                            </div>
+                            <div class="chapter-body">
+                                ${annexHtml}
+                            </div>
+                        </div>
+                    `;
+                }
 
                 this.printWindow(`${title} - Libro Digital`, bodyHtml, extraStyles);
             },

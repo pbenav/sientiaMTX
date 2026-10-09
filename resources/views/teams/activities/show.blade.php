@@ -771,7 +771,15 @@
                         title:    @json($activity->title),
                         teamName: @json($team->name),
                         version:  @json($activity->metadata['version'] ?? '1.0.0'),
-                        chapters: @json($activity->metadata['chapters'] ?? [])
+                        chapters: @json($activity->metadata['chapters'] ?? []),
+                        attachments: @json($activity->attachments->map(function($att) use ($team, $activity) {
+                            return [
+                                'name' => $att->file_name,
+                                'url' => route('teams.activities.attachments.view', [$team, $activity, $att]),
+                                'mime_type' => $att->mime_type,
+                                'is_image' => str_starts_with($att->mime_type, 'image/')
+                            ];
+                        }))
                     });
                 }
             </script>
