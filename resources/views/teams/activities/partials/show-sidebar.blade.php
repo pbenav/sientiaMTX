@@ -235,7 +235,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
                                 </svg>
-                                {{ __('Quitar bloqueo') }}
+                                {{ __('Remove lock') }}
                             </button>
                         @endif
                     </div>
@@ -278,7 +278,7 @@
                                     </select>
                                 </div>
                             @else
-                                <p class="text-[11px] font-bold text-violet-900 dark:text-violet-200 truncate">{{ $activity->assignedUser?->name ?? __('Sin asignar') }}</p>
+                                <p class="text-[11px] font-bold text-violet-900 dark:text-violet-200 truncate">{{ $activity->assignedUser?->name ?? __('Unassigned') }}</p>
                             @endif
                         </div>
                     </div>
@@ -332,7 +332,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
                                 </svg>
-                                {{ __('Quitar bloqueo') }}
+                                {{ __('Remove lock') }}
                             </button>
                         @endif
                     </div>
@@ -404,7 +404,7 @@
                         {{ $isExternalEvent ? 'Organizador Externo' : __('activities.owner') }}
                     </p>
                     @if($isExternalEvent)
-                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50" title="Evento creado externamente en Google Calendar">
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50" title="{{ __("html.external_google_calendar_event") }}">
                             🌐 Externo
                         </span>
                     @endif
@@ -500,7 +500,7 @@
                             @elseif($activity->privacy_level === 'semi-private')
                                 <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
                                 <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">
-                                     {{ __('Semiprivada') }}
+                                     {{ __('Semi-private') }}
                                 </span>
                             @else
                                 <div class="w-2 h-2 rounded-full bg-violet-500"></div>
@@ -521,7 +521,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 {{ $activity->auto_priority ? 'animate-pulse' : '' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
-                            <span class="text-[10px] font-bold uppercase tracking-wider">{{ __('Prioridad Automática') }}</span>
+                            <span class="text-[10px] font-bold uppercase tracking-wider">{{ __('Automatic Priority') }}</span>
                         </div>
                         <div class="relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none {{ $activity->auto_priority ? 'bg-violet-500' : 'bg-gray-200 dark:bg-gray-700' }}">
                             <span class="pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ $activity->auto_priority ? 'translate-x-3' : 'translate-x-0' }}"></span>
@@ -553,7 +553,7 @@
                             </svg>
                         </div>
                         <div class="min-w-0">
-                            <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">{{ __('Expediente') }}</h4>
+                            <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">{{ __('File') }}</h4>
                             <p class="text-xs font-bold text-gray-900 dark:text-white truncate">{{ $activity->expediente->code }}</p>
                         </div>
                     </div>
@@ -775,7 +775,7 @@
                         
                         <div class="flex flex-col gap-2">
                             <a href="{{ route('teams.activities.show', [$team, $activity->convertedFromActivity]) }}" class="w-full text-center text-[10px] font-bold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 py-2 rounded-xl transition-colors">
-                                Ver vida anterior
+                                {{ __('View') }} vida anterior
                             </a>
                             
                             @if(auth()->user()->can('update', $activity))
@@ -840,21 +840,21 @@
                 const ids = isBulk ? Array.from(taskIds) : [taskIds];
                 
                 Swal.fire({
-                    title: isBulk ? '¿Enviar recordatorio masivo?' : '¿Enviar recordatorio?',
+                    title: isBulk ? '{{ __('Send bulk reminder?') }}' : '{{ __('Send reminder?') }}',
                     html: `
-                        <p class="text-sm text-gray-500 mb-3">${isBulk ? 'Se enviará un recordatorio a todos los miembros seleccionados.' : 'Se enviará un recordatorio al miembro responsable.'}</p>
+                        <p class="text-sm text-gray-500 mb-3">${isBulk ? '{{ __('A reminder will be sent to all selected members.') }}' : '{{ __('A reminder will be sent to the responsible member.') }}'}</p>
                         <div class="text-left space-y-1.5">
-                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Mensaje personalizado (Markdown & menciones @)</label>
-                            <textarea id="nudge-message" class="w-full rounded-2xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:ring-2 focus:ring-violet-500 focus:border-violet-500 min-h-[110px] p-3.5 shadow-inner text-gray-900 dark:text-gray-100 font-sans" placeholder="Escribe un mensaje personalizado del coordinador (opcional)..."></textarea>
-                            <span class="text-[9px] font-bold text-gray-400 dark:text-gray-500 block">Soporta sintaxis Markdown (negrita, cursiva, listas) y menciones a usuarios (@nombre).</span>
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">{{ __('Custom message (Markdown & @mentions)') }}</label>
+                            <textarea id="nudge-message" class="w-full rounded-2xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:ring-2 focus:ring-violet-500 focus:border-violet-500 min-h-[110px] p-3.5 shadow-inner text-gray-900 dark:text-gray-100 font-sans" placeholder="{{ __('Write a custom coordinator message (optional)...') }}"></textarea>
+                            <span class="text-[9px] font-bold text-gray-400 dark:text-gray-500 block">{{ __('Supports Markdown syntax (bold, italics, lists) and user mentions (@name).') }}</span>
                         </div>
                     `,
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonColor: '#7c3aed',
                     cancelButtonColor: '#94a3b8',
-                    confirmButtonText: 'Enviar',
-                    cancelButtonText: 'Cancelar',
+                    confirmButtonText: '{{ __('Send') }}',
+                    cancelButtonText: '{{ __('Cancel') }}',
                     background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
                     color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827',
                     preConfirm: () => {
@@ -882,11 +882,11 @@
                             if (!contentType || !contentType.includes('application/json')) {
                                 const text = await response.text();
                                 console.error('Non-JSON response:', text);
-                                throw new Error('El servidor no devolvió una respuesta JSON válida. Verifica la conexión o la URL del dominio.');
+                                throw new Error('{{ __('The server did not return a valid JSON response. Please check your connection or domain URL.') }}');
                             }
                             const data = await response.json();
                             if (!response.ok) {
-                                throw new Error(data.message || data.error || 'Error en la petición al servidor.');
+                                throw new Error(data.message || data.error || '{{ __('Server request error.') }}');
                             }
                             return data;
                         })
@@ -972,8 +972,8 @@
                     showCancelButton: true,
                     confirmButtonColor: status === 'blocked' ? '#ef4444' : '#6366f1',
                     cancelButtonColor: '#94a3b8',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar',
+                    confirmButtonText: '{{ __("Confirmar") }}',
+                    cancelButtonText: '{{ __("Cancel") }}',
                     background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
                     color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
                 }).then((result) => {
@@ -1218,7 +1218,7 @@
                                     window.location.reload();
                                 });
                             } else {
-                                throw new Error(data.message || 'Error al guardar la imagen');
+                                throw new Error(data.message || '{{ __("Error al guardar") }} la imagen');
                             }
                         })
                         .catch(error => {
@@ -1283,9 +1283,9 @@
                         icon: 'question',
                         showDenyButton: true,
                         showCancelButton: true,
-                        confirmButtonText: 'Eliminar de Drive y MTX',
+                        confirmButtonText: '{{ __('Delete') }} de Drive y MTX',
                         denyButtonText: 'Solo desvincular de MTX',
-                        cancelButtonText: 'Cancelar',
+                        cancelButtonText: '{{ __("Cancel") }}',
                         confirmButtonColor: '#ef4444',
                         denyButtonColor: '#6b7280',
                         customClass: {
@@ -1316,8 +1316,8 @@
                         showCancelButton: true,
                         confirmButtonColor: '#ef4444',
                         cancelButtonColor: '#6b7280',
-                        confirmButtonText: '{{ __('Sí, eliminar') }}',
-                        cancelButtonText: '{{ __('Cancelar') }}',
+                        confirmButtonText: '{{ __('Yes, delete') }}',
+                        cancelButtonText: '{{ __('Cancel') }}',
                         customClass: {
                             popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
                             confirmButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]',

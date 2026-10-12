@@ -13,7 +13,7 @@
                 <a href="{{ route('teams.dashboard', $team) }}" 
                    class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl text-xs font-bold uppercase tracking-widest text-gray-600 dark:text-gray-400 hover:bg-gray-50 transition-all shadow-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                    {{ __('Volver') }}
+                    {{ __('Back') }}
                 </a>
             </div>
 
@@ -60,7 +60,7 @@
                                          style="width: {{ $percentage }}%"></div>
                                 </div>
                                 <div class="flex justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
-                                    <span>Límite del Equipo: {{ $quotaGB }} GB</span>
+                                    <span>{{ __('teams.team_limit') }}: {{ $quotaGB }} GB</span>
                                     <span class="{{ $percentage > 90 ? 'text-rose-500 animate-pulse' : '' }} font-black">{{ $percentage }}% Utilizado</span>
                                 </div>
                             </div>
@@ -77,7 +77,7 @@
                                 </div>
                                 <span class="bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter">Telegram Bot</span>
                             </div>
-                            <h4 class="text-xl font-black text-gray-800 dark:text-white uppercase tracking-tighter mb-1">Media Chat</h4>
+                            <h4 class="text-xl font-black text-gray-800 dark:text-white uppercase tracking-tighter mb-1">{{ __('Media') }} Chat</h4>
                             <p class="text-sm text-gray-500 mb-6">Fotos, stickers y audios recibidos</p>
                             <div class="flex items-center justify-between border-t border-gray-50 dark:border-gray-700/50 pt-4">
                                 <div class="text-center flex-1 border-r border-gray-50 dark:border-gray-700/50">
@@ -135,15 +135,15 @@
                             </div>
                         </div>
 
-                        <!-- Expedientes -->
+                        <!-- {{ __("Files") }} -->
                         <div class="bg-white dark:bg-gray-800 rounded-[2.5rem] p-6 shadow-xl border border-gray-100 dark:border-gray-700 relative group transition-all hover:scale-[1.02]">
                             <div class="flex items-center justify-between mb-6">
                                 <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center text-violet-500 shadow-inner">
                                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
                                 </div>
-                                <span class="bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter">Expedientes</span>
+                                <span class="bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter">{{ __("Files") }}</span>
                             </div>
-                            <h4 class="text-xl font-black text-gray-800 dark:text-white uppercase tracking-tighter mb-1">Expedientes</h4>
+                            <h4 class="text-xl font-black text-gray-800 dark:text-white uppercase tracking-tighter mb-1">{{ __("Files") }}</h4>
                             <p class="text-sm text-gray-500 mb-6">Adjuntos locales en expedientes</p>
                             <div class="flex items-center justify-between border-t border-gray-50 dark:border-gray-700/50 pt-4">
                                 <div class="text-center flex-1 border-r border-gray-50 dark:border-gray-700/50">
@@ -199,44 +199,44 @@
                             <div class="space-y-6">
                                 <!-- Antigüedad -->
                                 <div>
-                                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3 ml-1">Antigüedad de los archivos</label>
+                                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3 ml-1">{{ __('File Age') }}</label>
                                     <select name="days" class="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-2xl px-4 py-3 text-sm font-bold text-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-rose-500 transition-all">
-                                        <option value="7">Más de 7 días</option>
-                                        <option value="15">Más de 15 días</option>
-                                        <option value="30" selected>Más de 30 días (Recomendado)</option>
-                                        <option value="90">Más de 3 meses</option>
-                                        <option value="180">Más de 6 meses</option>
+                                        <option value="7">{{ __('Over 7 days') }}</option>
+                                        <option value="15">{{ __('Over 15 days') }}</option>
+                                        <option value="30" selected>{{ __('Over 30 days (Recommended)') }}</option>
+                                        <option value="90">{{ __('Over 3 months') }}</option>
+                                        <option value="180">{{ __('Over 6 months') }}</option>
                                     </select>
                                 </div>
 
                                 <!-- Categorías -->
                                 <div>
-                                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4 ml-1">Categorías a limpiar</label>
+                                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4 ml-1">{{ __('Categories to Clean') }}</label>
                                     <div class="space-y-3">
                                         <label class="flex items-center gap-3 p-3 rounded-2xl border border-gray-50 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors cursor-pointer group">
                                             <input type="checkbox" name="types[]" value="telegram" checked class="w-5 h-5 rounded-lg text-rose-500 focus:ring-rose-500 border-gray-300">
                                             <div>
-                                                <span class="block text-sm font-bold text-gray-700 dark:text-gray-200 uppercase tracking-tight">Media de Telegram</span>
-                                                <span class="text-[10px] text-gray-400 font-medium">Fotos, audios y stickers</span>
+                                                <span class="block text-sm font-bold text-gray-700 dark:text-gray-200 uppercase tracking-tight">{{ __('Telegram Media') }}</span>
+                                                <span class="text-[10px] text-gray-400 font-medium">{{ __('Photos, audio and stickers') }}</span>
                                             </div>
                                         </label>
                                         <label class="flex items-center gap-3 p-3 rounded-2xl border border-gray-50 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors cursor-pointer group">
                                             <input type="checkbox" name="types[]" value="attachments" class="w-5 h-5 rounded-lg text-rose-500 focus:ring-rose-500 border-gray-300">
                                             <div>
-                                                <span class="block text-sm font-bold text-gray-700 dark:text-gray-200 uppercase tracking-tight">Documentación (Tareas, Foro y Expedientes)</span>
-                                                <span class="text-[10px] text-gray-400 font-medium italic">Solo archivos locales. No afecta a Drive.</span>
+                                                <span class="block text-sm font-bold text-gray-700 dark:text-gray-200 uppercase tracking-tight">{{ __('Documentation (Tasks, Forum and Files)') }}</span>
+                                                <span class="text-[10px] text-gray-400 font-medium italic">{{ __('Local files only. Does not affect Drive.') }}</span>
                                             </div>
                                         </label>
                                     </div>
                                 </div>
 
                                 <button type="submit" class="w-full py-4 bg-rose-500 hover:bg-rose-600 text-white rounded-3xl font-black uppercase tracking-widest shadow-xl shadow-rose-500/30 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3">
-                                    <span>Iniciar Purga</span>
+                                    <span>{{ __('Start Purge') }}</span>
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7l5 5m0 0l-5 5m5-5H6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                 </button>
                                 
                                 <p class="text-center text-[9px] font-bold text-gray-400 uppercase tracking-widest">
-                                    Nota: Los registros de texto se conservarán
+                                    {{ __('Note: Text records will be preserved') }}
                                 </p>
                             </div>
                         </form>
@@ -249,9 +249,9 @@
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                             </span>
                             <div>
-                                <h5 class="text-sm font-black text-amber-800 dark:text-amber-300 uppercase tracking-tight mb-1">Tu Cuota de Equipo</h5>
+                                <h5 class="text-sm font-black text-amber-800 dark:text-amber-300 uppercase tracking-tight mb-1">{{ __('Your Team Quota') }}</h5>
                                 <p class="text-[11px] text-amber-700/80 dark:text-amber-400/80 leading-relaxed font-medium">
-                                    Este equipo tiene asignados <strong>{{ $quotaGB }} GB</strong> de almacenamiento. Al alcanzar el límite, los miembros no podrán subir nuevos archivos hasta que se libere espacio o se amplíe la cuota.
+                                    {{ __('This team is assigned :quota GB of storage. Upon reaching the limit, members will not be able to upload new files until space is freed or the quota is increased.', ['quota' => $quotaGB]) }}
                                 </p>
                             </div>
                         </div>
@@ -271,14 +271,14 @@
         <script>
             window.confirmPurge = function(form) {
                 Swal.fire({
-                    title: '{{ __('¿Confirmar Purga?') }}',
-                    text: '{{ __('Esta acción eliminará permanentemente los archivos seleccionados del servidor. No se puede deshacer.') }}',
+                    title: '{{ __('Confirm Purge?') }}',
+                    text: '{{ __('This action will permanently delete the selected files from the server. It cannot be undone.') }}',
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#f43f5e',
                     cancelButtonColor: '#94a3b8',
-                    confirmButtonText: '{{ __('Sí, iniciar purga') }}',
-                    cancelButtonText: '{{ __('Cancelar') }}',
+                    confirmButtonText: '{{ __('Yes, start purge') }}',
+                    cancelButtonText: '{{ __('Cancel') }}',
                     customClass: {
                         popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
                         title: 'text-rose-600 dark:text-rose-400 font-black uppercase tracking-tighter pt-8 text-lg',

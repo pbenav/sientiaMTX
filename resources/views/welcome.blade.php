@@ -5,15 +5,15 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>sientiaMTX —
-        {{ app()->getLocale() === 'es' ? 'Gestión Unificada de Actividades y Productividad' : 'Unified Activity & Productivity Management' }}
+        {{ __('Unified Activity & Productivity Management') }}
     </title>
     <meta name="description"
-        content="{{ app()->getLocale() === 'es' ? 'Gestiona mucho más que tareas: actividades, encuestas, citas, documentos y colaboración, todo potenciado por inteligencia artificial.' : 'Manage much more than tasks: activities, surveys, appointments, documents, and collaboration, all powered by AI.' }}">
+        content="{{ __('Manage much more than tasks: activities, surveys, appointments, documents, and collaboration, all powered by AI.') }}">
 
     <!-- Metadatos de Nombre de Sitio para Google (SEO / Open Graph) -->
     <meta property="og:site_name" content="Sientia Open Labs">
-    <meta property="og:title" content="sientiaMTX — {{ app()->getLocale() === 'es' ? 'Gestión Unificada de Actividades y Productividad' : 'Unified Activity & Productivity Management' }}">
-    <meta property="og:description" content="{{ app()->getLocale() === 'es' ? 'Gestiona mucho más que tareas: actividades, encuestas, citas, documentos y colaboración, todo potenciado por inteligencia artificial.' : 'Manage much more than tasks: activities, surveys, appointments, documents, and collaboration, all powered by AI.' }}">
+    <meta property="og:title" content="sientiaMTX — {{ __('Unified Activity & Productivity Management') }}">
+    <meta property="og:description" content="{{ __('Manage much more than tasks: activities, surveys, appointments, documents, and collaboration, all powered by AI.') }}">
     <meta property="og:url" content="https://mtx.sientia.com/">
     <meta property="og:type" content="website">
 
@@ -705,13 +705,13 @@
                 </div>
                 @auth
                     <a href="{{ route('teams.index') }}" class="btn btn-primary">
-                        {{ app()->getLocale() === 'es' ? 'Ir a mis equipos' : 'My Teams' }} →
+                        {{ __('My Teams') }} →
                     </a>
                 @else
                     <a href="{{ route('login') }}"
-                        class="btn btn-ghost">{{ app()->getLocale() === 'es' ? 'Iniciar sesión' : 'Log in' }}</a>
+                        class="btn btn-ghost">{{ __('Log in') }}</a>
                     <a href="{{ route('register') }}"
-                        class="btn btn-primary">{{ app()->getLocale() === 'es' ? 'Empezar gratis' : 'Get started' }}</a>
+                        class="btn btn-primary">{{ __('Get started') }}</a>
                 @endauth
             </div>
         </div>
@@ -721,26 +721,26 @@
     <div class="hero">
         <div class="hero-badge anim anim-d1">
             ✦
-            {{ app()->getLocale() === 'es' ? 'Productividad inteligente para equipos' : 'Smart productivity for teams' }}
+            {{ __('Smart productivity for teams') }}
         </div>
         <h1 class="hero-title anim anim-d2">
-            {{ app()->getLocale() === 'es' ? 'Mucho más que una matriz.' : 'More than just a matrix.' }}<br>
-            <span class="gradient">{{ app()->getLocale() === 'es' ? 'El centro de mando de tu equipo.' : 'Your team\'s command center.' }}</span>
+            {{ __('More than just a matrix.') }}<br>
+            <span class="gradient">{{ __('Your team\'s command center.') }}</span>
         </h1>
         <p class="hero-sub anim anim-d3">
-            {{ app()->getLocale() === 'es' ? 'sientiaMTX evoluciona la gestión clásica. Centraliza actividades, encuestas, documentos y citas en un ecosistema inteligente de productividad.' : 'sientiaMTX evolves classic management. Centralize activities, surveys, documents, and appointments in a smart productivity ecosystem.' }}
+            {{ __('sientiaMTX evolves classic management. Centralize activities, surveys, documents, and appointments in a smart productivity ecosystem.') }}
         </p>
         <div class="hero-ctas anim anim-d3">
             @auth
                 <a href="{{ route('teams.index') }}" class="btn btn-primary btn-hero">
-                    {{ app()->getLocale() === 'es' ? '→ Ir al dashboard' : '→ Go to dashboard' }}
+                    {{ __('→ Go to dashboard') }}
                 </a>
             @else
                 <a href="{{ route('register') }}" class="btn btn-primary btn-hero">
-                    {{ app()->getLocale() === 'es' ? '→ Empezar gratis' : '→ Start for free' }}
+                    {{ __('→ Start for free') }}
                 </a>
                 <a href="{{ route('login') }}" class="btn btn-outline btn-hero">
-                    {{ app()->getLocale() === 'es' ? 'Ya tengo cuenta' : 'I have an account' }}
+                    {{ __('I have an account') }}
                 </a>
             @endauth
         </div>
@@ -748,68 +748,68 @@
         <!-- Matrix visual -->
         <div>
             <div class="matrix-label-top">
-                <span>{{ app()->getLocale() === 'es' ? '← No urgente' : '← Not Urgent' }}</span>
-                <span>{{ app()->getLocale() === 'es' ? ' Urgente →' : 'Urgent →' }}</span>
+                <span>{{ __('← Not Urgent') }}</span>
+                <span>{{ __('Urgent →') }}</span>
             </div>
             <div class="matrix-label-side">
                 <div class="matrix-side-text">
-                    {{ app()->getLocale() === 'es' ? '← No importante · Importante →' : '← Not Important · Important →' }}
+                    {{ __('← Not Important · Important →') }}
                 </div>
                 <div class="matrix-grid">
                     <div class="q-card q2">
                         <div class="q-num"><span class="q-dot" style="background:#3b82f6"></span>Q2</div>
                         <div class="q-name" style="color:#93c5fd">
-                            {{ app()->getLocale() === 'es' ? 'Planifica' : 'Schedule' }}</div>
+                            {{ __('Schedule') }}</div>
                         <div class="q-desc">
-                            {{ app()->getLocale() === 'es' ? 'Importante · No urgente' : 'Important · Not Urgent' }}
+                            {{ __('Important · Not Urgent') }}
                         </div>
                         <div class="q-tasks">
                             <div class="q-task" style="color:#3b82f6">
-                                {{ app()->getLocale() === 'es' ? 'Acuerdo: Plan Estratégico Q2' : 'Agreement: Q2 Strategy' }}
+                                {{ __('Agreement: Q2 Strategy') }}
                             </div>
                             <div class="q-task" style="color:#3b82f6">
-                                {{ app()->getLocale() === 'es' ? 'Documento: Manual de uso' : 'Document: User manual' }}
+                                {{ __('Document: User manual') }}
                             </div>
                         </div>
                     </div>
                     <div class="q-card q1">
                         <div class="q-num"><span class="q-dot" style="background:#ef4444"></span>Q1</div>
                         <div class="q-name" style="color:#fca5a5">
-                            {{ app()->getLocale() === 'es' ? 'Haz ahora' : 'Do First' }}</div>
+                            {{ __('Do First') }}</div>
                         <div class="q-desc">
-                            {{ app()->getLocale() === 'es' ? 'Importante · Urgente' : 'Important · Urgent' }}</div>
+                            {{ __('Important · Urgent') }}</div>
                         <div class="q-tasks">
                             <div class="q-task" style="color:#ef4444">
-                                {{ app()->getLocale() === 'es' ? 'Reunión: Incidente Crítico' : 'Meeting: Critical Incident' }}
+                                {{ __('Meeting: Critical Incident') }}
                             </div>
                             <div class="q-task" style="color:#ef4444">
-                                {{ app()->getLocale() === 'es' ? 'Cita: Auditoría de Seguridad' : 'Appointment: Security Audit' }}
+                                {{ __('Appointment: Security Audit') }}
                             </div>
                         </div>
                     </div>
                     <div class="q-card q4">
                         <div class="q-num"><span class="q-dot" style="background:#6b7280"></span>Q4</div>
                         <div class="q-name" style="color:#d1d5db">
-                            {{ app()->getLocale() === 'es' ? 'Elimina' : 'Eliminate' }}</div>
+                            {{ __('Eliminate') }}</div>
                         <div class="q-desc">
-                            {{ app()->getLocale() === 'es' ? 'No importante · No urgente' : 'Not Important · Not Urgent' }}
+                            {{ __('Not Important · Not Urgent') }}
                         </div>
                         <div class="q-tasks">
                             <div class="q-task" style="color:#6b7280">
-                                {{ app()->getLocale() === 'es' ? 'Biblioteca: Organizar archivos' : 'Library: Organize files' }}
+                                {{ __('Library: Organize files') }}
                             </div>
                         </div>
                     </div>
                     <div class="q-card q3">
                         <div class="q-num"><span class="q-dot" style="background:#f59e0b"></span>Q3</div>
                         <div class="q-name" style="color:#fcd34d">
-                            {{ app()->getLocale() === 'es' ? 'Delega' : 'Delegate' }}</div>
+                            {{ __('Delegate') }}</div>
                         <div class="q-desc">
-                            {{ app()->getLocale() === 'es' ? 'No importante · Urgente' : 'Not Important · Urgent' }}
+                            {{ __('Not Important · Urgent') }}
                         </div>
                         <div class="q-tasks">
                             <div class="q-task" style="color:#f59e0b">
-                                {{ app()->getLocale() === 'es' ? 'Encuesta: Clima laboral' : 'Survey: Work environment' }}</div>
+                                {{ __('Survey: Work environment') }}</div>
                         </div>
                     </div>
                 </div>
@@ -821,15 +821,19 @@
 
     <!-- HOW IT WORKS -->
     <section>
-        <div class="section-badge">{{ app()->getLocale() === 'es' ? 'Cómo funciona' : 'How it works' }}</div>
+        <div class="section-badge">{{ __('How it works') }}</div>
         <h2 class="section-title">
-            {{ app()->getLocale() === 'es' ? 'Simple, potente y visual' : 'Simple, powerful and visual' }}</h2>
+            {{ __('Simple, powerful and visual') }}</h2>
         <p class="section-sub">
-            {{ app()->getLocale() === 'es' ? 'En tres pasos, tu equipo sabe exactamente qué hacer.' : 'In three steps, your team knows exactly what to do.' }}
+            {{ __('In three steps, your team knows exactly what to do.') }}
         </p>
         <div class="steps">
-            @php $locale = app()->getLocale(); @endphp
-            @foreach ([['1', $locale === 'es' ? 'Crea tu equipo' : 'Create your team', $locale === 'es' ? 'Invita a los miembros y organiza el trabajo mediante roles y permisos detallados.' : 'Invite members and organize work through detailed roles and permissions.'], ['2', $locale === 'es' ? 'Añade actividades' : 'Add activities', $locale === 'es' ? 'Registra documentos, reuniones, encuestas o citas, y define su prioridad y urgencia.' : 'Log documents, meetings, surveys, or appointments, and define their priority and urgency.'], ['3', $locale === 'es' ? 'Visualiza el entorno' : 'View the ecosystem', $locale === 'es' ? 'sientiaMTX clasifica automáticamente cada actividad en matrices, tableros y cronogramas.' : 'sientiaMTX automatically classifies each activity into matrices, boards, and timelines.'], ['4', $locale === 'es' ? 'Actúa con IA' : 'Act with AI', $locale === 'es' ? 'Delega en Ax.ia, atiende citas y encuestas, y cierra los acuerdos más urgentes primero.' : 'Delegate to Ax.ia, handle appointments and surveys, and close the most urgent agreements first.']] as [$num, $title, $desc])
+            @foreach ([
+                ['1', __('Create your team'), __('Invite members and organize work through detailed roles and permissions.')],
+                ['2', __('Add activities'), __('Log documents, meetings, surveys, or appointments, and define their priority and urgency.')],
+                ['3', __('View the ecosystem'), __('sientiaMTX automatically classifies each activity into matrices, boards, and timelines.')],
+                ['4', __('Act with AI'), __('Delegate to Ax.ia, handle appointments and surveys, and close the most urgent agreements first.')]
+            ] as [$num, $title, $desc])
                 <div class="step">
                     <div class="step-num">{{ $num }}</div>
                     <h3>{{ $title }}</h3>
@@ -843,161 +847,25 @@
 
     <!-- FEATURES -->
     <section>
-        <div class="section-badge">{{ app()->getLocale() === 'es' ? 'Características' : 'Features' }}</div>
-        <h2 class="section-title">{{ app()->getLocale() === 'es' ? 'Todo lo que necesitas' : 'Everything you need' }}
+        <div class="section-badge">{{ __('Features') }}</div>
+        <h2 class="section-title">{{ __('Everything you need') }}
         </h2>
         <div class="features">
             @php
-                $feats =
-                    app()->getLocale() === 'es'
-                        ? [
-                            [
-                                '🎯',
-                                'bg:#312e81',
-                                'Matriz de Eisenhower',
-                                'Priorización inteligente: separa lo urgente de lo importante para dar el primer paso con total claridad.',
-                            ],
-                            [
-                                '📈',
-                                'bg:#14532d',
-                                'Diagramas de Gantt',
-                                'Planificación a largo plazo: gestiona cronogramas complejos y dependencias de forma visual.',
-                            ],
-                            [
-                                '📋',
-                                'bg:#164e63',
-                                'Método Kanban',
-                                'Flujo de trabajo ágil: controla el estado de tus actividades moviéndolas a través de tu tablero.',
-                            ],
-                            [
-                                '⚡',
-                                'bg:#7c2d12',
-                                'Actividades Flexibles',
-                                'Más que tareas: gestiona documentos, reuniones, recordatorios y acuerdos de forma centralizada.',
-                            ],
-                            [
-                                '📚',
-                                'bg:#4a044e',
-                                'Biblioteca Documental',
-                                'Centro de conocimiento: almacena, organiza y comparte los documentos esenciales de tu equipo.',
-                            ],
-                            [
-                                '📝',
-                                'bg:#064e3b',
-                                'Sistema de Encuestas',
-                                'Feedback continuo: crea encuestas personalizadas, publícalas y analiza resultados al instante.',
-                            ],
-                            [
-                                '📅',
-                                'bg:#831843',
-                                'Gestor de Citas',
-                                'Control de agenda: módulo completo para organizar visitas con notificaciones y gestión de aforos.',
-                            ],
-                            [
-                                '🌐',
-                                'bg:#0f172a',
-                                'Micrositios Web',
-                                'Presencia digital: genera y despliega minisitios públicos al momento sin necesidad de código.',
-                            ],
-                            [
-                                '🤖',
-                                'bg:#022c22',
-                                'IA Integrada (Ax.ia)',
-                                'Asistente IA: resúmenes automáticos, generación de encuestas, control de estrés y productividad.',
-                            ],
-                            [
-                                '👥',
-                                'bg:#581c87',
-                                'Equipos y Foros',
-                                'Colaboración total: gestiona miembros, roles y mantén discusiones centralizadas en tiempo real.',
-                            ],
-                            [
-                                '🌍',
-                                'bg:#1e3a5f',
-                                'Multiidioma y Horas',
-                                'Adaptabilidad global: soporte completo para múltiples idiomas y ajustes de zonas horarias.',
-                            ],
-                            [
-                                '📜',
-                                'bg:#7f1d1d',
-                                'Auditoría y Control',
-                                'Trazabilidad perfecta: un historial detallado de cambios garantiza la transparencia total del equipo.',
-                            ],
-                        ]
-                        : [
-                            [
-                                '🎯',
-                                'bg:#312e81',
-                                'Eisenhower Matrix',
-                                'Smart prioritization: separate urgent from important to take the first step with total clarity.',
-                            ],
-                            [
-                                '📈',
-                                'bg:#14532d',
-                                'Gantt Charts',
-                                'Long-term planning: manage complex timelines and dependencies visually and easily.',
-                            ],
-                            [
-                                '📋',
-                                'bg:#164e63',
-                                'Kanban Boards',
-                                'Agile workflow: control the state of your daily activities by moving them through your custom board.',
-                            ],
-                            [
-                                '⚡',
-                                'bg:#7c2d12',
-                                'Flexible Activities',
-                                'More than tasks: manage documents, meetings, reminders, and agreements in a unified way.',
-                            ],
-                            [
-                                '📚',
-                                'bg:#4a044e',
-                                'Document Library',
-                                'Knowledge hub: store, organize, and share your team\'s essential documents seamlessly.',
-                            ],
-                            [
-                                '📝',
-                                'bg:#064e3b',
-                                'Survey System',
-                                'Continuous feedback: create custom surveys, publish them, and analyze results instantly.',
-                            ],
-                            [
-                                '📅',
-                                'bg:#831843',
-                                'Appointments Manager',
-                                'Schedule control: complete module to organize visits with notifications and capacity limits.',
-                            ],
-                            [
-                                '🌐',
-                                'bg:#0f172a',
-                                'Web Microsites',
-                                'Digital presence: generate and deploy public mini-sites instantly without writing any code.',
-                            ],
-                            [
-                                '🤖',
-                                'bg:#022c22',
-                                'Integrated AI (Ax.ia)',
-                                'AI Assistant: automatic summaries, survey generation, stress monitoring, and productivity insights.',
-                            ],
-                            [
-                                '👥',
-                                'bg:#581c87',
-                                'Teams & Forums',
-                                'Full collaboration: manage members, roles, and maintain team discussions in real time.',
-                            ],
-                            [
-                                '🌍',
-                                'bg:#1e3a5f',
-                                'Multi-language & Time',
-                                'Global adaptivity: full support for multiple languages and automatic timezone adjustments.',
-                            ],
-                            [
-                                '📜',
-                                'bg:#7f1d1d',
-                                'Audit & Control',
-                                'Perfect traceability: a detailed change history ensures total team transparency.',
-                            ],
-                        ];
+                $feats = [
+                    ['🎯', 'bg:#312e81', __('Eisenhower Matrix'), __('Smart prioritization: separate urgent from important to take the first step with total clarity.')],
+                    ['📈', 'bg:#14532d', __('Gantt Charts'), __('Long-term planning: manage complex timelines and dependencies visually and easily.')],
+                    ['📋', 'bg:#164e63', __('Kanban Boards'), __('Agile workflow: control the state of your daily activities by moving them through your custom board.')],
+                    ['⚡', 'bg:#7c2d12', __('Flexible Activities'), __('More than tasks: manage documents, meetings, reminders, and agreements in a unified way.')],
+                    ['📚', 'bg:#4a044e', __('Document Library'), __('Knowledge hub: store, organize, and share your team\'s essential documents seamlessly.')],
+                    ['📝', 'bg:#064e3b', __('Survey System'), __('Continuous feedback: create custom surveys, publish them, and analyze results instantly.')],
+                    ['📅', 'bg:#831843', __('Appointments Manager'), __('Schedule control: complete module to organize visits with notifications and capacity limits.')],
+                    ['🌐', 'bg:#0f172a', __('Web Microsites'), __('Digital presence: generate and deploy public mini-sites instantly without writing any code.')],
+                    ['🤖', 'bg:#022c22', __('Integrated AI (Ax.ia)'), __('AI Assistant: automatic summaries, survey generation, stress monitoring, and productivity insights.')],
+                    ['👥', 'bg:#581c87', __('Teams & Forums'), __('Full collaboration: manage members, roles, and maintain team discussions in real time.')],
+                    ['🌍', 'bg:#1e3a5f', __('Multi-language & Time'), __('Global adaptivity: full support for multiple languages and automatic timezone adjustments.')],
+                    ['📜', 'bg:#7f1d1d', __('Audit & Control'), __('Perfect traceability: a detailed change history ensures total team transparency.')],
+                ];
             @endphp
             @foreach ($feats as [$icon, $bg, $title, $desc])
                 <div class="feat">
@@ -1017,23 +885,23 @@
     <section style="padding-top:64px">
         <div class="cta-section">
             <div class="cta-glow"></div>
-            <h2>{{ app()->getLocale() === 'es' ? '¿Listo para transformar tu productividad?' : 'Ready to transform your productivity?' }}
+            <h2>{{ __('Ready to transform your productivity?') }}
             </h2>
-            <p>{{ app()->getLocale() === 'es' ? 'Empieza a gestionar tus proyectos con MTX, Gantt y Kanban hoy mismo.' : 'Start managing your projects with MTX, Gantt, and Kanban today.' }}
+            <p>{{ __('Start managing your projects with MTX, Gantt, and Kanban today.') }}
             </p>
             <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative">
                 @auth
                     <a href="{{ route('teams.index') }}" class="btn btn-primary btn-hero">→
-                        {{ app()->getLocale() === 'es' ? 'Ir al dashboard' : 'Go to dashboard' }}</a>
+                        {{ __('Go to dashboard') }}</a>
                 @else
                     <a href="{{ route('register') }}" class="btn btn-primary btn-hero">→
-                        {{ app()->getLocale() === 'es' ? 'Registrarse gratis' : 'Register for free' }}</a>
+                        {{ __('Register for free') }}</a>
                     <a href="{{ route('login') }}"
-                        class="btn btn-outline btn-hero">{{ app()->getLocale() === 'es' ? 'Iniciar sesión' : 'Log in' }}</a>
+                        class="btn btn-outline btn-hero">{{ __('Log in') }}</a>
                 @endauth
             </div>
             <p class="cta-demo">
-                {{ app()->getLocale() === 'es' ? 'Cuenta demo: ' : 'Demo account: ' }}
+                {{ __('Demo account:') }} 
                 <code>demo@sientia.com</code> / <code>12345678</code>
             </p>
         </div>
@@ -1044,7 +912,7 @@
         <p>
             © {{ date('Y') }} <a href="https://www.sientia.com" style="color:white; font-weight: 700;">Sientia Open Source Lab</a> · 
             sientia<strong>MTX</strong> v{{ config('app.version', '0.0.1') }} ·
-            {{ app()->getLocale() === 'es' ? 'MTX, Gantt y Kanban para equipos enfocados' : 'MTX, Gantt and Kanban for focused teams' }}
+            {{ __('MTX, Gantt and Kanban for focused teams') }}
         </p>
         
         <div style="margin-top: 16px; display: flex; justify-content: center; gap: 24px; font-size: 13px; font-weight: 500;">
@@ -1063,13 +931,13 @@
         
         <div style="margin-top: 12px; display: flex; justify-content: center; gap: 16px; font-size: 11px; color: var(--muted);">
             <a href="{{ route('privacy') }}" class="hover:text-white transition-colors">
-                {{ app()->getLocale() === 'es' ? 'Privacidad' : 'Privacy' }}
+                {{ __('Privacy') }}
             </a>
             <a href="{{ route('terms') }}" class="hover:text-white transition-colors">
-                {{ app()->getLocale() === 'es' ? 'Términos' : 'Terms' }}
+                {{ __('Terms') }}
             </a>
             <a href="{{ route('cookies') }}" class="hover:text-white transition-colors">
-                {{ app()->getLocale() === 'es' ? 'Cookies' : 'Cookies' }}
+                {{ __('Cookies') }}
             </a>
         </div>
     </footer>

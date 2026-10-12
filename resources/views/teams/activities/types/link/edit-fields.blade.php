@@ -26,7 +26,7 @@
         </h3>
         <div>
             <label for="status" class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2 font-sans">
-                {{ __('Estado') }}
+                {{ __('Status') }}
             </label>
             <select name="status" id="status" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-blue-400 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer focus:ring focus:ring-blue-100 dark:focus:ring-blue-900/30">
                 <option value="active" {{ old('status', $activity->metadata['status'] ?? 'active') === 'active' ? 'selected' : '' }}>
@@ -49,8 +49,8 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7" />
             </svg>
-            {{ __('Descripción') }}
+            {{ __('Description') }}
         </h3>
-        <textarea name="description" id="description" rows="4" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-blue-400 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all resize-y focus:ring focus:ring-blue-100 dark:focus:ring-blue-900/30" placeholder="Describe brevemente este enlace...">{{ old('description', $activity->description) }}</textarea>
+        <textarea name="description" id="description" rows="4" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-blue-400 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all resize-y focus:ring focus:ring-blue-100 dark:focus:ring-blue-900/30" placeholder="{{ __('Briefly describe this link...') }}">{{ old('description', $activity->description) }}</textarea>
     </div>
 </div>

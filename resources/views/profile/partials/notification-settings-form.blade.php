@@ -76,7 +76,7 @@
                                 {{ __('notifications.channel_whatsapp') }}
                             </label>
                             @if(!$whatsappAllowed)
-                                <span class="px-2 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[8px] font-black uppercase rounded-full shadow-sm" title="{{ __('Requerido plan Premium o autorización del administrador') }}">Premium</span>
+                                <span class="px-2 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[8px] font-black uppercase rounded-full shadow-sm" title="{{ __('html.premium_plan_required') }}">Premium</span>
                             @endif
                         </div>
                         @if(!$whatsappAllowed)
@@ -230,7 +230,7 @@
 
 
         <div class="flex items-center gap-4 pt-4">
-            <x-primary-button>{{ __('Guardar Cambios') }}</x-primary-button>
+            <x-primary-button>{{ __('Save Changes') }}</x-primary-button>
 
             @if (session('status') === 'notifications-updated')
                 <p x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 2000)"

@@ -43,7 +43,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        Eventos de Calendario ({{ collect($events)->where('type', 'calendar')->count() }})
+                        {{ __('Calendar Events') }} ({{ collect($events)->where('type', 'calendar')->count() }})
                     </button>
                 </div>
 
@@ -78,19 +78,19 @@
                         <div class="h-4 w-px bg-gray-200 dark:bg-gray-700 mx-1"></div>
                         <div class="flex items-center gap-1.5">
                             <label for="bulk-type-select" class="text-[10px] font-bold uppercase text-gray-400 hidden sm:inline">
-                                Tipo:
+                                {{ __('Type:') }}
                             </label>
                             <select id="bulk-type-select"
                                 class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-[11px] font-bold text-gray-700 dark:text-gray-300 focus:ring-violet-500 focus:border-violet-500 py-1 px-2 cursor-pointer">
-                                <option value="meeting">🎥 Reunión / Cita</option>
-                                <option value="task">📋 Tarea</option>
-                                <option value="reminder">🔔 Recordatorio</option>
-                                <option value="note">📝 Nota</option>
-                                <option value="document">📄 Documento</option>
+                                <option value="meeting">🎥 {{ __('Meeting / Appointment') }}</option>
+                                <option value="task">📋 {{ __('Task') }}</option>
+                                <option value="reminder">🔔 {{ __('Reminder') }}</option>
+                                <option value="note">📝 {{ __('Note') }}</option>
+                                <option value="document">📄 {{ __('Document') }}</option>
                             </select>
                             <button type="button" id="apply-bulk-type"
                                 class="text-[10px] font-bold px-2.5 py-1 bg-violet-50 hover:bg-violet-100 dark:bg-violet-900/30 dark:hover:bg-violet-900/50 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-800/50 rounded-lg uppercase tracking-tighter transition-all">
-                                Aplicar
+                                {{ __('Apply') }}
                             </button>
                         </div>
                         <div class="h-4 w-px bg-gray-200 dark:bg-gray-700 mx-1"></div>
@@ -182,16 +182,16 @@
                                     <div class="mt-3 pt-2 border-t border-gray-100/80 dark:border-gray-800/80 flex items-center justify-between gap-3 flex-wrap" onclick="event.stopPropagation()">
                                         <div class="flex items-center gap-2">
                                             <label for="type-{{ $event['id'] }}" class="text-[11px] font-bold text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                                <span>Tipo:</span>
+                                                <span>{{ __('Type:') }}</span>
                                             </label>
                                             <select name="types[{{ $event['id'] }}]" id="type-{{ $event['id'] }}"
                                                 class="activity-type-select text-xs font-semibold py-1 px-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:text-white transition-all cursor-pointer shadow-sm"
                                                 {{ $event['exists'] ? 'disabled' : '' }}>
-                                                <option value="meeting" {{ ($event['default_activity_type'] ?? '') === 'meeting' ? 'selected' : '' }}>🎥 Reunión / Cita</option>
-                                                <option value="task" {{ ($event['default_activity_type'] ?? '') === 'task' ? 'selected' : '' }}>📋 Tarea</option>
-                                                <option value="reminder">🔔 Recordatorio</option>
-                                                <option value="note">📝 Nota</option>
-                                                <option value="document">📄 Documento</option>
+                                                <option value="meeting" {{ ($event['default_activity_type'] ?? '') === 'meeting' ? 'selected' : '' }}>🎥 {{ __('Meeting / Appointment') }}</option>
+                                                <option value="task" {{ ($event['default_activity_type'] ?? '') === 'task' ? 'selected' : '' }}>📋 {{ __('Task') }}</option>
+                                                <option value="reminder">🔔 {{ __('Reminder') }}</option>
+                                                <option value="note">📝 {{ __('Note') }}</option>
+                                                <option value="document">📄 {{ __('Document') }}</option>
                                             </select>
                                         </div>
 

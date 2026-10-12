@@ -134,21 +134,24 @@ trait ActivityScopes
      */
     public function scopeByUrgency(Builder $query, string $urgency)
     {
-        return $query->where("metadata->>urgency", $urgency);
+        return $query->where('metadata->urgency', $urgency);
     }
 
     /**
      * Filtra actividades por modo de asignación:
      * - 'unassigned': sin asignar a nadie
      * - 'assigned': asignada a al menos un usuario/grupo
+     * - 'shared': tarea colaborativa/compartida
+     * - 'individual'/'distributed': plan individual/distribuido
      */
     public function scopeByAssignmentMode(Builder $query, string $mode)
     {
         return match ($mode) {
             'unassigned' => $query->whereDoesntHave('assignedTo')
                 ->whereDoesntHave('assignedGroups'),
-            'assigned' => $query->whereHas('assignedTo')
-                ->orWhereHas('assignedGroups'),
+            'assigned' => $query->where(fn($q) => $q->whereHas('assignedTo')->orWhereHas('assignedGroups')),
+            'shared' => $query->where('metadata->assignment_mode', 'shared'),
+            'individual', 'distributed' => $query->whereIn('metadata->assignment_mode', ['individual', 'distributed']),
             default => $query,
         };
     }

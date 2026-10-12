@@ -159,11 +159,11 @@ class="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-gray-950/
             <div class="w-full grid grid-cols-2 gap-3 pt-2">
                 <button @click="logout()" 
                         class="px-4 py-3 bg-gray-50 hover:bg-gray-100 dark:bg-gray-800/50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-bold uppercase tracking-wider rounded-2xl border border-gray-100 dark:border-gray-700/50 transition-all">
-                    Finalizar y Salir
+                    Finalizar y {{ __("Salir") }}
                 </button>
                 <button @click="keepWorking()" 
                         class="px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white text-xs font-bold uppercase tracking-wider rounded-2xl shadow-lg shadow-violet-600/20 hover:shadow-violet-600/35 transition-all">
-                    Sigo Activo
+                    {{ __('Sigo Activo') }}
                 </button>
             </div>
         </div>

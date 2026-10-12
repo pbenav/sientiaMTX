@@ -1,5 +1,5 @@
 <x-app-layout>
-    @section('title', 'Ajustes de Apariencia')
+    @section('title', __('Appearance Settings'))
 
     <x-slot name="header">
         <div class="flex items-center gap-3">
@@ -9,9 +9,9 @@
                 </svg>
             </div>
             <div>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">Ajustes de Apariencia</h1>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">{{ __('Appearance Settings') }}</h1>
                 <x-demo-hint>
-                    Controla y personaliza la estética visual de la plataforma. Permite definir la tipografía y paleta de colores para el renderizado de contenidos Markdown de forma global para toda la instancia.
+                    {{ __('Control and customize the visual aesthetics of the platform. Allows defining the typography and color palette for rendering Markdown content globally across the instance.') }}
                 </x-demo-hint>
             </div>
         </div>
@@ -30,11 +30,11 @@
                         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl overflow-hidden shadow-sm">
                             <div class="p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30 flex items-center justify-between">
                                 <div>
-                                    <h3 class="text-sm font-black uppercase tracking-widest text-violet-600 dark:text-violet-400">Tipografía Markdown (Global)</h3>
-                                    <p class="text-xs text-gray-500 mt-1">Configura cómo se renderizan los contenidos enriquecidos en todo el sistema.</p>
+                                    <h3 class="text-sm font-black uppercase tracking-widest text-violet-600 dark:text-violet-400">{{ __('Markdown Typography (Global)') }}</h3>
+                                    <p class="text-xs text-gray-500 mt-1">{{ __('Configure how rich content is rendered across the system.') }}</p>
                                 </div>
                                 <div class="px-3 py-1 bg-violet-100 dark:bg-violet-900/30 rounded-lg">
-                                    <span class="text-[10px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-tight">Preferencias Base</span>
+                                    <span class="text-[10px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-tight">{{ __('appearance.base_preferences') }}</span>
                                 </div>
                             </div>
                             
@@ -43,14 +43,14 @@
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <!-- H1 -->
                                     <div class="space-y-4 p-5 bg-gray-50 dark:bg-gray-800/20 rounded-2xl border border-gray-100 dark:border-gray-800">
-                                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400">Título H1 (#)</label>
+                                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400">{{ __('Heading H1') }} (#)</label>
                                         <div class="space-y-3">
                                             <div>
-                                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Tamaño</label>
+                                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">{{ __('Size') }}</label>
                                                 <input type="text" name="markdown_h1_size" value="{{ $markdown['h1_size'] }}" class="w-full bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 rounded-xl text-sm focus:ring-violet-500/20 focus:border-violet-500">
                                             </div>
                                             <div>
-                                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Peso</label>
+                                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">{{ __('Weight') }}</label>
                                                 <input type="text" name="markdown_h1_weight" value="{{ $markdown['h1_weight'] }}" class="w-full bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 rounded-xl text-sm focus:ring-violet-500/20 focus:border-violet-500">
                                             </div>
                                         </div>
@@ -58,14 +58,14 @@
 
                                     <!-- H2 -->
                                     <div class="space-y-4 p-5 bg-gray-50 dark:bg-gray-800/20 rounded-2xl border border-gray-100 dark:border-gray-800">
-                                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400">Título H2 (##)</label>
+                                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400">{{ __('Heading H2') }} (##)</label>
                                         <div class="space-y-3">
                                             <div>
-                                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Tamaño</label>
+                                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">{{ __('Size') }}</label>
                                                 <input type="text" name="markdown_h2_size" value="{{ $markdown['h2_size'] }}" class="w-full bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 rounded-xl text-sm focus:ring-violet-500/20 focus:border-violet-500">
                                             </div>
                                             <div>
-                                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Peso</label>
+                                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">{{ __('Weight') }}</label>
                                                 <input type="text" name="markdown_h2_weight" value="{{ $markdown['h2_weight'] }}" class="w-full bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 rounded-xl text-sm focus:ring-violet-500/20 focus:border-violet-500">
                                             </div>
                                         </div>
@@ -73,14 +73,14 @@
 
                                     <!-- H3 -->
                                     <div class="space-y-4 p-5 bg-gray-50 dark:bg-gray-800/20 rounded-2xl border border-gray-100 dark:border-gray-800">
-                                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400">Título H3 (###)</label>
+                                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400">{{ __('Heading H3') }} (###)</label>
                                         <div class="space-y-3">
                                             <div>
-                                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Tamaño</label>
+                                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">{{ __('Size') }}</label>
                                                 <input type="text" name="markdown_h3_size" value="{{ $markdown['h3_size'] }}" class="w-full bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 rounded-xl text-sm focus:ring-violet-500/20 focus:border-violet-500">
                                             </div>
                                             <div>
-                                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Peso</label>
+                                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">{{ __('Weight') }}</label>
                                                 <input type="text" name="markdown_h3_weight" value="{{ $markdown['h3_weight'] }}" class="w-full bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 rounded-xl text-sm focus:ring-violet-500/20 focus:border-violet-500">
                                             </div>
                                         </div>
@@ -91,22 +91,22 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
                                     <div class="space-y-6">
                                         <div class="p-5 bg-gray-50 dark:bg-gray-800/20 rounded-2xl border border-gray-100 dark:border-gray-800">
-                                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Colores de Acento</label>
+                                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">{{ __('Accent Colors') }}</label>
                                             <div class="space-y-4">
                                                 <div class="flex items-center justify-between">
-                                                    <span class="text-xs font-bold text-gray-600 dark:text-gray-400">Color Primario (Enlaces)</span>
+                                                    <span class="text-xs font-bold text-gray-600 dark:text-gray-400">{{ __('appearance.primary_color') }}</span>
                                                     <input type="color" name="markdown_accent_color" value="{{ $markdown['accent_color'] }}" class="h-8 w-8 rounded-lg overflow-hidden border-none cursor-pointer">
                                                 </div>
                                                 <div class="flex items-center justify-between">
-                                                    <span class="text-xs font-bold text-gray-600 dark:text-gray-400">Color Viñetas</span>
+                                                    <span class="text-xs font-bold text-gray-600 dark:text-gray-400">{{ __('appearance.bullet_color') }}</span>
                                                     <input type="color" name="markdown_bullet_color" value="{{ $markdown['bullet_color'] }}" class="h-8 w-8 rounded-lg overflow-hidden border-none cursor-pointer">
                                                 </div>
                                                 <div class="flex items-center justify-between">
-                                                    <span class="text-xs font-bold text-gray-600 dark:text-gray-400">Borde Citas (Quotes)</span>
+                                                    <span class="text-xs font-bold text-gray-600 dark:text-gray-400">{{ __('Blockquote Border') }}</span>
                                                     <input type="color" name="markdown_bq_color" value="{{ $markdown['bq_color'] }}" class="h-8 w-8 rounded-lg overflow-hidden border-none cursor-pointer">
                                                 </div>
                                                 <div class="flex items-center justify-between">
-                                                    <span class="text-xs font-bold text-gray-600 dark:text-gray-400">Ancho Borde Citas</span>
+                                                    <span class="text-xs font-bold text-gray-600 dark:text-gray-400">{{ __('Blockquote Border Width') }}</span>
                                                     <input type="text" name="markdown_bq_width" value="{{ $markdown['bq_width'] ?? '4px' }}" class="w-16 bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 rounded-xl text-xs text-center focus:ring-violet-500/20 focus:border-violet-500">
                                                 </div>
                                             </div>
@@ -115,16 +115,16 @@
 
                                     <div class="space-y-6">
                                         <div class="p-5 bg-gray-50 dark:bg-gray-800/20 rounded-2xl border border-gray-100 dark:border-gray-800">
-                                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Cuerpo de Texto</label>
+                                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">{{ __('Body Text') }}</label>
                                             <div class="space-y-4">
                                             <div>
-                                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Tamaño Base</label>
+                                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">{{ __('appearance.base_size') }}</label>
                                                 <input type="text" name="markdown_text_size" value="{{ $markdown['text_size'] }}" class="w-full bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 rounded-xl text-sm focus:ring-violet-500/20 focus:border-violet-500">
                                             </div>
                                             <div>
-                                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Tamaño Mínimo</label>
+                                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">{{ __('appearance.min_size') }}</label>
                                                 <input type="text" name="markdown_text_min_size" value="{{ $markdown['text_min_size'] ?? '0.6875rem' }}" class="w-full bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 rounded-xl text-sm focus:ring-violet-500/20 focus:border-violet-500">
-                                                <p class="mt-1 text-[9px] text-gray-400">Tamaño mínimo cuando las líneas son muy largas</p>
+                                                <p class="mt-1 text-[9px] text-gray-400">{{ __('Minimum size when lines are very long') }}</p>
                                             </div>
                                             </div>
                                         </div>
@@ -134,7 +134,7 @@
 
                             <div class="p-6 bg-gray-50/50 dark:bg-gray-800/30 border-t border-gray-100 dark:border-gray-800 flex justify-end">
                                 <button type="submit" class="px-8 py-3 bg-violet-600 hover:bg-violet-700 text-white text-xs font-black uppercase tracking-widest rounded-2xl transition-all shadow-lg shadow-violet-500/20 active:scale-95">
-                                    Guardar Cambios Globales
+                                    {{ __('Save Global Changes') }}
                                 </button>
                             </div>
                         </div>
@@ -144,33 +144,33 @@
                 <!-- Preview Panel -->
                 <div class="space-y-6">
                     <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm sticky top-8">
-                        <h3 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-6">Previsualización en tiempo real</h3>
+                        <h3 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-6">{{ __('Real-Time Preview') }}</h3>
                         
                         <div class="p-8 bg-gray-50/50 dark:bg-gray-950/20 rounded-2xl border border-dashed border-gray-200 dark:border-gray-800 overflow-hidden" id="markdown-preview">
-                            <h1 style="font-size: {{ $markdown['h1_size'] }}; font-weight: {{ $markdown['h1_weight'] }}; color: {{ $markdown['accent_color'] }}; margin-top:0;" class="mb-4">Título H1</h1>
-                            <h2 style="font-size: {{ $markdown['h2_size'] }}; font-weight: {{ $markdown['h2_weight'] }};" class="mb-3">Subtítulo H2</h2>
-                            <h3 style="font-size: {{ $markdown['h3_size'] }}; font-weight: {{ $markdown['h3_weight'] }};" class="mb-2">Sección H3</h3>
+                            <h1 style="font-size: {{ $markdown['h1_size'] }}; font-weight: {{ $markdown['h1_weight'] }}; color: {{ $markdown['accent_color'] }}; margin-top:0;" class="mb-4">{{ __('Heading H1') }}</h1>
+                            <h2 style="font-size: {{ $markdown['h2_size'] }}; font-weight: {{ $markdown['h2_weight'] }};" class="mb-3">{{ __('Subheading H2') }}</h2>
+                            <h3 style="font-size: {{ $markdown['h3_size'] }}; font-weight: {{ $markdown['h3_weight'] }};" class="mb-2">{{ __('Section H3') }}</h3>
                             <p style="font-size: {{ $markdown['text_size'] }}; min-font-size: {{ $markdown['text_min_size'] ?? '0.6875rem' }};" class="text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
-                                Este es el cuerpo de texto. Incluye <a href="#" style="color: {{ $markdown['accent_color'] }}; text-decoration: underline;">enlaces</a> y otros elementos.
+                                {{ __('This is the body text. It includes') }} <a href="#" style="color: {{ $markdown['accent_color'] }}; text-decoration: underline;">{{ __('links') }}</a> {{ __('and other elements.') }}
                             </p>
                             <ul class="mb-4 space-y-1">
                                 <li class="flex items-center gap-2">
                                     <span style="color: {{ $markdown['bullet_color'] }}">•</span>
-                                    <span class="text-xs text-gray-600 dark:text-gray-400">Elemento de lista 1</span>
+                                    <span class="text-xs text-gray-600 dark:text-gray-400">{{ __('List item 1') }}</span>
                                 </li>
                                 <li class="flex items-center gap-2">
                                     <span style="color: {{ $markdown['bullet_color'] }}">•</span>
-                                    <span class="text-xs text-gray-600 dark:text-gray-400">Elemento de lista 2</span>
+                                    <span class="text-xs text-gray-600 dark:text-gray-400">{{ __('List item 2') }}</span>
                                 </li>
                             </ul>
                             <div style="border-left: 3px solid {{ $markdown['bq_color'] }};" class="pl-4 py-1 bg-gray-100 dark:bg-gray-800/40 rounded-r-lg italic text-[11px] text-gray-500">
-                                "Esta es una cita de ejemplo para verificar el estilo del bloque."
+                                {{ __('"This is a sample quote to verify the blockquote styling."') }}
                             </div>
                         </div>
 
                         <div class="mt-8 p-4 bg-indigo-50 dark:bg-indigo-900/10 rounded-2xl border border-indigo-100 dark:border-indigo-800 flex gap-3 items-start">
                             <svg class="h-5 w-5 text-indigo-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                            <p class="text-[10px] text-indigo-700 dark:text-indigo-400 font-medium leading-relaxed">Nota: Los estilos de equipo tienen prioridad sobre estos ajustes globales.</p>
+                            <p class="text-[10px] text-indigo-700 dark:text-indigo-400 font-medium leading-relaxed">{{ __('Note: Team styles take precedence over these global settings.') }}</p>
                         </div>
                     </div>
                 </div>

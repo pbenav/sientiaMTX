@@ -78,4 +78,27 @@ class KanbanColumn extends Model
     {
         return $this->hasMany(Activity::class, 'kanban_column_id');
     }
+
+    /**
+     * Título dinámico para mostrar en la interfaz, adaptado al idioma activo si es una columna por defecto.
+     */
+    public function getDisplayTitleAttribute(): string
+    {
+        $lower = mb_strtolower(trim($this->title));
+        $defaultTodo = ['pendiente', 'todo', 'por hacer', 'pending'];
+        $defaultInProgress = ['en progreso', 'in progress', 'en curso'];
+        $defaultDone = ['completada', 'completado', 'completed', 'hecho', 'done'];
+
+        if (($this->type === 'todo' && in_array($lower, $defaultTodo)) || in_array($lower, $defaultTodo)) {
+            return __('tasks.statuses.pending');
+        }
+        if (($this->type === 'in_progress' && in_array($lower, $defaultInProgress)) || in_array($lower, $defaultInProgress)) {
+            return __('tasks.statuses.in_progress');
+        }
+        if (($this->type === 'done' && in_array($lower, $defaultDone)) || in_array($lower, $defaultDone)) {
+            return __('tasks.statuses.completed');
+        }
+
+        return $this->title;
+    }
 }

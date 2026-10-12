@@ -6,7 +6,7 @@
             <div class="flex items-center gap-2 min-w-0">
                 <a href="{{ route('teams.dashboard', $team) }}"
                     class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0"
-                    title="Volver">
+                    title="{{ __("Back") }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
@@ -17,7 +17,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                     </svg>
-                    <span class="truncate">Gestión de Expedientes</span>
+                    <span class="truncate">{{ __("Gestión de Expedientes") }}</span>
                 </h1>
             </div>
             <div class="flex items-center gap-2 shrink-0">
@@ -42,7 +42,7 @@
                         stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                     </svg>
-                    <span class="hidden sm:inline">Nuevo Expediente</span>
+                    <span class="hidden sm:inline">{{ __('Nuevo Expediente') }}</span>
                 </a>
             </div>
 
@@ -50,9 +50,9 @@
             <form action="{{ route('teams.expedientes.index', $team) }}" method="GET" class="flex flex-col sm:flex-row items-center gap-3 flex-1 justify-end">
                 <div class="flex items-center gap-2 w-full sm:w-auto">
                     <select name="sort" onchange="this.form.submit()" class="flex-1 sm:flex-none bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold py-2.5 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all cursor-pointer text-gray-700 dark:text-gray-300">
-                        <option value="updated_at_desc" {{ ($filters['sort'] ?? '') === 'updated_at_desc' ? 'selected' : '' }}>Nuevos</option>
-                        <option value="updated_at_asc" {{ ($filters['sort'] ?? '') === 'updated_at_asc' ? 'selected' : '' }}>Antiguos</option>
-                        <option value="title_asc" {{ ($filters['sort'] ?? '') === 'title_asc' ? 'selected' : '' }}>Alfabético</option>
+                        <option value="updated_at_desc" {{ ($filters['sort'] ?? '') === 'updated_at_desc' ? 'selected' : '' }}>{{ __('Newest') }}</option>
+                        <option value="updated_at_asc" {{ ($filters['sort'] ?? '') === 'updated_at_asc' ? 'selected' : '' }}>{{ __('Oldest') }}</option>
+                        <option value="title_asc" {{ ($filters['sort'] ?? '') === 'title_asc' ? 'selected' : '' }}>{{ __('Alphabetical') }}</option>
                     </select>
 
                     <select name="limit" onchange="this.form.submit()" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold py-2.5 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all cursor-pointer text-gray-700 dark:text-gray-300">
@@ -70,19 +70,19 @@
                         </svg>
                     </div>
                     <input type="text" name="search" value="{{ $filters['search'] ?? request('search') }}"
-                           placeholder="Buscar por título o código..."
+                           placeholder="{{ __('Search cases...') }}"
                            enterkeyhint="search"
                            class="block w-full pl-10 pr-12 py-2.5 {{ !empty($filters['search'] ?? request('search')) ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700' }} border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all shadow-sm placeholder:text-gray-400 dark:text-white">
 
                     <div class="absolute inset-y-0 right-2 flex items-center gap-1">
                         @if(!empty($filters['search'] ?? request('search')))
-                            <a href="{{ route('teams.expedientes.index', [$team, 'reset_filters' => 1]) }}" class="p-1.5 text-gray-400 hover:text-red-500 transition-colors" title="Limpiar búsqueda">
+                            <a href="{{ route('teams.expedientes.index', [$team, 'reset_filters' => 1]) }}" class="p-1.5 text-gray-400 hover:text-red-500 transition-colors" title="{{ __("Clear search") }}">
                                 <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </a>
                         @endif
-                        <button type="submit" class="p-1.5 text-gray-400 hover:text-violet-600 transition-colors" title="Buscar">
+                        <button type="submit" class="p-1.5 text-gray-400 hover:text-violet-600 transition-colors" title="{{ __("Search") }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                             </svg>
@@ -144,7 +144,7 @@
                                     {{ $expediente->code }}
                                 </span>
                                 @if($expediente->visibility === 'private')
-                                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-rose-50 dark:bg-rose-900/30 text-rose-500 dark:text-rose-400 shadow-sm border border-rose-100 dark:border-rose-800/50" title="Expediente Privado (Acceso Restringido)">
+                                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-rose-50 dark:bg-rose-900/30 text-rose-500 dark:text-rose-400 shadow-sm border border-rose-100 dark:border-rose-800/50" title="{{ __("Expediente Privado (Acceso Restringido)") }}">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                                     </span>
                                 @endif
@@ -167,7 +167,7 @@
                                         @csrf
                                         @method('DELETE')
                                         <input type="hidden" name="cascade_delete" id="cascade_delete_{{ $expediente->id }}" value="0">
-                                        <button type="button" onclick="confirmDeleteExpediente({{ $expediente->id }})" class="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Eliminar Expediente">
+                                        <button type="button" onclick="confirmDeleteExpediente({{ $expediente->id }})" class="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="{{ __('Delete File') }}">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                         </button>
                                     </form>
@@ -189,7 +189,7 @@
                         <div class="mt-auto pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-[11px] font-medium text-gray-400 dark:text-gray-500">
                             <div class="flex items-center gap-2">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-                                <span>{{ $expediente->activities_count }} Actividades</span>
+                                <span>{{ $expediente->activities_count }} {{ __("Activities") }}</span>
                             </div>
                             <div class="flex items-center gap-1">
                                 <img src="{{ $expediente->creator->profile_photo_url ?? 'https://api.dicebear.com/7.x/initials/svg?seed='.urlencode($expediente->creator->name) }}" class="w-4 h-4 rounded-full border border-white dark:border-gray-800">
@@ -216,7 +216,7 @@
     <script>
         window.confirmDeleteExpediente = function(id) {
             Swal.fire({
-                title: '¿{{ __('Eliminar Expediente') }}?',
+                title: '¿{{ __('Delete File') }}?',
                 html: `
                     <div class="text-left text-sm text-gray-600 dark:text-gray-300 space-y-4">
                         <p>{{ __('Esta acción moverá el expediente a la papelera.') }}</p>
@@ -236,7 +236,7 @@
                 confirmButtonColor: '#ef4444',
                 cancelButtonColor: '#94a3b8',
                 confirmButtonText: '{{ __('Sí, Eliminar') }}',
-                cancelButtonText: '{{ __('Cancelar') }}',
+                cancelButtonText: '{{ __('Cancel') }}',
                 customClass: {
                     popup: 'rounded-[2rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white p-4',
                     title: 'text-xl font-black text-gray-900 dark:text-white pt-4',

@@ -30,22 +30,22 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500 transition-transform group-hover:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                     </svg>
-                    <span class="hidden sm:inline">Nueva actividad</span>
+                    <span class="hidden sm:inline">{{ __('teams.new_activity') }}</span>
                     <svg class="h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
             </x-slot>
 
             <x-slot name="content">
                 <div class="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-gray-400 border-b border-gray-50 dark:border-gray-700/50 mb-1">
-                    Acciones de Creación
+                    {{ __('Creation Actions') }}
                 </div>
                 <x-dropdown-link :href="route('teams.activities.create', [$team, 'type' => 'task'])" class="flex items-center gap-3 py-3 px-4">
                     <div class="p-1.5 bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 rounded-lg shrink-0 text-sm select-none">
                         📋
                     </div>
                     <div class="flex flex-col">
-                        <span class="font-bold text-gray-900 dark:text-white text-xs">Crear Tarea</span>
-                        <span class="text-[9px] text-gray-500 font-medium tracking-tight">Planificar una nueva tarea asignable</span>
+                        <span class="font-bold text-gray-900 dark:text-white text-xs">{{ __('Create Task') }}</span>
+                        <span class="text-[9px] text-gray-500 font-medium tracking-tight">{{ __('teams.plan_new_assignable_task') }}</span>
                     </div>
                 </x-dropdown-link>
 
@@ -54,8 +54,8 @@
                         ✨
                     </div>
                     <div class="flex flex-col">
-                        <span class="font-bold text-gray-900 dark:text-white text-xs">Crear Otra Actividad</span>
-                        <span class="text-[9px] text-gray-500 font-medium tracking-tight">Reunión, nota, recordatorio, decisión, enlace o documento</span>
+                        <span class="font-bold text-gray-900 dark:text-white text-xs">{{ __('Create Other Activity') }}</span>
+                        <span class="text-[9px] text-gray-500 font-medium tracking-tight">{{ __('Meeting, note, reminder, decision, link or document') }}</span>
                     </div>
                 </x-dropdown-link>
 
@@ -67,8 +67,8 @@
                             </svg>
                         </div>
                         <div class="flex flex-col">
-                            <span class="font-bold text-gray-900 dark:text-white text-xs">Cargar Archivo (.json)</span>
-                            <span class="text-[9px] text-gray-500 font-medium tracking-tight">Importar desde almacenamiento local</span>
+                            <span class="font-bold text-gray-900 dark:text-white text-xs">{{ __('teams.load_file') }}</span>
+                            <span class="text-[9px] text-gray-500 font-medium tracking-tight">{{ __('teams.import_from_local_storage') }}</span>
                         </div>
                     </button>
 
@@ -79,8 +79,8 @@
                             </svg>
                         </div>
                         <div class="flex flex-col">
-                            <span class="font-bold text-gray-900 dark:text-white text-xs">Pegar JSON</span>
-                            <span class="text-[9px] text-gray-500 font-medium tracking-tight">Importar desde el portapapeles</span>
+                            <span class="font-bold text-gray-900 dark:text-white text-xs">{{ __('teams.paste_json') }}</span>
+                            <span class="text-[9px] text-gray-500 font-medium tracking-tight">{{ __('teams.import_from_clipboard') }}</span>
                         </div>
                     </button>
                 @endif
@@ -94,7 +94,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
-            <span class="hidden sm:inline">Vaciar Papelera</span>
+            <span class="hidden sm:inline">{{ __('teams.empty_trash') }}</span>
         </button>
     @endif
 
@@ -110,14 +110,14 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M11 4a2 2 0 114 0v1a2 2 0 01-2 2h-1a2 2 0 01-2-2V4zm-5 6a2 2 0 114 0v1a2 2 0 01-2 2H7a2 2 0 01-2-2v-1zm10 0a2 2 0 114 0v1a2 2 0 01-2 2h-1a2 2 0 01-2-2v-1zM6 20a2 2 0 114 0v1a2 2 0 01-2 2H7a2 2 0 01-2-2v-1zm10 0a2 2 0 114 0v1a2 2 0 01-2 2h-1a2 2 0 01-2-2v-1z" />
                         </svg>
-                        <span class="hidden sm:inline">Integraciones</span>
+                        <span class="hidden sm:inline">{{ __('teams.integrations') }}</span>
                         <svg class="h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
                 </x-slot>
 
                 <x-slot name="content">
                     <div class="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-gray-400 border-b border-gray-50 dark:border-gray-700/50 mb-1">
-                        Workspace & Tools
+                        {{ __('Workspace & Tools') }}
                     </div>
                     
                     @if($isGoogleConnected)
@@ -128,8 +128,8 @@
                                 </svg>
                             </div>
                             <div class="flex flex-col">
-                                <span class="font-bold text-gray-900 dark:text-white text-sm">Sincronizar Google</span>
-                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Sincronización total de tareas y calendario</span>
+                                <span class="font-bold text-gray-900 dark:text-white text-sm">{{ __('teams.sync_google') }}</span>
+                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">{{ __('teams.full_sync_tasks_calendar') }}</span>
                             </div>
                         </x-dropdown-link>
                     @endif
@@ -140,11 +140,11 @@
         @if(auth()->user()->is_admin || $team->isCoordinator(auth()->user()))
             <a href="{{ route('teams.storage.index', $team) }}" 
                class="flex items-center gap-1.5 text-[13px] bg-white dark:bg-white/5 border border-amber-200 dark:border-amber-800/50 text-amber-700 dark:text-amber-400 px-5 py-2.5 rounded-full transition-all font-bold hover:bg-amber-50 dark:hover:bg-amber-900/20 active:scale-95 shadow-sm"
-               title="Gestión de espacio y purga de archivos">
+               title="{{ __("html.space_management") }}">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
-                <span class="hidden sm:inline">Mantenimiento</span>
+                <span class="hidden sm:inline">{{ __('teams.maintenance') }}</span>
             </a>
         @endif
     @endif

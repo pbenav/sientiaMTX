@@ -836,7 +836,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ]
         }],
         xaxis: {
-            categories: ['{{ __("metrics.categories.wellness") }}', '{{ __("metrics.categories.productivity") }}', '{{ __("metrics.categories.collaboration") }}', '{{ __("metrics.categories.engagement") }}', '{{ __("metrics.categories.balance") }}'],
+            categories: ['{{ __('metrics.categories.wellness") }}', 'metrics.categories.productivity', 'metrics.categories.collaboration', 'metrics.categories.engagement', '{{ __("metrics.categories.balance') }}'],
             labels: { style: { fontSize: '9px', fontFamily: 'Inter' } },
         },
         colors: ['#14b8a6'],

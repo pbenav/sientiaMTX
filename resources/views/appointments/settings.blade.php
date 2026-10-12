@@ -1,5 +1,5 @@
 <x-app-layout maxWidth="max-w-none">
-@section('title', 'Configuración del Portal de Citas')
+@section('title', __('Settings — Appointments'))
 
 <x-slot name="header">
     <div class="flex items-center justify-between gap-3 flex-wrap">
@@ -16,13 +16,13 @@
                 <svg class="h-4 w-4 text-cyan-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
-                <span class="truncate">Configuración del Portal de Citas</span>
+                <span class="truncate">{{ __('Appointment Portal Settings') }}</span>
             </h1>
         </div>
     </div>
     <div class="mt-2 border-t border-gray-100 dark:border-gray-800 pt-3">
         <x-demo-hint>
-            Aquí se configuran los parámetros globales del portal de citas del equipo: el enlace público al canal ciudadano, la ubicación GPS interactiva, automatismos de notificaciones y la creación de expedientes automáticos vinculados a las reservas.
+            {!! __('Here you configure the global settings for the team\'s appointment portal: the public link to the citizen channel, interactive GPS location, notification automations, and automatic file creation linked to bookings.') !!}
         </x-demo-hint>
     </div>
     @include('appointments.partials.nav')
@@ -44,36 +44,36 @@
             {{-- Identidad pública --}}
             <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
                 <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
-                    <p class="text-xs font-black uppercase tracking-widest text-gray-400">🌐 Identidad Pública</p>
-                    <p class="text-[10px] text-gray-400 mt-0.5">Cómo te verán los ciudadanos en el portal</p>
+                    <p class="text-xs font-black uppercase tracking-widest text-gray-400">🌐 {{ __('Public Identity') }}</p>
+                    <p class="text-[10px] text-gray-400 mt-0.5">{{ __('How citizens will see you on the portal') }}</p>
                 </div>
                 <div class="p-6 space-y-5">
                     <div>
-                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">URL Pública de tu Portal</label>
+                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">{{ __('Public Portal URL') }}</label>
                         <div class="flex items-center gap-0 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 focus-within:border-cyan-500 focus-within:ring-2 focus-within:ring-cyan-500/20">
                             <span class="bg-gray-100 dark:bg-gray-800 px-4 py-3 text-xs font-mono text-gray-400 whitespace-nowrap border-r border-gray-200 dark:border-gray-700">
                                 {{ url('/citas/') }}/
                             </span>
                             <input type="text" name="public_slug" value="{{ old('public_slug', $settings->public_slug ?? '') }}"
-                                   placeholder="Dejar en blanco para autogenerar"
+                                   placeholder="{{ __('Leave blank to auto-generate') }}"
                                    class="flex-1 bg-gray-50 dark:bg-gray-800 px-4 py-3 text-sm font-mono text-gray-900 dark:text-white outline-none">
                         </div>
-                        <p class="text-[10px] text-gray-400 mt-1.5">Solo letras minúsculas, números y guiones. Si lo dejas en blanco, se generará uno automáticamente. Ej: <span class="font-mono text-cyan-600">maria-garcia</span></p>
+                        <p class="text-[10px] text-gray-400 mt-1.5">{{ __('Only lowercase letters, numbers, and hyphens. If left blank, one will be generated automatically. E.g.:') }} <span class="font-mono text-cyan-600">maria-garcia</span></p>
                         @error('public_slug') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Nombre Visible en el Portal</label>
+                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">{{ __('Display Name on Portal') }}</label>
                         <input type="text" name="display_name" value="{{ old('display_name', $settings->display_name ?? '') }}"
-                               placeholder="Ej: María García — Punto de Información"
+                               placeholder="{{ __('e.g. Maria Garcia — Information Desk') }}"
                                class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all">
-                        <p class="text-[10px] text-gray-400 mt-1.5">Si está vacío, se usará tu nombre de usuario registrado</p>
+                        <p class="text-[10px] text-gray-400 mt-1.5">{{ __('If empty, your registered username will be used') }}</p>
                     </div>
 
                     <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
                         <div>
-                            <p class="text-xs font-black text-gray-700 dark:text-gray-300">Aparecer en el Portal Público</p>
-                            <p class="text-[10px] text-gray-400 mt-0.5">Activa para que los ciudadanos puedan encontrarte y solicitar cita</p>
+                            <p class="text-xs font-black text-gray-700 dark:text-gray-300">{{ __('Appear on Public Portal') }}</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">{{ __('Enable so citizens can find you and book an appointment') }}</p>
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer shrink-0">
                             <input type="hidden" name="is_public" value="0">
@@ -86,13 +86,13 @@
                     <div class="pt-4 border-t border-gray-100 dark:border-gray-800 space-y-4"
                          x-data="appointmentSettingsGPS()"
                          x-init="initComponent()">
-                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">📍 Ubicación Geográfica (Coordenadas GPS)</label>
+                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">📍 {{ __('Geographic Location (GPS Coordinates)') }}</label>
 
                         <!-- Buscador por dirección Nominatim -->
                         <div class="relative">
-                            <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Buscador GPS / Dirección</label>
+                            <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5 ml-1">{{ __('GPS / Address Search') }}</label>
                             <div class="relative">
-                                <input type="text" x-model="searchQuery" @keydown.enter.prevent="searchLocation()" placeholder="Ciudad, calle, lugar de interés..." class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-xs text-gray-900 dark:text-white focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 outline-none transition-all">
+                                <input type="text" x-model="searchQuery" @keydown.enter.prevent="searchLocation()" placeholder="{{ __('City, street, landmark...') }}" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-xs text-gray-900 dark:text-white focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 outline-none transition-all">
                                 <button type="button" @click="searchLocation()" class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/30 rounded-lg transition-all border border-transparent">
                                     <svg x-show="!isSearching" xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -121,19 +121,19 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
-                            Autodetectar Mi Ubicación GPS 📡
+                            {{ __('Auto-detect My GPS Location 📡') }}
                         </button>
 
                         <!-- Mapa interactivo Leaflet para arrastrar el pin -->
                         <div class="space-y-1">
-                            <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">O afina la ubicación arrastrando el pin 🗺️</label>
+                            <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">{{ __('Or fine-tune location by dragging the pin 🗺️') }}</label>
                             <div id="settings-picker-map" class="w-full h-44 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 shadow-inner overflow-hidden relative z-10"></div>
                         </div>
 
                         <!-- Inputs de coordenadas -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label for="location_lat" class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">Latitud</label>
+                                <label for="location_lat" class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">{{ __('Latitude') }}</label>
                                 <input type="number" name="location_lat" id="location_lat" step="any" min="-90" max="90"
                                        x-model="latVal"
                                        @input="syncMap()"
@@ -142,7 +142,7 @@
                                 @error('location_lat') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                             </div>
                             <div>
-                                <label for="location_lng" class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">Longitud</label>
+                                <label for="location_lng" class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">{{ __('Longitude') }}</label>
                                 <input type="number" name="location_lng" id="location_lng" step="any" min="-180" max="180"
                                        x-model="lngVal"
                                        @input="syncMap()"
@@ -151,7 +151,7 @@
                                 @error('location_lng') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                             </div>
                         </div>
-                        <p class="text-[10px] text-gray-400 leading-relaxed">Estas coordenadas posicionan tu punto de atención en el mapa público. Si quedan vacías o incompletas, no aparecerás en el mapa del Canal Ciudadano.</p>
+                        <p class="text-[10px] text-gray-400 leading-relaxed">{{ __('These coordinates position your service point on the public map. If left empty or incomplete, you will not appear on the Citizen Channel map.') }}</p>
                     </div>
                 </div>
             </div>
@@ -159,16 +159,16 @@
             {{-- Textos del portal --}}
             <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
                 <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
-                    <p class="text-xs font-black uppercase tracking-widest text-gray-400">✍️ Textos del Portal</p>
+                    <p class="text-xs font-black uppercase tracking-widest text-gray-400">✍️ {{ __('Portal Texts') }}</p>
                 </div>
                 <div class="p-6 space-y-5">
                     <div>
                         <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">
-                            Texto de Bienvenida <span class="text-[9px] font-bold text-cyan-500 normal-case tracking-normal ml-1">Markdown</span>
+                            {{ __('Welcome Text') }} <span class="text-[9px] font-bold text-cyan-500 normal-case tracking-normal ml-1">Markdown</span>
                         </label>
                         <textarea name="welcome_text" rows="4"
                                   class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all font-mono resize-y"
-                                  placeholder="Bienvenida que verán los ciudadanos al entrar a tu página de citas...">{{ old('welcome_text', $settings->welcome_text ?? '') }}</textarea>
+                                  placeholder="{{ __('Welcome message that citizens will see when entering your appointment page...') }}">{{ old('welcome_text', $settings->welcome_text ?? '') }}</textarea>
                     </div>
                 </div>
             </div>
@@ -176,18 +176,18 @@
             {{-- Parámetros de disponibilidad --}}
             <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
                 <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
-                    <p class="text-xs font-black uppercase tracking-widest text-gray-400">⏱ Parámetros por Defecto</p>
-                    <p class="text-[10px] text-gray-400 mt-0.5">Se aplican a servicios que no tengan su propia configuración</p>
+                    <p class="text-xs font-black uppercase tracking-widest text-gray-400">⏱ {{ __('Default Parameters') }}</p>
+                    <p class="text-[10px] text-gray-400 mt-0.5">{{ __('Applies to services that do not have their own configuration') }}</p>
                 </div>
                 <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div>
-                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Tramo mínimo por defecto (min)</label>
+                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">{{ __('Default minimum slot (min)') }}</label>
                         <input type="number" name="default_slot_duration" min="5" max="120" step="5"
                                value="{{ old('default_slot_duration', $settings->default_slot_duration ?? 15) }}"
                                class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all">
                     </div>
                     <div>
-                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Máx. citas por tramo por defecto</label>
+                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">{{ __('Default max appointments per slot') }}</label>
                         <input type="number" name="default_max_per_slot" min="1" max="100"
                                value="{{ old('default_max_per_slot', $settings->default_max_per_slot ?? 1) }}"
                                class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all">
@@ -198,13 +198,13 @@
             {{-- Integraciones y automatismos --}}
             <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
                 <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
-                    <p class="text-xs font-black uppercase tracking-widest text-gray-400">⚙️ Automatismos</p>
+                    <p class="text-xs font-black uppercase tracking-widest text-gray-400">⚙️ {{ __('Automations') }}</p>
                 </div>
                 <div class="p-6 space-y-4">
                     <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
                         <div>
-                            <p class="text-xs font-black text-gray-700 dark:text-gray-300">Crear tarea automáticamente</p>
-                            <p class="text-[10px] text-gray-400 mt-0.5">Genera una tarea en tu gestor por cada cita confirmada</p>
+                            <p class="text-xs font-black text-gray-700 dark:text-gray-300">{{ __('Automatically create task') }}</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">{{ __('Generates a task in your manager for each confirmed appointment') }}</p>
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer shrink-0">
                             <input type="hidden" name="auto_create_task" value="0">
@@ -215,8 +215,8 @@
 
                     <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
                         <div>
-                            <p class="text-xs font-black text-gray-700 dark:text-gray-300">Email de confirmación al ciudadano</p>
-                            <p class="text-[10px] text-gray-400 mt-0.5">Enviar email con el localizador si el ciudadano consintió</p>
+                            <p class="text-xs font-black text-gray-700 dark:text-gray-300">{{ __('Confirmation email to citizen') }}</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">{{ __('Send email with booking code if citizen consented') }}</p>
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer shrink-0">
                             <input type="hidden" name="email_confirmation" value="0">
@@ -226,24 +226,23 @@
                     </div>
 
                     <div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
-                        <label class="block text-xs font-black uppercase tracking-widest text-gray-700 dark:text-gray-300 mb-2">Servidor Jitsi Preferido (Videollamadas)</label>
+                        <label class="block text-xs font-black uppercase tracking-widest text-gray-700 dark:text-gray-300 mb-2">{{ __('Preferred Jitsi Server (Video Calls)') }}</label>
                         <select name="jitsi_domain" class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 rounded-xl px-4 py-3 text-sm font-bold text-gray-900 dark:text-white outline-none transition-all">
-                            <option value="meet.jit.si" {{ old('jitsi_domain', $settings->jitsi_domain ?? 'meet.jit.si') === 'meet.jit.si' ? 'selected' : '' }}>meet.jit.si (Oficial - Límite de 5 min integrado)</option>
-                            <option value="meet.ffmuc.net" {{ old('jitsi_domain', $settings->jitsi_domain ?? 'meet.jit.si') === 'meet.ffmuc.net' ? 'selected' : '' }}>meet.ffmuc.net (Abierto - Sin límite incrustado - Falla en Firefox)</option>
+                            <option value="meet.jit.si" {{ old('jitsi_domain', $settings->jitsi_domain ?? 'meet.jit.si') === 'meet.jit.si' ? 'selected' : '' }}>meet.jit.si ({{ __('Official - 5 min embedded limit') }})</option>
+                            <option value="meet.ffmuc.net" {{ old('jitsi_domain', $settings->jitsi_domain ?? 'meet.jit.si') === 'meet.ffmuc.net' ? 'selected' : '' }}>meet.ffmuc.net ({{ __('Open - No embedded limit - May fail in Firefox') }})</option>
                         </select>
                         <p class="text-[10px] text-gray-400 mt-2">
-                            El servidor <span class="font-bold">meet.jit.si</span> limita las llamadas incrustadas a 5 minutos, pero funciona bien para apertura externa.
-                            El servidor <span class="font-bold">meet.ffmuc.net</span> permite incrustación sin límite, pero Firefox bloquea la ventana por seguridad. ¡Elige el que mejor se adapte a ti!
+                            {{ __('The meet.jit.si server limits embedded calls to 5 min, but works well when opened externally. The meet.ffmuc.net server allows embedding with no time limit, but Firefox blocks the pop-up window for security. Choose the one that best suits your needs.') }}
                         </p>
                     </div>
 
                     {{-- Expediente por defecto --}}
                     @if($expedientes->isNotEmpty())
                         <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Expediente por defecto para las citas</label>
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">{{ __('Default file for appointments') }}</label>
                             <select name="default_expediente_id"
                                     class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all">
-                                <option value="">Sin expediente (solo tarea)</option>
+                                <option value="">{{ __('No file (task only)') }}</option>
                                 @foreach($expedientes as $exp)
                                     <option value="{{ $exp->id }}" {{ old('default_expediente_id', $settings->default_expediente_id ?? '') == $exp->id ? 'selected' : '' }}>
                                         [{{ $exp->code }}] {{ $exp->title }}
@@ -258,7 +257,7 @@
             <div class="flex justify-end">
                 <button type="submit"
                         class="px-8 py-3 text-sm font-black uppercase tracking-widest bg-cyan-600 hover:bg-cyan-500 text-white rounded-2xl shadow-lg shadow-cyan-500/20 transition-all active:scale-95">
-                    Guardar Configuración
+                    {{ __('Save Settings') }}
                 </button>
             </div>
         </form>
@@ -298,7 +297,7 @@
             },
             getUserLocation() {
                 if (!navigator.geolocation) {
-                    alert('Tu navegador no soporta geolocalización directa.');
+                    alert('{{ __('swal.alert_geolocation_not_supported') }}');
                     return;
                 }
                 this.isSearching = true;
@@ -307,12 +306,12 @@
                         this.latVal = pos.coords.latitude;
                         this.lngVal = pos.coords.longitude;
                         this.isSearching = false;
-                        this.searchQuery = 'Ubicación actual detectada 🛰️';
+                        this.searchQuery = '{{ __('Current location detected 🛰️') }}';
                         this.syncMap();
                     },
                     (err) => {
                         this.isSearching = false;
-                        alert('No se pudo obtener la ubicación. Asegúrate de dar permisos.');
+                        alert('{{ __('swal.alert_location_unavailable') }}');
                     },
                     { enableHighAccuracy: true }
                 );
@@ -400,14 +399,14 @@
         <svg style="width:1rem;height:1rem;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
         </svg>
-        <span>Volver</span>
+        <span>{{ __('Back') }}</span>
     </a>
 
     <div style="width:1px;height:1.25rem;background:#e5e7eb;flex-shrink:0"></div>
 
     {{-- Título truncado --}}
     <span style="font-size:0.75rem;font-weight:900;color:#1f2937;max-width:200px;overflow:hidden;text-overflow:ellipsis;" class="dark:text-gray-300">
-        Configuración del Portal
+        {{ __('Portal Settings') }}
     </span>
 
     <div style="width:1px;height:1.25rem;background:#e5e7eb;flex-shrink:0"></div>
@@ -421,7 +420,7 @@
         <svg style="width:1rem;height:1rem;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
         </svg>
-        <span>Guardar Configuración</span>
+        <span>{{ __('Save Settings') }}</span>
     </button>
 </div>
 

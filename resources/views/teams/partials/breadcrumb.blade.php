@@ -1,6 +1,6 @@
 @php
     // Auto-detect current page label from route name
-    $routeName = request()->route()->getName();
+    $routeName = request()->route()?->getName() ?? '';
     $currentPageLabel = match (true) {
         str_contains($routeName, 'tasks.create') => __('tasks.create'),
         str_contains($routeName, 'tasks.edit') => __('tasks.edit'),
@@ -9,14 +9,14 @@
         str_contains($routeName, 'gantt') => __('navigation.gantt'),
         str_contains($routeName, 'members') => __('teams.view_members'),
         str_contains($routeName, 'teams.edit') => __('teams.settings'),
-        str_contains($routeName, 'surveys') => 'Encuestas',
+        str_contains($routeName, 'surveys') => __('Surveys'),
         str_contains($routeName, 'dashboard') => __('teams.eisenhower_matrix'),
-        str_contains($routeName, 'appointments.settings') => 'Configuración de Citas',
-        str_contains($routeName, 'appointments.services') => 'Servicios de Citas',
-        str_contains($routeName, 'appointments.blocks') => 'Bloqueos de Citas',
-        str_contains($routeName, 'appointments.list') => 'Listado de Citas',
-        str_contains($routeName, 'appointments.index') => 'Agenda de Citas',
-        str_contains($routeName, 'appointments.show') => 'Detalle de Cita',
+        str_contains($routeName, 'appointments.settings') => __('Settings') . ' — ' . __('Appointments'),
+        str_contains($routeName, 'appointments.services') => __('Services') . ' — ' . __('Appointments'),
+        str_contains($routeName, 'appointments.blocks') => __('Blocks') . ' — ' . __('Appointments'),
+        str_contains($routeName, 'appointments.list') => __('List') . ' — ' . __('Appointments'),
+        str_contains($routeName, 'appointments.index') => __('Appointments'),
+        str_contains($routeName, 'appointments.show') => __('Appointment Details'),
         default => null,
     };
 @endphp

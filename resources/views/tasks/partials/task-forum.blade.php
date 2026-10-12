@@ -13,21 +13,21 @@
                 const ids = isBulk ? Array.from(taskIds) : [taskIds];
                 
                 Swal.fire({
-                    title: isBulk ? '¿Enviar recordatorio masivo?' : '¿Enviar recordatorio?',
+                    title: isBulk ? '{{ __('Send bulk reminder?') }}' : '{{ __('Send reminder?') }}',
                     html: `
-                        <p class="text-sm text-gray-500 mb-3">${isBulk ? 'Se enviará un recordatorio a todos los miembros seleccionados.' : 'Se enviará un recordatorio al miembro responsable.'}</p>
+                        <p class="text-sm text-gray-500 mb-3">${isBulk ? '{{ __('A reminder will be sent to all selected members.') }}' : '{{ __('A reminder will be sent to the responsible member.') }}'}</p>
                         <div class="text-left space-y-1.5">
-                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Mensaje personalizado (Markdown & menciones @)</label>
-                            <textarea id="nudge-message" class="w-full rounded-2xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:ring-2 focus:ring-violet-500 focus:border-violet-500 min-h-[110px] p-3.5 shadow-inner text-gray-900 dark:text-gray-100 font-sans" placeholder="Escribe un mensaje personalizado del coordinador (opcional)..."></textarea>
-                            <span class="text-[9px] font-bold text-gray-400 dark:text-gray-500 block">Soporta sintaxis Markdown (negrita, cursiva, listas) y menciones a usuarios (@nombre).</span>
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">{{ __('Custom message (Markdown & @mentions)') }}</label>
+                            <textarea id="nudge-message" class="w-full rounded-2xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:ring-2 focus:ring-violet-500 focus:border-violet-500 min-h-[110px] p-3.5 shadow-inner text-gray-900 dark:text-gray-100 font-sans" placeholder="{{ __('Write a custom coordinator message (optional)...') }}"></textarea>
+                            <span class="text-[9px] font-bold text-gray-400 dark:text-gray-500 block">{{ __('Supports Markdown syntax (bold, italics, lists) and user mentions (@name).') }}</span>
                         </div>
                     `,
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonColor: '#7c3aed',
                     cancelButtonColor: '#94a3b8',
-                    confirmButtonText: 'Enviar',
-                    cancelButtonText: 'Cancelar',
+                    confirmButtonText: '{{ __('Send') }}',
+                    cancelButtonText: '{{ __('Cancel') }}',
                     background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
                     color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827',
                     preConfirm: () => {
@@ -470,8 +470,8 @@
                         showCancelButton: true,
                         confirmButtonColor: '#ef4444',
                         cancelButtonColor: '#6b7280',
-                        confirmButtonText: '{{ __('Sí, eliminar') }}',
-                        cancelButtonText: '{{ __('Cancelar') }}',
+                        confirmButtonText: '{{ __('Yes, delete') }}',
+                        cancelButtonText: '{{ __('Cancel') }}',
                         customClass: {
                             popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
                             confirmButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]',

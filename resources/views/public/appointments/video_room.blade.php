@@ -1,6 +1,6 @@
 @extends('layouts.public_appointments')
 
-@section('title', 'Sala de Videoconferencia')
+@section('title', __('Video Conference Room'))
 
 @section('content')
 <div class="h-[80vh] flex flex-col bg-gray-900 rounded-3xl overflow-hidden border border-gray-800 shadow-2xl mt-4 max-w-6xl mx-auto">
@@ -12,8 +12,8 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
             </div>
             <div>
-                <h1 class="text-white font-bold text-sm">{{ __('Videoconferencia') }}: {{ $appointment->service->name }}</h1>
-                <p class="text-xs text-gray-500 font-mono">{{ __('Cita') }}: {{ $appointment->localizador }}</p>
+                <h1 class="text-white font-bold text-sm">{{ __('Video Conference') }}: {{ $appointment->service->name }}</h1>
+                <p class="text-xs text-gray-500 font-mono">{{ __('Appointment') }}: {{ $appointment->localizador }}</p>
             </div>
         </div>
 
@@ -26,14 +26,14 @@
                 <a href="https://{{ $jitsiDomain }}/SientiaMTX-{{ $appointment->localizador }}" target="_blank" id="btn-open-external"
                    class="px-4 py-2 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 shadow-lg shadow-indigo-500/30 animate-pulse">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                    {{ __('Abrir sin límite de tiempo') }}
+                    {{ __('Open without time limit') }}
                 </a>
             @endif
 
             <a href="{{ route('public.appointments.confirm', $appointment->localizador) }}" 
                class="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                {{ __('Salir') }}
+                {{ __('Exit') }}
             </a>
         </div>
     </div>
@@ -44,7 +44,7 @@
             @if($jitsiDomain === 'meet.jit.si')
             <div class="bg-indigo-950/80 text-indigo-200 text-xs text-center py-2 px-4 border-b border-indigo-900 shrink-0 flex items-center justify-center gap-3">
                 <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span><strong>Aviso:</strong> El modo integrado con meet.jit.si se desconectará en 5 minutos. Para sesiones largas, usa el botón superior.</span>
+                <span><strong>{{ __('Notice:') }}</strong> {{ __('Embedded mode disconnects after 5 minutes. Click "Open without time limit" to continue in an external window.') }}</span>
             </div>
             @endif
             <div id="jitsi-container" class="w-full h-full flex-1"></div>
@@ -52,10 +52,10 @@
             <div class="flex items-center justify-center h-full flex-col text-center space-y-6">
                 <svg class="w-24 h-24 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                 <div>
-                    <h2 class="text-2xl font-bold text-white mb-2">{{ __('Sala de Google Meet') }}</h2>
-                    <p class="text-gray-400">{{ __('El profesional iniciará la reunión a través de Google Meet.') }}</p>
+                    <h2 class="text-2xl font-bold text-white mb-2">{{ __('Google Meet Room') }}</h2>
+                    <p class="text-gray-400">{{ __('The professional will start the meeting via Google Meet.') }}</p>
                 </div>
-                <p class="text-sm text-yellow-500 bg-yellow-500/10 px-4 py-2 rounded-xl">{{ __('Nota: En Google Meet, se requiere un enlace proporcionado por el organizador.') }}</p>
+                <p class="text-sm text-yellow-500 bg-yellow-500/10 px-4 py-2 rounded-xl">{{ __('Note: In Google Meet, a link provided by the host is required.') }}</p>
             </div>
         @endif
     </div>
@@ -110,8 +110,8 @@
                     document.getElementById('jitsi-container').innerHTML = 
                         '<div class="flex flex-col items-center justify-center h-full text-gray-500 space-y-4">' +
                         '<svg class="w-16 h-16 text-indigo-500/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>' +
-                        '<p class="text-sm font-bold text-indigo-200">Videollamada movida a una ventana externa</p>' +
-                        '<p class="text-xs">Puedes cerrar esta pantalla con total seguridad.</p>' +
+                        '<p class="text-sm font-bold text-indigo-200">{{ __('Video call moved to an external window') }}</p>' +
+                        '<p class="text-xs">{{ __('You can safely close this screen.') }}</p>' +
                         '</div>';
                 });
             }

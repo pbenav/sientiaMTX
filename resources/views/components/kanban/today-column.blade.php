@@ -14,7 +14,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-violet-500 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    Hoy
+                    {{ __('Today') }}
                 </h3>
                 <span class="px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-lg sm:rounded-xl bg-violet-500/10 text-[10px] sm:text-[11px] font-black text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-700/50 shadow-sm shrink-0">
                     {{ is_array($activities) ? count($activities) : $activities->count() }}

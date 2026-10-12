@@ -33,7 +33,7 @@
         <button type="button" 
             @click="showEmoji = !showEmoji"
             class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-violet-500 opacity-40 group-hover:opacity-100 transition-all focus:outline-none pointer-events-auto"
-            title="Añadir icono">
+            title="{{ __('html.add_icon') }}">
             😊
         </button>
 
@@ -53,7 +53,7 @@
             </div>
             <div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 text-center">
                 <a href="https://emojicopy.com/" target="_blank" class="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors flex items-center justify-center gap-1.5 group/link">
-                    <span>Buscar más emojis</span>
+                    <span>{{ __('Search') }} más emojis</span>
                     <svg class="w-2.5 h-2.5 group-hover/link:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </a>
             </div>

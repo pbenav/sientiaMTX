@@ -31,7 +31,7 @@
 <div class="bg-pink-50 dark:bg-pink-900/10 border border-pink-100 dark:border-pink-800/30 rounded-2xl p-5 shadow-sm">
     <h3 class="text-xs font-black text-pink-600 dark:text-pink-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-        Configuración del Recordatorio
+        {{ __('Settings') }} del Recordatorio
     </h3>
     
     @if(!empty($firingDate))
@@ -116,7 +116,7 @@
 
                 <div class="flex items-center gap-1.5 shrink-0">
                     @if(!empty($guest['notify']))
-                        <span class="px-2 py-0.5 rounded-md text-[9px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/30" title="Notificación por email activa">
+                        <span class="px-2 py-0.5 rounded-md text-[9px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/30" title="{{ __("html.notification_by_email_active") }}">
                             Notificar
                         </span>
                     @endif
@@ -126,7 +126,7 @@
                             <button type="button" 
                                     onclick="resendReminderNotification('{{ $guest['email'] }}', '{{ addslashes($guest['name'] ?? 'Invitado') }}')"
                                     class="p-1.5 text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/30 rounded-lg transition-colors" 
-                                    title="Enviar aviso por correo ahora">
+                                    title="{{ __('Send') }} aviso por correo ahora">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
@@ -143,12 +143,12 @@
 <script>
     function resendReminderNotification(email, name) {
         Swal.fire({
-            title: '¿Enviar recordatorio por correo?',
+            title: '¿{{ __('Send') }} recordatorio por correo?',
             text: 'Se enviará el aviso con los detalles del recordatorio a ' + (name ? name + ' (' + email + ')' : email),
             icon: 'question',
             showCancelButton: true,
             confirmButtonText: 'Sí, enviar',
-            cancelButtonText: 'Cancelar',
+            cancelButtonText: '{{ __("Cancel") }}',
             confirmButtonColor: '#ec4899',
         }).then((result) => {
             if (result.isConfirmed) {
@@ -199,7 +199,7 @@
             </h3>
             <button onclick="printSection('Descripción', 'description-content')" 
                     class="p-1.5 bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-xl transition-all border border-transparent hover:border-violet-100 dark:hover:border-violet-800 shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest"
-                    title="Imprimir descripción">
+                    title="{{ __("html.print_description") }}">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                 </svg>
@@ -221,7 +221,7 @@
             </h3>
             <button onclick="printSection('Observaciones', 'observations-content')" 
                     class="p-1.5 bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-xl transition-all border border-transparent hover:border-violet-100 dark:hover:border-violet-800 shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest"
-                    title="Imprimir observaciones">
+                    title="{{ __("html.print_observations") }}">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                 </svg>

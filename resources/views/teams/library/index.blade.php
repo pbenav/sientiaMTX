@@ -1,12 +1,12 @@
 <x-app-layout>
-    @section('title', 'Biblioteca de Documentos — ' . $team->name)
+    @section('title', __('Biblioteca') . ' de Documentos — ' . $team->name)
 
     <x-slot name="header">
         <div class="flex items-center justify-between gap-3 flex-wrap">
             <div class="flex items-center gap-2 min-w-0">
                 <a href="{{ route('teams.dashboard', $team) }}"
                     class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0"
-                    title="Volver al escritorio">
+                    title="{{ __('Back') }} al escritorio">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -18,7 +18,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                     </svg>
-                    <span class="truncate">Biblioteca</span>
+                    <span class="truncate">{{ __('Biblioteca') }}</span>
                 </h1>
             </div>
             <div class="flex items-center gap-2 shrink-0">
@@ -28,7 +28,7 @@
 
         <div class="mt-2">
             <x-demo-hint>
-                La Biblioteca de Documentos centraliza el conocimiento y la wiki del equipo. Permite consultar, categorizar y editar en vivo documentos ofimáticos (mediante OnlyOffice) y notas de referencia, manteniendo un índice jerárquico accesible para todos los colaboradores.
+                La {{ __('Biblioteca') }} de Documentos centraliza el conocimiento y la wiki del equipo. Permite consultar, categorizar y editar en vivo documentos ofimáticos (mediante OnlyOffice) y notas de referencia, manteniendo un índice jerárquico accesible para todos los colaboradores.
             </x-demo-hint>
         </div>
 
@@ -49,13 +49,13 @@
                     </h3>
                     <form action="{{ route('teams.library', $team) }}" method="GET" class="space-y-3">
                         <div class="relative">
-                            <input type="text" name="q" value="{{ request('q') }}" placeholder="Buscar en la wiki..."
+                            <input type="text" name="q" value="{{ request('q') }}" placeholder="{{ __('Search') }} en la wiki..."
                                    class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 pl-8 pr-8 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all placeholder-gray-400">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-2.5 top-2.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                             @if(request('q'))
-                            <a href="{{ request()->fullUrlWithQuery(['q' => '']) }}" class="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" title="Limpiar búsqueda">
+                            <a href="{{ request()->fullUrlWithQuery(['q' => '']) }}" class="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" title="{{ __("html.clear_search") }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
@@ -64,7 +64,7 @@
                         </div>
                         <div class="flex gap-2">
                             <select name="status" class="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 px-2.5 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all">
-                                <option value="">Todos los estados</option>
+                                <option value="">{{ __('All Statuses') }}</option>
                                 @php
                                     $docStatuses = \App\Models\Activities\DocumentActivity::STATUSES;
                                 @endphp
@@ -76,9 +76,9 @@
                             </select>
                         </div>
                         <div class="flex gap-2">
-                            <input type="date" name="date_from" value="{{ request('date_from', $dateFrom) }}" placeholder="Desde"
+                            <input type="date" name="date_from" value="{{ request('date_from', $dateFrom) }}" placeholder="{{ __('From') }}"
                                    class="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 px-2.5 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all text-gray-600 dark:text-gray-400">
-                            <input type="date" name="date_to" value="{{ request('date_to', $dateTo) }}" placeholder="Hasta"
+                            <input type="date" name="date_to" value="{{ request('date_to', $dateTo) }}" placeholder="{{ __('To') }}"
                                    class="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 px-2.5 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all text-gray-600 dark:text-gray-400">
                         </div>
                         @if(request('doc'))
@@ -86,9 +86,9 @@
                         @endif
                         <div class="flex gap-2">
                             <button type="submit" class="flex-1 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold py-2 rounded-xl transition-colors">
-                                Filtrar
+                                {{ __('Filter') }}
                             </button>
-                            <a href="{{ route('teams.library', $team) }}" class="flex items-center justify-center px-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs font-bold rounded-xl transition-colors" title="Resetear filtros">
+                            <a href="{{ route('teams.library', $team) }}" class="flex items-center justify-center px-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs font-bold rounded-xl transition-colors" title="{{ __('Reset filters') }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                 </svg>
@@ -96,7 +96,7 @@
                         </div>
                         @if(request('status') || request('q'))
                             <a href="{{ route('teams.library', $team) }}" class="block w-full text-center text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 py-1 transition-colors">
-                                Limpiar filtros
+                                {{ __('Clear filters') }}
                             </a>
                         @endif
                     </form>
@@ -119,7 +119,7 @@
                          </a>
                     @empty
                         <div class="text-center p-6">
-                            <span class="text-xs text-gray-400">No hay documentos en la biblioteca.</span>
+                            <span class="text-xs text-gray-400">{{ __('library.no_documents') }}</span>
                         </div>
                     @endforelse
                 </div>
@@ -194,7 +194,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                             </svg>
-                            Ver Actividad
+                            {{ __('View') }} Actividad
                         </a>
                     </div>
 
@@ -303,8 +303,8 @@
                                             </svg>
                                         </div>
                                         <div class="min-w-0">
-                                            <h3 class="text-sm font-bold text-gray-800 dark:text-white truncate">Libro: Estructura del Documento</h3>
-                                            <p class="text-[10px] text-gray-400 font-medium uppercase tracking-wide">{{ count($chapters) }} Capítulos</p>
+                                            <h3 class="text-sm font-bold text-gray-800 dark:text-white truncate">{{ __('Book: Document Structure') }}</h3>
+                                            <p class="text-[10px] text-gray-400 font-medium uppercase tracking-wide">{{ count($chapters) }} {{ __('Chapters') }}</p>
                                         </div>
                                     </div>
                                     <div class="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto">
@@ -312,8 +312,8 @@
                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                                 <svg class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
                                             </div>
-                                            <input type="text" x-model="search" @keydown.enter.prevent="nextMatch()" @keydown.shift.enter.prevent="prevMatch()" class="block w-full pl-9 pr-9 py-2 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 sm:text-xs transition-colors" placeholder="Buscar en el documento...">
-                                            <button type="button" x-show="search.length > 0" @click="search = ''; totalMatches = 0;" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" style="display: none;" title="Limpiar búsqueda">
+                                            <input type="text" x-model="search" @keydown.enter.prevent="nextMatch()" @keydown.shift.enter.prevent="prevMatch()" class="block w-full pl-9 pr-9 py-2 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 sm:text-xs transition-colors" placeholder="{{ __('Search in document...') }}">
+                                            <button type="button" x-show="search.length > 0" @click="search = ''; totalMatches = 0;" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" style="display: none;" title="{{ __("html.clear_search") }}">
                                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                                             </button>
                                         </div>
@@ -328,12 +328,12 @@
                                                     <span class="text-rose-500 font-semibold">0/0</span>
                                                 </template>
                                             </span>
-                                            <button type="button" @click="prevMatch()" :disabled="totalMatches <= 1" class="p-1 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 disabled:opacity-30 disabled:hover:text-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Ocurrencia anterior (Shift+Enter)">
+                                            <button type="button" @click="prevMatch()" :disabled="totalMatches <= 1" class="p-1 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 disabled:opacity-30 disabled:hover:text-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="{{ __("html.previous_occurrence") }} (Shift+Enter)">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
                                                 </svg>
                                             </button>
-                                            <button type="button" @click="nextMatch()" :disabled="totalMatches <= 1" class="p-1 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 disabled:opacity-30 disabled:hover:text-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Siguiente ocurrencia (Enter)">
+                                            <button type="button" @click="nextMatch()" :disabled="totalMatches <= 1" class="p-1 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 disabled:opacity-30 disabled:hover:text-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="{{ __("html.next_occurrence") }} (Enter)">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                                                 </svg>
@@ -344,7 +344,7 @@
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                                             </svg>
-                                            <span class="whitespace-nowrap">Imprimir</span>
+                                            <span class="whitespace-nowrap">{{ __('Imprimir') }}</span>
                                         </button>
                                     </div>
                                 </div>
@@ -439,13 +439,13 @@
                             </div>
                         @else
                             @if(!$hasNotes)
-                                <p class="text-gray-400 italic">No hay notas directas ni capítulos en la wiki para este documento. Revisa los archivos adjuntos.</p>
+                                <p class="text-gray-400 italic">{{ __('No direct notes or chapters in the wiki for this document. Check the attached files.') }}</p>
                             @endif
                         @endif
 
                         @if($activeDocument->attachments->isNotEmpty())
                             <div class="mt-8 pt-8 border-t border-gray-100 dark:border-gray-800">
-                                <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4">Archivos Adjuntos (OnlyOffice)</h3>
+                                <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4">{{ __('Attached Files') }} (OnlyOffice)</h3>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                     @foreach($activeDocument->attachments as $attachment)
                                         <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-4 flex items-center gap-3 bg-gray-50 dark:bg-gray-800/50">
@@ -478,8 +478,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                         </svg>
                     </div>
-                    <h2 class="text-xl font-black text-gray-900 dark:text-white mb-2">Biblioteca Vacía</h2>
-                    <p class="text-sm text-gray-500 max-w-md">No tienes documentos registrados en este equipo. Crea actividades de tipo "Documento" y aparecerán organizadas aquí a modo de Wiki interna.</p>
+                    <h2 class="text-xl font-black text-gray-900 dark:text-white mb-2">{{ __('Empty Library') }}</h2>
+                    <p class="text-sm text-gray-500 max-w-md">{{ __('You have no documents registered in this team. Create "Document" type activities and they will appear organized here as an internal Wiki.') }}</p>
                 </div>
             @endif
         </div>

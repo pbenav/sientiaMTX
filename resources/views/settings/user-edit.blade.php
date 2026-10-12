@@ -17,7 +17,7 @@
                         </a> / {{ __('Edit User') }}: {{ $user->name }}
                     </h1>
                     <x-demo-hint>
-                        Panel avanzado de perfil. Permite a los administradores modificar datos de acceso, forzar cuotas, habilitar integraciones Premium (como WhatsApp Personal) o definir los turnos horarios del usuario.
+                        {{ __('Advanced profile panel. Allows administrators to modify access credentials, enforce quotas, enable Premium integrations (such as Personal WhatsApp), or define the user\'s work shifts.') }}
                     </x-demo-hint>
                 </div>
             </div>
@@ -107,7 +107,7 @@
                             </div>
 
                             <div>
-                                <x-input-label for="invitations_left" :value="__('Invitaciones Disponibles')" />
+                                <x-input-label for="invitations_left" :value="__('Available Invitations')" />
                                 <x-text-input id="invitations_left" name="invitations_left" type="number" class="mt-1 block w-full"
                                     :value="old('invitations_left', $user->invitations_left ?? 0)" required min="0" />
                                 <x-input-error class="mt-2" :messages="$errors->get('invitations_left')" />
@@ -120,10 +120,10 @@
                                            {{ old('whatsapp_personal_allowed', ($user->notification_settings['whatsapp_personal_allowed'] ?? false)) ? 'checked' : '' }}>
                                     <div class="ml-3">
                                         <span class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
-                                            <span>Permitir WhatsApp Personal (Premium)</span>
+                                            <span>{{ __('user-edit.allow_personal_whatsapp') }}</span>
                                             <span class="px-2 py-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[8px] font-black uppercase rounded-full">Premium</span>
                                         </span>
-                                        <span class="block text-[10px] text-gray-400 font-medium">Habilita a este usuario la capacidad de vincular su propio número de WhatsApp móvil privado de forma aislada en su perfil</span>
+                                        <span class="block text-[10px] text-gray-400 font-medium">{{ __('Allows this user to link their own private mobile WhatsApp number in isolation within their profile') }}</span>
                                     </div>
                                 </label>
                             </div>
@@ -138,13 +138,21 @@
                                         </svg>
                                     </span>
                                     <div>
-                                        <h3 class="text-xs font-black uppercase tracking-widest text-violet-600 dark:text-violet-400">Horario de Trabajo Diario</h3>
-                                        <span class="text-[9px] text-gray-400 font-medium block uppercase tracking-wider mt-0.5">Define los turnos de trabajo del usuario</span>
+                                        <h3 class="text-xs font-black uppercase tracking-widest text-violet-600 dark:text-violet-400">{{ __('Daily Work Schedule') }}</h3>
+                                        <span class="text-[9px] text-gray-400 font-medium block uppercase tracking-wider mt-0.5">{{ __('Define user work shifts') }}</span>
                                     </div>
                                 </div>
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-gray-100 dark:border-gray-800/50" x-data="{ 
-                                    days: {mon: 'L', tue: 'M', wed: 'X', thu: 'J', fri: 'V', sat: 'S', sun: 'D'},
+                                    days: {
+                                        mon: '{{ app()->getLocale() === "es" ? "L" : "M" }}',
+                                        tue: '{{ app()->getLocale() === "es" ? "M" : "T" }}',
+                                        wed: '{{ app()->getLocale() === "es" ? "X" : "W" }}',
+                                        thu: '{{ app()->getLocale() === "es" ? "J" : "T" }}',
+                                        fri: '{{ app()->getLocale() === "es" ? "V" : "F" }}',
+                                        sat: '{{ app()->getLocale() === "es" ? "S" : "S" }}',
+                                        sun: '{{ app()->getLocale() === "es" ? "D" : "S" }}'
+                                    },
                                     shift1Days: {{ json_encode($user->work_days_1 ?? []) }},
                                     shift2Days: {{ json_encode($user->work_days_2 ?? []) }},
                                     shift1Enabled: {{ ($user->work_days_1 && count($user->work_days_1) > 0) ? 'true' : 'false' }},
@@ -170,7 +178,7 @@
                                         <div class="flex items-center justify-between">
                                             <h4 class="text-[10px] font-black uppercase tracking-wider text-gray-400 dark:text-gray-500 flex items-center gap-1.5">
                                                 <span class="w-2 h-2 rounded-full" :class="shift1Enabled ? 'bg-amber-500' : 'bg-gray-300 dark:bg-gray-700'"></span>
-                                                Primer Turno / Mañana
+                                                {{ __('First Shift / Morning') }}
                                             </h4>
                                             <label class="relative inline-flex items-center cursor-pointer">
                                                 <input type="checkbox" x-model="shift1Enabled" class="sr-only peer">
@@ -181,19 +189,19 @@
                                         <div x-show="shift1Enabled" x-collapse>
                                             <div class="grid grid-cols-2 gap-3 mb-4">
                                                 <div>
-                                                    <x-input-label for="work_start_time_1" value="Entrada" class="text-[9px] font-bold uppercase text-gray-400" />
+                                                    <x-input-label for="work_start_time_1" :value="__('Clock In')" class="text-[9px] font-bold uppercase text-gray-400" />
                                                     <x-text-input id="work_start_time_1" name="work_start_time_1" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" :value="old('work_start_time_1', $user->work_start_time_1 ?? '08:00')" />
                                                     <x-input-error class="mt-2" :messages="$errors->get('work_start_time_1')" />
                                                 </div>
                                                 <div>
-                                                    <x-input-label for="work_end_time_1" value="Salida" class="text-[9px] font-bold uppercase text-gray-400" />
+                                                    <x-input-label for="work_end_time_1" :value="__('Clock Out')" class="text-[9px] font-bold uppercase text-gray-400" />
                                                     <x-text-input id="work_end_time_1" name="work_end_time_1" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" :value="old('work_end_time_1', $user->work_end_time_1 ?? '14:00')" />
                                                     <x-input-error class="mt-2" :messages="$errors->get('work_end_time_1')" />
                                                 </div>
                                             </div>
 
                                             <div class="space-y-2">
-                                                <span class="text-[9px] font-bold uppercase text-gray-400 block">Días de actividad</span>
+                                                <span class="text-[9px] font-bold uppercase text-gray-400 block">{{ __('Active days') }}</span>
                                                 <div class="flex flex-wrap gap-1.5">
                                                     <template x-for="(label, key) in days" :key="key">
                                                         <button type="button" @click="toggleDay(1, key)" 
@@ -220,7 +228,7 @@
                                         <div class="flex items-center justify-between">
                                             <h4 class="text-[10px] font-black uppercase tracking-wider text-gray-400 dark:text-gray-500 flex items-center gap-1.5">
                                                 <span class="w-2 h-2 rounded-full" :class="shift2Enabled ? 'bg-indigo-500' : 'bg-gray-300 dark:bg-gray-700'"></span>
-                                                Segundo Turno / Tarde
+                                                {{ __('Second Shift / Afternoon') }}
                                             </h4>
                                             <label class="relative inline-flex items-center cursor-pointer">
                                                 <input type="checkbox" x-model="shift2Enabled" class="sr-only peer">
@@ -231,19 +239,19 @@
                                         <div x-show="shift2Enabled" x-collapse>
                                             <div class="grid grid-cols-2 gap-3 mb-4">
                                                 <div>
-                                                    <x-input-label for="work_start_time_2" value="Entrada" class="text-[9px] font-bold uppercase text-gray-400" />
+                                                    <x-input-label for="work_start_time_2" :value="__('Clock In')" class="text-[9px] font-bold uppercase text-gray-400" />
                                                     <x-text-input id="work_start_time_2" name="work_start_time_2" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" :value="old('work_start_time_2', $user->work_start_time_2 ?? '15:00')" />
                                                     <x-input-error class="mt-2" :messages="$errors->get('work_start_time_2')" />
                                                 </div>
                                                 <div>
-                                                    <x-input-label for="work_end_time_2" value="Salida" class="text-[9px] font-bold uppercase text-gray-400" />
+                                                    <x-input-label for="work_end_time_2" :value="__('Clock Out')" class="text-[9px] font-bold uppercase text-gray-400" />
                                                     <x-text-input id="work_end_time_2" name="work_end_time_2" type="time" class="mt-1 block w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm" :value="old('work_end_time_2', $user->work_end_time_2 ?? '18:00')" />
                                                     <x-input-error class="mt-2" :messages="$errors->get('work_end_time_2')" />
                                                 </div>
                                             </div>
 
                                             <div class="space-y-2">
-                                                <span class="text-[9px] font-bold uppercase text-gray-400 block">Días de actividad</span>
+                                                <span class="text-[9px] font-bold uppercase text-gray-400 block">{{ __('Active days') }}</span>
                                                 <div class="flex flex-wrap gap-1.5">
                                                     <template x-for="(label, key) in days" :key="key">
                                                         <button type="button" @click="toggleDay(2, key)" 

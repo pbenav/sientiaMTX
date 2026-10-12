@@ -44,7 +44,7 @@
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" :d="note.is_minimized ? 'M12 4v16m8-8H4' : 'M20 12H4'" /></svg>
                         </button>
 
-                        <button @click="sendToAi(note)" class="p-1 hover:bg-indigo-500/20 hover:text-indigo-700 rounded-md transition-colors text-black/60" title="Enviar a Ax.ia">
+                        <button @click="sendToAi(note)" class="p-1 hover:bg-indigo-500/20 hover:text-indigo-700 rounded-md transition-colors text-black/60" title="{{ __('Send') }} a Ax.ia">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                         </button>
                         <button @click="soundEnabled = !soundEnabled; localStorage.setItem('notes_sound_enabled', soundEnabled ? '1' : '0')" 
@@ -57,7 +57,7 @@
                         <button @click.stop="hideNote(note)" class="p-1 hover:bg-black/10 rounded-md transition-colors text-black/60" title="Ocultar">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                         </button>
-                        <button @click.stop="deleteNote(note)" class="p-1 hover:bg-red-500/20 hover:text-red-700 rounded-md transition-colors text-black/60" title="Eliminar">
+                        <button @click.stop="deleteNote(note)" class="p-1 hover:bg-red-500/20 hover:text-red-700 rounded-md transition-colors text-black/60" title="{{ __('Delete') }}">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
                     </div>
@@ -74,14 +74,14 @@
                             @input.debounce.1000ms="updateNote(note)"
                             @paste="handlePaste($event, note)"
                             class="flex-1 w-full bg-transparent border-none focus:ring-0 p-0 text-sm text-black/80 font-medium leading-relaxed resize-none placeholder:text-black/20"
-                            placeholder="Escribe algo aquí... (Markdown soportado)"
+                            placeholder="{{ __('Write something here... (Markdown supported)') }}"
                         ></textarea>
                         
                         <div 
                             x-show="note.is_preview"
                             @click="note.is_preview = false; $nextTick(() => { $refs.textarea.focus(); })"
                             class="flex-1 w-full prose prose-sm max-w-none text-black/80 font-medium leading-relaxed overflow-y-auto select-text prose-p:my-1 prose-headings:my-2 prose-li:my-0 prose-ul:my-1 cursor-text"
-                            x-html="renderMarkdown(note.content || '*Escribe algo aquí...*')"
+                            x-html="renderMarkdown(note.content || '*{{ __('Write something here...') }}*')"
                         ></div>
                     </div>
 
@@ -104,13 +104,13 @@
                                                     <button @click.stop="transcribe(note, att)" 
                                                             :disabled="att.transcribing"
                                                             class="p-2 hover:bg-indigo-600 hover:text-white rounded-lg transition-all text-indigo-600/60 bg-indigo-50/50" 
-                                                            title="Transcribir con Ax.ia">
+                                                            title="{{ __('Transcribe with Ax.ia') }}">
                                                         <svg x-show="!att.transcribing" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 5h12M9 3v2m1.042 11.35a.75.75 0 001.251-.248L12 12l.707 2.102a.75.75 0 001.251.248l3-3a.75.75 0 10-1.06-1.06l-2.189 2.189-.504-1.511a.75.75 0 00-1.41 0l-.504 1.511-2.189-2.189a.75.75 0 00-1.06 1.06l3 3z" /></svg>
                                                         <svg x-show="att.transcribing" class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" stroke-width="2" stroke-linecap="round"/></svg>
                                                     </button>
                                                     <button @click="removeAttachment(note, att)" 
                                                             class="p-1.5 hover:bg-red-600 hover:text-white rounded-lg transition-all text-black/40" 
-                                                            title="Eliminar audio">
+                                                            title="{{ __('Delete Audio') }}">
                                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
                                                     </button>
                                                 </div>
@@ -120,7 +120,7 @@
                                             <!-- Transcribing indicator -->
                                             <div x-show="att.transcribing" class="flex items-center gap-2 text-[9px] font-black uppercase tracking-tighter text-indigo-600 animate-pulse bg-indigo-50/80 px-2.5 py-1 rounded-full w-max border border-indigo-100">
                                                 <span class="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-ping"></span>
-                                                Transcribiendo...
+                                                {{ __('Transcribing...') }}
                                             </div>
                                         </div>
                                     </template>
@@ -147,7 +147,7 @@
                                     class="p-1.5 hover:bg-black/5 rounded-full transition-all duration-300 relative group"
                                     :class="isRecording && recordingNoteId === note.id ? 'text-red-600 bg-red-50' : 'text-black/60 hover:text-indigo-600'"
                                     :disabled="isRecording && recordingNoteId !== note.id"
-                                    :title="isRecording && recordingNoteId === note.id ? 'Detener grabación' : 'Grabar audio'">
+                                     :title="isRecording && recordingNoteId === note.id ? __('html.stop_recording') : __('html.record_audio')">
                                 
                                 <!-- Icono Micro (normal) -->
                                 <svg x-show="!(isRecording && recordingNoteId === note.id)" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -162,7 +162,7 @@
                                 <!-- Tooltip dinámico -->
                                 <span x-show="isRecording && recordingNoteId === note.id" class="absolute right-full mr-2 px-2 py-1 bg-red-600 text-white text-[8px] font-black rounded-md uppercase tracking-widest whitespace-nowrap animate-pulse flex items-center gap-1 shadow-lg">
                                     <span class="w-1.5 h-1.5 bg-white rounded-full animate-ping"></span>
-                                    Grabando <span class="ml-1 opacity-80 font-bold" x-text="`${recordingTime}s`"></span>
+                                    {{ __('Recording') }} <span class="ml-1 opacity-80 font-bold" x-text="`${recordingTime}s`"></span>
                                 </span>
                             </button>
                         </div>
@@ -192,7 +192,7 @@
         :style="`right: ${buttonPos.right}px; bottom: ${buttonPos.bottom}px; touch-action: none;`"
     >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-        <span x-text="notes.length"></span> Notas
+        <span x-text="notes.length"></span> {{ __('Notes') }}
     </button>
 </div>
 
@@ -373,14 +373,14 @@
         async deleteNote(note) {
             const isDark = document.documentElement.classList.contains('dark');
             const result = await Swal.fire({
-                title: '<span class="text-xs font-black uppercase tracking-widest text-red-600">¿Eliminar Nota?</span>',
-                text: "Esta acción no se puede deshacer.",
+                title: '<span class="text-xs font-black uppercase tracking-widest text-red-600">{{ __('Delete Note?') }}</span>',
+                text: "{{ __("This action cannot be undone") }}.",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
                 cancelButtonColor: isDark ? '#1e293b' : '#94a3b8',
-                confirmButtonText: 'Sí, eliminar',
-                cancelButtonText: 'Cancelar',
+                confirmButtonText: '{{ __('Yes, delete') }}',
+                cancelButtonText: '{{ __("Cancel") }}',
                 background: isDark ? '#0f172a' : '#ffffff',
                 color: isDark ? '#f1f5f9' : '#1e293b',
                 customClass: { popup: 'rounded-[2rem] border-none shadow-2xl' }
@@ -711,8 +711,8 @@
             if (!att.id) {
                 Swal.fire({
                     icon: 'info',
-                    title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Actualización Necesaria</span>',
-                    text: 'Este audio necesita sincronizarse. Por favor, refresca la página (F5) y vuelve a intentarlo.',
+                    title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">{{ __('Update Required') }}</span>',
+                    text: '{{ __('This audio needs synchronization. Please refresh the page (F5) and try again.') }}',
                     background: isDark ? '#0f172a' : '#ffffff',
                     color: isDark ? '#f1f5f9' : '#1e293b',
                     customClass: { popup: 'rounded-[2rem]' }
@@ -735,7 +735,7 @@
             });
             toast.fire({
                 icon: 'info',
-                title: 'Ax.ia está escuchando su audio...'
+                title: '{{ __('Ax.ia is listening to your audio...') }}'
             });
             
             try {
@@ -751,7 +751,7 @@
                 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.message || 'Error del servidor');
+                    throw new Error(errorData.message || '{{ __('Server error') }}');
                 }
 
                 const data = await response.json();
@@ -765,14 +765,14 @@
                     att.transcription = data.transcription;
                     
                     const result = await Swal.fire({
-                        title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Transcripción Lista</span>',
-                        html: `<div class="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl text-left italic text-sm text-gray-700 dark:text-gray-300 border border-indigo-100 dark:border-indigo-800/30">${data.transcription}</div><p class="mt-4 text-[10px] font-black text-gray-500 text-center uppercase tracking-widest">¿Qué quieres hacer?</p>`,
+                        title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">{{ __('Transcription Ready') }}</span>',
+                        html: `<div class="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl text-left italic text-sm text-gray-700 dark:text-gray-300 border border-indigo-100 dark:border-indigo-800/30">${data.transcription}</div><p class="mt-4 text-[10px] font-black text-gray-500 text-center uppercase tracking-widest">{{ __('What would you like to do?') }}</p>`,
                         icon: 'success',
                         showCancelButton: true,
                         showDenyButton: true,
-                        confirmButtonText: 'Añadir y Mantener',
-                        denyButtonText: 'Añadir y BORRAR AUDIO',
-                        cancelButtonText: 'Cerrar',
+                        confirmButtonText: '{{ __('Add and Keep') }}',
+                        denyButtonText: '{{ __('Add and DELETE AUDIO') }}',
+                        cancelButtonText: '{{ __('Close') }}',
                         confirmButtonColor: '#4f46e5',
                         denyButtonColor: '#ef4444',
                         background: isDark ? '#0f172a' : '#ffffff',
@@ -781,7 +781,7 @@
                     });
 
                     if (result.isConfirmed || result.isDenied) {
-                        note.content = (note.content || '') + '\n\n[Transcripción]: ' + data.transcription;
+                        note.content = (note.content || '') + '\n\n[{{ __('Transcription') }}]: ' + data.transcription;
                         await this.updateNote(note);
                         
                         if (result.isDenied) {
@@ -790,14 +790,14 @@
                         }
                     }
                 } else {
-                    Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo obtener la transcripción.', background: isDark ? '#0f172a' : '#ffffff' });
+                    Swal.fire({ icon: 'error', title: '{{ __('Error') }}', text: '{{ __('Could not retrieve transcription.') }}', background: isDark ? '#0f172a' : '#ffffff' });
                 }
             } catch (e) {
                 console.error('Transcription error:', e);
                 Swal.fire({ 
                     icon: 'error', 
-                    title: 'Fallo en Transcripción', 
-                    text: e.message || 'Error de conexión',
+                    title: '{{ __('Transcription Failed') }}', 
+                    text: e.message || '{{ __('Connection error') }}',
                     background: isDark ? '#0f172a' : '#ffffff',
                     color: isDark ? '#f1f5f9' : '#1e293b'
                 });
@@ -809,14 +809,14 @@
         async removeAttachment(note, att) {
             const isDark = document.documentElement.classList.contains('dark');
             const result = await Swal.fire({
-                title: '<span class="text-xs font-black uppercase tracking-widest text-red-600">¿Eliminar Audio?</span>',
-                text: "¿Estás seguro de que quieres borrar este archivo de audio?",
+                title: '<span class="text-xs font-black uppercase tracking-widest text-red-600">{{ __('Delete Audio?') }}</span>',
+                text: "{{ __('Are you sure you want to delete this audio file?') }}",
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
                 cancelButtonColor: isDark ? '#1e293b' : '#94a3b8',
-                confirmButtonText: 'Sí, borrar',
-                cancelButtonText: 'Cancelar',
+                confirmButtonText: '{{ __('Yes, delete') }}',
+                cancelButtonText: '{{ __("Cancel") }}',
                 background: isDark ? '#0f172a' : '#ffffff',
                 color: isDark ? '#f1f5f9' : '#1e293b',
                 customClass: { popup: 'rounded-[2rem]' }

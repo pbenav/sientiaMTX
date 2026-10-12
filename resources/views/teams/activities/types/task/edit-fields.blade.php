@@ -119,7 +119,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        {{ __('Patrón Mensual') }}
+                        {{ __('Monthly Pattern') }}
                     </label>
                     <div class="flex flex-col sm:flex-row gap-4">
                         <label class="relative flex items-center gap-3 cursor-pointer group">
@@ -128,7 +128,7 @@
                                 <div class="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-violet-500 transition-all"></div>
                                 <div class="absolute w-2 h-2 rounded-full bg-violet-500 scale-0 peer-checked:scale-100 transition-all"></div>
                             </div>
-                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('El mismo día del mes') }}</span>
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('Same day of the month') }}</span>
                         </label>
                         <label class="relative flex items-center gap-3 cursor-pointer group">
                             <div class="relative flex items-center justify-center">
@@ -136,29 +136,29 @@
                                 <div class="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-violet-500 transition-all"></div>
                                 <div class="absolute w-2 h-2 rounded-full bg-violet-500 scale-0 peer-checked:scale-100 transition-all"></div>
                             </div>
-                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('Un día específico de la semana') }}</span>
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('A specific day of the week') }}</span>
                         </label>
                     </div>
                     
                     <div x-show="monthlyType === 'ordinal'" class="flex items-center gap-2 mt-3" x-transition>
-                        <span class="text-sm text-gray-500">{{ __('El') }}</span>
+                        <span class="text-sm text-gray-500">{{ __('The') }}</span>
                         <select name="autoprogram_settings[monthly_ordinal]" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-3 py-1.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
-                            <option value="first" {{ old('autoprogram_settings.monthly_ordinal', $apSettings['monthly_ordinal'] ?? '') === 'first' ? 'selected' : '' }}>{{ __('Primer') }}</option>
-                            <option value="second" {{ old('autoprogram_settings.monthly_ordinal', $apSettings['monthly_ordinal'] ?? '') === 'second' ? 'selected' : '' }}>{{ __('Segundo') }}</option>
-                            <option value="third" {{ old('autoprogram_settings.monthly_ordinal', $apSettings['monthly_ordinal'] ?? '') === 'third' ? 'selected' : '' }}>{{ __('Tercer') }}</option>
-                            <option value="fourth" {{ old('autoprogram_settings.monthly_ordinal', $apSettings['monthly_ordinal'] ?? '') === 'fourth' ? 'selected' : '' }}>{{ __('Cuarto') }}</option>
-                            <option value="last" {{ old('autoprogram_settings.monthly_ordinal', $apSettings['monthly_ordinal'] ?? '') === 'last' ? 'selected' : '' }}>{{ __('Último') }}</option>
+                            <option value="first" {{ old('autoprogram_settings.monthly_ordinal', $apSettings['monthly_ordinal'] ?? '') === 'first' ? 'selected' : '' }}>{{ __('First') }}</option>
+                            <option value="second" {{ old('autoprogram_settings.monthly_ordinal', $apSettings['monthly_ordinal'] ?? '') === 'second' ? 'selected' : '' }}>{{ __('Second') }}</option>
+                            <option value="third" {{ old('autoprogram_settings.monthly_ordinal', $apSettings['monthly_ordinal'] ?? '') === 'third' ? 'selected' : '' }}>{{ __('Third') }}</option>
+                            <option value="fourth" {{ old('autoprogram_settings.monthly_ordinal', $apSettings['monthly_ordinal'] ?? '') === 'fourth' ? 'selected' : '' }}>{{ __('Fourth') }}</option>
+                            <option value="last" {{ old('autoprogram_settings.monthly_ordinal', $apSettings['monthly_ordinal'] ?? '') === 'last' ? 'selected' : '' }}>{{ __('Last') }}</option>
                         </select>
                         <select name="autoprogram_settings[monthly_day]" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-3 py-1.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
-                            <option value="monday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'monday' ? 'selected' : '' }}>{{ __('Lunes') }}</option>
-                            <option value="tuesday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'tuesday' ? 'selected' : '' }}>{{ __('Martes') }}</option>
-                            <option value="wednesday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'wednesday' ? 'selected' : '' }}>{{ __('Miércoles') }}</option>
-                            <option value="thursday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'thursday' ? 'selected' : '' }}>{{ __('Jueves') }}</option>
-                            <option value="friday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'friday' ? 'selected' : '' }}>{{ __('Viernes') }}</option>
-                            <option value="saturday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'saturday' ? 'selected' : '' }}>{{ __('Sábado') }}</option>
-                            <option value="sunday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'sunday' ? 'selected' : '' }}>{{ __('Domingo') }}</option>
+                            <option value="monday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'monday' ? 'selected' : '' }}>{{ __('Monday') }}</option>
+                            <option value="tuesday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'tuesday' ? 'selected' : '' }}>{{ __('Tuesday') }}</option>
+                            <option value="wednesday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'wednesday' ? 'selected' : '' }}>{{ __('Wednesday') }}</option>
+                            <option value="thursday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'thursday' ? 'selected' : '' }}>{{ __('Thursday') }}</option>
+                            <option value="friday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'friday' ? 'selected' : '' }}>{{ __('Friday') }}</option>
+                            <option value="saturday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'saturday' ? 'selected' : '' }}>{{ __('Saturday') }}</option>
+                            <option value="sunday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'sunday' ? 'selected' : '' }}>{{ __('Sunday') }}</option>
                         </select>
-                        <span class="text-sm text-gray-500">{{ __('del mes') }}</span>
+                        <span class="text-sm text-gray-500">{{ __('of the month') }}</span>
                     </div>
                 </div>
                 <div class="space-y-2">
@@ -300,7 +300,7 @@
                 </svg>
             </div>
             <div class="flex flex-col">
-                <span class="text-sm font-bold text-gray-900 dark:text-white">{{ __('Bloquear programación (Inamovible)') }}</span>
+                <span class="text-sm font-bold text-gray-900 dark:text-white">{{ __('Lock scheduling (Fixed)') }}</span>
                 <span class="text-[11px] text-gray-500 dark:text-gray-400">{{ __('Evita que la tarea sea desplazada o redimensionada en el Gantt de forma accidental.') }}</span>
             </div>
         </div>
@@ -348,7 +348,7 @@
             <div x-data="{ load: {{ $activity->cognitive_load ?? 1 }} }">
                 <label
                     class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center justify-between">
-                    <span>Carga Cognitiva (Drenaje de Energía)</span>
+                    <span>{{ __('activities.cognitive_load') }}</span>
                     <span
                         :class="{
                             'text-emerald-500': load == 1,
@@ -365,9 +365,9 @@
                     class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-amber-500">
                 <div
                     class="flex justify-between text-[10px] text-gray-400 mt-2 font-black uppercase tracking-tighter">
-                    <span>Baja</span>
-                    <span>Media</span>
-                    <span>Extrema</span>
+                    <span>{{ __('Baja') }}</span>
+                    <span>{{ __('Media') }}</span>
+                    <span>{{ __('Extrema') }}</span>
                 </div>
             </div>
 

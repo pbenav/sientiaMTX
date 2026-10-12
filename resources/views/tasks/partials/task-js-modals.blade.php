@@ -504,7 +504,7 @@
                         Cancelar
                     </button>
                     <button type="submit" class="px-6 py-2.5 text-xs font-bold text-white bg-violet-600 hover:bg-violet-500 rounded-xl shadow-lg shadow-violet-500/25 transition-all active:scale-95 flex items-center gap-2">
-                        <span>Proceder a la Conversión</span>
+                        <span>{{ __('activities.proceed_to_conversion') }}</span>
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                         </svg>

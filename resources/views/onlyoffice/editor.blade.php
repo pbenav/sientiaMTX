@@ -71,7 +71,7 @@
                     },
                     "onError": function(event) {
                         console.error("OnlyOffice Error:", event);
-                        alert("Error al cargar el documento en el editor.");
+                        alert('{{ __('swal.alert_document_editor_error') }}');
                     },
                     "onDocumentStateChange": function(event) {
                         // Example: track when document is modified but not saved yet

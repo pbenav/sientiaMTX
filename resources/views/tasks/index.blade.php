@@ -6,7 +6,7 @@
             <div class="flex items-start gap-4 min-w-0 flex-1">
                 <a href="{{ route('teams.dashboard', $team) }}"
                     class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0"
-                    title="{{ __('navigation.back') ?? 'Volver' }}">
+                    title="{{ __('navigation.back') ?? __('Back') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -21,7 +21,7 @@
                         {{ __('navigation.task_list') }}
                     </h1>
                     <x-demo-hint>
-                        El Gestor de Actividades es el corazón operativo del equipo. Permite crear plantillas maestras, instanciar subtareas, asignar responsables, gestionar prioridades y visualizar el progreso en tiempo real. Soporta actualizaciones masivas y sincronización bidireccional con Google Calendar y Tasks.
+                        {{ __('tasks.demo_hint') }}
                     </x-demo-hint>
                 </div>
             </div>
@@ -52,7 +52,7 @@
                     
                     <div class="absolute inset-y-0 right-2 flex items-center gap-1">
                         @if(!empty($filters['search']))
-                            <a href="{{ route('teams.activities.index', [$team, 'reset_filters' => 1]) }}" class="p-1.5 text-gray-400 hover:text-red-500 transition-colors" title="{{ __('tasks.clear_search') ?? 'Limpiar búsqueda' }}">
+                            <a href="{{ route('teams.activities.index', [$team, 'reset_filters' => 1]) }}" class="p-1.5 text-gray-400 hover:text-red-500 transition-colors" title="{{ __('tasks.clear_search') ?? __('html.clear_search') }}">
                                 <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
@@ -77,7 +77,7 @@
                             </option>
                         @endforeach
                         <option value="trashed" class="text-red-500 font-black" {{ $filters['status'] === 'trashed' ? 'selected' : '' }}>
-                            🗑️ PAPELERA
+                            {{ __('tasks.trash') }}
                         </option>
                     </select>
                 </div>
@@ -143,7 +143,7 @@
                         <option value="25" {{ $filters['per_page'] == 25 ? 'selected' : '' }}>25 {{ __('tasks.per_page') ?? 'por pág.' }}</option>
                         <option value="50" {{ $filters['per_page'] == 50 ? 'selected' : '' }}>50 {{ __('tasks.per_page') ?? 'por pág.' }}</option>
                         <option value="100" {{ $filters['per_page'] == 100 ? 'selected' : '' }}>100 {{ __('tasks.per_page') ?? 'por pág.' }}</option>
-                        <option value="all" {{ $filters['per_page'] == 'all' ? 'selected' : '' }}>{{ __('tasks.all_tasks') ?? 'Todas' }}</option>
+                        <option value="all" {{ $filters['per_page'] == 'all' ? 'selected' : '' }}>{{ __('tasks.all_tasks') }}</option>
                     </select>
                 </div>
 
@@ -174,14 +174,14 @@
                             </span>
                         </div>
                         <div class="flex flex-col">
-                            <span class="text-[10px] font-black uppercase tracking-widest text-violet-700 dark:text-violet-300">Selección</span>
-                            <span class="text-xs font-semibold text-violet-500 dark:text-violet-400 leading-tight">Acción Masiva</span>
+                            <span class="text-[10px] font-black uppercase tracking-widest text-violet-700 dark:text-violet-300">{{ __('Selection') }}</span>
+                            <span class="text-xs font-semibold text-violet-500 dark:text-violet-400 leading-tight">{{ __('Acción Masiva') }}</span>
                         </div>
                         
                         <div class="w-px h-6 bg-violet-200 dark:bg-violet-800/60 mx-1"></div>
                         
                         <button type="button" onclick="deselectAll()"
-                            class="p-1.5 hover:bg-violet-200 dark:hover:bg-violet-800 text-violet-500 rounded-lg transition-colors active:scale-95" title="Deseleccionar todo">
+                            class="p-1.5 hover:bg-violet-200 dark:hover:bg-violet-800 text-violet-500 rounded-lg transition-colors active:scale-95" title="{{ __("html.deselect_all") }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
                             </svg>
@@ -193,8 +193,8 @@
                         <!-- Bulk Status -->
                         <select onchange="applyBulkUpdate('status', this.value)" 
                             class="w-full sm:w-auto flex-1 bg-gray-50 dark:bg-gray-800 border-none hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 py-2.5 pl-4 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all min-w-[140px]">
-                            <option value="">🎯 Estado</option>
-                            @foreach (['pending' => 'Pendiente', 'in_progress' => 'En Progreso', 'completed' => 'Completada', 'blocked' => 'Bloqueada'] as $val => $label)
+                            <option value="">🎯 {{ __('tasks.status') }}</option>
+                            @foreach (['pending' => __('tasks.statuses.pending'), 'in_progress' => __('tasks.statuses.in_progress'), 'completed' => __('tasks.statuses.completed'), 'blocked' => __('tasks.statuses.blocked')] as $val => $label)
                                 <option value="{{ $val }}" class="text-gray-900 dark:text-white">{{ $label }}</option>
                             @endforeach
                         </select>
@@ -202,8 +202,8 @@
                         <!-- Bulk Priority -->
                         <select onchange="applyBulkUpdate('priority', this.value)" 
                             class="w-full sm:w-auto flex-1 bg-gray-50 dark:bg-gray-800 border-none hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 py-2.5 pl-4 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all min-w-[140px]">
-                            <option value="">⚡ Prioridad</option>
-                            @foreach (['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'] as $val => $label)
+                            <option value="">⚡ {{ __('tasks.priority') }}</option>
+                            @foreach (['low' => __('tasks.priorities.low'), 'medium' => __('tasks.priorities.medium'), 'high' => __('tasks.priorities.high'), 'critical' => __('tasks.priorities.critical')] as $val => $label)
                                 <option value="{{ $val }}" class="text-gray-900 dark:text-white">{{ $label }}</option>
                             @endforeach
                         </select>
@@ -211,7 +211,7 @@
                         <!-- Bulk Assignee -->
                         <select onchange="applyBulkUpdate('assigned_user_id', this.value)" 
                             class="w-full sm:w-auto flex-1 bg-gray-50 dark:bg-gray-800 border-none hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 py-2.5 pl-4 pr-10 focus:ring-2 focus:ring-violet-500/50 cursor-pointer transition-all min-w-[140px]">
-                            <option value="">👤 Responsable</option>
+                            <option value="">👤 {{ __('tasks.assigned_to') }}</option>
                             @foreach ($members as $member)
                                 <option value="{{ $member->id }}" class="text-gray-900 dark:text-white">{{ $member->name }}</option>
                             @endforeach
@@ -226,7 +226,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
                         </svg>
-                        Fusionar
+                        {{ __('tasks.merge') }}
                     </button>
 
                     {{-- Eliminar selección --}}
@@ -235,7 +235,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
-                        Eliminar selección
+                        {{ __('tasks.delete_selection') }}
                     </button>
                 </div>
             </div>
@@ -336,7 +336,7 @@
                                             @if ($task->expediente)
                                                 <a href="{{ route('teams.expedientes.show', [$team, $task->expediente]) }}" 
                                                    class="mr-2 px-1.5 py-0.5 text-[9px] font-black font-mono uppercase tracking-tighter bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300 rounded shadow-sm hover:bg-violet-200 dark:hover:bg-violet-900/60 transition-colors inline-flex items-center gap-1 border border-violet-200/50 dark:border-violet-500/20 mb-1"
-                                                   title="{{ __('Expediente') }}: {{ $task->expediente->title }}"
+                                                   title="{{ __('teams.expedientes') }}: {{ $task->expediente->title }}"
                                                    onclick="event.stopPropagation();">
                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
@@ -345,17 +345,17 @@
                                                 </a>
                                             @endif
                                             @if ($task->google_task_id)
-                                                <span class="ml-2 px-1.5 py-0.5 text-[10px] font-bold text-blue-500 bg-blue-50 dark:bg-blue-900/20 rounded shadow-sm inline-flex items-center gap-1 border border-blue-200/50 dark:border-blue-700/50" title="Sincronizada con Google Tasks">
+                                                <span class="ml-2 px-1.5 py-0.5 text-[10px] font-bold text-blue-500 bg-blue-50 dark:bg-blue-900/20 rounded shadow-sm inline-flex items-center gap-1 border border-blue-200/50 dark:border-blue-700/50" title="{{ __('tasks.synced_with_google_tasks') }}">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
                                                 </span>
                                             @endif
                                             @if ($task->google_calendar_event_id)
-                                                <span class="ml-2 px-1.5 py-0.5 text-[10px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-900/20 rounded shadow-sm inline-flex items-center gap-1 border border-amber-200/50 dark:border-amber-700/50" title="Sincronizada con Google Calendar">
+                                                <span class="ml-2 px-1.5 py-0.5 text-[10px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-900/20 rounded shadow-sm inline-flex items-center gap-1 border border-amber-200/50 dark:border-amber-700/50" title="{{ __('tasks.synced_with_google_calendar') }}">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                                                 </span>
                                             @endif
                                             @if ($task->is_autoprogrammable)
-                                                <span class="ml-2 px-1.5 py-0.5 text-[10px] font-bold text-violet-600 bg-violet-50 dark:bg-violet-900/20 rounded shadow-sm inline-flex items-center gap-1 border border-violet-200/50 dark:border-violet-700/50" title="Plantilla de Autoprogramación">
+                                                <span class="ml-2 px-1.5 py-0.5 text-[10px] font-bold text-violet-600 bg-violet-50 dark:bg-violet-900/20 rounded shadow-sm inline-flex items-center gap-1 border border-violet-200/50 dark:border-violet-700/50" title="{{ __("html.autoprogramming_template") }}">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                                                 </span>
                                             @elseif (!$task->is_autoprogrammable && $task->parent && $task->parent->is_autoprogrammable)
@@ -387,7 +387,7 @@
                                                             stroke-width="3"
                                                             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                                     </svg>
-                                                    {{ __('Semiprivada') }}
+                                                    {{ __('Semi-private') }}
                                                 </span>
                                             @else
                                                 <span
@@ -421,12 +421,12 @@
                                             @endif
 
                                             @if ($task->avg_quality_score > 0)
-                                                <span class="ml-2 px-1.5 py-0.5 text-[10px] font-bold text-amber-500 bg-amber-50 dark:bg-amber-900/20 rounded shadow-sm inline-flex items-center gap-1 border border-amber-200/50 dark:border-amber-700/50" title="Valoración promedio: {{ number_format($task->avg_quality_score, 1) }} estrellas">
+                                                <span class="ml-2 px-1.5 py-0.5 text-[10px] font-bold text-amber-500 bg-amber-50 dark:bg-amber-900/20 rounded shadow-sm inline-flex items-center gap-1 border border-amber-200/50 dark:border-amber-700/50" title="{{ __('html.average_rating') }}: {{ number_format($task->avg_quality_score, 1) }} {{ __('html.stars') }}">
                                                     <svg class="w-3 h-3 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                                                     {{ number_format($task->avg_quality_score, 1) }}
                                                 </span>
                                             @else
-                                                <span class="ml-2 px-1.5 py-0.5 text-[10px] font-bold text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded shadow-sm inline-flex items-center gap-1 border border-gray-200/50 dark:border-gray-700/50" title="Sin valoraciones">
+                                                <span class="ml-2 px-1.5 py-0.5 text-[10px] font-bold text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded shadow-sm inline-flex items-center gap-1 border border-gray-200/50 dark:border-gray-700/50" title="{{ __("html.no_ratings") }}">
                                                     <svg class="w-3 h-3 fill-current opacity-50" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                                                     0
                                                 </span>
@@ -561,7 +561,7 @@
                                             <button type="button"
                                                 onclick="event.stopPropagation(); window.cloneTask('{{ route('teams.activities.clone', [$team, $task]) }}')"
                                                 class="p-1.5 text-gray-400 hover:text-violet-500 transition-colors"
-                                                title="Clonar actividad">
+                                                title="{{ __('tasks.clone') }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                                     viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -607,17 +607,17 @@
                                                 {{ $subtask->title }}
                                             </span>
                                             @if ($subtask->google_task_id)
-                                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold text-blue-500 bg-blue-50 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-700/50 flex items-center gap-1" title="Sincronizada con Google Tasks">
+                                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold text-blue-500 bg-blue-50 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-700/50 flex items-center gap-1" title="{{ __('tasks.synced_with_google_tasks') }}">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
                                                 </span>
                                             @endif
                                             @if ($subtask->google_calendar_event_id)
-                                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-900/20 border border-amber-200/50 dark:border-amber-700/50 flex items-center gap-1" title="Sincronizada con Google Calendar">
+                                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-900/20 border border-amber-200/50 dark:border-amber-700/50 flex items-center gap-1" title="{{ __('tasks.synced_with_google_calendar') }}">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                                                 </span>
                                             @endif
                                             @if ($subtask->is_autoprogrammable)
-                                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold text-violet-600 bg-violet-50 dark:bg-violet-900/20 border border-violet-200/50 dark:border-violet-700/50 flex items-center gap-1" title="Plantilla de Autoprogramación">
+                                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold text-violet-600 bg-violet-50 dark:bg-violet-900/20 border border-violet-200/50 dark:border-violet-700/50 flex items-center gap-1" title="{{ __("html.autoprogramming_template") }}">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                                                 </span>
                                             @elseif (!$subtask->is_autoprogrammable && $subtask->parent && $subtask->parent->is_autoprogrammable)
@@ -626,7 +626,7 @@
                                                 </a>
                                             @endif
                                             @if($maxProgress > 0 && $subtask->progress_percentage === $maxProgress)
-                                                <span class="px-1 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50 flex items-center gap-0.5 animate-pulse" title="{{ __('tasks.leading_progress') ?? 'Máximo progreso' }}">
+                                                <span class="px-1 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50 flex items-center gap-0.5 animate-pulse" title="{{ __('tasks.leading_progress') ?? __('html.max_progress') }}">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2" viewBox="0 0 20 20" fill="currentColor">
                                                         <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd" />
                                                     </svg>
@@ -635,12 +635,12 @@
                                             @endif
 
                                             @if($subtask->avg_quality_score > 0)
-                                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold text-amber-500 bg-amber-50 dark:bg-amber-900/20 border border-amber-200/50 dark:border-amber-700/50 flex items-center gap-1" title="Valoración promedio: {{ number_format($subtask->avg_quality_score, 1) }} estrellas">
+                                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold text-amber-500 bg-amber-50 dark:bg-amber-900/20 border border-amber-200/50 dark:border-amber-700/50 flex items-center gap-1" title="{{ __('html.average_rating') }}: {{ number_format($subtask->avg_quality_score, 1) }} {{ __('html.stars') }}">
                                                     <svg class="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                                                     {{ number_format($subtask->avg_quality_score, 1) }}
                                                 </span>
                                             @else
-                                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold text-gray-400 bg-gray-50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 flex items-center gap-1" title="Sin valoraciones">
+                                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold text-gray-400 bg-gray-50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 flex items-center gap-1" title="{{ __("html.no_ratings") }}">
                                                     <svg class="w-2.5 h-2.5 fill-current opacity-50" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                                                     0
                                                 </span>
@@ -710,7 +710,7 @@
                                             <button type="button"
                                                 onclick="event.stopPropagation(); window.cloneTask('{{ route('teams.activities.clone', [$team, $subtask]) }}')"
                                                 class="p-1 text-gray-400 hover:text-violet-500 transition-colors"
-                                                title="Clonar actividad">
+                                                title="{{ __('tasks.clone') }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
                                                     viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -752,7 +752,7 @@
                                         </p>
                                         <a href="{{ route('teams.activities.create', $team) }}"
                                             class="mt-2 text-xs font-bold text-violet-600 dark:text-violet-400 hover:underline">
-                                            Nueva Actividad
+                                            {{ __('tasks.create') }}
                                         </a>
                                     </div>
                                 </td>
@@ -797,14 +797,14 @@
                     if (selected.length === 0) return;
 
                     Swal.fire({
-                        title: '¿Eliminar selección?',
-                        text: `Estás a punto de eliminar ${selected.length} actividades. Esta acción no se puede deshacer.`,
+                        title: '{{ __('tasks.bulk_delete_title') }}',
+                        text: `{{ __('tasks.bulk_delete_text') }}`.replace(':count', ${selected.length}),
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#ef4444',
                         cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'Sí, eliminar',
-                        cancelButtonText: 'Cancelar',
+                        confirmButtonText: '{{ __('tasks.bulk_delete_confirm') }}',
+                        cancelButtonText: '{{ __('tasks.cancel') }}',
                         background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
                         color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#111827'
                     }).then((result) => {
@@ -830,18 +830,18 @@
                     if (selected.length === 0) return;
 
                     const fieldLabels = {
-                        'status': 'Estado',
-                        'priority': 'Prioridad',
-                        'assigned_user_id': 'Responsable'
+                        'status': '{{ __('tasks.status_label') }}',
+                        'priority': '{{ __('tasks.priority_label') }}',
+                        'assigned_user_id': '{{ __('tasks.assignee_label') }}'
                     };
 
                     Swal.fire({
-                        title: `¿Cambiar ${fieldLabels[field]}?`,
-                        text: `Vas a actualizar ${selected.length} actividades seleccionadas.`,
+                        title: `{{ __('tasks.bulk_update_title') }}`.replace(':field', fieldLabels[field]),
+                        text: `{{ __('tasks.bulk_update_text') }}`.replace(':count', ${selected.length}),
                         icon: 'question',
                         showCancelButton: true,
-                        confirmButtonText: 'Sí, actualizar',
-                        cancelButtonText: 'Cancelar',
+                        confirmButtonText: '{{ __('tasks.bulk_update_confirm') }}',
+                        cancelButtonText: '{{ __('tasks.cancel') }}',
                         confirmButtonColor: '#7c3aed',
                         background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
                         color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#111827'
@@ -899,7 +899,7 @@
                 function openBulkMergeModal() {
                     const selected = [...document.querySelectorAll('.task-checkbox:checked')];
                     if (selected.length < 2) {
-                        Swal.fire({ title: 'Selección insuficiente', text: 'Debes seleccionar al menos 2 actividades para fusionarlas.', icon: 'info',
+                        Swal.fire({ title: '{{ __('Selection') }} insuficiente', text: 'Debes seleccionar al menos 2 actividades para fusionarlas.', icon: 'info',
                             background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
                             color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#111827' });
                         return;
@@ -920,7 +920,7 @@
                                 <p class="text-sm font-semibold text-gray-800 dark:text-white truncate">${title}</p>
                                 <p class="text-[10px] text-gray-400 font-medium">ID #${id}</p>
                             </div>
-                            <span class="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity" id="target-badge-${id}">Destino</span>
+                            <span class="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity" id="target-badge-${id}">{{ __('Destino') }}</span>
                         `;
                         // Show badge only on checked radio
                         div.querySelector('input').addEventListener('change', () => {
@@ -988,14 +988,14 @@
 
                 window.cloneTask = function(url) {
                     Swal.fire({
-                        title: '¿Clonar actividad?',
-                        text: 'Se creará una copia exacta de esta actividad en este mismo equipo.',
+                        title: '{{ __('tasks.clone_title') }}',
+                        text: '{{ __('tasks.copy_activity_message') }}',
                         icon: 'question',
                         showCancelButton: true,
                         confirmButtonColor: '#7c3aed',
                         cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'Sí, clonar',
-                        cancelButtonText: 'Cancelar',
+                        confirmButtonText: '{{ __('tasks.clone_confirm') }}',
+                        cancelButtonText: '{{ __('tasks.cancel') }}',
                         background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
                         color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#111827',
                         customClass: {
@@ -1014,14 +1014,14 @@
 
                 function confirmDeleteTask(taskId, taskTitle) {
                     Swal.fire({
-                        title: '¿Eliminar actividad?',
-                        text: `¿Estás seguro de que quieres eliminar la actividad "${taskTitle}"? Esta acción no se puede deshacer y su progreso dejará de sumar.`,
+                        title: '{{ __('tasks.delete_title') }}',
+                        text: `{{ __('tasks.delete_text') }}`.replace(':title', taskTitle),
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#ef4444',
                         cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'Sí, eliminar',
-                        cancelButtonText: 'Cancelar',
+                        confirmButtonText: '{{ __('tasks.delete_confirm') }}',
+                        cancelButtonText: '{{ __('tasks.cancel') }}',
                         background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
                         color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#111827'
                     }).then((result) => {
@@ -1074,14 +1074,14 @@
 
                 function confirmPurgeTrash() {
                     Swal.fire({
-                        title: '¿Vaciar papelera?',
-                        text: 'Se eliminarán PERMANENTEMENTE todas las actividades de este equipo que estén en la papelera, junto con sus historiales y archivos. Esta acción no se puede deshacer.',
+                        title: '{{ __('tasks.purge_title') }}',
+                        text: '{{ __('tasks.purge_text') }}',
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#ef4444',
                         cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'Sí, vaciar papelera',
-                        cancelButtonText: 'Cancelar',
+                        confirmButtonText: '{{ __('tasks.purge_confirm') }}',
+                        cancelButtonText: '{{ __('tasks.cancel') }}',
                         background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
                         color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#111827'
                     }).then((result) => {
@@ -1137,10 +1137,10 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
                             </svg>
                         </div>
-                        <div>
-                            <h3 class="text-sm font-bold text-gray-900 dark:text-white">Fusión masiva de actividades</h3>
-                            <p class="text-[11px] text-gray-400">Elige cuál será la actividad principal (destino)</p>
-                        </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ __('tasks.merge_modal_title') }}</h3>
+                        <p class="text-[11px] text-gray-400">{{ __('tasks.merge_modal_subtitle') }}</p>
+                    </div>
                     </div>
                     <button type="button" onclick="closeBulkMergeModal()" class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -1152,7 +1152,7 @@
                 {{-- Info banner --}}
                 <div class="mx-5 mt-4 px-3 py-2.5 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl">
                     <p class="text-[11px] text-amber-700 dark:text-amber-400 font-medium leading-snug">
-                        <strong>Todas las actividades</strong> se fusionarán en la que marques como destino. Sus contenidos, adjuntos, tiempo, notas y asignaciones se migrarán. Las demás serán eliminadas.
+                        {!! __('tasks.merge_info_text') !!}
                     </p>
                 </div>
 
@@ -1163,11 +1163,11 @@
                 <div class="p-5 border-t border-gray-100 dark:border-gray-800 flex gap-3">
                     <button type="button" onclick="closeBulkMergeModal()"
                         class="flex-1 px-4 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs font-bold rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                        Cancelar
+                        {{ __('tasks.cancel') }}
                     </button>
                     <button type="button" onclick="confirmBulkMerge()"
                         class="flex-1 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition-all shadow-sm shadow-amber-500/20 active:scale-95">
-                        Fusionar ahora
+                        {{ __('tasks.merge_now') }}
                     </button>
                 </div>
             </div>

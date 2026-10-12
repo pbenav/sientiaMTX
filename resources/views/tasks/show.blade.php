@@ -32,7 +32,7 @@
             <div class="flex items-start gap-3 min-w-0 flex-1">
                 <a href="{{ $backUrl ?? route('teams.dashboard', $team) }}"
                     class="mt-1 p-2 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0"
-                    title="{{ __('navigation.back') ?? 'Volver' }}">
+                    title="{{ __('navigation.back') ?? __('Back') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -111,7 +111,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                         </svg>
-                        <span>{{ __('Acciones') }}</span>
+                        <span>{{ __('Actions') }}</span>
                     </button>
                 </x-slot>
 
@@ -128,12 +128,12 @@
                             </svg>
                         </div>
                         <div class="flex flex-col">
-                            <span class="font-bold text-gray-900 dark:text-white text-sm">Imprimir Ficha Técnica</span>
-                            <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Informe completo y detallado de la tarea</span>
+                            <span class="font-bold text-gray-900 dark:text-white text-sm">{{ __('Imprimir Ficha Técnica') }}</span>
+                            <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">{{ __('Informe completo y detallado de la tarea') }}</span>
                         </div>
                     </button>
 
-                    <!-- Reproducir en Equipo -->
+                    <!-- {{ __('Reproducir en Equipo') }} -->
                     @php
                         $otherTeams = auth()->user()->teams()->where('teams.id', '!=', $team->id)->get();
                     @endphp
@@ -145,8 +145,8 @@
                                 </svg>
                             </div>
                             <div class="flex flex-col">
-                                <span class="font-bold text-gray-900 dark:text-white text-sm">Reproducir en Equipo</span>
-                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Clonar tarea en otro espacio de trabajo</span>
+                                <span class="font-bold text-gray-900 dark:text-white text-sm">{{ __('Reproducir en Equipo') }}</span>
+                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">{{ __('Clonar tarea en otro espacio de trabajo') }}</span>
                             </div>
                         </button>
                     @endif
@@ -160,8 +160,8 @@
                             </svg>
                         </div>
                         <div class="flex flex-col">
-                            <span class="font-bold text-gray-900 dark:text-white text-sm">Fusionar con Tarea</span>
-                            <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Fusionar esta tarea y sus datos en otra existente</span>
+                            <span class="font-bold text-gray-900 dark:text-white text-sm">{{ __('Fusionar con Tarea') }}</span>
+                            <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">{{ __('Fusionar esta tarea y sus datos en otra existente') }}</span>
                         </div>
                     </button>
                     @endcan
@@ -176,8 +176,8 @@
                                 </svg>
                             </div>
                             <div class="flex flex-col">
-                                <span class="font-bold text-gray-900 dark:text-white text-sm">Exportar Tarea (.json)</span>
-                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Descargar backup portátil</span>
+                                <span class="font-bold text-gray-900 dark:text-white text-sm">{{ __('Exportar Tarea (.json)') }}</span>
+                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">{{ __('Descargar backup portátil') }}</span>
                             </div>
                         </x-dropdown-link>
 
@@ -188,8 +188,8 @@
                                 </svg>
                             </div>
                             <div class="flex flex-col">
-                                <span class="font-bold text-gray-900 dark:text-white text-sm">Copiar JSON</span>
-                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Copia para transferir a otro equipo</span>
+                                <span class="font-bold text-gray-900 dark:text-white text-sm">{{ __('Copiar JSON') }}</span>
+                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">{{ __('Copia para transferir a otro equipo') }}</span>
                             </div>
                         </button>
 
@@ -202,12 +202,12 @@
                                 </svg>
                             </div>
                             <div class="flex flex-col">
-                                <span class="font-bold text-gray-900 dark:text-white text-sm">Cargar Archivo (.json)</span>
-                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Crear tarea desde un archivo local</span>
+                                <span class="font-bold text-gray-900 dark:text-white text-sm">{{ __('Cargar Archivo (.json)') }}</span>
+                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">{{ __('Crear tarea desde un archivo local') }}</span>
                             </div>
                         </button>
 
-                        <!-- Pegar JSON -->
+                        <!-- {{ __('Paste JSON') }} -->
                         <button type="button" onclick="openImportTaskModal('paste')" class="w-full flex items-center gap-4 py-3 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
                             <div class="shrink-0 p-2 bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400 rounded-xl group-hover:scale-110 transition-transform">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -215,15 +215,15 @@
                                 </svg>
                             </div>
                             <div class="flex flex-col">
-                                <span class="font-bold text-gray-900 dark:text-white text-sm">Pegar JSON</span>
-                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Crear tarea desde el portapapeles</span>
+                                <span class="font-bold text-gray-900 dark:text-white text-sm">{{ __('Paste JSON') }}</span>
+                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">{{ __('Crear tarea desde el portapapeles') }}</span>
                             </div>
                         </button>
                     </div>
                 </x-slot>
             </x-dropdown>
 
-            <!-- Hub de Integraciones (Integraciones) -->
+            <!-- Hub de {{ __('Integraciones') }} ({{ __('Integraciones') }}) -->
             @php
                 $isGoogleConnected = auth()->user()->teams()->where('team_id', $team->id)->wherePivotNotNull('google_token')->exists();
             @endphp
@@ -234,7 +234,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M11 4a2 2 0 114 0v1a2 2 0 01-2 2h-1a2 2 0 01-2-2V4zm-5 6a2 2 0 114 0v1a2 2 0 01-2 2H7a2 2 0 01-2-2v-1zm10 0a2 2 0 114 0v1a2 2 0 01-2 2h-1a2 2 0 01-2-2v-1zM6 20a2 2 0 114 0v1a2 2 0 01-2 2H7a2 2 0 01-2-2v-1zm10 0a2 2 0 114 0v1a2 2 0 01-2 2h-1a2 2 0 01-2-2v-1z" />
                             </svg>
-                            <span class="hidden sm:inline">Integraciones</span>
+                            <span class="hidden sm:inline">{{ __('Integraciones') }}</span>
                             <svg class="h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
                     </x-slot>
@@ -255,8 +255,8 @@
                                         </svg>
                                     </div>
                                     <div class="flex flex-col">
-                                        <span class="font-bold text-gray-900 dark:text-white text-sm">Sincronizar Google Tasks</span>
-                                        <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Vínculo bidireccional con Google</span>
+                                        <span class="font-bold text-gray-900 dark:text-white text-sm">{{ __('Sincronizar Google Tasks') }}</span>
+                                        <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">{{ __('Vínculo bidireccional con Google') }}</span>
                                     </div>
                                 </button>
                             </form>
@@ -270,8 +270,8 @@
                                             </svg>
                                         </div>
                                         <div class="flex flex-col">
-                                            <span class="font-bold text-gray-900 dark:text-white text-sm">Desconectar de Google Tasks</span>
-                                            <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Romper el vínculo con Google Tasks</span>
+                                            <span class="font-bold text-gray-900 dark:text-white text-sm">{{ __('Desconectar de Google Tasks') }}</span>
+                                            <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">{{ __('Romper el vínculo con Google Tasks') }}</span>
                                         </div>
                                     </button>
                                 </form>
@@ -287,8 +287,8 @@
                                         </svg>
                                     </div>
                                     <div class="flex flex-col">
-                                        <span class="font-bold text-gray-900 dark:text-white text-sm">Calendario de Google</span>
-                                        <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Gestionar evento en calendario</span>
+                                        <span class="font-bold text-gray-900 dark:text-white text-sm">{{ __('Calendario de Google') }}</span>
+                                        <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">{{ __('Gestionar evento en calendario') }}</span>
                                     </div>
                                 </button>
                             </form>
@@ -302,8 +302,8 @@
                                             </svg>
                                         </div>
                                         <div class="flex flex-col">
-                                            <span class="font-bold text-gray-900 dark:text-white text-sm">Desconectar Calendario</span>
-                                            <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Romper el vínculo con Google Calendar</span>
+                                            <span class="font-bold text-gray-900 dark:text-white text-sm">{{ __('Desconectar Calendario') }}</span>
+                                            <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">{{ __('Romper el vínculo con Google Calendar') }}</span>
                                         </div>
                                     </button>
                                 </form>
@@ -320,7 +320,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
                     </svg>
-                    <span class="hidden sm:inline">Clonar</span>
+                    <span class="hidden sm:inline">{{ __('Clonar') }}</span>
                 </button>
             </form>
 
@@ -346,7 +346,7 @@
             <script>
                 function confirmCloneTask(formId) {
                     Swal.fire({
-                        title: '¿Clonar tarea?',
+                        title: '¿{{ __('Clonar') }} tarea?',
                         text: 'Se creará una copia exacta de esta tarea en este mismo equipo.',
                         icon: 'question',
                         showCancelButton: true,
@@ -452,7 +452,7 @@
                                                 ⚠️ Esta acción moverá todos los <strong>comentarios, registros de tiempo, archivos y subtareas</strong> a la tarea que elijas a continuación. Esta tarea actual (#{{ $task->id }}) será <strong>eliminada permanentemente</strong> tras completarse.
                                             </div>
                                             <div class="text-left">
-                                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2 ml-1">Tarea Destino (Recientes)</label>
+                                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2 ml-1">Tarea {{ __('Destino') }} (Recientes)</label>
                                                 <select id="merge-target-select" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-rose-500/20 outline-none">
                                                     ${options}
                                                 </select>
@@ -650,6 +650,7 @@
                 @endif
             @endif
 
+                @if ($task->is_template || $task->children()->exists() || $task->assignedTo->isNotEmpty() || $task->assigned_user_id)
                 @include('tasks.partials.task-info')
                 @include('tasks.partials.task-instances')
                         <!-- Bulk Actions Bar -->
@@ -885,7 +886,7 @@
                             </h3>
                         </div>
                         <div class="flex items-center gap-2">
-                            <button onclick="printPrivateNotes()" class="p-1.5 bg-amber-50 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 rounded-xl transition-all border border-amber-100 dark:border-amber-800/50 shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest" title="Imprimir notas privadas">
+                            <button onclick="printPrivateNotes()" class="p-1.5 bg-amber-50 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 rounded-xl transition-all border border-amber-100 dark:border-amber-800/50 shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest" title="{{ __("html.print_private_notes") }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                                 </svg>
@@ -903,7 +904,7 @@
                                 :value="old('content', $personalInstance->currentPrivateNote?->content)"
                                 :label="null"
                                 rows="6"
-                                placeholder="Escribe aquí tus notas personales sobre esta tarea... Nadie más podrá verlas."
+                                placeholder="{{ __('Write your personal notes about this task here... No one else will see them.') }}"
                                 :upload-url="route('teams.forum.upload_image', $team)"
                             />
                         </div>
@@ -924,7 +925,7 @@
                         const isDark = document.documentElement.classList.contains('dark');
 
                         const result = await Swal.fire({
-                            title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Imprimir Ficha Técnica</span>',
+                            title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">{{ __('Imprimir Ficha Técnica') }}</span>',
                             background: isDark ? '#0f172a' : '#ffffff',
                             color: isDark ? '#f3f4f6' : '#1f2937',
                             showCancelButton: true,
@@ -1022,35 +1023,35 @@
                             '      <header class="header">',
                             '        <div class="logo-text">sientia<span class="dot">.</span><span class="suffix">MTX</span></div>',
                             '        <div class="document-info">',
-                            '          <div class="doc-type">Ficha Técnica &bull; ' + teamName + '</div>',
+                            '          <div class="doc-type">' + '{{ __('Technical Sheet') }}' + ' &bull; ' + teamName + '</div>',
                             '          <div class="task-uuid">ID: ' + taskUuid.toUpperCase() + '</div>',
                             '        </div>',
                             '      </header>',
                             '      <h1 class="main-title">' + taskTitle + '</h1>',
                             '      <div class="meta-strip">',
-                            '        <div class="meta-strip-item"><span class="meta-strip-label">Estado</span><span class="meta-strip-value" style="color: #ef4444">' + status + '</span></div>',
-                            '        <div class="meta-strip-item"><span class="meta-strip-label">Progreso</span><span class="meta-strip-value">' + progress + '%</span></div>',
-                            '        <div class="meta-strip-item"><span class="meta-strip-label">Prioridad</span><span class="meta-strip-value">' + priorityLabel + '</span></div>',
-                            '        <div class="meta-strip-item"><span class="meta-strip-label">Urgencia</span><span class="meta-strip-value">' + urgencyLabel + '</span></div>',
-                            '        <div class="meta-strip-item" style="flex: 1.2"><span class="meta-strip-label">Inicio</span><span class="meta-strip-value">' + scheduled + '</span></div>',
-                            '        <div class="meta-strip-item" style="flex: 1.2"><span class="meta-strip-label">Límite</span><span class="meta-strip-value" style="color: #ef4444">' + due + '</span></div>',
+                            '        <div class="meta-strip-item"><span class="meta-strip-label">{{ __('Status') }}</span><span class="meta-strip-value" style="color: #ef4444">' + status + '</span></div>',
+                            '        <div class="meta-strip-item"><span class="meta-strip-label">{{ __('Progress') }}</span><span class="meta-strip-value">' + progress + '%</span></div>',
+                            '        <div class="meta-strip-item"><span class="meta-strip-label">{{ __('Priority') }}</span><span class="meta-strip-value">' + priorityLabel + '</span></div>',
+                            '        <div class="meta-strip-item"><span class="meta-strip-label">{{ __('Urgency') }}</span><span class="meta-strip-value">' + urgencyLabel + '</span></div>',
+                            '        <div class="meta-strip-item" style="flex: 1.2"><span class="meta-strip-label">{{ __('Start') }}</span><span class="meta-strip-value">' + scheduled + '</span></div>',
+                            '        <div class="meta-strip-item" style="flex: 1.2"><span class="meta-strip-label">{{ __('Deadline') }}</span><span class="meta-strip-value" style="color: #ef4444">' + due + '</span></div>',
                             '      </div>',
                             '      <div class="content-layout">',
                             '        <aside class="sidebar-content">',
                             '          <div class="sidebar-box">',
-                            '            <div class="sidebar-item"><span class="sidebar-label">Propietario</span><div class="sidebar-value">' + creator + '</div></div>',
-                            '            <div class="sidebar-item"><span class="sidebar-label">Asignados</span><div class="pill-list">' + members.map(function(m) { return '<span class="pill">' + m + '</span>'; }).join('') || '<span class="pill">Sin asignar</span>' + '</div></div>',
-                            '            <div class="sidebar-item" style="border-top: 1px dashed #f1f5f9; padding-top: 6px; margin-top: 6px;"><span class="sidebar-label">Capacidades</span><div class="pill-list">' + skills.map(function(s) { return '<span class="pill" style="color: #ef4444; border-color: #fee2e2;">' + s + '</span>'; }).join('') || '<span class="pill">&#8212;</span>' + '</div></div>',
+                            '            <div class="sidebar-item"><span class="sidebar-label">{{ __('Owner') }}</span><div class="sidebar-value">' + creator + '</div></div>',
+                            '            <div class="sidebar-item"><span class="sidebar-label">{{ __('Assigned') }}</span><div class="pill-list">' + (members.length ? members.map(function(m) { return '<span class="pill">' + m + '</span>'; }).join('') : '<span class="pill">{{ __('Unassigned') }}</span>') + '</div></div>',
+                            '            <div class="sidebar-item" style="border-top: 1px dashed #f1f5f9; padding-top: 6px; margin-top: 6px;"><span class="sidebar-label">{{ __('Skills') }}</span><div class="pill-list">' + (skills.length ? skills.map(function(s) { return '<span class="pill" style="color: #ef4444; border-color: #fee2e2;">' + s + '</span>'; }).join('') : '<span class="pill">&#8212;</span>') + '</div></div>',
                             '          </div>',
                             '        </aside>',
                             '        <div class="main-content">',
-                            '          <div class="section"><div class="section-title">Descripción</div><div class="section-body">' + description + '</div></div>',
-                            '          <div class="section"><div class="section-title">Observaciones</div><div class="section-body">' + observations + '</div></div>',
+                            '          <div class="section"><div class="section-title">{{ __('Description') }}</div><div class="section-body">' + description + '</div></div>',
+                            '          <div class="section"><div class="section-title">{{ __('Observations') }}</div><div class="section-body">' + observations + '</div></div>',
                             '        </div>',
                             '      </div>',
                             '      <div class="validation-area">',
-                            '        <div class="signature-box"><div class="signature-label">Firma Responsable</div></div>',
-                            '        <div class="signature-box"><div class="signature-label">Validación Sistema</div><div style="font-size: 5px; color: #cbd5e1; margin-top: 1px; font-family: monospace;">TSR: ' + new Date().getTime() + '</div></div>',
+                            '        <div class="signature-box"><div class="signature-label">{{ __('Responsible Signature') }}</div></div>',
+                            '        <div class="signature-box"><div class="signature-label">{{ __('System Validation') }}</div><div style="font-size: 5px; color: #cbd5e1; margin-top: 1px; font-family: monospace;">TSR: ' + new Date().getTime() + '</div></div>',
                             '      </div>',
                             '      <footer class="footer"><span>Sientia MTX Ecosystem &bull; v0.9.5</span><span>' + new Date().toLocaleString() + '</span></footer>',
                             '    </div>',

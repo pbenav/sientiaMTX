@@ -117,7 +117,7 @@
                 </div>
                 <div
                     class="mt-4 pt-4 border-t border-white/10 flex justify-between items-end text-xs font-bold uppercase tracking-tighter">
-                    <span class="opacity-70">{{ __('Estado') }}</span>
+                    <span class="opacity-70">{{ __('Status') }}</span>
                     <span>{{ round($perc) }}% FULL</span>
                 </div>
             </div>
@@ -226,7 +226,7 @@
                                                     autoSubmit: false 
                                                 })"
                                                 class="p-2 text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
-                                                title="Preguntar a la IA sobre este archivo">
+                                                title="{{ __("html.ai_on_file") }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                                 </svg>
@@ -279,8 +279,8 @@
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
                 cancelButtonColor: '#94a3b8',
-                confirmButtonText: '{{ __('Sí, eliminar') }}',
-                cancelButtonText: '{{ __('Cancelar') }}',
+                confirmButtonText: '{{ __('Yes, delete') }}',
+                cancelButtonText: '{{ __('Cancel') }}',
                 background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
                 color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
             }).then((result) => {

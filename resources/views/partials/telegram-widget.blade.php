@@ -52,7 +52,7 @@
             <div class="flex items-center gap-3">
                 <button @click="refreshMessages(true)" 
                         class="text-white/60 hover:text-white transition-colors p-1.5 rounded-full hover:bg-white/10"
-                        title="Actualizar conversación">
+                        title="{{ __('Update') }} conversación">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H17" />
                     </svg>
@@ -72,8 +72,8 @@
                 <button @click="loadOlderMessages()" 
                         class="px-4 py-1.5 rounded-full bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-[10px] font-black text-gray-400 hover:text-blue-500 hover:border-blue-500 transition-all shadow-sm uppercase tracking-widest disabled:opacity-50"
                         :disabled="loading">
-                    <span x-show="!loading">Ver anteriores</span>
-                    <span x-show="loading">Cargando...</span>
+                    <span x-show="!loading">{{ __('View') }} anteriores</span>
+                    <span x-show="loading">{{ __("Loading...") }}</span>
                 </button>
             </div>
 
@@ -96,7 +96,7 @@
                                 <template x-if="!msg.photo">
                                     <div class="py-10 flex flex-col items-center justify-center text-gray-400">
                                         <svg class="w-8 h-8 mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-width="2"/></svg>
-                                        <span class="text-[10px] font-bold uppercase tracking-widest">Imagen purgada</span>
+                                        <span class="text-[10px] font-bold uppercase tracking-widest">{{ __('Imagen purgada') }}</span>
                                     </div>
                                 </template>
                             </div>
@@ -129,7 +129,7 @@
                             </div>
                         </template>
 
-                        <!-- Sticker animado (.tgs → .json con Lottie) -->
+                        <!-- {{ __('Animated sticker') }} (.tgs → .json con Lottie) -->
                         <template x-if="msg.file_type === 'sticker_animated'">
                             <div class="mb-2 flex justify-center">
                                 <template x-if="msg.sticker">
@@ -153,7 +153,7 @@
                                 <template x-if="!msg.sticker">
                                     <div class="py-4 text-gray-400 flex flex-col items-center">
                                         <span class="text-4xl">🌀</span>
-                                        <span class="text-[9px] font-bold uppercase tracking-widest mt-1">Sticker animado</span>
+                                        <span class="text-[9px] font-bold uppercase tracking-widest mt-1">{{ __('Animated sticker') }}</span>
                                     </div>
                                 </template>
                             </div>
@@ -169,7 +169,7 @@
                                 <template x-if="!msg.photo">
                                     <div class="py-10 flex flex-col items-center justify-center text-gray-400">
                                         <span class="text-4xl mb-2">🎞️</span>
-                                        <span class="text-[10px] font-bold uppercase tracking-widest">Animación purgada</span>
+                                        <span class="text-[10px] font-bold uppercase tracking-widest">{{ __('Animación purgada') }}</span>
                                     </div>
                                 </template>
                             </div>
@@ -188,7 +188,7 @@
                                 <template x-if="!msg.voice">
                                     <div class="flex items-center gap-2 py-1 px-2 border-t border-black/5 mt-1">
                                         <svg class="w-3 h-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-width="2"/></svg>
-                                        <span class="text-[9px] font-bold text-gray-500 uppercase tracking-tighter">Fichero purgado</span>
+                                        <span class="text-[9px] font-bold text-gray-500 uppercase tracking-tighter">{{ __('Fichero purgado') }}</span>
                                     </div>
                                 </template>
                             </div>
@@ -214,7 +214,7 @@
                                     <button @click="startEdit(msg)"
                                             class="text-[9px] font-bold uppercase tracking-tighter"
                                             :class="msg.from_me ? 'text-white/70 hover:text-white' : 'text-blue-400 hover:text-blue-500'">
-                                        {{ __('Editar') }}
+                                        {{ __('Edit') }}
                                     </button>
                                 </template>
 
@@ -229,7 +229,7 @@
                                 <button @click="deleteMsg(msg.id)"
                                         class="text-[9px] font-bold uppercase tracking-tighter"
                                         :class="msg.from_me ? 'text-white/70 hover:text-white' : 'text-red-400 hover:text-red-500'">
-                                    {{ __('Eliminar') }}
+                                    {{ __('Delete') }}
                                 </button>
                             </div>
                         </div>
@@ -276,7 +276,7 @@
                     <button type="button" @click="toggleRecording()" :disabled="!teamId"
                             class="p-2 transition-all duration-300 relative group flex items-center justify-center rounded-xl"
                             :class="isRecording ? 'bg-red-50 text-red-500 dark:bg-red-900/30' : 'text-gray-400 hover:text-rose-500 dark:hover:text-rose-400'"
-                            title="Enviar audio">
+                            title="{{ __('Send') }} audio">
                         <svg x-show="!isRecording" class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
                         <div x-show="isRecording" class="flex items-center gap-1">
                             <span class="flex h-1.5 w-1.5 relative">
@@ -295,7 +295,7 @@
                          style="display: none;"
                          @click.outside="showMentions = false">
                         <div class="px-3 py-2 bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
-                            <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Mencionar miembro</span>
+                            <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">{{ __('Mencionar miembro') }}</span>
                         </div>
                         <div class="overflow-y-auto custom-scrollbar">
                             <template x-for="(u, index) in filteredMentions" :key="u.source + '-' + u.id">
@@ -369,7 +369,7 @@
                     <template x-if="pendingVoice">
                         <div class="absolute bottom-full mb-3 left-0 bg-white dark:bg-gray-800 p-3 rounded-2xl shadow-2xl border border-rose-100 dark:border-rose-900/50 flex flex-col gap-2 min-w-[180px]">
                             <div class="flex items-center justify-between">
-                                <span class="text-[9px] font-black uppercase text-rose-500 tracking-widest">Audio grabado</span>
+                                <span class="text-[9px] font-black uppercase text-rose-500 tracking-widest">{{ __('Audio grabado') }}</span>
                                 <button type="button" @click="pendingVoice = null; voicePreviewUrl = null" class="text-gray-400 hover:text-red-500">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                 </button>
@@ -653,7 +653,7 @@
                 const lastAt = text.lastIndexOf('@', cursor - 1);
                 
                 if (lastAt !== -1) {
-                    // Verificar si hay un espacio entre el @ y el cursor (cancelaría la mención)
+                    // Check if there is a space between @ and cursor (would cancel mention)
                     const between = text.slice(lastAt + 1, cursor);
                     
                     if (!between.includes(' ')) {
@@ -946,7 +946,7 @@
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonText: 'Sí, eliminar',
-                    cancelButtonText: 'Cancelar',
+                    cancelButtonText: '{{ __("Cancel") }}',
                     confirmButtonColor: '#e11d48',
                     cancelButtonColor: '#6b7280',
                     customClass: {

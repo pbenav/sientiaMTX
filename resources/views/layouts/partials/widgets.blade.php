@@ -64,7 +64,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                 </svg>
-                <span class="text-[9px] font-bold uppercase tracking-tight leading-none">Inicio</span>
+                <span class="text-[9px] font-bold uppercase tracking-tight leading-none">{{ __('inicio') }}</span>
             </a>
 
             {{-- Tasks (only if inside a team) --}}
@@ -75,7 +75,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                <span class="text-[9px] font-bold uppercase tracking-tight leading-none">Tareas</span>
+                <span class="text-[9px] font-bold uppercase tracking-tight leading-none">{{ __('tareas') }}</span>
             </a>
             @else
             <a href="{{ route('dashboard') }}"
@@ -120,7 +120,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
                 </svg>
-                <span class="text-[9px] font-bold uppercase tracking-tight leading-none">Archivos</span>
+                <span class="text-[9px] font-bold uppercase tracking-tight leading-none">{{ __('archivos') }}</span>
             </a>
             @endif
 
@@ -313,7 +313,7 @@
                                     <div class="flex items-center gap-1.5 min-w-0">
                                         <p class="text-xs font-black text-gray-900 dark:text-white uppercase truncate tracking-tight" x-text="member.name"></p>
                                         <template x-if="member.is_group">
-                                            <button @click="editingName = true; newName = member.name;" class="text-gray-400 hover:text-emerald-500 transition-colors shrink-0" title="Editar nombre del grupo">
+                                            <button @click="editingName = true; newName = member.name;" class="text-gray-400 hover:text-emerald-500 transition-colors shrink-0" title="{{ __("html.edit_group_name") }}">
                                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"/></svg>
                                             </button>
                                         </template>
@@ -324,10 +324,10 @@
                                 <template x-if="editingName">
                                     <div class="flex items-center gap-1 min-w-0 w-full">
                                         <input type="text" x-model="newName" @keydown.enter="renameActiveGroup(newName); editingName = false;" @keydown.escape="editingName = false" class="bg-white dark:bg-gray-800 border border-emerald-500 rounded-lg text-[10px] px-2 py-0.5 font-bold uppercase tracking-tight focus:ring-1 focus:ring-emerald-500 focus:outline-none w-48 truncate" x-ref="editGroupNameInput" x-init="$nextTick(() => $refs.editGroupNameInput.focus())">
-                                        <button @click="renameActiveGroup(newName); editingName = false;" class="text-emerald-500 hover:text-emerald-600 transition-colors shrink-0" title="Guardar">
+                                        <button @click="renameActiveGroup(newName); editingName = false;" class="text-emerald-500 hover:text-emerald-600 transition-colors shrink-0" title="{{ __("html.save") }}">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
                                         </button>
-                                        <button @click="editingName = false" class="text-gray-400 hover:text-rose-500 transition-colors shrink-0" title="Cancelar">
+                                        <button @click="editingName = false" class="text-gray-400 hover:text-rose-500 transition-colors shrink-0" title="{{ __("html.cancel") }}">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                                         </button>
                                     </div>
@@ -342,16 +342,16 @@
                 </div>
 
                 <div class="flex items-center gap-1 shrink-0">
-                    <!-- Chats Grupales Recientes -->
+                    <!-- Chats Recent Group Chats -->
                     <div class="relative" @click.away="showingRecentGroups = false">
-                        <button @click="showingRecentGroups = !showingRecentGroups; if(showingRecentGroups) fetchRecentGroups();" class="p-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-emerald-500 rounded-xl transition-colors" title="Chats Grupales Recientes 👥">
+                        <button @click="showingRecentGroups = !showingRecentGroups; if(showingRecentGroups) fetchRecentGroups();" class="p-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-emerald-500 rounded-xl transition-colors" title="{{ __('Recent Group Chats') }} 👥">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                         </button>
 
                         <!-- Dropdown de grupos recientes -->
                         <div x-show="showingRecentGroups" x-transition class="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-[100] flex flex-col" style="display: none;">
                             <div class="p-3 border-b border-gray-100 dark:border-gray-700 shrink-0 bg-gray-50/50 dark:bg-gray-900/50">
-                                <p class="text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 tracking-wider">Historial de Grupos</p>
+                                <p class="text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 tracking-wider">{{ __('Group History') }}</p>
                             </div>
                             <div class="max-h-64 overflow-y-auto custom-scrollbar p-1 flex-1">
                                 <template x-for="g in recentGroups" :key="g.id">
@@ -370,7 +370,7 @@
                                                 <span class="text-[8px] font-black text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-1 py-0.5 rounded" x-text="g.status"></span>
                                             </div>
                                         </button>
-                                        <button @click.stop="deleteGroupChat(g.id)" class="mr-1 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-all opacity-0 group-hover/item:opacity-100 focus:opacity-100 shrink-0" title="Eliminar Chat Grupal 🗑️">
+                                        <button @click.stop="deleteGroupChat(g.id)" class="mr-1 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-all opacity-0 group-hover/item:opacity-100 focus:opacity-100 shrink-0" title="{{ __("html.delete_group_chat") }}">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                         </button>
                                     </div>
@@ -384,14 +384,14 @@
 
                     <!-- Add Members to Chat -->
                     <div class="relative" @click.away="addingMember = false">
-                        <button @click="addingMember = !addingMember; if(addingMember) fetchUsersForChat();" class="p-2 hover:bg-violet-50 dark:hover:bg-violet-900/30 text-violet-500 rounded-xl transition-colors" title="Añadir miembro al chat">
+                        <button @click="addingMember = !addingMember; if(addingMember) fetchUsersForChat();" class="p-2 hover:bg-violet-50 dark:hover:bg-violet-900/30 text-violet-500 rounded-xl transition-colors" title="{{ __("html.add_member_to_chat") }}">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
                         </button>
 
                         <!-- Dropdown -->
                         <div x-show="addingMember" x-transition class="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-[100] flex flex-col" style="display: none;">
                             <div class="p-2 border-b border-gray-100 dark:border-gray-700 shrink-0 bg-gray-50/50 dark:bg-gray-900/50">
-                                <input type="text" x-model="searchUserQuery" placeholder="Buscar miembro..." class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs px-3 py-2 focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow">
+                                <input type="text" x-model="searchUserQuery" placeholder="{{ __('Search member...') }}" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs px-3 py-2 focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow">
                             </div>
                             <div class="max-h-48 overflow-y-auto custom-scrollbar flex-1 p-1">
                                 <template x-for="u in getFilteredUsersForAdd()" :key="u.id">
@@ -401,14 +401,14 @@
                                     </button>
                                 </template>
                                 <div x-show="getFilteredUsersForAdd().length === 0" class="p-4 text-center text-xs text-gray-400 font-medium">
-                                    No hay usuarios
+                                    {{ __('No users found') }}
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Video Call Button (Google Meet) -->
-                    <button @click="startGoogleMeet()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title="Crear Google Meet Rápido">
+                    <button @click="startGoogleMeet()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title="{{ __("html.quick_google_meet") }}">
                         <svg class="w-5 h-5" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <g transform="translate(0, 45.4)">
                                 <path d="m289.6 256 49.9 57 67.1 42.9 11.7-99.6-11.7-97.3-68.4 37.7z" fill="#00832d"/>
@@ -422,12 +422,12 @@
                     </button>
 
                     <!-- Video Call Button (Jitsi) -->
-                    <button @click="startSientiaCall()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 text-emerald-500 rounded-xl transition-colors" title="Iniciar Videollamada Sientia">
+                    <button @click="startSientiaCall()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 text-emerald-500 rounded-xl transition-colors" title="{{ __("html.start_sientia_call") }}">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z"/></svg>
                     </button>
 
                     <!-- Clear Chat Button -->
-                    <button @click="clearChat()" class="p-2 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-500 rounded-xl transition-colors" title="Limpiar Conversación 🧹">
+                    <button @click="clearChat()" class="p-2 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-500 rounded-xl transition-colors" title="{{ __("html.clear_conversation") }}">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                     </button>
 
@@ -442,7 +442,7 @@
             <div x-ref="chatContainer" class="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar bg-gray-50/20 dark:bg-gray-900/10">
                 <template x-for="msg in messages" :key="msg.id">
                     <div>
-                        <!-- System message -->
+                        <!-- {{ __('system') }} message -->
                         <template x-if="msg.sender === 'system'">
                             <div class="flex justify-center my-2">
                                 <span class="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-[10px] font-black text-gray-400 uppercase rounded-lg" x-text="msg.text"></span>
@@ -454,11 +454,11 @@
                             <div class="flex justify-end group relative my-1">
                                 <div class="opacity-0 group-hover:opacity-100 mr-2 my-auto flex items-center gap-1 transition-all">
                                     <!-- Delete Button Me -->
-                                    <button @click="deleteMessage(msg.id)" class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all shrink-0 focus:opacity-100" title="Eliminar mensaje">
+                                    <button @click="deleteMessage(msg.id)" class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all shrink-0 focus:opacity-100" title="{{ __("html.delete_message") }}">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                     </button>
                                     <!-- Reply Button Me -->
-                                    <button @click="replyingTo = msg; $nextTick(() => $refs.chatInput.focus())" class="p-1.5 text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-all shrink-0 focus:opacity-100" title="Responder">
+                                    <button @click="replyingTo = msg; $nextTick(() => $refs.chatInput.focus())" class="p-1.5 text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-all shrink-0 focus:opacity-100" title="{{ __("html.reply") }}">
                                         <svg class="w-4 h-4 transform -scale-x-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
                                     </button>
                                 </div>
@@ -573,7 +573,7 @@
                                     <span class="block text-[8px] text-gray-400 text-right mt-1" x-text="msg.time"></span>
                                 </div>
                                 <!-- Reply Button Them -->
-                                <button @click="replyingTo = msg; $nextTick(() => $refs.chatInput.focus())" class="opacity-0 group-hover:opacity-100 ml-2 my-auto p-1.5 text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-all shrink-0 focus:opacity-100" title="Responder">
+                                <button @click="replyingTo = msg; $nextTick(() => $refs.chatInput.focus())" class="opacity-0 group-hover:opacity-100 ml-2 my-auto p-1.5 text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-all shrink-0 focus:opacity-100" title="{{ __("html.reply") }}">
                                     <svg class="w-4 h-4 transform -scale-x-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
                                 </button>
                             </div>
@@ -631,7 +631,7 @@
                     <!-- Tools Column: Grouped for max visibility & aesthetics -->
                     <div class="flex items-center gap-1 mb-1 px-1">
                         <div class="relative">
-                            <button @click="showEmojis = !showEmojis" class="p-2 text-gray-700 hover:text-emerald-600 dark:text-gray-300 dark:hover:text-emerald-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all" title="Emoticonos">
+                            <button @click="showEmojis = !showEmojis" class="p-2 text-gray-700 hover:text-emerald-600 dark:text-gray-300 dark:hover:text-emerald-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all" title="{{ __("html.emojis") }}">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             </button>
 
@@ -646,12 +646,12 @@
                         </div>
 
                         <input type="file" x-ref="fileInput" class="hidden" @change="handleFileSelect($event)">
-                        <button @click="$refs.fileInput.click()" class="p-2 text-gray-700 hover:text-emerald-600 dark:text-gray-300 dark:hover:text-emerald-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all" title="Adjuntar archivo local">
+                        <button @click="$refs.fileInput.click()" class="p-2 text-gray-700 hover:text-emerald-600 dark:text-gray-300 dark:hover:text-emerald-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all" title="{{ __("html.local_file_attachment") }}">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
                         </button>
 
                         @if ($currentTeamContext)
-                        <button @click="$dispatch('open-drive-picker', { mode: 'collect' })" class="p-2 text-gray-700 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all relative group" title="Vincular Google Drive">
+                        <button @click="$dispatch('open-drive-picker', { mode: 'collect' })" class="p-2 text-gray-700 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all relative group" title="{{ __("html.link_google_drive") }}">
                             <svg class="w-5 h-5" viewBox="0 0 48 48">
                                 <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/>
                                 <path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/>
@@ -676,7 +676,7 @@
                                @keydown.enter="if(!$event.shiftKey) { $event.preventDefault(); sendMessage(); }"
                                @paste="handlePaste($event)"
                                rows="3"
-                               placeholder="Escribe un mensaje... (Shift+Intro para línea nueva)"
+                               placeholder="{{ __('Write a message... (Shift+Enter for new line)') }}"
                                class="w-full bg-transparent border-0 px-4 py-3 text-xs font-bold text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:ring-0 resize-none custom-scrollbar"></textarea>
                     </div>
 
@@ -738,7 +738,7 @@
                 const isDark = document.documentElement.classList.contains('dark');
 
                 const result = await Swal.fire({
-                    title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Formato de Impresión</span>',
+                    title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">{{ __('docs.print_format') }}</span>',
                     background: isDark ? '#0f172a' : '#ffffff',
                     color: isDark ? '#f3f4f6' : '#1f2937',
                     showConfirmButton: false,
@@ -885,7 +885,7 @@
                 const isDark = document.documentElement.classList.contains('dark');
 
                 const result = await Swal.fire({
-                    title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Imprimir Página</span>',
+                    title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">{{ __('widgets.print_page') }}</span>',
                     background: isDark ? '#0f172a' : '#ffffff',
                     color: isDark ? '#f3f4f6' : '#1f2937',
                     showConfirmButton: false,
@@ -895,22 +895,22 @@
                     },
                     html: `
                         <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-6 text-center px-4">
-                            ¿Deseas imprimir la página actual manteniendo la cabecera y navegación corporativa?
+                            {{ __('Do you want to print the current page keeping headers and corporate navigation?') }}
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-2">
                             <button type="button" id="print-page-btn-with" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-indigo-100 dark:border-indigo-950 bg-indigo-50/50 dark:bg-indigo-950/30 hover:border-indigo-600 transition-all text-center group">
                                 <div class="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform shadow-sm">
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                 </div>
-                                <div class="font-black text-[10px] uppercase tracking-widest text-indigo-700 dark:text-indigo-300">Con Cabeceras</div>
-                                <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Mantener marca</div>
+                                <div class="font-black text-[10px] uppercase tracking-widest text-indigo-700 dark:text-indigo-300">{{ __('With Headers') }}</div>
+                                <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">{{ __('Keep branding') }}</div>
                             </button>
                             <button type="button" id="print-page-btn-without" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-slate-900 hover:border-gray-600 transition-all text-center group">
                                 <div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 group-hover:scale-110 transition-transform shadow-sm">
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
                                 </div>
-                                <div class="font-black text-[10px] uppercase tracking-widest text-gray-700 dark:text-gray-300">Sin Cabeceras</div>
-                                <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Ocultar menús</div>
+                                <div class="font-black text-[10px] uppercase tracking-widest text-gray-700 dark:text-gray-300">{{ __('Without Headers') }}</div>
+                                <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">{{ __('Hide menus') }}</div>
                             </button>
                         </div>
                     `,

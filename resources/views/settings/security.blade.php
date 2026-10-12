@@ -1,5 +1,5 @@
 <x-app-layout>
-    @section('title', 'Log de Seguridad (ENS)')
+    @section('title', __('Security Log (ENS)'))
 
     <x-slot name="header">
         <div class="flex items-center gap-3">
@@ -9,9 +9,9 @@
                 </svg>
             </div>
             <div>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">Auditoría de Seguridad (ENS)</h1>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">{{ __('Security Audit (ENS)') }}</h1>
                 <x-demo-hint>
-                    El módulo de Auditoría provee un historial unificado y no repudiable de la trazabilidad del sistema, registrando inicios de sesión, fallos de autenticación y modificaciones de permisos. Este registro es clave para cumplir con las normativas del Esquema Nacional de Seguridad (ENS).
+                    {{ __('The Audit module provides a unified and non-repudiable trace history of the system, recording logins, authentication failures, and permission changes. This log is key to complying with National Security Scheme (ENS) regulations.') }}
                 </x-demo-hint>
             </div>
         </div>
@@ -30,8 +30,8 @@
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-gray-900 dark:text-white">Estado de Cumplimiento ENS: <span class="text-emerald-600 dark:text-emerald-400">ACTIVO</span></h3>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">El sistema registra y mantiene inmutable el historial de accesos fallidos, login, cambios de configuración y cambios en roles de equipo.</p>
+                        <h3 class="text-base font-bold text-gray-900 dark:text-white">{{ __('ENS Compliance Status:') }} <span class="text-emerald-600 dark:text-emerald-400">{{ __('ACTIVE') }}</span></h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ __('The system records and keeps immutable the history of failed accesses, logins, configuration changes, and team role updates.') }}</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
@@ -43,14 +43,14 @@
             <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl overflow-hidden shadow-sm">
                 <div class="p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30 flex flex-col md:flex-row items-center justify-between gap-4">
                     <div>
-                        <h3 class="text-sm font-black uppercase tracking-widest text-violet-600 dark:text-violet-400">Trazabilidad en Tiempo Real</h3>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Inspecciona los eventos de seguridad almacenados de forma segura en la base de datos.</p>
+                        <h3 class="text-sm font-black uppercase tracking-widest text-violet-600 dark:text-violet-400">{{ __('Real-Time Traceability') }}</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('Inspect security events securely stored in the database.') }}</p>
                     </div>
                     
                     <!-- Search Input -->
                     <form action="{{ route('settings.security') }}" method="GET" class="w-full md:w-auto">
                         <div class="relative">
-                            <input type="text" name="search" value="{{ $search }}" placeholder="Buscar por evento, IP o descripción..." class="w-full md:w-80 bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 rounded-xl text-xs pl-8 focus:ring-violet-500/20 focus:border-violet-500">
+                            <input type="text" name="search" value="{{ $search }}" placeholder="{{ __('Search by event, IP or description...') }}" class="w-full md:w-80 bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 rounded-xl text-xs pl-8 focus:ring-violet-500/20 focus:border-violet-500">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 absolute left-2.5 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
@@ -63,11 +63,11 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="border-b border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-800/10">
-                                <th class="p-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Fecha y Hora</th>
-                                <th class="p-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Usuario / Cuenta</th>
-                                <th class="p-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Tipo de Evento</th>
-                                <th class="p-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Descripción de la Acción</th>
-                                <th class="p-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Dirección IP / Navegador</th>
+                                <th class="p-4 text-[10px] font-black uppercase tracking-widest text-gray-400">{{ __('Date & Time') }}</th>
+                                <th class="p-4 text-[10px] font-black uppercase tracking-widest text-gray-400">{{ __('User / Account') }}</th>
+                                <th class="p-4 text-[10px] font-black uppercase tracking-widest text-gray-400">{{ __('Event Type') }}</th>
+                                <th class="p-4 text-[10px] font-black uppercase tracking-widest text-gray-400">{{ __('Action Description') }}</th>
+                                <th class="p-4 text-[10px] font-black uppercase tracking-widest text-gray-400">{{ __('IP Address / Browser') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -88,7 +88,7 @@
                                                 </div>
                                             </div>
                                         @else
-                                            <span class="text-gray-400 font-medium">Sistema / Invitado</span>
+                                            <span class="text-gray-400 font-medium">{{ __('System / Guest') }}</span>
                                         @endif
                                     </td>
                                     <td class="p-4 text-xs whitespace-nowrap">
@@ -105,14 +105,14 @@
                                                 default => 'bg-violet-100 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400'
                                             };
                                             $eventLabel = match($log->event) {
-                                                'auth.login' => 'Inicio de Sesión',
-                                                'auth.failed' => 'Intento Fallido',
-                                                'auth.logout' => 'Cierre de Sesión',
-                                                'setting.updated' => 'Ajustes Modificados',
-                                                'team.member_added' => 'Miembro Añadido',
-                                                'team.role_updated' => 'Rol Actualizado',
-                                                'team.member_removed' => 'Miembro Eliminado',
-                                                'admin.user.force_logout' => 'Cierre de Sesión Forzado',
+                                                'auth.login' => __('Login'),
+                                                'auth.failed' => __('Failed Attempt'),
+                                                'auth.logout' => __('Logout'),
+                                                'setting.updated' => __('Settings Updated'),
+                                                'team.member_added' => __('Member Added'),
+                                                'team.role_updated' => __('Role Updated'),
+                                                'team.member_removed' => __('Member Removed'),
+                                                'admin.user.force_logout' => __('Forced Logout'),
                                                 default => $log->event
                                             };
                                         @endphp
@@ -139,7 +139,7 @@
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                             </svg>
-                                            <p class="text-sm text-gray-500 font-medium">No se encontraron logs de seguridad registrados.</p>
+                                            <p class="text-sm text-gray-500 font-medium">{{ __('No security logs found.') }}</p>
                                         </div>
                                     </td>
                                 </tr>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Sesión Expirada</title>
+    <title>{{ __('Sesión Expirada') }}</title>
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -20,7 +20,7 @@
         <div class="max-w-md w-full space-y-8 text-center">
             <div>
                 <h2 class="mt-6 text-3xl font-bold text-gray-900">
-                    Sesión Expirada
+                    {{ __('Sesión Expirada') }}
                 </h2>
                 <p class="mt-2 text-sm text-gray-600">
                     Tu sesión ha expirado por seguridad. Te redirigiremos al inicio en un momento...

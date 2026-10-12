@@ -28,7 +28,7 @@
     },
 
     get preview() {
-        if (typeof marked === 'undefined') return '{{ __("Cargando...") }}';
+        if (typeof marked === 'undefined') return '{{ __('Loading...') }}';
         marked.use({ breaks: true, gfm: true });
         return typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(marked.parse(this.content || '')) : marked.parse(this.content || '').replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').replace(/on[a-z]+=/gi, '');
     },
@@ -348,7 +348,7 @@
                     :class="tab === 'write' ? 'bg-white dark:bg-gray-800 text-violet-600 dark:text-violet-400 shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
                     class="px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all border border-transparent"
                     :class="tab === 'write' ? 'border-gray-100 dark:border-gray-700' : ''">
-                    {{ __('Editar') }}
+                    {{ __('Edit') }}
                 </button>
                 <button type="button" 
                     @click="tab = 'preview'"

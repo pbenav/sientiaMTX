@@ -8,23 +8,23 @@
 <div class="bg-orange-50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-800/30 rounded-2xl p-5 shadow-sm">
     <h3 class="text-xs font-black text-orange-500 dark:text-orange-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
-        Propiedades del Documento
+        {{ __('Document Properties') }}
     </h3>
     <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
         @if(!empty($meta['version']))
         <div>
-            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Versión</p>
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{{ __('Version') }}</p>
             <p class="text-sm font-bold text-gray-900 dark:text-white font-mono">{{ $meta['version'] }}</p>
         </div>
         @endif
         <div>
-            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Capítulos</p>
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{{ __('Chapters') }}</p>
             <p class="text-sm font-bold text-gray-900 dark:text-white">{{ count($chapters) }}</p>
         </div>
         @if(!empty($meta['is_ephemeral']))
         <div>
-            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Efímero</p>
-            <span class="px-2 py-0.5 rounded-md text-[10px] font-black bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">Sí</span>
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{{ __('Ephemeral') }}</p>
+            <span class="px-2 py-0.5 rounded-md text-[10px] font-black bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">{{ __('Yes') }}</span>
         </div>
         @endif
     </div>
@@ -34,7 +34,7 @@
 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm">
     <div class="flex flex-col xl:flex-row gap-6 justify-between">
         <div class="flex-1">
-            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Estado del Documento</p>
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">{{ __('Document Status') }}</p>
             <form action="{{ route('teams.activities.change-status', [$team, $activity]) }}" method="POST" class="w-full">
                 @csrf
                 @method('PATCH')
@@ -53,7 +53,7 @@
         </div>
         @if(!empty($meta['collaborators']))
         <div class="xl:w-1/3 shrink-0">
-            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Colaboradores</p>
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">{{ __('Collaborators') }}</p>
             <div class="flex gap-2 flex-wrap">
                 @foreach((array)$meta['collaborators'] as $collab)
                 <span class="px-2.5 py-1 rounded-lg text-[10px] sm:text-xs font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 border border-orange-200 dark:border-orange-800/30 shadow-sm">{{ $collab }}</span>
@@ -78,7 +78,7 @@
             </h3>
             <button onclick="printSection('Descripción', 'description-content')"
                     class="p-1.5 bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-xl transition-all border border-transparent hover:border-violet-100 dark:hover:border-violet-800 shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest"
-                    title="Imprimir descripción">
+                    title="{{ __("html.print_description") }}">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                 </svg>
@@ -108,7 +108,7 @@
             </h3>
             <button onclick="printSection('Observaciones', 'observations-content')"
                     class="p-1.5 bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-xl transition-all border border-transparent hover:border-violet-100 dark:hover:border-violet-800 shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest"
-                    title="Imprimir observaciones">
+                    title="{{ __("html.print_observations") }}">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                 </svg>
@@ -198,8 +198,8 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <svg class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
                     </div>
-                    <input type="text" x-model="search" @keydown.enter.prevent="nextMatch()" @keydown.shift.enter.prevent="prevMatch()" class="block w-full pl-9 pr-9 py-2 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 sm:text-xs transition-colors" placeholder="Buscar en los capítulos...">
-                    <button type="button" x-show="search.length > 0" @click="search = ''; totalMatches = 0;" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" style="display: none;" title="Limpiar búsqueda">
+                    <input type="text" x-model="search" @keydown.enter.prevent="nextMatch()" @keydown.shift.enter.prevent="prevMatch()" class="block w-full pl-9 pr-9 py-2 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 sm:text-xs transition-colors" placeholder="{{ __('Search') }} en los capítulos...">
+                    <button type="button" x-show="search.length > 0" @click="search = ''; totalMatches = 0;" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" style="display: none;" title="{{ __("html.clear_search") }}">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
@@ -214,12 +214,12 @@
                             <span class="text-rose-500 font-semibold">0/0</span>
                         </template>
                     </span>
-                    <button type="button" @click="prevMatch()" :disabled="totalMatches <= 1" class="p-1 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 disabled:opacity-30 disabled:hover:text-gray-500 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Ocurrencia anterior (Shift+Enter)">
+                    <button type="button" @click="prevMatch()" :disabled="totalMatches <= 1" class="p-1 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 disabled:opacity-30 disabled:hover:text-gray-500 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="{{ __("html.previous_occurrence") }} (Shift+Enter)">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
                         </svg>
                     </button>
-                    <button type="button" @click="nextMatch()" :disabled="totalMatches <= 1" class="p-1 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 disabled:opacity-30 disabled:hover:text-gray-500 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Siguiente ocurrencia (Enter)">
+                    <button type="button" @click="nextMatch()" :disabled="totalMatches <= 1" class="p-1 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 disabled:opacity-30 disabled:hover:text-gray-500 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="{{ __("html.next_occurrence") }} (Enter)">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                         </svg>
@@ -305,13 +305,13 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
-                        <button type="button" @click.stop="$dispatch('ai:analyze-task', { taskId: {{ $activity->id }}, teamId: {{ $team->id }}, taskTitle: '{{ addslashes($activity->title) }}', section: 'chapter-{{ $idx }}' })" class="p-1.5 text-gray-400 hover:text-indigo-500 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors" title="Enviar a Ax.ia">
+                        <button type="button" @click.stop="$dispatch('ai:analyze-task', { taskId: {{ $activity->id }}, teamId: {{ $team->id }}, taskTitle: '{{ addslashes($activity->title) }}', section: 'chapter-{{ $idx }}' })" class="p-1.5 text-gray-400 hover:text-indigo-500 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors" title="{{ __('Send') }} a Ax.ia">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
                         </button>
-                        <button type="button" @click.stop="printSection('{{ addslashes($chapter['title'] ?? 'Capítulo ' . ($idx + 1)) }}', 'chapter-content-{{ $idx }}')" class="p-1.5 text-gray-400 hover:text-orange-500 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors" title="Imprimir Capítulo">
-                        <button type="button" @click.stop="updateContent(); $nextTick(() => printSection('{{ addslashes($chapter['title'] ?? 'Capítulo ' . ($idx + 1)) }}', 'chapter-content-{{ $idx }}'))" class="p-1.5 text-gray-400 hover:text-orange-500 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors" title="Imprimir Capítulo">
+                        <button type="button" @click.stop="printSection('{{ addslashes($chapter['title'] ?? 'Capítulo ' . ($idx + 1)) }}', 'chapter-content-{{ $idx }}')" class="p-1.5 text-gray-400 hover:text-orange-500 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors" title="{{ __("html.print_chapter") }}">
+                        <button type="button" @click.stop="updateContent(); $nextTick(() => printSection('{{ addslashes($chapter['title'] ?? 'Capítulo ' . ($idx + 1)) }}', 'chapter-content-{{ $idx }}'))" class="p-1.5 text-gray-400 hover:text-orange-500 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors" title="{{ __("html.print_chapter") }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                             </svg>

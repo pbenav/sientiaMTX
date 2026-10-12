@@ -232,7 +232,7 @@
         <div class="corp-header">
             <div class="corp-logo">sientia<em>MTX</em></div>
             <div class="corp-meta">
-                <div class="corp-type">Documentación Oficial</div>
+                <div class="corp-type">{{ __('Documentación Oficial') }}</div>
                 <div class="corp-section">Centro de Documentación</div>
             </div>
         </div>
@@ -250,7 +250,7 @@
 
         {{-- Pie --}}
         <footer class="doc-footer">
-            <span>Sientia MTX Ecosystem &bull; Centro de Documentación</span>
+            <span>{{ __('docs.sientia_ecosystem') }} &bull; {{ __('docs.documentation_center') }}</span>
             <span>{{ now()->format('d/m/Y H:i') }}</span>
         </footer>
 
@@ -261,7 +261,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
         </svg>
-        Imprimir / Guardar PDF
+        {{ __("docs.print_save_pdf") }}
     </button>
 
     <script>

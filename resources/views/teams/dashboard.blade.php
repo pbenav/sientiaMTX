@@ -6,7 +6,7 @@
             <div class="flex items-center gap-2 min-w-0">
                 <a href="{{ route('teams.index') }}"
                     class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0"
-                    title="{{ __('navigation.back') ?? 'Volver' }}">
+                    title="{{ __('navigation.back') ?? __('Back') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -84,7 +84,7 @@
                 <label class="flex items-center gap-2 cursor-pointer ml-auto bg-white dark:bg-gray-800 px-3 py-2 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
                     <input type="hidden" name="filter_matrix" value="1">
                     <input type="checkbox" name="hide_completed" value="1" onchange="this.form.submit()" {{ $hideCompleted ? 'checked' : '' }} class="rounded border-gray-300 dark:border-gray-600 text-violet-600 focus:ring-violet-500 bg-gray-50 dark:bg-gray-900">
-                    <span class="text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest">Ocultar Completadas</span>
+                    <span class="text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest">{{ __('Ocultar Completadas') }}</span>
                 </label>
             </form>
         </div>
@@ -188,14 +188,14 @@
                                             <div class="flex items-center gap-1.5 shrink-0 z-10 relative">
                                                 @if ($task->isBlockedByService())
                                                     <div class="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse"></div>
-                                                    <div class="p-1 bg-red-100 dark:bg-red-900/40 rounded-md text-red-600 dark:text-red-400" title="{{ __('Servicio Caído: ') . ($task->service ? $task->service->name : '') }}">
+                                                    <div class="p-1 bg-red-100 dark:bg-red-900/40 rounded-md text-red-600 dark:text-red-400" title="{{ __('html.service_down') }}: {{ $task->service ? $task->service->name : '' }}">
                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M5.636 5.636l3.536 3.536m0 5.656l-3.536 3.536M9.172 9.172L15 15M15 9.172l-5.828 5.828" />
                                                         </svg>
                                                     </div>
                                                 @elseif ($task->status_value === 'blocked' || $task->status === 'blocked')
-                                                    <div class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" title="Bloqueada"></div>
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-red-500" title="Bloqueada"
+                                                    <div class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" title="{{ __("html.lock") }}"></div>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-red-500" title="{{ __("html.lock") }}"
                                                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
                                                             stroke-width="2.5"
@@ -220,8 +220,8 @@
                                                 </button>
                                             @endif
 
-                                            <a href="{{ route('teams.activities.show', [$team, $task]) }}"
-                                                title="Estado: {{ \Illuminate\Support\Facades\Lang::has('tasks.statuses.'.($task->status_value ?? 'pending')) ? __('tasks.statuses.'.($task->status_value ?? 'pending')) : ucfirst($task->status_value ?? 'pending') }}&#10;Progreso: {{ $task->progress }}%&#10;Fecha límite: {{ $task->due_date ? $task->due_date->format('d/m/Y') : 'Sin fecha' }}"
+                                             <a href="{{ route('teams.activities.show', [$team, $task]) }}"
+                                                 title="{{ __('tasks.status') }}: {{ \Illuminate\Support\Facades\Lang::has('tasks.statuses.'.($task->status_value ?? 'pending')) ? __('tasks.statuses.'.($task->status_value ?? 'pending')) : ucfirst($task->status_value ?? 'pending') }}&#10;{{ __('tasks.progress') }}: {{ $task->progress }}%&#10;{{ __('tasks.due_date') }}: {{ $task->due_date ? $task->due_date->format('d/m/Y') : __('tasks.no_date') }}"
                                                 class="flex-1 text-[11px] sm:text-sm text-gray-950 dark:text-gray-50 group-hover:text-black dark:group-hover:text-white transition-colors flex items-center gap-1.5 font-black truncate">
                                                 @if ($task->visibility === 'private')
                                                     <svg xmlns="http://www.w3.org/2000/svg"
@@ -296,7 +296,7 @@
                                                     <div
                                                         class="flex items-center gap-2 py-1 px-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-all group/sub">
                                                         @if ($child->isBlockedByService() || $child->status_value === 'blocked' || $child->status === 'blocked')
-                                                            <div class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping shrink-0" title="Instancia Bloqueada"></div>
+                                                            <div class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping shrink-0" title="{{ __("html.blocked_instance") }}"></div>
                                                         @else
                                                             <div class="w-1.5 h-1.5 rounded-full bg-gray-400/50 shrink-0"></div>
                                                         @endif

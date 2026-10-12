@@ -10,14 +10,14 @@
         <div class="flex items-center gap-2">
             <template x-if="guests.length > 1">
                 <button type="button" @click="clearAllGuests" class="text-[11px] font-bold text-red-500 hover:text-red-700 dark:hover:text-red-400 transition-colors px-2.5 py-1.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20">
-                    Vaciar lista
+                    {{ __('Vaciar lista') }}
                 </button>
             </template>
             <button type="button" @click="showModal = true" 
                     class="text-xs font-bold transition-all flex items-center gap-2 px-3.5 py-1.5 rounded-xl border shadow-sm"
                     :class="customMessage.trim().length > 0 ? 'bg-violet-100 dark:bg-violet-900/50 text-violet-700 dark:text-violet-300 border-violet-300 dark:border-violet-700' : 'text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 bg-violet-50 hover:bg-violet-100 dark:bg-violet-900/30 dark:hover:bg-violet-900/50 border-violet-200/80 dark:border-violet-500/30'">
                 <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                <span>Personalizar Mensaje</span>
+                <span>{{ __('Personalizar Mensaje') }}</span>
                 <template x-if="customMessage.trim().length > 0">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Mensaje personalizado activo"></span>
                 </template>
@@ -57,11 +57,11 @@
                             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                         </div>
                         <div>
-                            <h3 class="text-base font-black text-gray-900 dark:text-white tracking-tight">Personalizar Mensaje de Invitación</h3>
+                            <h3 class="text-base font-black text-gray-900 dark:text-white tracking-tight">{{ __('Personalizar Mensaje') }} de Invitación</h3>
                             <p class="text-xs text-gray-500 dark:text-gray-400">Edición enriquecida con Markdown, menciones y vista previa en vivo</p>
                         </div>
                     </div>
-                    <button type="button" @click="showModal = false" class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title="Cerrar (Esc)">
+                    <button type="button" @click="showModal = false" class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors" title="{{ __('Close') }} (Esc)">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
@@ -73,7 +73,7 @@
                             <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">
                                 Haz clic en una etiqueta para insertarla en el texto:
                             </label>
-                            <span class="text-[10px] text-violet-600 dark:text-violet-400 font-bold hidden sm:inline">Variables dinámicas</span>
+                            <span class="text-[10px] text-violet-600 dark:text-violet-400 font-bold hidden sm:inline">{{ __('Variables dinámicas') }}</span>
                         </div>
                         <div class="flex flex-wrap gap-2">
                             <button type="button" @click="insertTag('[nombre_invitado]')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-violet-50 hover:bg-violet-100 dark:bg-violet-950/60 dark:hover:bg-violet-900/60 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800/60 transition-all hover:scale-105 active:scale-95 shadow-sm">
@@ -110,7 +110,7 @@
                             <span class="text-[10px] text-gray-400 font-mono">Destinatario de ejemplo</span>
                         </div>
                         <div class="bg-gradient-to-b from-gray-50 to-gray-100/70 dark:from-gray-800/60 dark:to-gray-800/30 rounded-2xl p-4.5 border border-gray-200/80 dark:border-gray-700/80 text-xs text-gray-700 dark:text-gray-300 space-y-3 font-sans shadow-inner">
-                            <p>Hola <span class="font-bold text-gray-900 dark:text-white">Juan Pérez</span>,</p>
+                            <p>Hola <span class="font-bold text-gray-900 dark:text-white">{{ __('Juan Pérez') }}</span>,</p>
                             <p>Has recibido una convocatoria/aviso en <strong class="text-violet-600 dark:text-violet-400">SientiaMTX</strong> por parte de <strong class="text-gray-900 dark:text-white">{{ auth()->user()->name ?? 'Tu Nombre' }}</strong>.</p>
                             
                             <template x-if="customMessage.trim() !== ''">
@@ -136,7 +136,7 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <button type="button" @click="showModal = false" class="px-4 py-2 text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-200/60 dark:hover:bg-gray-700 rounded-xl transition-colors">
-                            Cerrar
+                            {{ __('Close') }}
                         </button>
                         <button type="button" @click="showModal = false" class="px-6 py-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
@@ -160,7 +160,7 @@
                         <p class="text-xs font-bold text-gray-900 dark:text-white truncate flex items-center gap-2">
                             <span x-text="guest.name"></span>
                             <template x-if="guest.notify == 1 || guest.notify == '1' || guest.notify === true">
-                                <span class="px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/30 flex items-center gap-0.5" title="Se notificará por correo">
+                                <span class="px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/30 flex items-center gap-0.5" title="{{ __('html.email_notification') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
                                     Notificar
                                 </span>
@@ -170,7 +170,7 @@
                     </div>
                 </div>
 
-                <button type="button" @click="removeGuest(index)" class="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 shrink-0" title="Eliminar Invitado">
+                <button type="button" @click="removeGuest(index)" class="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 shrink-0" title="{{ __('Delete') }} Invitado">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
@@ -214,10 +214,10 @@
         <div x-show="addMode === 'single'" class="flex flex-col md:flex-row gap-3 items-start md:items-end">
             <div class="flex-1 w-full">
                 <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Nombre del Invitado</label>
-                <input type="text" x-model="newName" @keydown.enter.prevent="addGuest" placeholder="Ej. Juan Pérez" class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 rounded-xl px-3.5 py-2 text-sm outline-none transition-all dark:text-white">
+                <input type="text" x-model="newName" @keydown.enter.prevent="addGuest" placeholder="Ej. {{ __('Juan Pérez') }}" class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 rounded-xl px-3.5 py-2 text-sm outline-none transition-all dark:text-white">
             </div>
             <div class="flex-1 w-full">
-                <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Correo Electrónico</label>
+                <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">{{ __('Email') }}</label>
                 <input type="email" x-model="newEmail" @keydown.enter.prevent="addGuest" placeholder="juan@ejemplo.com" class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 rounded-xl px-3.5 py-2 text-sm outline-none transition-all dark:text-white font-mono">
             </div>
             <div class="flex items-center self-center md:self-end md:pb-2 shrink-0 px-2">
@@ -249,7 +249,7 @@
             </div>
 
             <textarea x-model="bulkText" rows="4" class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 rounded-2xl p-3.5 text-xs outline-none transition-all dark:text-white font-mono leading-relaxed resize-y" placeholder="Ejemplos admitidos:
-• Juan Pérez <juan@ejemplo.com>
+• {{ __('Juan Pérez') }} <juan@ejemplo.com>
 • Maria Lopez, maria@empresa.es
 • ana@dominio.com, carlos@colegio.org
 • O una dirección por cada línea..."></textarea>
@@ -264,7 +264,7 @@
                 </label>
                 <div class="flex items-center gap-2">
                     <button type="button" @click="bulkText = ''" x-show="bulkText.trim().length > 0" class="px-3 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-                        Limpiar
+                        {{ __('Clear') }}
                     </button>
                     <button type="button" @click="addBulkGuests" :disabled="bulkParsedCount === 0" class="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all shadow-md flex items-center justify-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
@@ -332,7 +332,7 @@
                         if (!msg.trim()) return '';
                         const title = this.activityTitle;
                         let replaced = msg
-                            .replace(/\[nombre_invitado\]/gi, 'Juan Pérez')
+                            .replace(/\[nombre_invitado\]/gi, '{{ __('Juan Pérez') }}')
                             .replace(/\[mi_nombre\]/gi, '{{ auth()->user()->name ?? "Tu Nombre" }}')
                             .replace(/\[titulo_reunion\]/gi, title || '(Título)');
 
@@ -444,7 +444,7 @@
                     },
 
                     clearAllGuests() {
-                        if (confirm('¿Vaciar todos los invitados de la lista?')) {
+                        if (confirm('{{ __('swal.confirm_empty_guest_list') }}')) {
                             this.guests = [];
                         }
                     }

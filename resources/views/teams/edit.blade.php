@@ -7,7 +7,7 @@
             <div class="flex items-center gap-2 min-w-0">
                 <a href="{{ route('teams.index') }}"
                     class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0"
-                    title="{{ __('navigation.back') ?? 'Volver' }}">
+                    title="{{ __('navigation.back') ?? __('Back') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -72,7 +72,7 @@
             <button @click="setTab('appearance')" 
                 :class="tab === 'appearance' ? 'bg-white dark:bg-gray-900 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-800' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
                 class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
-                Apariencia del Equipo
+                Apariencia del {{ __('Team') }}
             </button>
             <button @click="setTab('authorizations')" 
                 :class="tab === 'authorizations' ? 'bg-white dark:bg-gray-900 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-800' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
@@ -83,7 +83,7 @@
             <button @click="setTab('whatsapp')" 
                 :class="tab === 'whatsapp' ? 'bg-white dark:bg-gray-900 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-800' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
                 class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
-                WhatsApp del Equipo
+                WhatsApp del {{ __('Team') }}
             </button>
             @endif
                 </div>
@@ -127,20 +127,20 @@
                                     Gestión de Datos y Papelera
                                </h3>
                                 <div>
-                                    <x-input-label for="trash_retention_days" value="Vaciar Papelera Automáticamente"
+                                    <x-input-label for="trash_retention_days" :value="__('Empty Trash Automatically')"
                                         class="text-xs font-bold text-gray-600 dark:text-gray-400 mb-2" />
                                     <select id="trash_retention_days" name="settings[trash_retention_days]"
                                         class="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all cursor-pointer">
                                         @php
                                             $currentRetention = $team->settings['trash_retention_days'] ?? 30;
                                         @endphp
-                                        <option value="15" {{ $currentRetention == 15 ? 'selected' : '' }}>A los 15 días</option>
-                                        <option value="30" {{ $currentRetention == 30 ? 'selected' : '' }}>A los 30 días (Recomendado)</option>
-                                        <option value="90" {{ $currentRetention == 90 ? 'selected' : '' }}>A los 90 días</option>
-                                        <option value="0" {{ $currentRetention == 0 ? 'selected' : '' }}>Nunca (Vaciar manualmente)</option>
+                                        <option value="15" {{ $currentRetention == 15 ? 'selected' : '' }}>{{ __('After 15 days') }}</option>
+                                        <option value="30" {{ $currentRetention == 30 ? 'selected' : '' }}>{{ __('After 30 days (Recommended)') }}</option>
+                                        <option value="90" {{ $currentRetention == 90 ? 'selected' : '' }}>{{ __('After 90 days') }}</option>
+                                        <option value="0" {{ $currentRetention == 0 ? 'selected' : '' }}>{{ __('Never (Empty manually)') }}</option>
                                     </select>
                                     <p class="mt-2 text-[10px] text-gray-500">
-                                        Las actividades y expedientes eliminados se purgarán definitivamente cuando superen este límite de tiempo.
+                                        {{ __('Deleted activities and cases will be permanently purged when they exceed this time limit.') }}
                                     </p>
                                 </div>
                             </div>
@@ -152,28 +152,28 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                         </svg>
                                     </span>
-                                    <h3 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">Control de Inactividad</h3>
+                                    <h3 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">{{ __('Inactivity Control') }}</h3>
                                 </div>
                                 
                                 <div class="space-y-4">
                                     <div>
-                                        <x-input-label for="inactivity_logout_minutes" value="Tiempo para auto-cierre de sesión"
+                                        <x-input-label for="inactivity_logout_minutes" :value="__('Inactivity Auto-Logout Time')"
                                             class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2" />
                                         <select id="inactivity_logout_minutes" name="settings[inactivity_logout_minutes]"
                                             class="block w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-900 dark:text-white outline-none transition-all shadow-sm">
-                                            <option value="0" {{ ($team->settings['inactivity_logout_minutes'] ?? 60) == 0 ? 'selected' : '' }}>Desactivado (No cerrar sesión)</option>
-                                            <option value="15" {{ ($team->settings['inactivity_logout_minutes'] ?? 60) == 15 ? 'selected' : '' }}>15 minutos</option>
-                                            <option value="30" {{ ($team->settings['inactivity_logout_minutes'] ?? 60) == 30 ? 'selected' : '' }}>30 minutos</option>
-                                            <option value="60" {{ ($team->settings['inactivity_logout_minutes'] ?? 60) == 60 ? 'selected' : '' }}>1 hora (Por defecto)</option>
-                                            <option value="120" {{ ($team->settings['inactivity_logout_minutes'] ?? 60) == 120 ? 'selected' : '' }}>2 horas</option>
-                                            <option value="240" {{ ($team->settings['inactivity_logout_minutes'] ?? 60) == 240 ? 'selected' : '' }}>4 horas</option>
+                                            <option value="0" {{ ($team->settings['inactivity_logout_minutes'] ?? 60) == 0 ? 'selected' : '' }}>{{ __('Disabled (Do not log out)') }}</option>
+                                            <option value="15" {{ ($team->settings['inactivity_logout_minutes'] ?? 60) == 15 ? 'selected' : '' }}>{{ __('15 minutes') }}</option>
+                                            <option value="30" {{ ($team->settings['inactivity_logout_minutes'] ?? 60) == 30 ? 'selected' : '' }}>{{ __('30 minutes') }}</option>
+                                            <option value="60" {{ ($team->settings['inactivity_logout_minutes'] ?? 60) == 60 ? 'selected' : '' }}>{{ __('1 hour (Default)') }}</option>
+                                            <option value="120" {{ ($team->settings['inactivity_logout_minutes'] ?? 60) == 120 ? 'selected' : '' }}>{{ __('2 hours') }}</option>
+                                            <option value="240" {{ ($team->settings['inactivity_logout_minutes'] ?? 60) == 240 ? 'selected' : '' }}>{{ __('4 hours') }}</option>
                                         </select>
                                     </div>
 
                                     <div class="pt-4 border-t border-gray-100 dark:border-gray-800/50 flex items-center justify-between">
                                         <div>
-                                            <span class="text-xs font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest block">Mantener activo laborando</span>
-                                            <span class="text-[9px] text-gray-400 font-medium">Ignorar inactividad si hay contador en marcha</span>
+                                            <span class="text-xs font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest block">{{ __('Keep active while working') }}</span>
+                                            <span class="text-[9px] text-gray-400 font-medium">{{ __('Ignore inactivity if a work timer is running') }}</span>
                                         </div>
                                         <label class="relative inline-flex items-center cursor-pointer">
                                             <input type="hidden" name="settings[keep_alive_during_work]" value="0">
@@ -183,19 +183,19 @@
                                     </div>
 
                                     <div class="pt-4 border-t border-gray-100 dark:border-gray-800/50">
-                                        <x-input-label for="chat_retention_days" value="Retención de Chat Interno"
+                                        <x-input-label for="chat_retention_days" :value="__('Internal Chat Retention')"
                                             class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2" />
                                         <select id="chat_retention_days" name="settings[chat_retention_days]"
                                             class="block w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-900 dark:text-white outline-none transition-all shadow-sm">
-                                            <option value="0" {{ ($team->settings['chat_retention_days'] ?? 0) == 0 ? 'selected' : '' }}>Conservar para siempre (sin purga)</option>
-                                            <option value="7" {{ ($team->settings['chat_retention_days'] ?? 0) == 7 ? 'selected' : '' }}>Conservar 1 semana</option>
-                                            <option value="15" {{ ($team->settings['chat_retention_days'] ?? 0) == 15 ? 'selected' : '' }}>Conservar 15 días</option>
-                                            <option value="30" {{ ($team->settings['chat_retention_days'] ?? 0) == 30 ? 'selected' : '' }}>Conservar 30 días</option>
-                                            <option value="90" {{ ($team->settings['chat_retention_days'] ?? 0) == 90 ? 'selected' : '' }}>Conservar 3 meses</option>
-                                            <option value="180" {{ ($team->settings['chat_retention_days'] ?? 0) == 180 ? 'selected' : '' }}>Conservar 6 meses</option>
-                                            <option value="365" {{ ($team->settings['chat_retention_days'] ?? 0) == 365 ? 'selected' : '' }}>Conservar 1 año</option>
+                                            <option value="0" {{ ($team->settings['chat_retention_days'] ?? 0) == 0 ? 'selected' : '' }}>{{ __('Keep forever (no purge)') }}</option>
+                                            <option value="7" {{ ($team->settings['chat_retention_days'] ?? 0) == 7 ? 'selected' : '' }}>{{ __('Keep 1 week') }}</option>
+                                            <option value="15" {{ ($team->settings['chat_retention_days'] ?? 0) == 15 ? 'selected' : '' }}>{{ __('Keep 15 days') }}</option>
+                                            <option value="30" {{ ($team->settings['chat_retention_days'] ?? 0) == 30 ? 'selected' : '' }}>{{ __('Keep 30 days') }}</option>
+                                            <option value="90" {{ ($team->settings['chat_retention_days'] ?? 0) == 90 ? 'selected' : '' }}>{{ __('Keep 3 months') }}</option>
+                                            <option value="180" {{ ($team->settings['chat_retention_days'] ?? 0) == 180 ? 'selected' : '' }}>{{ __('Keep 6 months') }}</option>
+                                            <option value="365" {{ ($team->settings['chat_retention_days'] ?? 0) == 365 ? 'selected' : '' }}>{{ __('Keep 1 year') }}</option>
                                         </select>
-                                        <p class="mt-2 text-[9px] leading-relaxed text-gray-400 font-medium">Los mensajes antiguos y sus archivos adjuntos se eliminarán automáticamente según la política elegida.</p>
+                                        <p class="mt-2 text-[9px] leading-relaxed text-gray-400 font-medium">{{ __('Old messages and attachments will be automatically deleted according to the selected policy.') }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -234,15 +234,15 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                                         </svg>
                                     </span>
-                                    <h3 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">Integración WhatsApp</h3>
+                                    <h3 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">{{ __('Integración WhatsApp') }}</h3>
                                 </div>
                                 
                                 <div>
-                                    <x-input-label for="whatsapp_chat_id" value="ID DE CHAT/NÚMERO DE WHATSAPP"
+                                    <x-input-label for="whatsapp_chat_id" :value="__('CHAT ID / WHATSAPP NUMBER')"
                                         class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2" />
                                     <x-text-input id="whatsapp_chat_id" name="whatsapp_chat_id" type="text" class="block w-full font-mono text-xs bg-white dark:bg-gray-800"
                                         :value="old('whatsapp_chat_id', $team->whatsapp_chat_id)" placeholder="34600123456" />
-                                    <p class="mt-3 text-[10px] leading-relaxed text-gray-400">Para vincular el grupo o número, pon el ID (ej: 1234567890@c.us). Los mensajes se recibirán en el widget de WhatsApp.</p>
+                                    <p class="mt-3 text-[10px] leading-relaxed text-gray-400">{{ __('To link the group or number, enter the ID (e.g. 1234567890@c.us). Messages will be received in the WhatsApp widget.') }}</p>
                                     <x-input-error :messages="$errors->get('whatsapp_chat_id')" class="mt-2" />
                                 </div>
                             </div>
@@ -256,15 +256,15 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
                                         </svg>
                                     </span>
-                                    <h3 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">Cuota Operativa (Soft Limit)</h3>
+                                    <h3 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">{{ __('Operational Quota (Soft Limit)') }}</h3>
                                 </div>
                                 
                                 <div>
-                                    <x-input-label for="soft_disk_quota_gb" value="Límite de Uso para el Equipo (GB)"
+                                    <x-input-label for="soft_disk_quota_gb" :value="__('Team Usage Limit (GB)')"
                                         class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2" />
                                     <x-text-input id="soft_disk_quota_gb" name="soft_disk_quota_gb" type="number" step="0.1" min="0.1" max="{{ $team->disk_quota / 1024 / 1024 / 1024 }}" class="block w-full font-bold bg-white dark:bg-gray-800"
                                         :value="old('soft_disk_quota_gb', isset($team->settings['soft_disk_quota']) ? $team->settings['soft_disk_quota'] / 1024 / 1024 / 1024 : $team->disk_quota / 1024 / 1024 / 1024)" />
-                                    <p class="mt-3 text-[10px] leading-relaxed text-gray-400">Límite operativo gestionable por el coordinador. Espacio físico máximo concedido por el Administrador: <strong class="text-gray-700 dark:text-gray-300">{{ number_format($team->disk_quota / 1024 / 1024 / 1024, 1) }} GB</strong>.</p>
+                                    <p class="mt-3 text-[10px] leading-relaxed text-gray-400">{!! __('Operational limit manageable by the coordinator. Maximum physical space granted by Administrator: :quota', ['quota' => '<strong class="text-gray-700 dark:text-gray-300">' . number_format($team->disk_quota / 1024 / 1024 / 1024, 1) . ' GB</strong>']) !!}</p>
                                     <x-input-error :messages="$errors->get('soft_disk_quota_gb')" class="mt-2" />
                                 </div>
                             </div>
@@ -277,16 +277,16 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4a2 2 0 012-2m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414a1 1 0 00-.707-.293H4" />
                                         </svg>
                                     </span>
-                                    <h3 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">{{ __('Mantenimiento (Admin)') }}</h3>
+                                    <h3 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">{{ __('Maintenance (Admin)') }}</h3>
                                 </div>
                                 
                                 <div class="space-y-4">
                                     <div>
-                                        <x-input-label for="disk_quota_gb" :value="__('Cuota de Almacenamiento (GB)')"
+                                        <x-input-label for="disk_quota_gb" :value="__('Storage Quota (GB)')"
                                             class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2" />
                                         <x-text-input id="disk_quota_gb" name="disk_quota_gb" type="number" step="0.1" min="0.1" class="block w-full font-bold bg-white dark:bg-gray-800"
                                             :value="old('disk_quota_gb', $team->disk_quota / 1024 / 1024 / 1024)" />
-                                        <p class="mt-3 text-[10px] leading-relaxed text-gray-400">Define el límite máximo de archivos que este equipo puede alojar.</p>
+                                        <p class="mt-3 text-[10px] leading-relaxed text-gray-400">{{ __('Defines the maximum file limit that this team can host.') }}</p>
                                         <x-input-error :messages="$errors->get('disk_quota_gb')" class="mt-2" />
                                     </div>
                                 </div>
@@ -412,14 +412,14 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                                 </svg>
                             </span>
-                            <h3 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">Control de Accesos</h3>
+                            <h3 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">{{ __('Control de Accesos') }}</h3>
                         </div>
                         <div class="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-4">
                             <!-- WhatsApp -->
                             <div class="bg-white dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 rounded-xl p-4 flex flex-col justify-between gap-3 shadow-sm hover:shadow-md transition-shadow">
                                 <div>
                                     <span class="text-[10px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest block">WhatsApp</span>
-                                    <span class="text-[9px] text-gray-400 font-medium">Vinculación canal QR</span>
+                                    <span class="text-[9px] text-gray-400 font-medium">{{ __('Vinculación canal QR') }}</span>
                                 </div>
                                 <div class="flex justify-end mt-auto pt-2 border-t border-gray-50 dark:border-gray-700/50">
                                     <label class="relative inline-flex items-center cursor-pointer">
@@ -430,11 +430,11 @@
                                 </div>
                             </div>
 
-                            <!-- Citas Previas -->
+                            <!-- {{ __("Appointments") }} Previas -->
                             <div class="bg-white dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 rounded-xl p-4 flex flex-col justify-between gap-3 shadow-sm hover:shadow-md transition-shadow">
                                 <div>
-                                    <span class="text-[10px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest block">Citas Previas</span>
-                                    <span class="text-[9px] text-gray-400 font-medium">Portal público</span>
+                                    <span class="text-[10px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest block">{{ __("Appointments") }} Previas</span>
+                                    <span class="text-[9px] text-gray-400 font-medium">{{ __('Portal público') }}</span>
                                 </div>
                                 <div class="flex justify-end mt-auto pt-2 border-t border-gray-50 dark:border-gray-700/50">
                                     <label class="relative inline-flex items-center cursor-pointer">
@@ -445,11 +445,11 @@
                                 </div>
                             </div>
 
-                            <!-- Micrositios -->
+                            <!-- {{ __("Microsites") }} -->
                             <div class="bg-white dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 rounded-xl p-4 flex flex-col justify-between gap-3 shadow-sm hover:shadow-md transition-shadow">
                                 <div>
-                                    <span class="text-[10px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest block">Micrositios</span>
-                                    <span class="text-[9px] text-gray-400 font-medium">Mini webs públicas</span>
+                                    <span class="text-[10px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest block">{{ __("Microsites") }}</span>
+                                    <span class="text-[9px] text-gray-400 font-medium">{{ __('Mini webs públicas') }}</span>
                                 </div>
                                 <div class="flex justify-end mt-auto pt-2 border-t border-gray-50 dark:border-gray-700/50">
                                     <label class="relative inline-flex items-center cursor-pointer">
@@ -460,11 +460,11 @@
                                 </div>
                             </div>
                             
-                            <!-- Encuestas -->
+                            <!-- {{ __("Surveys") }} -->
                             <div class="bg-white dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 rounded-xl p-4 flex flex-col justify-between gap-3 shadow-sm hover:shadow-md transition-shadow">
                                 <div>
-                                    <span class="text-[10px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest block">Encuestas</span>
-                                    <span class="text-[9px] text-gray-400 font-medium">Recogida de datos</span>
+                                    <span class="text-[10px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest block">{{ __("Surveys") }}</span>
+                                    <span class="text-[9px] text-gray-400 font-medium">{{ __('Recogida de datos') }}</span>
                                 </div>
                                 <div class="flex justify-end mt-auto pt-2 border-t border-gray-50 dark:border-gray-700/50">
                                     <label class="relative inline-flex items-center cursor-pointer">
@@ -512,7 +512,7 @@
                         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl overflow-hidden shadow-sm">
                             <div class="p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30 flex items-center justify-between">
                                 <div>
-                                    <h3 class="text-sm font-black uppercase tracking-widest text-violet-600 dark:text-violet-400">Personalidad del Equipo: {{ $team->name }}</h3>
+                                    <h3 class="text-sm font-black uppercase tracking-widest text-violet-600 dark:text-violet-400">Personalidad del {{ __('Team') }}: {{ $team->name }}</h3>
                                     <p class="text-xs text-gray-500 mt-1">Configura estilos exclusivos para este equipo. Sobrescriben los ajustes globales.</p>
                                 </div>
                             </div>
@@ -558,11 +558,11 @@
                                             <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400">{{ $label }}</label>
                                             <div class="space-y-3">
                                                 <div>
-                                                    <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Tamaño</label>
+                                                    <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">{{ __('Size') }}</label>
                                                     <input type="text" name="settings[markdown_{{ $h }}_size]" x-model="settings.{{ $h }}_size" class="w-full bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 rounded-xl text-sm focus:ring-violet-500/20 focus:border-violet-500">
                                                 </div>
                                                 <div>
-                                                    <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Peso</label>
+                                                    <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">{{ __('Peso') }}</label>
                                                     <input type="text" name="settings[markdown_{{ $h }}_weight]" x-model="settings.{{ $h }}_weight" class="w-full bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-700 rounded-xl text-sm focus:ring-violet-500/20 focus:border-violet-500">
                                                 </div>
                                             </div>
@@ -572,66 +572,66 @@
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
                                     <div class="space-y-6 p-5 bg-gray-50 dark:bg-gray-800/20 rounded-2xl border border-gray-100 dark:border-gray-800">
-                                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Colores de Acento</label>
+                                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">{{ __('Colores de Acento') }}</label>
                                         <div class="space-y-4">
                                             <div class="flex items-center justify-between">
-                                                <span class="text-xs font-bold text-gray-600 dark:text-gray-400">Color Primario (Enlaces)</span>
+                                                <span class="text-xs font-bold text-gray-600 dark:text-gray-400">{{ __('Color Primario (Enlaces)') }}</span>
                                                 <input type="color" name="settings[markdown_accent_color]" x-model="settings.accent" class="h-8 w-8 rounded-lg overflow-hidden border-none cursor-pointer">
                                             </div>
                                             <div class="flex items-center justify-between">
-                                                <span class="text-xs font-bold text-gray-600 dark:text-gray-400">Color Viñetas</span>
+                                                <span class="text-xs font-bold text-gray-600 dark:text-gray-400">{{ __('Color Viñetas') }}</span>
                                                 <input type="color" name="settings[markdown_bullet_color]" x-model="settings.bullet" class="h-8 w-8 rounded-lg overflow-hidden border-none cursor-pointer">
                                             </div>
                                             <div class="flex items-center justify-between">
-                                                <span class="text-xs font-bold text-gray-600 dark:text-gray-400">Borde Citas (Quotes)</span>
+                                                <span class="text-xs font-bold text-gray-600 dark:text-gray-400">Borde {{ __("Appointments") }} (Quotes)</span>
                                                 <input type="color" name="settings[markdown_bq_color]" x-model="settings.bq" class="h-8 w-8 rounded-lg overflow-hidden border-none cursor-pointer">
                                             </div>
                                             <div class="flex items-center justify-between">
-                                                <span class="text-xs font-bold text-gray-600 dark:text-gray-400">Ancho Borde Citas</span>
+                                                <span class="text-xs font-bold text-gray-600 dark:text-gray-400">Ancho Borde {{ __("Appointments") }}</span>
                                                 <input type="text" name="settings[markdown_bq_width]" x-model="settings.bq_width" class="w-16 bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 rounded-xl text-xs text-center focus:ring-violet-500/20 focus:border-violet-500">
                                             </div>
                                         </div>
                                     </div>
 
                                     <div class="p-5 bg-gray-50 dark:bg-gray-800/20 rounded-2xl border border-gray-100 dark:border-gray-800">
-                                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Cuerpo de Texto</label>
+                                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">{{ __('Cuerpo de Texto') }}</label>
                                         <div class="space-y-4">
                                             <div>
-                                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Tamaño Base</label>
+                                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">{{ __('Base Size') }}</label>
                                                 <input type="text" name="settings[markdown_text_size]" x-model="settings.text" class="w-full bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 rounded-xl text-sm focus:ring-violet-500/20 focus:border-violet-500">
                                             </div>
                                             <div>
-                                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Tamaño Mínimo</label>
+                                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">{{ __('Minimum Size') }}</label>
                                                 <input type="text" name="settings[markdown_text_min_size]" x-model="settings.textMin" class="w-full bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 rounded-xl text-sm focus:ring-violet-500/20 focus:border-violet-500">
-                                                <p class="mt-1 text-[9px] text-gray-400">Tamaño mínimo cuando las líneas son muy largas</p>
+                                                <p class="mt-1 text-[9px] text-gray-400">{{ __('Minimum size when lines are very long') }}</p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Previsualización del Equipo -->
+                                <!-- Previsualización del {{ __('Team') }} -->
                                 <div class="mt-4 p-8 bg-gray-100 dark:bg-gray-950/20 rounded-3xl border border-dashed border-gray-200 dark:border-gray-800 overflow-hidden">
-                                     <h1 :style="'font-size: ' + settings.h1_size + '; font-weight: ' + settings.h1_weight + '; color: ' + settings.accent + '; margin-top:0;'" class="mb-4">Título del Equipo</h1>
-                                     <h2 :style="'font-size: ' + settings.h2_size + '; font-weight: ' + settings.h2_weight + ';'" class="mb-3">Subtítulo Secundario</h2>
-                                     <h3 :style="'font-size: ' + settings.h3_size + '; font-weight: ' + settings.h3_weight + ';'" class="mb-2">Sección Detallada</h3>
+                                     <h1 :style="'font-size: ' + settings.h1_size + '; font-weight: ' + settings.h1_weight + '; color: ' + settings.accent + '; margin-top:0;'" class="mb-4">{{ __('Team Title') }}</h1>
+                                     <h2 :style="'font-size: ' + settings.h2_size + '; font-weight: ' + settings.h2_weight + ';'" class="mb-3">{{ __('Secondary Subtitle') }}</h2>
+                                     <h3 :style="'font-size: ' + settings.h3_size + '; font-weight: ' + settings.h3_weight + ';'" class="mb-2">{{ __('Detailed Section') }}</h3>
                                       <p :style="'font-size: ' + settings.text + '; min-font-size: ' + settings.textMin + ';'" class="text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
-                                         Este es un ejemplo de cómo se verá la información en el foro y las tareas de <strong>{{ $team->name }}</strong>. Incluye <a href="#" :style="'color: ' + settings.accent + '; text-decoration: underline;'">vínculos personalizados</a>.
+                                         {!! __('This is an example of how information will look in the forum and tasks of :team. Includes <a href="#" :style="\'color: \' + settings.accent + \'; text-decoration: underline;\'">custom links</a>.', ['team' => '<strong>' . e($team->name) . '</strong>']) !!}
                                      </p>
                                      <ul class="mb-4 space-y-1">
                                         <li class="flex items-center gap-2">
                                             <span :style="'color: ' + settings.bullet">•</span>
-                                            <span class="text-xs text-gray-600 dark:text-gray-400">Lista personalizada</span>
+                                            <span class="text-xs text-gray-600 dark:text-gray-400">{{ __('Custom list') }}</span>
                                         </li>
                                      </ul>
                                      <div :style="'border-left: ' + settings.bq_width + ' solid ' + settings.bq" class="pl-4 py-1 bg-gray-50 dark:bg-gray-800/40 rounded-r-lg italic text-[11px] text-gray-500">
-                                         "Cita representativa del espíritu de este equipo."
+                                         "{{ __('Representative quote of this team\'s spirit.') }}"
                                      </div>
                                 </div>
                             </div>
 
                             <div class="p-6 bg-gray-50/50 dark:bg-gray-800/30 border-t border-gray-100 dark:border-gray-800 flex justify-end">
                                 <button type="submit" class="px-8 py-3 bg-violet-600 hover:bg-violet-500 text-white text-xs font-black uppercase tracking-widest rounded-2xl transition-all shadow-lg shadow-violet-500/20">
-                                    Guardar Identidad del Equipo
+                                    {{ __('Save Team Identity') }}
                                 </button>
                             </div>
                         </div>
@@ -644,12 +644,10 @@
                             <span class="p-2 bg-violet-600 text-white rounded-xl shadow-lg shadow-violet-600/20">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.828 2.828a2 2 0 010 2.828l-8.486 8.485"></path></svg>
                             </span>
-                            <h3 class="text-xs font-black uppercase tracking-widest text-violet-700 dark:text-violet-400">¿Por qué per-equipo?</h3>
+                            <h3 class="text-xs font-black uppercase tracking-widest text-violet-700 dark:text-violet-400">{{ __('Why per-team?') }}</h3>
                         </div>
                         <p class="text-xs text-violet-600/80 dark:text-violet-400/80 leading-relaxed font-medium">
-                            Diferenciar visualmente los equipos ayuda a los usuarios a ubicarse rápidamente al cambiar de contexto. 
-                            <br><br>
-                            Un equipo creativo puede usar fuentes grandes y colores vibrantes, mientras que uno técnico puede preferir algo más condensado y sobrio.
+                            {{ __('Visually differentiating teams helps users quickly orient themselves when switching contexts. A creative team might use large fonts and vibrant colors, while a technical one might prefer something more condensed and sober.') }}
                         </p>
                     </div>
                 </div>
@@ -678,7 +676,7 @@
                                 this.initSession = false;
                             }
                         } catch (e) {
-                            console.error('Error consultando estado de WhatsApp del Equipo:', e);
+                            console.error('Error consultando estado de WhatsApp del {{ __('Team') }}:', e);
                         }
                     },
                     startPolling() {
@@ -700,7 +698,7 @@
                         await this.checkStatus();
                     },
                     async restartSession() {
-                        const textMsg = '¿Deseas desvincular o reiniciar la cuenta de WhatsApp corporativa de este Equipo?';
+                        const textMsg = '¿Deseas desvincular o reiniciar la cuenta de WhatsApp corporativa de este {{ __('Team') }}?';
                         const result = await Swal.fire({
                             title: '¿Desvincular Cuenta?',
                             text: textMsg,
@@ -709,7 +707,7 @@
                             confirmButtonColor: '#ef4444',
                             cancelButtonColor: '#6b7280',
                             confirmButtonText: 'Sí, desvincular',
-                            cancelButtonText: 'Cancelar',
+                            cancelButtonText: '{{ __("Cancel") }}',
                             customClass: {
                                 popup: 'rounded-[2rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
                                 confirmButton: 'rounded-xl px-6 py-2.5 text-[11px] font-black uppercase tracking-widest',
@@ -749,24 +747,24 @@
                         </div>
                         <div>
                             <h4 class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                <span>WhatsApp Corporativo de Equipo</span>
-                                <span class="px-2 py-0.5 bg-gradient-to-r from-violet-500 to-violet-500 text-white text-[8px] font-black uppercase rounded-full">Canal de Equipo</span>
+                                <span>{{ __('Corporate Team WhatsApp') }}</span>
+                                <span class="px-2 py-0.5 bg-gradient-to-r from-violet-500 to-violet-500 text-white text-[8px] font-black uppercase rounded-full">{{ __('Team Channel') }}</span>
                             </h4>
-                            <p class="text-[10px] text-gray-400 font-medium">Vincula un número de teléfono móvil corporativo exclusivo para el equipo <strong>{{ $team->name }}</strong></p>
+                            <p class="text-[10px] text-gray-400 font-medium">{!! __('Link an exclusive corporate mobile phone number for team :team', ['team' => '<strong>' . e($team->name) . '</strong>']) !!}</p>
                         </div>
                     </div>
                     <div>
                         <template x-if="ready">
-                            <span class="px-3 py-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 text-[10px] font-black uppercase rounded-lg border border-emerald-100 dark:border-emerald-800">Conectado</span>
+                            <span class="px-3 py-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 text-[10px] font-black uppercase rounded-lg border border-emerald-100 dark:border-emerald-800">{{ __('Connected') }}</span>
                         </template>
                         <template x-if="!ready && authenticated">
-                            <span class="px-3 py-1 bg-violet-50 dark:bg-violet-900/20 text-violet-600 text-[10px] font-black uppercase rounded-lg border border-violet-100 dark:border-violet-800 animate-pulse">Autenticado / Cargando...</span>
+                            <span class="px-3 py-1 bg-violet-50 dark:bg-violet-900/20 text-violet-600 text-[10px] font-black uppercase rounded-lg border border-violet-100 dark:border-violet-800 animate-pulse">{{ __('Authenticated / Loading...') }}</span>
                         </template>
                         <template x-if="!ready && !authenticated && qr">
-                            <span class="px-3 py-1 bg-amber-50 dark:bg-amber-900/20 text-amber-600 text-[10px] font-black uppercase rounded-lg border border-amber-100 dark:border-amber-800 animate-pulse">Esperando Escaneo</span>
+                            <span class="px-3 py-1 bg-amber-50 dark:bg-amber-900/20 text-amber-600 text-[10px] font-black uppercase rounded-lg border border-amber-100 dark:border-amber-800 animate-pulse">{{ __('Waiting for Scan') }}</span>
                         </template>
                         <template x-if="!ready && !authenticated && !qr">
-                            <span class="px-3 py-1 bg-gray-50 dark:bg-gray-800 text-gray-400 text-[10px] font-black uppercase rounded-lg border border-gray-200 dark:border-gray-700">Desconectado</span>
+                            <span class="px-3 py-1 bg-gray-50 dark:bg-gray-800 text-gray-400 text-[10px] font-black uppercase rounded-lg border border-gray-200 dark:border-gray-700">{{ __('Disconnected') }}</span>
                         </template>
                     </div>
                 </div>
@@ -775,21 +773,21 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-gray-50/50 dark:bg-gray-800/30 p-6 rounded-2xl border border-gray-100 dark:border-gray-800">
                     <div class="space-y-4">
                         <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                            Al vincular un WhatsApp exclusivo de equipo, los mensajes del foro, notificaciones de tareas del equipo y alertas se enviarán directamente con este número corporativo. Toda la comunicación está aislada de forma segura para este equipo.
+                            {{ __('By linking an exclusive team WhatsApp, forum messages, team task notifications, and alerts will be sent directly with this corporate number. All communication is securely isolated for this team.') }}
                         </p>
                         
                         <div class="flex gap-3 pt-2">
                             <!-- Botón de Conexión Pasiva -->
                             <template x-if="!ready && !qr && !initSession && !authenticated">
                                 <button @click="startConnection()" type="button" class="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-[10px] font-black uppercase rounded-xl transition-all shadow-md shadow-emerald-500/10">
-                                    Vincular WhatsApp de Equipo
+                                    {{ __('Link Team WhatsApp') }}
                                 </button>
                             </template>
 
                             <!-- Botón de Desvinculación -->
                             <template x-if="ready || qr || initSession || authenticated">
                                 <button @click="restartSession()" type="button" class="px-4 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-900/30 text-red-600 text-[10px] font-black uppercase rounded-xl transition-all">
-                                    Desvincular Cuenta
+                                    {{ __('Unlink Account') }}
                                 </button>
                             </template>
                         </div>
@@ -802,8 +800,8 @@
                             <div class="w-16 h-16 rounded-full bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center text-emerald-500 shadow-sm border border-emerald-100 dark:border-emerald-800/50">
                                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
                             </div>
-                            <span class="text-xs font-bold text-gray-900 dark:text-white">¡Sesión de Equipo Activa!</span>
-                            <span class="text-[10px] text-gray-400">El número está listo para enviar y recibir notificaciones corporativas de este equipo.</span>
+                            <span class="text-xs font-bold text-gray-900 dark:text-white">{{ __('Team Session Active!') }}</span>
+                            <span class="text-[10px] text-gray-400">{{ __('The number is ready to send and receive corporate notifications for this team.') }}</span>
                         </div>
 
                         <!-- Caso 1.1: Autenticado pero esperando sincronización completa (ready = false, authenticated = true) -->
@@ -811,8 +809,8 @@
                             <div class="w-16 h-16 rounded-full bg-violet-50 dark:bg-violet-950/30 flex items-center justify-center text-violet-500 shadow-sm border border-violet-100 dark:border-violet-800/50">
                                 <svg class="w-8 h-8 text-violet-500 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                             </div>
-                            <span class="text-xs font-bold text-violet-600 dark:text-violet-400 animate-pulse">¡Enlazado con éxito!</span>
-                            <span class="text-[10px] text-gray-400">WhatsApp se ha autenticado. Sincronizando chats e historial inicial en segundo plano...</span>
+                            <span class="text-xs font-bold text-violet-600 dark:text-violet-400 animate-pulse">{{ __('Connected successfully!') }}</span>
+                            <span class="text-[10px] text-gray-400">{{ __('WhatsApp authenticated. Synchronizing chats and initial history in the background...') }}</span>
                         </div>
 
                         <!-- Caso 2: QR disponible para escaneo -->
@@ -821,22 +819,22 @@
                                 <img :src="qr" alt="WhatsApp QR Code" class="w-44 h-44 object-contain">
                             </div>
                             <div class="text-center">
-                                <span class="text-[10px] font-black text-amber-500 uppercase tracking-widest block">Escanea el Código</span>
-                                <span class="text-[8px] text-gray-400 mt-1 block">Abre WhatsApp > Dispositivos Vinculados > Vincular un Dispositivo</span>
+                                <span class="text-[10px] font-black text-amber-500 uppercase tracking-widest block">{{ __('Escanea el Código') }}</span>
+                                <span class="text-[8px] text-gray-400 mt-1 block">{{ __('Abre WhatsApp > Dispositivos Vinculados > Vincular un Dispositivo') }}</span>
                             </div>
                         </div>
 
                         <!-- Caso 3: Iniciando o buscando estado -->
                         <div x-show="!ready && !qr && initSession && !authenticated" class="flex flex-col items-center text-center space-y-3">
                             <svg class="w-8 h-8 text-emerald-500 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                            <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Generando sesión...</span>
-                            <span class="text-[8px] text-gray-400">Iniciando Puppeteer en el servidor para el equipo de forma aislada</span>
+                            <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ __('Generando sesión...') }}</span>
+                            <span class="text-[8px] text-gray-400">{{ __('Iniciando Puppeteer en el servidor para el equipo de forma aislada') }}</span>
                         </div>
 
-                        <!-- Caso 4: Desconectado pasivo -->
+                        <!-- Caso 4: {{ __('Desconectado') }} pasivo -->
                         <div x-show="!ready && !qr && !initSession && !authenticated" class="flex flex-col items-center text-center space-y-2 text-gray-400">
                             <svg class="w-12 h-12 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
-                            <span class="text-[10px] font-bold uppercase tracking-widest">Sin Vinculación Activa</span>
+                            <span class="text-[10px] font-bold uppercase tracking-widest">{{ __('Sin Vinculación Activa') }}</span>
                         </div>
                     </div>
                 </div>
@@ -850,14 +848,14 @@
             function confirmAction(formId, message, type = 'danger') {
                 const color = type === 'warning' ? '#f59e0b' : '#ef4444';
                 Swal.fire({
-                    title: '¿Estás seguro?',
+                    title: '{{ __("Are you sure?") }}',
                     text: message,
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: color,
                     cancelButtonColor: '#6b7280',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar',
+                    confirmButtonText: '{{ __("Confirmar") }}',
+                    cancelButtonText: '{{ __("Cancel") }}',
                     customClass: {
                         popup: 'rounded-[2rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
                         confirmButton: 'rounded-xl px-6 py-2.5 text-[11px] font-black uppercase tracking-widest',

@@ -114,7 +114,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
                 </svg>
             </span>
-            <span>Listado General de Integraciones e IA (CRUD)</span>
+            <span>Listado {{ __('general') }} de Integraciones e IA (CRUD)</span>
         </h3>
         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
             Resumen unificado de tus credenciales de IA (Google Gemini) y enlaces con Google Workspace. Haz clic en <strong class="text-gray-700 dark:text-gray-300">"Configurar"</strong> en cualquier elemento para gestionar sus claves y preferencias.
@@ -158,7 +158,7 @@
                         </td>
                         <td class="py-4 px-6">
                             <div class="flex gap-1.5">
-                                <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase {{ $contextsData['global']['mood_tracking_enabled'] ? 'bg-violet-100 text-violet-600 dark:bg-violet-900/40 dark:text-violet-400' : 'bg-gray-100 text-gray-400 dark:bg-gray-800' }}">Energía</span>
+                                <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase {{ $contextsData['global']['mood_tracking_enabled'] ? 'bg-violet-100 text-violet-600 dark:bg-violet-900/40 dark:text-violet-400' : 'bg-gray-100 text-gray-400 dark:bg-gray-800' }}">{{ __('Energy') }}</span>
                                 <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase {{ $contextsData['global']['smart_matching_opt_in'] ? 'bg-violet-100 text-violet-600 dark:bg-violet-900/40 dark:text-violet-400' : 'bg-gray-100 text-gray-400 dark:bg-gray-800' }}">Smart</span>
                             </div>
                         </td>
@@ -182,7 +182,7 @@
                                 </div>
                                 <div>
                                     <span class="block text-sm" style="font-family: 'Space Grotesk', sans-serif">{{ $team->name }}</span>
-                                    <span class="text-[9px] text-gray-400 font-medium uppercase tracking-wider">Espacio de Equipo</span>
+                                    <span class="text-[9px] text-gray-400 font-medium uppercase tracking-wider">Espacio de {{ __('Team') }}</span>
                                 </div>
                             </td>
                             <td class="py-4 px-6">
@@ -207,14 +207,14 @@
                             </td>
                             <td class="py-4 px-6">
                                 <div class="flex gap-1.5">
-                                    <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase {{ $c['mood_tracking_enabled'] ? 'bg-violet-100 text-violet-600 dark:bg-violet-900/40 dark:text-violet-400' : 'bg-gray-100 text-gray-400 dark:bg-gray-800' }}">Energía</span>
+                                    <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase {{ $c['mood_tracking_enabled'] ? 'bg-violet-100 text-violet-600 dark:bg-violet-900/40 dark:text-violet-400' : 'bg-gray-100 text-gray-400 dark:bg-gray-800' }}">{{ __('Energy') }}</span>
                                     <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase {{ $c['smart_matching_opt_in'] ? 'bg-violet-100 text-violet-600 dark:bg-violet-900/40 dark:text-violet-400' : 'bg-gray-100 text-gray-400 dark:bg-gray-800' }}">Smart</span>
                                 </div>
                             </td>
                             <td class="py-4 px-6 text-right space-x-2 shrink-0">
                                 <a href="{{ url('/teams/' . $team->id . '/time-reports') }}" class="px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[10px] font-black uppercase text-gray-600 dark:text-gray-400 rounded-xl hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:text-violet-600 dark:hover:text-violet-400 transition-all inline-flex items-center gap-1 shadow-sm">
                                     <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>
-                                    Equipo
+                                    {{ __('Team') }}
                                 </a>
                                 <button @click="openModal('{{ $team->id }}')" type="button" class="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-black uppercase text-[10px] rounded-xl hover:scale-105 active:scale-95 transition-all shadow-sm flex items-center gap-1.5 inline-flex">
                                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
@@ -250,7 +250,7 @@
             <!-- Body del Modal (Scrollable) -->
             <div class="p-6 sm:p-8 overflow-y-auto space-y-8 flex-1">
                 
-                <!-- Tarjeta Google Workspace (Sólo en Modal de Equipo) -->
+                <!-- Tarjeta Google Workspace (Sólo en Modal de {{ __('Team') }}) -->
                 <div x-show="getActiveContext()?.type === 'team'" class="p-6 bg-gray-50/80 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 rounded-3xl space-y-4">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div class="flex items-center gap-4">
@@ -277,7 +277,7 @@
                                 <div class="h-4 w-px bg-gray-200 dark:bg-gray-700 mx-1"></div>
                                 <form method="POST" :action="'{{ route('google.disconnect') }}?team_id=' + (getActiveContext()?.id || '')">
                                     @csrf
-                                    <button type="submit" class="text-[10px] text-gray-400 hover:text-rose-600 font-bold uppercase transition-colors">Desvincular</button>
+                                    <button type="submit" class="text-[10px] text-gray-400 hover:text-rose-600 font-bold uppercase transition-colors">{{ __('desvincular') }}</button>
                                 </form>
                             </div>
                             <button x-show="!getActiveContext()?.google_connected" @click="window.openGoogleAuth(getActiveContext()?.id)" type="button" class="px-6 py-2.5 bg-violet-600 text-white text-[11px] font-black uppercase rounded-xl hover:scale-105 active:scale-95 transition-all shadow-md shadow-violet-500/20">
@@ -343,7 +343,7 @@
                         <div class="flex flex-wrap gap-6">
                             <label class="flex items-center gap-3 cursor-pointer group">
                                 <input type="checkbox" name="mood_tracking_enabled" value="1" x-model="form.mood_tracking_enabled" class="w-5 h-5 rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-violet-600 focus:ring-violet-500">
-                                <span class="text-[10px] font-black text-gray-500 uppercase group-hover:text-violet-600 transition-colors">Energía</span>
+                                <span class="text-[10px] font-black text-gray-500 uppercase group-hover:text-violet-600 transition-colors">{{ __('Energy') }}</span>
                             </label>
                             <label class="flex items-center gap-3 cursor-pointer group">
                                 <input type="checkbox" name="smart_matching_opt_in" value="1" x-model="form.smart_matching_opt_in" class="w-5 h-5 rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-violet-600 focus:ring-violet-500">
@@ -357,11 +357,11 @@
             <!-- Footer del Modal -->
             <div class="p-6 sm:p-8 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30 flex items-center justify-end gap-4">
                 <button @click="closeModal()" type="button" class="px-6 py-3 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-black uppercase text-[10px] rounded-2xl hover:bg-gray-300 dark:hover:bg-gray-700 transition-all">
-                    Cancelar
+                    {{ __('Cancel') }}
                 </button>
                 <button @click="document.getElementById('modal-ai-form').submit()" type="button" :disabled="loadingModels" :class="loadingModels ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'" class="px-8 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-black uppercase text-[10px] rounded-2xl transition-all shadow-lg">
-                    <span x-show="!loadingModels">Guardar Cambios</span>
-                    <span x-show="loadingModels">Cargando...</span>
+                    <span x-show="!loadingModels">{{ __('Save Changes') }}</span>
+                    <span x-show="loadingModels">{{ __('Loading...') }}</span>
                 </button>
             </div>
         </div>
@@ -610,12 +610,12 @@
                 },
                 async restartSession() {
                     const result = await Swal.fire({
-                        title: '¿Desvincular WhatsApp?',
+                        title: '¿{{ __('desvincular') }} WhatsApp?',
                         text: '¿Deseas desvincular o reiniciar tu cuenta de WhatsApp Personal?',
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonText: 'Sí, desvincular',
-                        cancelButtonText: 'Cancelar',
+                        cancelButtonText: '{{ __('Cancel') }}',
                         confirmButtonColor: '#e11d48',
                         cancelButtonColor: '#6b7280',
                         customClass: {
@@ -655,7 +655,7 @@
                     </div>
                     <div>
                         <h4 class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                            <span>Mi WhatsApp Personal</span>
+                            <span>{{ __('Mi WhatsApp Personal') }}</span>
                             <span class="px-2 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[8px] font-black uppercase rounded-full">Premium</span>
                         </h4>
                         <p class="text-[10px] text-gray-400 font-medium">Vincula tu propio número de WhatsApp móvil privado de forma aislada</p>
@@ -692,7 +692,7 @@
                         <!-- Botón de Desvinculación -->
                         <template x-if="ready || qr || initSession">
                             <button @click="restartSession()" type="button" class="px-4 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-900/30 text-red-600 text-[10px] font-black uppercase rounded-xl transition-all">
-                                Desvincular Cuenta
+                                {{ __('desvincular') }} Cuenta
                             </button>
                         </template>
                     </div>
@@ -706,7 +706,7 @@
                             <div class="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center text-white mb-3 shadow-lg shadow-emerald-500/20">
                                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                             </div>
-                            <span class="text-xs font-bold text-emerald-800 dark:text-emerald-400">¡Sincronización Activa!</span>
+                            <span class="text-xs font-bold text-emerald-800 dark:text-emerald-400">¡Sincronización {{ __('activa') }}!</span>
                             <span class="text-[9px] text-gray-400 mt-1">Tu WhatsApp personal ya está plenamente enlazado.</span>
                         </div>
                     </template>
@@ -833,7 +833,7 @@
                     </div>
                     <div>
                         <h5 class="text-sm font-bold text-gray-900 dark:text-white">¡WhatsApp Conectado!</h5>
-                        <p class="text-xs text-gray-500 mt-1">El bot está listo y escuchando mensajes en tiempo real. Ahora puedes configurar los grupos o chats en las opciones de cada Equipo.</p>
+                        <p class="text-xs text-gray-500 mt-1">El bot está listo y escuchando mensajes en tiempo real. {{ __('ahora') }} puedes configurar los grupos o chats en las opciones de cada {{ __('Team') }}.</p>
                     </div>
                 </div>
 

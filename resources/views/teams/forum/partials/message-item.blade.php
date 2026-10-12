@@ -38,7 +38,7 @@
                     <!-- Vote Button -->
                     <button type="button" onclick="voteMessage({{ $message->id }}, this)"
                         class="p-1 text-gray-400 {{ $message->hasVotedBy(auth()->user()) ? 'text-violet-600 dark:text-violet-400' : 'hover:text-violet-600' }} bg-gray-50 dark:bg-gray-800 rounded-lg transition-all flex items-center gap-1 text-[10px] font-bold"
-                        title="Votar comentario">
+                        title="{{ __("html.vote") }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="{{ $message->hasVotedBy(auth()->user()) ? 'currentColor' : 'none' }}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3" />
                         </svg>
@@ -48,7 +48,7 @@
                     <!-- Share -->
                     <button type="button" onclick="shareMessage({{ $message->id }})"
                         class="p-1 text-gray-400 hover:text-emerald-500 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors"
-                        title="Compartir enlace directo">
+                        title="{{ __("html.share") }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                         </svg>
@@ -58,7 +58,7 @@
                     <button type="button"
                         onclick="replyTo({{ $message->id }}, {{ json_encode($message->user->name) }})"
                         class="p-1 text-gray-400 hover:text-violet-500 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors"
-                        title="Responder a este mensaje">
+                        title="{{ __("html.reply") }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l5 5m-5-5l5-5" />
                         </svg>
@@ -68,7 +68,7 @@
                     <button type="button"
                         onclick="quoteMessage({{ json_encode($message->user->name) }}, {{ json_encode($message->content) }})"
                         class="p-1 text-gray-400 hover:text-violet-500 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors"
-                        title="Citar">
+                        title="{{ __("html.quote") }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                         </svg>
@@ -78,7 +78,7 @@
                     <button type="button"
                         onclick="openForumPrintModal({{ $message->id }})"
                         class="p-1 text-gray-400 hover:text-emerald-500 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors"
-                        title="Opciones de impresión">
+                        title="{{ __("html.print_options") }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                         </svg>
@@ -88,7 +88,7 @@
                     @if ($isCurrentUser)
                         <button type="button" onclick="editMessage({{ $message->id }}, {{ json_encode($message->content) }})"
                             class="p-1 text-gray-400 hover:text-blue-500 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors"
-                            title="Editar">
+                            title="{{ __('Edit') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                             </svg>
@@ -104,7 +104,7 @@
                             threadId: {{ $thread->id }}
                         })"
                         class="p-1 text-gray-400 hover:text-violet-500 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors"
-                        title="Preguntar a Ax.ia">
+                        title="{{ __("html.ai_on_message") }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                         </svg>
@@ -119,7 +119,7 @@
                             @method('DELETE')
                             <button type="submit"
                                 class="p-1 text-gray-400 hover:text-red-500 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors"
-                                title="Eliminar">
+                                title="{{ __('Delete') }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
@@ -155,7 +155,7 @@
                     @endif
                     </div>
                     
-                    <!-- Gradiente y Botón "Ver más" -->
+                    <!-- Gradiente y Botón "{{ __('View') }} más" -->
                     <template x-if="!expanded && isOverflowing">
                         <div class="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-white dark:from-gray-900 to-transparent flex items-end justify-center pb-2 pointer-events-none">
                             <button @click="expanded = true" type="button" class="pointer-events-auto text-[10px] uppercase tracking-widest font-black text-violet-600 dark:text-violet-400 bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-md border border-violet-100 dark:border-violet-900/50 hover:bg-violet-50 dark:hover:bg-violet-900/30 transition-all hover:scale-105">
@@ -164,7 +164,7 @@
                         </div>
                     </template>
                     
-                    <!-- Botón "Ver menos" -->
+                    <!-- Botón "{{ __('View') }} menos" -->
                     <template x-if="expanded && isOverflowing">
                         <div class="flex justify-center mt-3">
                             <button @click="expanded = false; $el.closest('.relative').scrollIntoView({ behavior: 'smooth', block: 'center' })" type="button" class="text-[10px] uppercase tracking-widest font-black text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
@@ -225,7 +225,7 @@
                                                 @if($attachment->exists)
                                                     <a href="{{ $downloadUrl }}" target="_blank"
                                                        class="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md transition-colors"
-                                                       title="Descargar">
+                                                       title="{{ __("html.download") }}">
                                                         <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                                                     </a>
                                                 @endif
@@ -233,21 +233,21 @@
                                                 @if ($isCurrentUser || auth()->user()->getRole($team) === 'coordinator')
                                                     @if($attachment->storage_provider === 'local')
                                                         <button type="button" onclick="editAttachmentImage({{ $attachment->id }}, '{{ route('teams.attachments.view', [$team, $attachment]) }}')"
-                                                            class="p-1 text-gray-400 hover:text-violet-500 rounded-md transition-colors" title="Editar Imagen">
+                                                            class="p-1 text-gray-400 hover:text-violet-500 rounded-md transition-colors" title="{{ __('Edit') }} Imagen">
                                                             <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
                                                         </button>
                                                     @endif
 
                                                     <button type="button" onclick="renameAttachment({{ $attachment->id }}, '{{ addslashes($attachment->file_name) }}')"
-                                                        class="p-1 text-gray-400 hover:text-blue-500 rounded-md transition-colors" title="Renombrar">
+                                                        class="p-1 text-gray-400 hover:text-blue-500 rounded-md transition-colors" title="{{ __("html.rename") }}">
                                                         <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                                                     </button>
 
                                                     <form action="{{ route('teams.attachments.destroy', [$team, $attachment]) }}" method="POST"
-                                                        onsubmit="return confirm('¿Seguro que quieres eliminar este adjunto?')" class="inline">
+                                                        onsubmit="return confirm('{{ __('swal.confirm_delete_attachment') }}')" class="inline">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="submit" class="p-1 text-gray-400 hover:text-red-500 rounded-md transition-colors" title="Eliminar">
+                                                        <button type="submit" class="p-1 text-gray-400 hover:text-red-500 rounded-md transition-colors" title="{{ __('Delete') }}">
                                                             <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                                         </button>
                                                     </form>
@@ -309,7 +309,7 @@
                                             <!-- Edit/Rename -->
                                             <button type="button" onclick="renameAttachment({{ $attachment->id }}, '{{ addslashes($attachment->file_name) }}')"
                                                 class="p-1.5 text-gray-400 hover:text-blue-500 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm rounded-lg transition-colors"
-                                                title="Renombrar">
+                                                title="{{ __("html.rename") }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                                 </svg>
@@ -317,12 +317,12 @@
 
                                             <!-- Delete -->
                                             <form action="{{ route('teams.attachments.destroy', [$team, $attachment]) }}" method="POST"
-                                                onsubmit="return confirm('¿Seguro que quieres eliminar este adjunto?')" class="inline">
+                                                onsubmit="return confirm('{{ __('swal.confirm_delete_attachment') }}')" class="inline">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
                                                     class="p-1.5 text-gray-400 hover:text-red-500 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm rounded-lg transition-colors"
-                                                    title="Eliminar">
+                                                    title="{{ __('Delete') }}">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                     </svg>
@@ -401,8 +401,8 @@
                         </div>
 
                         <div class="flex justify-end gap-2 mt-4">
-                            <button type="button" onclick="cancelEdit({{ $message->id }})" class="text-xs font-bold text-gray-500">Cancelar</button>
-                            <button type="submit" class="px-4 py-1.5 bg-violet-600 hover:bg-violet-500 active:scale-95 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-violet-500/10">Guardar</button>
+                            <button type="button" onclick="cancelEdit({{ $message->id }})" class="text-xs font-bold text-gray-500">{{ __("Cancel") }}</button>
+                            <button type="submit" class="px-4 py-1.5 bg-violet-600 hover:bg-violet-500 active:scale-95 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-violet-500/10">{{ __('Save') }}</button>
                         </div>
                     </form>
                 </div>

@@ -1,5 +1,5 @@
 <x-app-layout maxWidth="max-w-none">
-@section('title', 'Editar Persona — ' . $visitor->full_name)
+@section('title', __('Edit Person — :name', ['name' => $visitor->full_name]))
 
 <x-slot name="header">
     <div class="flex items-start gap-4 min-w-0 flex-1">
@@ -14,7 +14,7 @@
                 <svg class="h-7 w-7 text-cyan-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                 </svg>
-                Editar: {{ $visitor->full_name }}
+                {{ __('Edit: :name', ['name' => $visitor->full_name]) }}
             </h1>
         </div>
     </div>
@@ -29,18 +29,18 @@
 
             <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
                 <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
-                    <p class="text-xs font-black uppercase tracking-widest text-gray-400">Datos Personales</p>
+                    <p class="text-xs font-black uppercase tracking-widest text-gray-400">{{ __('Personal Details') }}</p>
                 </div>
                 <div class="p-6 space-y-5">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="first_name">Nombre *</label>
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="first_name">{{ __('First Name *') }}</label>
                             <input type="text" id="first_name" name="first_name" value="{{ old('first_name', $visitor->first_name) }}" required
                                    class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all">
                             @error('first_name') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="last_name">Apellidos *</label>
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="last_name">{{ __('Last Name *') }}</label>
                             <input type="text" id="last_name" name="last_name" value="{{ old('last_name', $visitor->last_name) }}" required
                                    class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all">
                             @error('last_name') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
@@ -49,19 +49,19 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="dni">DNI/NIE</label>
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="dni">{{ __('ID / NIE') }}</label>
                             <input type="text" id="dni" name="dni" value="{{ old('dni', $visitor->dni) }}" oninput="this.value = this.value.toUpperCase()"
                                    class="w-full uppercase bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-2.5 text-sm font-semibold outline-none transition-all">
                             @error('dni') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="email">Correo Electrónico *</label>
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="email">{{ __('Email *') }}</label>
                             <input type="email" id="email" name="email" value="{{ old('email', $visitor->email) }}" required oninput="this.value = this.value.toLowerCase()"
                                    class="w-full lowercase bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-2.5 text-sm font-semibold outline-none transition-all">
                             @error('email') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="phone">Teléfono</label>
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="phone">{{ __('Phone') }}</label>
                             <input type="text" id="phone" name="phone" value="{{ old('phone', $visitor->phone) }}"
                                    class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all">
                             @error('phone') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
@@ -70,13 +70,13 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="city">Localidad / Municipio</label>
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="city">{{ __('City / Municipality') }}</label>
                             <input type="text" id="city" name="city" value="{{ old('city', $visitor->city) }}"
                                    class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all">
                             @error('city') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="postal_code">Código Postal</label>
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="postal_code">{{ __('Postal Code') }}</label>
                             <input type="text" id="postal_code" name="postal_code" value="{{ old('postal_code', $visitor->postal_code) }}"
                                    class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all">
                             @error('postal_code') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
@@ -84,10 +84,10 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="observations">Observaciones</label>
+                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="observations">{{ __('Observations') }}</label>
                         <textarea id="observations" name="observations" rows="3"
                                   class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all resize-y"
-                                  placeholder="Detalles adicionales o notas internas sobre la persona...">{{ old('observations', $visitor->observations) }}</textarea>
+                                  placeholder="{{ __('Additional details or internal notes about the person...') }}">{{ old('observations', $visitor->observations) }}</textarea>
                         @error('observations') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
                 </div>
@@ -96,11 +96,11 @@
             <div class="flex items-center gap-3 justify-end">
                 <a href="{{ route('appointments.visitors.index', $team) }}"
                    class="px-5 py-2.5 text-xs font-black uppercase tracking-widest text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition-all">
-                    Cancelar
+                    {{ __('Cancel') }}
                 </a>
                 <button type="submit"
                         class="px-7 py-2.5 text-xs font-black uppercase tracking-widest bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl shadow-lg shadow-cyan-500/20 transition-all active:scale-95">
-                    Guardar Cambios
+                    {{ __('Save Changes') }}
                 </button>
             </div>
         </form>
@@ -128,14 +128,14 @@
         <svg style="width:1rem;height:1rem;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
         </svg>
-        <span>Volver</span>
+        <span>{{ __('Back') }}</span>
     </a>
 
     <div style="width:1px;height:1.25rem;background:#e5e7eb;flex-shrink:0"></div>
 
     {{-- Título truncado --}}
     <span style="font-size:0.75rem;font-weight:900;color:#1f2937;max-width:200px;overflow:hidden;text-overflow:ellipsis;" class="dark:text-gray-300">
-        Editar: {{ $visitor->full_name }}
+        {{ __('Edit: :name', ['name' => $visitor->full_name]) }}
     </span>
 
     <div style="width:1px;height:1.25rem;background:#e5e7eb;flex-shrink:0"></div>
@@ -149,7 +149,7 @@
         <svg style="width:1rem;height:1rem;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
         </svg>
-        <span>Guardar Cambios</span>
+        <span>{{ __('Save Changes') }}</span>
     </button>
 </div>
 

@@ -13,7 +13,7 @@
     if (auth()->user()->can('view', $team)) {
         $views = [
             [
-                'name' => 'Escritorio',
+                'name' => __('Desktop'),
                 'route' => route('teams.time-reports', $teamId),
                 'active' => request()->routeIs('teams.time-reports'),
                 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />',
@@ -25,14 +25,14 @@
                 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />',
             ],
             [
-                'name' => 'Expedientes',
+                'name' => __('Files'),
                 'route' => route('teams.expedientes.index', $teamId),
                 'active' => request()->routeIs('teams.expedientes.*'),
                 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />',
                 'divider' => true,
             ],
             [
-                'name' => 'Actividades',
+                'name' => __('Activities'),
                 'route' => route('teams.activities.index', $teamId),
                 'active' => $isTaskList,
                 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />',
@@ -56,7 +56,7 @@
                 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />',
             ],
             [
-                'name' => 'Biblioteca',
+                'name' => __('Library'),
                 'route' => route('teams.library', $teamId),
                 'active' => request()->routeIs('teams.library'),
                 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />',
@@ -66,7 +66,7 @@
 
         if (auth()->user()->hasSurveysEnabledForTeam($teamId)) {
             $views[] = [
-                'name' => 'Encuestas',
+                'name' => __('Surveys'),
                 'route' => route('teams.surveys.index', $teamId),
                 'active' => request()->routeIs('teams.surveys.*'),
                 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />',
@@ -76,7 +76,7 @@
 
         if (auth()->user()->hasAppointmentsEnabledForTeam($teamId)) {
             $views[] = [
-                'name' => 'Citas Previas',
+                'name' => __('Appointments'),
                 'route' => route('appointments.index', $teamId),
                 'active' => request()->routeIs('appointments.*'),
                 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />',
@@ -85,7 +85,7 @@
 
         if (auth()->user()->hasMicrositesEnabledForTeam($teamId)) {
             $views[] = [
-                'name' => 'Micrositios',
+                'name' => __('Microsites'),
                 'route' => route('teams.microsites.index', $teamId),
                 'active' => request()->routeIs('teams.microsites.*') || request()->routeIs('public.microsites.*'),
                 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />',
@@ -142,11 +142,11 @@
                     @endif
                     <a href="{{ route('teams.trash.index', $team) }}" 
                        class="flex flex-col items-center justify-center gap-0.5 px-1.5 md:px-2 py-2 rounded-xl transition-all shrink-0 min-w-max text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60"
-                       title="Papelera de Reciclaje">
+                       title="{{ __("html.recycle_bin") }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 lg:h-5 lg:w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
-                        <span class="hidden lg:block text-[9px] font-bold uppercase tracking-tight leading-none whitespace-nowrap">Papelera</span>
+                        <span class="hidden lg:block text-[9px] font-bold uppercase tracking-tight leading-none whitespace-nowrap">{{ __('teams.trash') }}</span>
                     </a>
                 </div>
             @endif

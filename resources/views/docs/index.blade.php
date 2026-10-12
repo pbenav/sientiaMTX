@@ -167,7 +167,7 @@
 
             const isDark = document.documentElement.classList.contains('dark');
             Swal.fire({
-                title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Formato de Impresión</span>',
+                title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">{{ __('docs.print_format') }}</span>',
                 background: isDark ? '#0f172a' : '#ffffff',
                 color: isDark ? '#f3f4f6' : '#1f2937',
                 showConfirmButton: false,
@@ -177,7 +177,7 @@
                 },
                 html: `
                     <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-6 text-center px-4">
-                        ¿Deseas incluir las cabeceras corporativas y la marca de agua de MTX?
+                        {{ __("docs.watermark_question") }}
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-2">
                         <button type="button" id="swal-btn-header" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-indigo-100 dark:border-indigo-950 bg-indigo-50/50 dark:bg-indigo-950/30 hover:border-indigo-600 transition-all text-center group">
@@ -192,7 +192,7 @@
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
                             </div>
                             <div class="font-black text-[10px] uppercase tracking-widest text-gray-700 dark:text-gray-300">Sin Cabeceras</div>
-                            <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Contenido limpio</div>
+                            <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">{{ __('Contenido limpio') }}</div>
                         </button>
                     </div>
                 `,

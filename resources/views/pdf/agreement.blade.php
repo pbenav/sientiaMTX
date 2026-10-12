@@ -71,9 +71,9 @@
                     <div class="logo-text">sientia<span class="dot">.</span><span class="suffix">MTX</span></div>
                 </td>
                 <td style="text-align: right; vertical-align: middle;">
-                    <div class="doc-type">Acuerdo de Adhesión / Resolución</div>
-                    <div class="doc-id">Ref: {{ strtoupper($activity->uuid ?? $activity->id) }}</div>
-                    <div class="doc-id">Equipo: {{ $team->name }}</div>
+                    <div class="doc-type">{{ __('Accession Agreement / Resolution') }}</div>
+                    <div class="doc-id">{{ __('Ref:') }} {{ strtoupper($activity->uuid ?? $activity->id) }}</div>
+                    <div class="doc-id">{{ __('Team:') }} {{ $team->name }}</div>
                 </td>
             </tr>
         </table>
@@ -85,30 +85,30 @@
         <table width="100%">
             <tr>
                 <td style="width:33%; vertical-align:top; padding:0 10px 0 0;">
-                    <div class="info-label">Fecha</div>
+                    <div class="info-label">{{ __('Date') }}</div>
                     <div class="info-value">{{ $activity->scheduled_date ? $activity->scheduled_date->format('d/m/Y') : now()->format('d/m/Y') }}</div>
                 </td>
                 <td style="width:33%; vertical-align:top; padding:0 10px;">
-                    <div class="info-label">Estado</div>
+                    <div class="info-label">{{ __('Status') }}</div>
                     <div class="info-value">{{ __('activities.statuses.' . $activity->status_value) }}</div>
                 </td>
                 <td style="width:33%; vertical-align:top; padding:0 0 0 10px;">
-                    <div class="info-label">Promotor</div>
-                    <div class="info-value">{{ $activity->creator->name ?? 'Sistema' }}</div>
+                    <div class="info-label">{{ __('Promoter') }}</div>
+                    <div class="info-value">{{ $activity->creator->name ?? __('System') }}</div>
                 </td>
             </tr>
         </table>
     </div>
 
     @if(!empty($content))
-    <div class="section-title">Términos del Acuerdo</div>
+    <div class="section-title">{{ __('Agreement Terms') }}</div>
     <div class="content">
         {!! $content !!}
     </div>
     @endif
 
     @if(!empty($observations))
-    <div class="section-title">Observaciones / Condiciones Adicionales</div>
+    <div class="section-title">{{ __('Observations / Additional Conditions') }}</div>
     <div class="content">
         {!! $observations !!}
     </div>
@@ -116,9 +116,9 @@
 
 
     <div style="page-break-before: always; padding-top: 20px;">
-        <div class="section-title" style="margin-top: 0;">Panel de Firmas Electrónicas</div>
+        <div class="section-title" style="margin-top: 0;">{{ __('Electronic Signatures Panel') }}</div>
         <p style="font-size: 11px; color: #64748b; margin-bottom: 15px;">
-            A continuación se muestran las rúbricas y constancias criptográficas de los intervinientes de este acuerdo. El documento original digital contiene las firmas PAdES válidas a todos los efectos legales.
+            {{ __('Below are shown the cryptographic rubrics and certificates of the participants in this agreement. The original digital document contains PAdES signatures valid for all legal purposes.') }}
         </p>
 
         <div class="signatures-section">
@@ -128,9 +128,9 @@
                 if (!empty($memberSignatures)) {
                     foreach ($memberSignatures as $ms) {
                         $allSigners[] = [
-                            'name'      => $ms['name'] ?? 'Miembro del equipo',
+                            'name'      => $ms['name'] ?? __('Team member'),
                             'email'     => $ms['email'] ?? '',
-                            'role'      => 'Miembro Interno',
+                            'role'      => __('Internal Member'),
                             'signed_at' => $ms['signed_at'] ?? null,
                         ];
                     }
@@ -139,9 +139,9 @@
                 if (!empty($guests)) {
                     foreach ($guests as $g) {
                         $allSigners[] = [
-                            'name'      => $g['name'] ?? 'Invitado Externo',
+                            'name'      => $g['name'] ?? __('External Guest'),
                             'email'     => $g['email'] ?? '',
-                            'role'      => 'Asistente Externo',
+                            'role'      => __('External Attendee'),
                             'signed_at' => $g['signed_at'] ?? null,
                         ];
                     }
@@ -158,15 +158,15 @@
                                     <div class="sig-box {{ !empty($signer['signed_at']) ? 'signed' : 'pending' }}">
                                         @if(!empty($signer['signed_at']))
                                             <div class="sig-header signed">
-                                                Firmado Electrónicamente
+                                                {{ __('Electronically Signed') }}
                                                 <span class="sig-check">✓</span>
                                             </div>
                                             <div class="sig-name">{{ $signer['name'] }}</div>
                                             <div class="sig-email">{{ $signer['email'] }}</div>
                                             <div class="sig-role">{{ $signer['role'] }}</div>
-                                            <div class="sig-date">Firmado el: {{ \Carbon\Carbon::parse($signer['signed_at'])->format('d/m/Y H:i:s') }}</div>
+                                            <div class="sig-date">{{ __('Signed on:') }} {{ \Carbon\Carbon::parse($signer['signed_at'])->format('d/m/Y H:i:s') }}</div>
                                         @else
-                                            <div class="sig-header pending">Firma Digital</div>
+                                            <div class="sig-header pending">{{ __('Digital Signature') }}</div>
                                             <!-- Espacio restante para que el sello de Autofirma encaje perfecto -->
                                             <div style="height: 50px;"></div>
                                         @endif
@@ -180,13 +180,13 @@
                     @endforeach
                 </table>
             @else
-                <p style="font-size: 12px; color: #94a3b8; font-style: italic;">No hay firmantes asignados a este acuerdo.</p>
+                <p style="font-size: 12px; color: #94a3b8; font-style: italic;">{{ __('No signers assigned to this agreement.') }}</p>
             @endif
         </div>
     </div>
 
     <div class="footer">
-        Documento generado automáticamente por Sientia MTX &nbsp;·&nbsp; {{ now()->format('d/m/Y H:i') }} &nbsp;·&nbsp; Ref: {{ strtoupper($activity->uuid ?? $activity->id) }}
+        {{ __('Document automatically generated by Sientia MTX') }} &nbsp;·&nbsp; {{ now()->format('d/m/Y H:i') }} &nbsp;·&nbsp; {{ __('Ref:') }} {{ strtoupper($activity->uuid ?? $activity->id) }}
     </div>
 
 </body>

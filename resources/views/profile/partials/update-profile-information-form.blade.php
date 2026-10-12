@@ -89,7 +89,7 @@
                         
                         @if($user->profile_photo_path)
                             <button type="button" onclick="event.preventDefault(); document.getElementById('delete-photo-form').submit();" class="bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 text-[10px] uppercase tracking-wider font-bold py-2 px-4 rounded-xl border border-rose-100 dark:border-rose-900/30 hover:bg-rose-100 transition-all">
-                                {{ __('Eliminar') }}
+                                {{ __('Delete') }}
                             </button>
                         @endif
                     </div>
@@ -351,20 +351,20 @@
             unpairAccount() {
                 if (typeof Swal !== 'undefined') {
                     Swal.fire({
-                        title: '¿Desvincular cuenta?',
+                        title: '¿{{ __('desvincular') }} cuenta?',
                         text: 'Dejarás de sincronizar tus fichajes con CTH.',
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#ef4444',
                         confirmButtonText: 'Sí, desvincular',
-                        cancelButtonText: 'Cancelar'
+                        cancelButtonText: '{{ __('Cancel') }}'
                     }).then((result) => {
                         if (result.isConfirmed) {
                             this.performUnpair();
                         }
                     });
                 } else {
-                    if (confirm('¿Seguro que deseas desvincular tu cuenta de CTH?')) {
+                    if (confirm('{{ __('swal.confirm_unlink_cth') }}')) {
                         this.performUnpair();
                     }
                 }
@@ -429,15 +429,15 @@
                             {{ __('Conectar con CTH') }}
                         </button>
                         <button type="button" x-show="hasToken" @click="unpairAccount()" class="bg-rose-50 hover:bg-rose-100 dark:bg-rose-900/20 dark:hover:bg-rose-900/40 text-rose-600 dark:text-rose-400 font-bold text-xs px-4 py-2 rounded-xl border border-rose-200 dark:border-rose-800 transition-all">
-                            {{ __('Desvincular') }}
+                            {{ __('Unlink') }}
                         </button>
                     </div>
                 </div>
 
                 <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm" x-show="hasToken" x-collapse>
                     <div>
-                        <span class="text-sm font-bold text-gray-700 dark:text-gray-300 block">Activar Sincronización</span>
-                        <span class="text-[10px] text-gray-500">Si está activo, tus inicios y cierres de jornada se replicarán.</span>
+                        <span class="text-sm font-bold text-gray-700 dark:text-gray-300 block">{{ __('Enable Synchronization') }}</span>
+                        <span class="text-[10px] text-gray-500">{{ __('When active, your workday starts and stops will be synced.') }}</span>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="hidden" name="sync_with_cth" value="0">
@@ -479,7 +479,7 @@
                     </div>
 
                     <div class="flex items-center justify-end gap-3 border-t border-gray-100 dark:border-gray-800 pt-4">
-                        <button type="button" @click="showCthModal = false" class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">Cancelar</button>
+                        <button type="button" @click="showCthModal = false" class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">{{ __('Cancel') }}</button>
                         <button type="button" @click="pairAccount()" :disabled="pairing" class="bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-lg shadow-cyan-600/20 transition-all flex items-center gap-2 disabled:opacity-50">
                             <span x-show="pairing" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                             <span x-text="pairing ? 'Conectando...' : 'Conectar y Vincular'"></span>
@@ -508,7 +508,7 @@
         </div>
 
         <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Guardar Cambios') }}</x-primary-button>
+            <x-primary-button>{{ __('Save Changes') }}</x-primary-button>
 
             @if (session('status') === 'profile-updated')
                 <p x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 2000)"

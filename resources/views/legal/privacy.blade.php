@@ -1,4 +1,4 @@
-<x-legal-layout title="Política de Privacidad">
+<x-legal-layout :title="__('html.privacy_policy')">
 @if($content)
     {!! $content !!}
 @else

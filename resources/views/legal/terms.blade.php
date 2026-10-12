@@ -1,4 +1,4 @@
-<x-legal-layout title="Términos de Servicio" updatedAt="{{ date('d \d\e F \d\e Y') }}">
+<x-legal-layout :title="__('html.terms_of_service')" updatedAt="{{ date('d \d\e F \d\e Y') }}">
 @if($content)
     {!! $content !!}
 @else
@@ -39,7 +39,7 @@
 <p>En la medida permitida por la ley, la Empresa no será responsable por daños indirectos o pérdida de datos. La responsabilidad total de la Empresa se limitará al importe pagado por el Cliente en los últimos 12 meses.</p>
 
 <h2>9. Ley Aplicable</h2>
-<p>Este Acuerdo se rige por las leyes de <strong><span class="field">[España / Región]</span></strong>. Cualquier disputa se someterá a los tribunales de <strong><span class="field">[Ciudad de la Jurisdicción]</span></strong>.</p>
+<p>{{ __('legal.this_agreement_is_governed_by') }} <strong><span class="field">[España / Región]</span></strong>. {{ __('legal.any_disputes_will_be_subject_to') }} <strong><span class="field">[Ciudad de la Jurisdicción]</span></strong>.</p>
 
 <h2>10. Contacto</h2>
 <p>

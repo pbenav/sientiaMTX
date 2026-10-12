@@ -41,7 +41,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
                                 </svg>
-                                {{ __('Quitar bloqueo') }}
+                                {{ __('Remove lock') }}
                             </button>
                         @endif
                     </div>
@@ -77,7 +77,7 @@
                                     </select>
                                 </div>
                             @else
-                                <p class="text-[11px] font-bold text-violet-900 dark:text-violet-200 truncate">{{ $task->assignedUser?->name ?? __('Sin asignar') }}</p>
+                                <p class="text-[11px] font-bold text-violet-900 dark:text-violet-200 truncate">{{ $task->assignedUser?->name ?? __('Unassigned') }}</p>
                             @endif
                         </div>
                     </div>
@@ -130,7 +130,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
                                 </svg>
-                                {{ __('Quitar bloqueo') }}
+                                {{ __('Remove lock') }}
                             </button>
                         @endif
                     </div>
@@ -227,7 +227,7 @@
                         @elseif($task->privacy_level === 'semi-private')
                             <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
                             <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">
-                                {{ __('Semiprivada') }}
+                                {{ __('Semi-private') }}
                             </span>
                         @else
                             <div class="w-2 h-2 rounded-full bg-violet-500"></div>
@@ -255,7 +255,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 {{ $task->auto_priority ? 'animate-pulse' : '' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
-                            <span class="text-[10px] font-bold uppercase tracking-wider">{{ __('Prioridad Automática') }}</span>
+                            <span class="text-[10px] font-bold uppercase tracking-wider">{{ __('Automatic Priority') }}</span>
                         </div>
                         <div class="relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none {{ $task->auto_priority ? 'bg-violet-500' : 'bg-gray-200 dark:bg-gray-700' }}">
                             <span class="pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ $task->auto_priority ? 'translate-x-3' : 'translate-x-0' }}"></span>
@@ -279,7 +279,7 @@
                             </svg>
                         </div>
                         <div class="min-w-0">
-                            <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">{{ __('Expediente') }}</h4>
+                            <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">{{ __('File') }}</h4>
                             <p class="text-xs font-bold text-gray-900 dark:text-white truncate">{{ $task->expediente->code }}</p>
                         </div>
                     </div>

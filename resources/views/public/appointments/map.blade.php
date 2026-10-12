@@ -1,6 +1,6 @@
 @extends('layouts.public_appointments')
 
-@section('title', 'Red de Citas Previas')
+@section('title', __('Appointment Network'))
 
 @section('styles')
 <style>
@@ -26,21 +26,21 @@
     <!-- Sidebar de Miembros -->
     <div :class="viewMode === 'list' ? 'flex' : 'hidden lg:flex'" class="lg:col-span-1 min-h-0 bg-white dark:bg-gray-900 border-r border-gray-150 dark:border-gray-800 flex-col h-full z-10 shadow-lg">
         <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
-            <h2 class="text-lg font-black tracking-tight text-gray-900 dark:text-white heading-font">{{ __('Puntos de Atención') }}</h2>
-            <p class="text-xs text-gray-400 dark:text-gray-500 font-medium mt-1">{{ __('Selecciona un miembro en el mapa o en la lista para solicitar cita.') }}</p>
+            <h2 class="text-lg font-black tracking-tight text-gray-900 dark:text-white heading-font">{{ __('Service Locations') }}</h2>
+            <p class="text-xs text-gray-400 dark:text-gray-500 font-medium mt-1">{{ __('Select a member on the map or list to book an appointment.') }}</p>
             
             <div class="relative mt-4">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 </div>
-                <input type="text" id="search-input" placeholder="{{ __('Buscar por nombre, área o equipo...') }}" 
+                <input type="text" id="search-input" placeholder="{{ __('Search by name, area or team...') }}" 
                        class="w-full pl-9 pr-4 py-2.5 bg-gray-100/80 dark:bg-gray-800/80 border border-transparent focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl text-xs font-semibold text-gray-900 dark:text-white outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500 shadow-sm">
             </div>
 
             @if(!empty($allTeams))
             <div class="mt-2.5">
                 <select id="team-filter" class="w-full px-3 py-2 bg-gray-100/80 dark:bg-gray-800/80 border border-transparent focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 outline-none transition-all cursor-pointer shadow-sm">
-                    <option value="">🔍 {{ __('Todos los equipos') }}</option>
+                    <option value="">🔍 {{ __('All teams') }}</option>
                     @foreach($allTeams as $teamName)
                         <option value="{{ $teamName }}">👥 {{ $teamName }}</option>
                     @endforeach
@@ -82,7 +82,7 @@
                             <div class="flex items-center justify-between gap-2 mt-2">
                                 <span class="flex items-center gap-1 text-[10px] text-gray-400 dark:text-gray-500 font-semibold">
                                     <svg class="w-3.5 h-3.5 text-cyan-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/></svg>
-                                    {{ $m['services'] }} {{ $m['services'] == 1 ? __('servicio') : __('servicios') }}
+                                    {{ $m['services'] }} {{ $m['services'] == 1 ? __('service') : __('services') }}
                                 </span>
                                 <div class="flex items-center gap-1.5">
                                     @php
@@ -92,15 +92,15 @@
                                     @endphp
                                     <button type="button" onclick="event.stopPropagation(); openQrModal('{{ base64_encode($qrCodeSvg) }}', 'qr-cita-{{ $m['slug'] }}.svg')"
                                        class="p-0.5 bg-white border border-gray-200 dark:border-gray-700 hover:border-cyan-500 rounded-lg shadow-sm transition-all hover:scale-110"
-                                       title="{{ __('Ver código QR') }}">
+                                       title="{{ __('html.qr_code') }}">
                                         {!! preg_replace('/<\?xml.*?\?>\n?/', '', $qrCodeSmall) !!}
                                     </button>
 
-                                    <button type="button" class="locate-map-btn p-1 text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 rounded-lg transition-colors" title="Ver en el mapa" data-lat="{{ $m['lat'] }}" data-lng="{{ $m['lng'] }}" data-slug="{{ $m['slug'] }}">
+                                    <button type="button" class="locate-map-btn p-1 text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 rounded-lg transition-colors" title="{{ __("html.view_on_map") }}" data-lat="{{ $m['lat'] }}" data-lng="{{ $m['lng'] }}" data-slug="{{ $m['slug'] }}">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
                                     </button>
                                     <a href="/citas/{{ $m['slug'] }}" class="px-2.5 py-1 bg-cyan-600 hover:bg-cyan-500 text-white text-[9px] font-black uppercase tracking-wider rounded-lg shadow-sm transition-all select-none hover:scale-105 active:scale-95 shrink-0">
-                                        {{ __('Pedir Cita') }}
+                                        {{ __('Book Appointment') }}
                                     </a>
                                 </div>
                             </div>
@@ -111,8 +111,8 @@
             @empty
                 <div class="p-8 text-center">
                     <p class="text-3xl mb-2">🗺️</p>
-                    <p class="text-sm font-bold text-gray-500 dark:text-gray-400">{{ __('Sin puntos activos') }}</p>
-                    <p class="text-xs text-gray-450 dark:text-gray-550 mt-1">{{ __('No hay miembros disponibles con coordenadas GPS en la red.') }}</p>
+                    <p class="text-sm font-bold text-gray-500 dark:text-gray-400">{{ __('No active locations') }}</p>
+                    <p class="text-xs text-gray-450 dark:text-gray-550 mt-1">{{ __('There are no members available with GPS coordinates in the network.') }}</p>
                 </div>
             @endforelse
         </div>
@@ -132,7 +132,7 @@
                     <div class="w-7 h-7 bg-cyan-50 dark:bg-cyan-950/40 rounded-lg flex items-center justify-center text-cyan-500 border border-cyan-100 dark:border-cyan-900/50">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                     </div>
-                    <h3 class="text-xs font-black uppercase tracking-wider text-gray-900 dark:text-white">{{ __('Acceso a Videocita') }}</h3>
+                    <h3 class="text-xs font-black uppercase tracking-wider text-gray-900 dark:text-white">{{ __('Video Appointment Access') }}</h3>
                 </div>
                 <button type="button" class="text-gray-400 hover:text-cyan-500 transition-colors">
                     <svg x-show="!open" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
@@ -143,7 +143,7 @@
             <!-- Contenido (Formulario) -->
             <div x-show="open" x-collapse x-cloak>
                 <div class="p-5 pt-0 border-t border-gray-100 dark:border-gray-800/50 mt-1">
-                    <p class="text-[10px] text-gray-400 dark:text-gray-500 font-semibold mb-4 leading-relaxed mt-4">{{ __('Si tienes una cita de videoconferencia hoy, introduce tu localizador para acceder.') }}</p>
+                    <p class="text-[10px] text-gray-400 dark:text-gray-500 font-semibold mb-4 leading-relaxed mt-4">{{ __('If you have a video appointment today, enter your booking code to access.') }}</p>
 
                     <form method="POST" action="{{ route('public.appointments.video.find') }}" class="space-y-3">
                         @csrf
@@ -157,7 +157,7 @@
                         </div>
                         <button type="submit"
                                 class="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-md shadow-cyan-500/10 transition-all select-none">
-                            {{ __('Acceder a la videocita') }}
+                            {{ __('Access video appointment') }}
                         </button>
                     </form>
                 </div>
@@ -171,11 +171,11 @@
                 class="flex items-center gap-2 px-5 py-3 bg-cyan-600 dark:bg-cyan-500 hover:bg-cyan-500 dark:hover:bg-cyan-400 text-white text-xs font-black uppercase tracking-wider rounded-full shadow-2xl shadow-cyan-500/30 transition-all active:scale-95 select-none">
             <span x-show="viewMode === 'list'" class="flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-                {{ __('Ver Mapa') }}
+                {{ __('View Map') }}
             </span>
             <span x-show="viewMode === 'map'" class="flex items-center gap-2" x-cloak>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                {{ __('Ver Lista') }}
+                {{ __('View List') }}
             </span>
         </button>
     </div>
@@ -235,9 +235,9 @@
                     <div class="p-3 text-gray-900 dark:text-white font-sans max-w-xs">
                         <h4 class="font-black text-sm heading-font">${m.display_name}</h4>
                         ${m.area ? `<p class="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 uppercase mt-0.5 tracking-wider">${m.area}</p>` : ''}
-                        <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-2 font-medium">${m.services} {{ __('servicios disponibles') }}</p>
+                        <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-2 font-medium">${m.services} {{ __('available services') }}</p>
                         <a href="/citas/${m.slug}" class="block text-center mt-3 px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white !text-white text-[10px] font-black uppercase tracking-widest rounded-lg shadow-sm transition-all hover:scale-102 select-none">
-                            {{ __('Pedir Cita Previa') }}
+                            {{ __('Book Appointment') }}
                         </a>
                     </div>
                 `;
@@ -357,7 +357,7 @@
                 opacity: 1,
                 fillOpacity: 1
             }).addTo(map);
-            userLocationMarker.bindPopup('<p class="font-bold text-xs text-center text-gray-900">Tu ubicación</p>');
+            userLocationMarker.bindPopup('<p class="font-bold text-xs text-center text-gray-900">{{ __('Your location') }}</p>');
             
             // Forzar un zoom de 11 (aprox 20km) alrededor del usuario
             map.setView(e.latlng, 11);

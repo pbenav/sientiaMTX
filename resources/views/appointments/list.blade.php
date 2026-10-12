@@ -1,5 +1,5 @@
 <x-app-layout maxWidth="max-w-none">
-@section('title', 'Lista de Citas Previas')
+@section('title', __('Appointments List'))
 
 <x-slot name="header">
     <div class="flex items-center gap-3 flex-wrap">
@@ -16,14 +16,14 @@
                 <svg class="h-4 w-4 text-cyan-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                 </svg>
-                <span class="truncate">Todas las Citas</span>
+                <span class="truncate">{{ __('All Appointments') }}</span>
             </h1>
         </div>
     </div>
     
     <div class="mt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-gray-100 dark:border-gray-800 pt-3">
         <x-demo-hint>
-            Este <strong>listado maestro</strong> ofrece una vista tabular avanzada con todos los expedientes de citas. Permite filtrar por fechas, servicios o estados, realizar aprobaciones, borrar citas permanentemente o iniciar videocitas directamente desde la tabla.
+            {!! __('This <strong>master list</strong> offers an advanced tabular view with all appointment files. It allows filtering by dates, services, or statuses, approving, permanently deleting appointments, or starting video appointments directly from the table.') !!}
         </x-demo-hint>
     </div>
     @include('appointments.partials.nav')
@@ -44,7 +44,7 @@
 
         {{-- Resumen del periodo filtrado --}}
         <div class="flex flex-wrap items-center gap-x-6 gap-y-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm text-sm">
-            <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">Periodo:</span>
+            <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">{{ __('Period:') }}</span>
             
             <div class="flex items-center gap-2.5">
                 <div class="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center">
@@ -52,7 +52,7 @@
                 </div>
                 <div class="flex flex-col leading-none">
                     <span class="font-black text-gray-900 dark:text-white">{{ $periodStats['pending'] ?? 0 }}</span>
-                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">Previstas</span>
+                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">{{ __('Pending') }}</span>
                 </div>
             </div>
 
@@ -64,7 +64,7 @@
                 </div>
                 <div class="flex flex-col leading-none">
                     <span class="font-black text-gray-900 dark:text-white">{{ $periodStats['confirmed'] ?? 0 }}</span>
-                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">Confirmadas</span>
+                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">{{ __('Confirmed') }}</span>
                 </div>
             </div>
 
@@ -76,7 +76,7 @@
                 </div>
                 <div class="flex flex-col leading-none">
                     <span class="font-black text-gray-900 dark:text-white">{{ $periodStats['completed'] ?? 0 }}</span>
-                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">Completadas</span>
+                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">{{ __('Completed') }}</span>
                 </div>
             </div>
 
@@ -88,7 +88,7 @@
                 </div>
                 <div class="flex flex-col leading-none">
                     <span class="font-black text-gray-900 dark:text-white">{{ $periodStats['cancelled'] ?? 0 }}</span>
-                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">Canceladas</span>
+                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">{{ __('Cancelled') }}</span>
                 </div>
             </div>
 
@@ -100,7 +100,7 @@
             @endphp
             @if($totalList > 0)
             <div class="flex items-center gap-2">
-                <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">Éxito:</span>
+                <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">{{ __('Success:') }}</span>
                 <div class="w-16 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                     <div class="h-full bg-violet-500 rounded-full" style="width: {{ $effectivenessList }}%"></div>
                 </div>
@@ -111,7 +111,7 @@
             <div class="hidden xl:block w-px h-6 bg-gray-200 dark:bg-gray-800 mx-2"></div>
 
             <div class="flex items-center gap-5 xl:ml-auto">
-                <span class="text-[10px] font-black uppercase tracking-widest text-gray-400" title="Calculado sobre citas completadas con tiempo registrado en el periodo filtrado">⏱️ Tiempos (Periodo):</span>
+                <span class="text-[10px] font-black uppercase tracking-widest text-gray-400" title="{{ __('Calculated on completed appointments with tracked time in the filtered period') }}">⏱️ {{ __('Times (Period):') }}</span>
                 
                 <div class="flex items-center gap-2.5">
                     <div class="flex flex-col leading-none">
@@ -123,14 +123,14 @@
                 <div class="flex items-center gap-2.5">
                     <div class="flex flex-col leading-none">
                         <span class="font-black text-indigo-600 dark:text-indigo-400 tabular-nums">{{ floor(($statsDuration['avg'] ?? 0) / 60) }}m</span>
-                        <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">Media</span>
+                        <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">{{ __('Avg') }}</span>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-2.5">
                     <div class="flex flex-col leading-none">
                         <span class="font-black text-gray-700 dark:text-gray-300 tabular-nums">{{ floor(($statsDuration['mode'] ?? 0) / 60) }}m</span>
-                        <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">Moda</span>
+                        <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">{{ __('Mode') }}</span>
                     </div>
                 </div>
 
@@ -147,41 +147,41 @@
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm">
             <form method="GET" action="{{ route('appointments.list', $team) }}" class="flex flex-wrap gap-3 items-end">
                 <div class="flex-1 min-w-[200px]">
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Buscador</label>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Localizador, nombre, DNI..."
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">{{ __('Search') }}</label>
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('Code, name, ID...') }}"
                            class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all">
                 </div>
                 <div class="flex-1 min-w-[200px]">
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Estado</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">{{ __('Status') }}</label>
                     <select name="status" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all">
-                        <option value="">Todos</option>
+                        <option value="">{{ __('All') }}</option>
                         @foreach(\App\Models\Appointment::STATUSES as $val => $label)
                             <option value="{{ $val }}" {{ request('status') === $val ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="flex-1 min-w-[200px]">
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Servicio</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">{{ __('Service') }}</label>
                     <select name="service_id" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all">
-                        <option value="">Todos</option>
+                        <option value="">{{ __('All') }}</option>
                         @foreach($services as $s)
                             <option value="{{ $s->id }}" {{ request('service_id') == $s->id ? 'selected' : '' }}>{{ $s->name }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div>
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Desde</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">{{ __('From') }}</label>
                     <input type="date" name="date_from" value="{{ request('date_from') }}"
                            class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Hasta</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">{{ __('To') }}</label>
                     <input type="date" name="date_to" value="{{ request('date_to') }}"
                            class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all">
                 </div>
                 <div class="flex gap-2">
-                    <button type="submit" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black rounded-xl transition-all">Filtrar</button>
-                    <a href="{{ route('appointments.list', $team) }}?clear=1" class="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs font-black rounded-xl transition-all hover:bg-gray-200 dark:hover:bg-gray-700">Limpiar</a>
+                    <button type="submit" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black rounded-xl transition-all">{{ __('Filter') }}</button>
+                    <a href="{{ route('appointments.list', $team) }}?clear=1" class="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs font-black rounded-xl transition-all hover:bg-gray-200 dark:hover:bg-gray-700">{{ __('Clear') }}</a>
                 </div>
             </form>
         </div>
@@ -192,8 +192,8 @@
             @if($appointments->isEmpty())
                 <div class="p-16 text-center">
                     <p class="text-5xl mb-4">📭</p>
-                    <p class="text-lg font-black text-gray-900 dark:text-white">Sin citas</p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">No hay citas que coincidan con los filtros seleccionados.</p>
+                    <p class="text-lg font-black text-gray-900 dark:text-white">{{ __('No appointments') }}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">{{ __('No appointments match the selected filters.') }}</p>
                 </div>
             @else
                 <form method="POST" action="{{ route('appointments.bulk', $team) }}" id="bulk-form" class="hidden">
@@ -201,12 +201,12 @@
                 </form>
 
                 <div class="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800 px-5 py-3 flex items-center justify-between transition-all" x-show="count > 0" style="display: none;" x-cloak>
-                    <span class="text-xs font-bold text-gray-600 dark:text-gray-400"><span x-text="count"></span> seleccionadas</span>
+                    <span class="text-xs font-bold text-gray-600 dark:text-gray-400"><span x-text="count"></span> {{ __('selected') }}</span>
                     <div class="flex gap-2">
-                        <button type="submit" name="bulk_action" value="complete" form="bulk-form" class="px-3 py-1.5 text-xs font-black bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-900/30 dark:text-violet-400 rounded-lg transition-colors">Completar</button>
-                        <button type="button" onclick="confirmBulkNoShow()" class="px-3 py-1.5 text-xs font-black bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700/50 dark:text-gray-300 rounded-lg transition-colors">No presentado</button>
-                        <button type="button" onclick="confirmBulkCancel()" class="px-3 py-1.5 text-xs font-black bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400 rounded-lg transition-colors">Cancelar</button>
-                        <button type="button" onclick="confirmBulkDelete()" class="px-3 py-1.5 text-xs font-black bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 rounded-lg transition-colors">Borrar</button>
+                        <button type="submit" name="bulk_action" value="complete" form="bulk-form" class="px-3 py-1.5 text-xs font-black bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-900/30 dark:text-violet-400 rounded-lg transition-colors">{{ __('Complete') }}</button>
+                        <button type="button" onclick="confirmBulkNoShow()" class="px-3 py-1.5 text-xs font-black bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700/50 dark:text-gray-300 rounded-lg transition-colors">{{ __('No show') }}</button>
+                        <button type="button" onclick="confirmBulkCancel()" class="px-3 py-1.5 text-xs font-black bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400 rounded-lg transition-colors">{{ __("Cancel") }}</button>
+                        <button type="button" onclick="confirmBulkDelete()" class="px-3 py-1.5 text-xs font-black bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 rounded-lg transition-colors">{{ __('Delete') }}</button>
                     </div>
                 </div>
 
@@ -224,35 +224,35 @@
                                 @endphp
                                 <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
                                     <a href="{{ request()->fullUrlWithQuery(['sort_by' => 'localizador', 'sort_dir' => $sort_by === 'localizador' ? $next_dir : 'asc']) }}" class="hover:text-cyan-500 flex items-center gap-1">
-                                        Localizador @if($sort_by === 'localizador') {!! $sort_dir === 'asc' ? '↑' : '↓' !!} @endif
+                                        {{ __('Code') }} @if($sort_by === 'localizador') {!! $sort_dir === 'asc' ? '↑' : '↓' !!} @endif
                                     </a>
                                 </th>
                                 <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
                                     <a href="{{ request()->fullUrlWithQuery(['sort_by' => 'appointment_date', 'sort_dir' => $sort_by === 'appointment_date' ? $next_dir : 'desc']) }}" class="hover:text-cyan-500 flex items-center gap-1">
-                                        Fecha @if($sort_by === 'appointment_date') {!! $sort_dir === 'asc' ? '↑' : '↓' !!} @endif
+                                        {{ __('Date') }} @if($sort_by === 'appointment_date') {!! $sort_dir === 'asc' ? '↑' : '↓' !!} @endif
                                     </a>
                                 </th>
                                 <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
                                     <a href="{{ request()->fullUrlWithQuery(['sort_by' => 'visitor', 'sort_dir' => $sort_by === 'visitor' ? $next_dir : 'asc']) }}" class="hover:text-cyan-500 flex items-center gap-1">
-                                        Ciudadano @if($sort_by === 'visitor') {!! $sort_dir === 'asc' ? '↑' : '↓' !!} @endif
+                                        {{ __('Citizen') }} @if($sort_by === 'visitor') {!! $sort_dir === 'asc' ? '↑' : '↓' !!} @endif
                                     </a>
                                 </th>
                                 <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
                                     <a href="{{ request()->fullUrlWithQuery(['sort_by' => 'service', 'sort_dir' => $sort_by === 'service' ? $next_dir : 'asc']) }}" class="hover:text-cyan-500 flex items-center gap-1">
-                                        Servicio @if($sort_by === 'service') {!! $sort_dir === 'asc' ? '↑' : '↓' !!} @endif
+                                        {{ __('Service') }} @if($sort_by === 'service') {!! $sort_dir === 'asc' ? '↑' : '↓' !!} @endif
                                     </a>
                                 </th>
                                 <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
                                     <a href="{{ request()->fullUrlWithQuery(['sort_by' => 'status', 'sort_dir' => $sort_by === 'status' ? $next_dir : 'asc']) }}" class="hover:text-cyan-500 flex items-center gap-1">
-                                        Estado @if($sort_by === 'status') {!! $sort_dir === 'asc' ? '↑' : '↓' !!} @endif
+                                        {{ __('Status') }} @if($sort_by === 'status') {!! $sort_dir === 'asc' ? '↑' : '↓' !!} @endif
                                     </a>
                                 </th>
                                 <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">
                                     <a href="{{ request()->fullUrlWithQuery(['sort_by' => 'time', 'sort_dir' => $sort_by === 'time' ? $next_dir : 'desc']) }}" class="hover:text-cyan-500 flex items-center justify-center gap-1">
-                                        Tiempo @if($sort_by === 'time') {!! $sort_dir === 'asc' ? '↑' : '↓' !!} @endif
+                                        {{ __('Time') }} @if($sort_by === 'time') {!! $sort_dir === 'asc' ? '↑' : '↓' !!} @endif
                                     </a>
                                 </th>
-                                <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">Completada</th>
+                                <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">{{ __('Completed') }}</th>
                                 <th class="px-5 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400"></th>
                             </tr>
                         </thead>
@@ -314,16 +314,16 @@
                                             <span class="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
                                                 {{ $cita->service->name }}
                                                 @if($isActiveTimerCita)
-                                                    <span class="px-1.5 py-0.5 rounded text-[9px] font-black bg-amber-500 text-white animate-pulse">⏱️ En curso</span>
+                                                    <span class="px-1.5 py-0.5 rounded text-[9px] font-black bg-amber-500 text-white animate-pulse">⏱️ {{ __('In progress') }}</span>
                                                 @endif
                                             </span>
                                             @if(in_array($cita->modality, ['jitsi', 'meet']))
                                                 <span class="inline-flex items-center gap-1 text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase mt-0.5 tracking-wider">
-                                                    💻 Videocita ({{ ucfirst($cita->modality) }})
+                                                    💻 {{ __('Video Appointment (:modality)', ['modality' => ucfirst($cita->modality)]) }}
                                                 </span>
                                             @else
                                                 <span class="inline-flex items-center gap-1 text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase mt-0.5 tracking-wider">
-                                                    🏢 Presencial
+                                                    🏢 {{ __('In person') }}
                                                 </span>
                                             @endif
                                         </div>
@@ -349,18 +349,18 @@
                                             <div class="flex flex-col items-center gap-1">
                                                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-white animate-pulse shadow-sm">
                                                     <span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
-                                                    En Curso
+                                                    {{ __('In Progress') }}
                                                 </span>
                                                 @if($cita->activity_id || $cita->task_id)
                                                     <button type="button" 
                                                         onclick="event.stopPropagation(); fetch('{{ route('time-logs.toggle-task', $cita->activity_id ?? $cita->task_id) }}', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, body: JSON.stringify({ intent: 'stop' }) }).then(r => r.json()).then(() => { if (window.Alpine && Alpine.store('timer')) Alpine.store('timer').stop(); window.location.reload(); });"
                                                         class="text-[10px] font-black text-rose-600 dark:text-rose-400 hover:underline cursor-pointer">
-                                                        [Parar]
+                                                        [{{ __('Stop') }}]
                                                     </button>
                                                 @endif
                                             </div>
                                         @elseif($seconds > 0)
-                                            <div class="flex items-center justify-center gap-1 text-gray-600 dark:text-gray-400" title="Tiempo dedicado a esta cita">
+                                            <div class="flex items-center justify-center gap-1 text-gray-600 dark:text-gray-400" title="{{ __('Time spent on this appointment') }}">
                                                 <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                                 <span class="text-xs font-bold tabular-nums">{{ floor($seconds / 60) }}<span class="text-[10px] ml-0.5 opacity-70">m</span></span>
                                             </div>
@@ -404,16 +404,16 @@
                                             @if($cita->status === 'confirmed' && in_array($cita->modality, ['jitsi', 'meet']))
                                                 <a href="{{ route('public.appointments.video.auth', $cita) }}?localizador={{ $cita->localizador }}" target="_blank" rel="noopener"
                                                    class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase rounded-lg border border-indigo-150/40 dark:border-indigo-900/30 transition-all select-none">
-                                                    💻 Iniciar
+                                                    💻 {{ __('Start') }}
                                                 </a>
                                             @endif
                                             <a href="{{ route('appointments.show', [$team, $cita]) }}"
                                                class="text-xs font-black text-cyan-600 dark:text-cyan-400 hover:underline">
-                                                Ver →
+                                                {{ __('View') }} →
                                             </a>
                                             <form id="delete-appointment-{{ $cita->id }}" method="POST" action="{{ route('appointments.forceDestroy', [$team, $cita]) }}" class="inline-block">
                                                 @csrf @method('DELETE')
-                                                <button type="button" onclick="confirmSingleDelete(event, '{{ $cita->id }}')" class="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Borrar Permanente">
+                                                <button type="button" onclick="confirmSingleDelete(event, '{{ $cita->id }}')" class="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="{{ __('Delete permanently') }}">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                                 </button>
                                             </form>
@@ -426,7 +426,7 @@
                 </div>
                 <div class="px-5 py-4 border-t border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div class="flex items-center gap-2 shrink-0">
-                        <label for="per_page_bottom" class="text-[10px] font-black uppercase tracking-widest text-gray-400">Mostrar:</label>
+                        <label for="per_page_bottom" class="text-[10px] font-black uppercase tracking-widest text-gray-400">{{ __('Show:') }}</label>
                         <select id="per_page_bottom" onchange="window.location.href=this.value" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold py-1.5 pl-3 pr-8 focus:ring-cyan-500 focus:border-cyan-500 text-gray-900 dark:text-white transition-all shadow-sm">
                             <option value="{{ request()->fullUrlWithQuery(['per_page' => 15]) }}" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
                             <option value="{{ request()->fullUrlWithQuery(['per_page' => 30]) }}" {{ request('per_page') == 30 ? 'selected' : '' }}>30</option>
@@ -444,20 +444,20 @@
         event.preventDefault();
         const form = document.getElementById(`delete-appointment-${id}`);
         if (typeof Swal === 'undefined') {
-            if (confirm('¿Eliminar físicamente esta cita de la base de datos por completo?')) {
+            if (confirm('{{ __('swal.confirm_delete_physical') }}')) {
                 HTMLFormElement.prototype.submit.call(form);
             }
             return;
         }
         Swal.fire({
-            title: '¿Eliminar físicamente esta cita?',
-            text: '⚠️ Esta acción no se puede deshacer y borrará la cita de la base de datos por completo, junto con su tarea asociada. Indique a continuación el motivo de la anulación definitiva para el correo del ciudadano (opcional).',
+            title: '{{ __('Permanently delete this appointment?') }}',
+            text: '{{ __('This action cannot be undone and will delete the appointment from the database completely, along with its associated task. Enter the reason for definitive cancellation for the citizen email (optional).') }}',
             input: 'textarea',
-            inputPlaceholder: 'Escriba el motivo de la eliminación definitiva aquí...',
+            inputPlaceholder: '{{ __('Enter cancellation reason here...') }}',
             icon: 'error',
             showCancelButton: true,
-            confirmButtonText: 'Sí, borrar',
-            cancelButtonText: 'Cancelar',
+            confirmButtonText: '{{ __('Yes, delete') }}',
+            cancelButtonText: '{{ __("Cancel") }}',
             customClass: {
                 popup: 'rounded-[2rem] dark:bg-gray-900 border border-gray-150 dark:border-gray-800 p-8',
                 confirmButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white rounded-xl transition-all shadow-md',
@@ -479,7 +479,7 @@
 
     function confirmBulkDelete() {
         if (typeof Swal === 'undefined') {
-            if (confirm('¿Eliminar permanentemente las citas seleccionadas?')) {
+            if (confirm('{{ __('swal.confirm_delete_built_permanently') }}')) {
                 const form = document.getElementById('bulk-form');
                 const actionInput = document.createElement('input');
                 actionInput.type = 'hidden';
@@ -498,14 +498,14 @@
             return;
         }
         Swal.fire({
-            title: '¿Eliminar permanentemente las seleccionadas?',
-            text: '⚠️ ATENCIÓN: Esta acción no se puede deshacer. Se borrarán todas las citas seleccionadas de la base de datos por completo. Indique a continuación el motivo de la anulación definitiva para el correo de los ciudadanos (opcional).',
+            title: '{{ __('Permanently delete selected appointments?') }}',
+            text: '{{ __('WARNING: This action cannot be undone. All selected appointments will be permanently deleted from the database. Enter the cancellation reason for the citizen email (optional).') }}',
             input: 'textarea',
-            inputPlaceholder: 'Escriba el motivo de la eliminación definitiva aquí...',
+            inputPlaceholder: '{{ __('Enter cancellation reason here...') }}',
             icon: 'error',
             showCancelButton: true,
-            confirmButtonText: 'Sí, borrar todas',
-            cancelButtonText: 'Cancelar',
+            confirmButtonText: '{{ __('Yes, delete all') }}',
+            cancelButtonText: '{{ __("Cancel") }}',
             customClass: {
                 popup: 'rounded-[2rem] dark:bg-gray-900 border border-gray-150 dark:border-gray-800 p-8',
                 confirmButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white rounded-xl transition-all shadow-md',
@@ -542,7 +542,7 @@
 
     function confirmBulkCancel() {
         if (typeof Swal === 'undefined') {
-            if (confirm('¿Cancelar las citas seleccionadas?')) {
+            if (confirm('{{ __('swal.confirm_cancel_appointments') }}')) {
                 const form = document.getElementById('bulk-form');
                 const actionInput = document.createElement('input');
                 actionInput.type = 'hidden';
@@ -561,13 +561,13 @@
             return;
         }
         Swal.fire({
-            title: '¿Cancelar las citas seleccionadas?',
-            text: 'Indique a continuación el motivo de la cancelación masiva (opcional). Los ciudadanos correspondientes recibirán esta información por email si prestaron su consentimiento.',
+            title: '{{ __('Cancel selected appointments?') }}',
+            text: '{{ __('Enter the reason for bulk cancellation (optional). Citizens will receive this information by email if they consented.') }}',
             input: 'textarea',
-            inputPlaceholder: 'Escriba el motivo de la cancelación aquí...',
+            inputPlaceholder: '{{ __('Enter cancellation reason here...') }}',
             showCancelButton: true,
-            confirmButtonText: 'Sí, cancelar citas',
-            cancelButtonText: 'No, mantener',
+            confirmButtonText: '{{ __('Yes, cancel appointments') }}',
+            cancelButtonText: '{{ __('No, keep') }}',
             customClass: {
                 popup: 'rounded-[2rem] dark:bg-gray-900 border border-gray-150 dark:border-gray-800 p-8',
                 confirmButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-amber-500 hover:bg-amber-600 text-white rounded-xl transition-all shadow-md',
@@ -605,7 +605,7 @@
 
     function confirmBulkNoShow() {
         if (typeof Swal === 'undefined') {
-            if (confirm('¿Marcar las citas seleccionadas como NO PRESENTADO? (Se cancelarán)')) {
+            if (confirm('{{ __('swal.confirm_mark_no_show') }}')) {
                 const form = document.getElementById('bulk-form');
                 const actionInput = document.createElement('input');
                 actionInput.type = 'hidden';
@@ -624,12 +624,12 @@
             return;
         }
         Swal.fire({
-            title: '¿Marcar como NO PRESENTADO?',
-            text: 'Las citas seleccionadas pasarán a estado cancelado y se registrará que el ciudadano no se ha presentado.',
+            title: '{{ __('Mark as NO SHOW?') }}',
+            text: '{{ __('The selected appointments will be marked as no-show and cancelled.') }}',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Sí, marcar',
-            cancelButtonText: 'Volver',
+            confirmButtonText: '{{ __('Yes, mark') }}',
+            cancelButtonText: '{{ __('Back') }}',
             customClass: {
                 popup: 'rounded-[2rem] dark:bg-gray-900 border border-gray-150 dark:border-gray-800 p-8',
                 confirmButton: 'px-5 py-3 text-xs font-black uppercase tracking-widest bg-gray-800 hover:bg-gray-900 text-white dark:bg-gray-100 dark:hover:bg-white dark:text-gray-900 rounded-xl transition-all shadow-md',

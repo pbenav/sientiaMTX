@@ -1,5 +1,5 @@
 <x-app-layout>
-    @section('title', 'Editar Expediente — ' . $expediente->code)
+    @section('title', __('Edit File') . ' — ' . $expediente->code)
 
     <x-slot name="header">
         <div class="flex items-start gap-4">
@@ -15,7 +15,7 @@
                     <div class="text-xs font-medium text-gray-400 uppercase tracking-wider">{{ $team->name }}</div>
                 </div>
                 <h1 class="text-2xl font-black text-gray-900 dark:text-white heading tracking-tight">
-                    Editar Expediente
+                    {{ __("Editar Expediente") }}
                 </h1>
             </div>
         </div>
@@ -28,52 +28,52 @@
 
             <!-- Título -->
             <div>
-                <label for="title" class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Título del Expediente *</label>
+                <label for="title" class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">{{ __("Expedient Title *") }}</label>
                 <input type="text" name="title" id="title" required autofocus
                     value="{{ old('title', $expediente->title) }}"
                     class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border-none rounded-xl focus:ring-2 focus:ring-violet-500 text-gray-900 dark:text-white transition-all font-bold"
-                    placeholder="Ej: Auditoría Anual Q3, Reforma Local 4...">
+                    placeholder="{{ __('e.g. Annual Audit Q3, Local Reform 4...') }}">
                 <x-input-error class="mt-2" :messages="$errors->get('title')" />
             </div>
 
             <!-- Descripción -->
             <div>
-                <label for="description" class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Descripción / Contexto</label>
+                <label for="description" class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">{{ __("Description / Context") }}</label>
                 <textarea name="description" id="description" rows="4"
                     class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border-none rounded-xl focus:ring-2 focus:ring-violet-500 text-gray-900 dark:text-white transition-all text-sm"
-                    placeholder="Escribe detalles relevantes sobre este expediente...">{{ old('description', $expediente->description) }}</textarea>
+                    placeholder="{{ __('Write relevant details about this case...') }}">{{ old('description', $expediente->description) }}</textarea>
                 <x-input-error class="mt-2" :messages="$errors->get('description')" />
             </div>
 
             <!-- Triple row for Priority, Visibility & Status -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <div>
-                    <label for="priority" class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Prioridad</label>
+                    <label for="priority" class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">{{ __("Priority") }}</label>
                     <select name="priority" id="priority" required
                         class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border-none rounded-xl focus:ring-2 focus:ring-violet-500 text-gray-900 dark:text-white font-bold text-sm">
-                        @foreach(['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'] as $key => $label)
+                        @foreach(['low' => __('Low'), 'medium' => __('Medium'), 'high' => __('High'), 'critical' => __('Critical')] as $key => $label)
                             <option value="{{ $key }}" {{ old('priority', $expediente->priority) === $key ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div>
-                    <label for="visibility" class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Privacidad 🔒</label>
+                    <label for="visibility" class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">{{ __("Privacy") }} 🔒</label>
                     <select name="visibility" id="visibility" required
                         class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border-none rounded-xl focus:ring-2 focus:ring-violet-500 text-gray-900 dark:text-white font-bold text-sm">
-                        <option value="public" {{ old('visibility', $expediente->visibility) === 'public' ? 'selected' : '' }}>🌎 Público</option>
-                        <option value="private" {{ old('visibility', $expediente->visibility) === 'private' ? 'selected' : '' }}>🔒 Privado</option>
+                        <option value="public" {{ old('visibility', $expediente->visibility) === 'public' ? 'selected' : '' }}>🌎 {{ __('Public (All Team)') }}</option>
+                        <option value="private" {{ old('visibility', $expediente->visibility) === 'private' ? 'selected' : '' }}>🔒 {{ __('Private (Restricted)') }}</option>
                     </select>
                 </div>
                 <div>
-                    <label for="status" class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Estado</label>
+                    <label for="status" class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">{{ __("Status") }}</label>
                     <select name="status" id="status" required
                         class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border-none rounded-xl focus:ring-2 focus:ring-violet-500 text-gray-900 dark:text-white font-bold text-sm">
                         @foreach([
-                            'open' => 'Abierto', 
-                            'active' => 'En Curso', 
-                            'on_hold' => 'En Espera',
-                            'closed' => 'Cerrado / Finalizado',
-                            'cancelled' => 'Cancelado'
+                            'open' => __('Open'), 
+                            'active' => __('In Progress'), 
+                            'on_hold' => __('On Hold'),
+                            'closed' => __('Closed / Finished'),
+                            'cancelled' => __('Cancelled')
                         ] as $key => $label)
                             <option value="{{ $key }}" {{ old('status', $expediente->status) === $key ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
@@ -84,13 +84,13 @@
             <!-- Dates row -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                    <label for="start_date" class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Fecha Inicio</label>
+                    <label for="start_date" class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">{{ __("Start Date") }}</label>
                     <input type="date" name="start_date" id="start_date"
                         value="{{ old('start_date', $expediente->start_date ? $expediente->start_date->format('Y-m-d') : '') }}"
                         class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border-none rounded-xl focus:ring-2 focus:ring-violet-500 text-gray-900 dark:text-white text-sm">
                 </div>
                 <div>
-                    <label for="end_date" class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Fecha Fin Est.</label>
+                    <label for="end_date" class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">{{ __("Estimated End Date") }}</label>
                     <input type="date" name="end_date" id="end_date"
                         value="{{ old('end_date', $expediente->end_date ? $expediente->end_date->format('Y-m-d') : '') }}"
                         class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border-none rounded-xl focus:ring-2 focus:ring-violet-500 text-gray-900 dark:text-white text-sm">
@@ -103,16 +103,16 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                     </svg>
-                    Asignación y Participación
+                    {{ __("Assignment and Participation") }}
                 </h3>
                 
-                <!-- Responsable Principal -->
+                <!-- {{ __("Main Responsible") }} -->
                 <div class="mb-8">
                     <label for="assigned_user_id" class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">
-                        Responsable Principal
+                        {{ __("Main Responsible") }}
                     </label>
                     <select name="assigned_user_id" id="assigned_user_id" class="w-full text-sm">
-                        <option value="">-- Sin asignar --</option>
+                        <option value="">-- {{ __("Unassigned") }} --</option>
                         @foreach($users as $user)
                             <option value="{{ $user->id }}" {{ old('assigned_user_id', $expediente->assigned_user_id) == $user->id ? 'selected' : '' }}>
                                 {{ $user->name }}
@@ -153,15 +153,15 @@
                         <div class="space-y-3">
                             <div class="flex items-center justify-between">
                                 <label class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                    Colaboradores (Múltiple)
+                                    {{ __("Collaborators (Multiple)") }}
                                 </label>
                                 <div class="flex gap-2">
                                     <button type="button" @click="selectAll(true)" class="text-[10px] font-black uppercase tracking-widest text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 transition-colors">
-                                        Todo
+                                        {{ __("All") }}
                                     </button>
                                     <span class="text-gray-300 dark:text-gray-700 text-[10px]">|</span>
                                     <button type="button" @click="selectAll(false)" class="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
-                                        Nada
+                                        {{ __("None") }}
                                     </button>
                                 </div>
                             </div>
@@ -189,7 +189,7 @@
                 @endphp
                 <div class="mt-6">
                     <label class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-3">
-                        Grupos Involucrados
+                        {{ __("Involved Groups") }}
                     </label>
                     <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 space-y-2.5 max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
                         @foreach ($groups as $group)
@@ -202,7 +202,7 @@
                                 <div class="flex flex-col min-w-0">
                                     <span class="text-sm font-bold text-gray-700 dark:text-gray-200 leading-tight group-hover:text-gray-900 dark:group-hover:text-white transition-colors truncate">{{ $group->name }}</span>
                                     <span class="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">
-                                        {{ $group->users->count() }} Miembros
+                                        {{ $group->users->count() }} {{ __("Members") }}
                                     </span>
                                 </div>
                             </label>
@@ -212,17 +212,17 @@
                 </div>
                 @endif
                 </div>
-                <p class="text-xs text-violet-600 dark:text-violet-400 font-medium mt-6">💡 Si el expediente es <span class="font-bold">Privado</span> y añades colaboradores/grupos, el expediente será automáticamente <span class="font-bold">Público</span> para permitir su visualización dentro del equipo.</p>
+                <p class="text-xs text-violet-600 dark:text-violet-400 font-medium mt-6">💡 {{ __('If the file is private and you add collaborators, configure privacy accordingly to allow visibility.') }}</p>
             </div>
 
             <!-- End of basic administrative data -->
 
             <div class="pt-4 flex items-center justify-end gap-4 border-t border-gray-100 dark:border-gray-800">
                 <a href="{{ route('teams.expedientes.show', [$team, $expediente]) }}" class="text-sm font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-                    Cancelar
+                    {{ __("Cancel") }}
                 </a>
                 <button type="submit" class="px-8 py-3 bg-violet-600 hover:bg-violet-500 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg hover:shadow-violet-500/30 hover:-translate-y-0.5 transition-all active:scale-95">
-                    Actualizar Expediente
+                    {{ __("Actualizar Expediente") }}
                 </button>
             </div>
         </form>

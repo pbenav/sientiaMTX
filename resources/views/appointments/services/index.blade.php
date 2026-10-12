@@ -1,5 +1,5 @@
 <x-app-layout maxWidth="max-w-none">
-@section('title', 'Mis Servicios de Cita Previa')
+@section('title', __('My Appointment Services'))
 
 <x-slot name="header">
     <div class="flex items-center justify-between gap-3 flex-wrap">
@@ -16,13 +16,13 @@
                 <svg class="h-4 w-4 text-cyan-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                 </svg>
-                <span class="truncate">Mis Servicios</span>
+                <span class="truncate">{{ __('My Services') }}</span>
             </h1>
         </div>
     </div>
     <div class="mt-2 border-t border-gray-100 dark:border-gray-800 pt-3">
         <x-demo-hint>
-            En esta sección configuras el <strong>catálogo de servicios</strong> que se ofrecerá al ciudadano. Puedes definir la duración, si son de pago y descripciones detalladas. Cada servicio configurado y activo aparecerá de forma automática en el portal de solicitud pública de citas.
+            {!! __('In this section you configure the <strong>service catalog</strong> offered to citizens. You can define duration, pricing, and detailed descriptions. Each configured and active service will automatically appear on the public appointment booking portal.') !!}
         </x-demo-hint>
     </div>
     <!-- Sub-Menú de Navegación -->
@@ -35,7 +35,7 @@
             <svg class="h-4 w-4 transition-transform group-hover:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
             </svg>
-            <span>Nuevo Servicio</span>
+            <span>{{ __('New Service') }}</span>
         </a>
     </div>
 </x-slot>
@@ -57,10 +57,10 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                     </svg>
                 </div>
-                <h3 class="text-xl font-black text-gray-900 dark:text-white">Sin servicios definidos</h3>
-                <p class="text-gray-500 dark:text-gray-400 mt-2 mb-8 max-w-md">Crea los servicios que ofreces para que los ciudadanos puedan solicitar cita. Cada servicio tendrá su propia duración, descripción y disponibilidad.</p>
+                <h3 class="text-xl font-black text-gray-900 dark:text-white">{{ __('No services defined') }}</h3>
+                <p class="text-gray-500 dark:text-gray-400 mt-2 mb-8 max-w-md">{{ __('Create the services you offer so citizens can book appointments. Each service will have its own duration, description, and availability.') }}</p>
                 <a href="{{ route('appointments.services.create', $team) }}" class="px-8 py-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded-2xl font-black shadow-lg shadow-cyan-500/20 transition-all active:scale-95">
-                    Crear Primer Servicio
+                    {{ __('Create First Service') }}
                 </a>
             </div>
         @else
@@ -81,12 +81,12 @@
                                     </span>
                                     @if($service->price !== null)
                                         <span class="text-[10px] font-black text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded-md">
-                                            {{ $service->price > 0 ? '€'.$service->price : 'Gratuito' }}
+                                            {{ $service->price > 0 ? '€'.$service->price : __('Free') }}
                                         </span>
                                     @endif
                                     <span class="text-[10px] font-black px-2 py-0.5 rounded-md
                                         {{ $service->is_active ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400' }}">
-                                        {{ $service->is_active ? '● Activo' : '● Inactivo' }}
+                                        ● {{ $service->is_active ? __('Active') : __('Inactive') }}
                                     </span>
                                 </div>
                             </div>
@@ -95,23 +95,23 @@
                         @if($service->description)
                             <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-4">{{ Str::limit($service->description, 120) }}</p>
                         @else
-                            <p class="text-xs text-gray-400 italic mb-4">Sin descripción</p>
+                            <p class="text-xs text-gray-400 italic mb-4">{{ __('No description') }}</p>
                         @endif
 
                         <div class="pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
                             <div class="text-[10px] text-gray-400 font-medium flex items-center gap-3">
-                                <span>{{ $service->appointments()->whereNotIn('status', ['cancelled'])->count() }} citas activas</span>
+                                <span>{{ $service->appointments()->whereNotIn('status', ['cancelled'])->count() }} {{ __('active appointments') }}</span>
                             </div>
                             <div class="flex items-center gap-2">
                                 <a href="{{ route('appointments.services.edit', [$team, $service]) }}"
                                    class="p-2 text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded-xl transition-all"
-                                   title="Editar servicio">
+                                   title="{{ __('Edit service') }}">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                 </a>
                                 <form method="POST" action="{{ route('appointments.services.destroy', [$team, $service]) }}"
-                                      onsubmit="return confirm('¿Eliminar este servicio? Solo se puede si no tiene citas activas.')">
+                                      onsubmit="return confirm('{{ __('Are you sure you want to delete this service?') }}')">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all" title="Eliminar servicio">
+                                    <button type="submit" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all" title="{{ __('Delete service') }}">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                     </button>
                                 </form>

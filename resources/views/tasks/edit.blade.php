@@ -212,7 +212,7 @@
                     <!-- Primary: Expediente (Pre-eminent) -->
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">
-                            {{ __('Expediente Vinculado') }}
+                            {{ __('Linked File') }}
                         </label>
                         @if($task->parent_id && !$task->is_template)
                             <div class="flex items-center justify-between bg-gray-50 dark:bg-gray-900 p-3 rounded-xl border border-gray-200 dark:border-gray-700">
@@ -223,7 +223,7 @@
                                         </span>
                                         <span class="text-sm font-bold text-gray-700 dark:text-gray-300">{{ $task->expediente->title }}</span>
                                     @else
-                                        <span class="text-sm text-gray-400 italic">{{ __('(Ningún expediente)') }}</span>
+                                        <span class="text-sm text-gray-400 italic">{{ __('(No file)') }}</span>
                                     @endif
                                 </div>
                                 <div class="flex items-center gap-1 text-[10px] font-bold text-gray-400 bg-white dark:bg-gray-800 px-2 py-1 rounded-lg shadow-sm">
@@ -236,7 +236,7 @@
                         @else
                             <select name="expediente_id" id="expediente_id_select"
                                 class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white transition-all cursor-pointer">
-                                <option value="">{{ __('(Ningún expediente)') }}</option>
+                                <option value="">{{ __('(No file)') }}</option>
                                 @foreach ($expedientes as $exp)
                                     <option value="{{ $exp->id }}"
                                         data-code="{{ $exp->code }}"
@@ -554,7 +554,7 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
-                                    {{ __('Patrón Mensual') }}
+                                    {{ __('Monthly Pattern') }}
                                 </label>
                                 <div class="flex flex-col sm:flex-row gap-4">
                                     <label class="relative flex items-center gap-3 cursor-pointer group">
@@ -563,7 +563,7 @@
                                             <div class="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-violet-500 transition-all"></div>
                                             <div class="absolute w-2 h-2 rounded-full bg-violet-500 scale-0 peer-checked:scale-100 transition-all"></div>
                                         </div>
-                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('El mismo día del mes') }}</span>
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('Same day of the month') }}</span>
                                     </label>
                                     <label class="relative flex items-center gap-3 cursor-pointer group">
                                         <div class="relative flex items-center justify-center">
@@ -571,29 +571,29 @@
                                             <div class="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-violet-500 transition-all"></div>
                                             <div class="absolute w-2 h-2 rounded-full bg-violet-500 scale-0 peer-checked:scale-100 transition-all"></div>
                                         </div>
-                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('Un día específico de la semana') }}</span>
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('A specific day of the week') }}</span>
                                     </label>
                                 </div>
 
                                 <div x-show="monthlyType === 'ordinal'" class="flex items-center gap-2 mt-3" x-transition>
-                                    <span class="text-sm text-gray-500">{{ __('El') }}</span>
+                                    <span class="text-sm text-gray-500">{{ __('The') }}</span>
                                     <select name="autoprogram_settings[monthly_ordinal]" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-3 py-1.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
-                                        <option value="first" {{ old('autoprogram_settings.monthly_ordinal', $apSettings['monthly_ordinal'] ?? '') === 'first' ? 'selected' : '' }}>{{ __('Primer') }}</option>
-                                        <option value="second" {{ old('autoprogram_settings.monthly_ordinal', $apSettings['monthly_ordinal'] ?? '') === 'second' ? 'selected' : '' }}>{{ __('Segundo') }}</option>
-                                        <option value="third" {{ old('autoprogram_settings.monthly_ordinal', $apSettings['monthly_ordinal'] ?? '') === 'third' ? 'selected' : '' }}>{{ __('Tercer') }}</option>
-                                        <option value="fourth" {{ old('autoprogram_settings.monthly_ordinal', $apSettings['monthly_ordinal'] ?? '') === 'fourth' ? 'selected' : '' }}>{{ __('Cuarto') }}</option>
-                                        <option value="last" {{ old('autoprogram_settings.monthly_ordinal', $apSettings['monthly_ordinal'] ?? '') === 'last' ? 'selected' : '' }}>{{ __('Último') }}</option>
+                                        <option value="first" {{ old('autoprogram_settings.monthly_ordinal', $apSettings['monthly_ordinal'] ?? '') === 'first' ? 'selected' : '' }}>{{ __('First') }}</option>
+                                        <option value="second" {{ old('autoprogram_settings.monthly_ordinal', $apSettings['monthly_ordinal'] ?? '') === 'second' ? 'selected' : '' }}>{{ __('Second') }}</option>
+                                        <option value="third" {{ old('autoprogram_settings.monthly_ordinal', $apSettings['monthly_ordinal'] ?? '') === 'third' ? 'selected' : '' }}>{{ __('Third') }}</option>
+                                        <option value="fourth" {{ old('autoprogram_settings.monthly_ordinal', $apSettings['monthly_ordinal'] ?? '') === 'fourth' ? 'selected' : '' }}>{{ __('Fourth') }}</option>
+                                        <option value="last" {{ old('autoprogram_settings.monthly_ordinal', $apSettings['monthly_ordinal'] ?? '') === 'last' ? 'selected' : '' }}>{{ __('Last') }}</option>
                                     </select>
                                     <select name="autoprogram_settings[monthly_day]" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-3 py-1.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
-                                        <option value="monday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'monday' ? 'selected' : '' }}>{{ __('Lunes') }}</option>
-                                        <option value="tuesday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'tuesday' ? 'selected' : '' }}>{{ __('Martes') }}</option>
-                                        <option value="wednesday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'wednesday' ? 'selected' : '' }}>{{ __('Miércoles') }}</option>
-                                        <option value="thursday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'thursday' ? 'selected' : '' }}>{{ __('Jueves') }}</option>
-                                        <option value="friday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'friday' ? 'selected' : '' }}>{{ __('Viernes') }}</option>
-                                        <option value="saturday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'saturday' ? 'selected' : '' }}>{{ __('Sábado') }}</option>
-                                        <option value="sunday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'sunday' ? 'selected' : '' }}>{{ __('Domingo') }}</option>
+                                        <option value="monday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'monday' ? 'selected' : '' }}>{{ __('Monday') }}</option>
+                                        <option value="tuesday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'tuesday' ? 'selected' : '' }}>{{ __('Tuesday') }}</option>
+                                        <option value="wednesday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'wednesday' ? 'selected' : '' }}>{{ __('Wednesday') }}</option>
+                                        <option value="thursday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'thursday' ? 'selected' : '' }}>{{ __('Thursday') }}</option>
+                                        <option value="friday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'friday' ? 'selected' : '' }}>{{ __('Friday') }}</option>
+                                        <option value="saturday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'saturday' ? 'selected' : '' }}>{{ __('Saturday') }}</option>
+                                        <option value="sunday" {{ old('autoprogram_settings.monthly_day', $apSettings['monthly_day'] ?? '') === 'sunday' ? 'selected' : '' }}>{{ __('Sunday') }}</option>
                                     </select>
-                                    <span class="text-sm text-gray-500">{{ __('del mes') }}</span>
+                                    <span class="text-sm text-gray-500">{{ __('of the month') }}</span>
                                 </div>
                             </div>
                             <div class="space-y-2">
@@ -752,7 +752,7 @@
                             </svg>
                         </div>
                         <div class="flex flex-col">
-                            <span class="text-sm font-bold text-gray-900 dark:text-white">{{ __('Bloquear programación (Inamovible)') }}</span>
+                            <span class="text-sm font-bold text-gray-900 dark:text-white">{{ __('Lock scheduling (Fixed)') }}</span>
                             <span class="text-[11px] text-gray-500 dark:text-gray-400">{{ __('Evita que la tarea sea desplazada o redimensionada en el Gantt de forma accidental.') }}</span>
                         </div>
                     </div>
@@ -762,7 +762,7 @@
                     </label>
                 </div>
 
-                <!-- Gamification Features (Resiliencia Colectiva) -->
+                <!-- Gamification Features ({{ __("metrics.collective_resilience") }}) -->
                 <div
                     class="bg-amber-50/20 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 rounded-2xl p-6 space-y-6">
                     <div class="flex items-center gap-3 mb-2">
@@ -782,7 +782,7 @@
                         <!-- Skill Category Selection -->
                         <div x-data="{ selectedSkills: @json(old('skills', $task->skills->pluck('id')->toArray())) }">
                             <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
-                                Árbol de Capacidades (Selección Múltiple)
+                                Árbol de {{ __('Capacidades') }} ({{ __('Selection') }} Múltiple)
                             </label>
                             <select name="skills[]" multiple
                                 class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:border-amber-500 outline-none transition-all text-gray-900 dark:text-white h-64 resize-y">
@@ -800,7 +800,7 @@
                         <div x-data="{ load: {{ $task->cognitive_load ?? 1 }} }">
                             <label
                                 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center justify-between">
-                                <span>Carga Cognitiva (Drenaje de Energía)</span>
+                                <span>{{ __('activities.cognitive_load') }}</span>
                                 <span
                                     :class="{
                                         'text-emerald-500': load == 1,
@@ -1001,7 +1001,7 @@
                                                 autoSubmit: false
                                             })"
                                             class="p-2 text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:text-violet-400 dark:hover:bg-violet-900/20 bg-white dark:bg-gray-900 rounded-xl border border-transparent hover:border-violet-100 dark:hover:border-violet-900/40 transition-all shadow-sm"
-                                            title="Preguntar a la IA sobre este archivo">
+                                            title="{{ __("html.ai_on_file") }}">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                             </svg>
@@ -1011,7 +1011,7 @@
                                             <button type="button"
                                                 onclick="openDriveUploadPicker({{ $attachment->id }})"
                                                 class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 bg-white dark:bg-gray-900 rounded-xl border border-transparent hover:border-blue-100 dark:hover:border-blue-900/40 transition-all shadow-sm"
-                                                title="Subir a Google Drive">
+                                                title="{{ __("html.upload_to_drive") }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                                                     <path d="M7.71 3.5L1.15 15l3.43 6 6.55-11.5H7.71zM9.73 15L6.3 21h13.12l3.43-6H9.73zM18.74 3.5l-6.55 11.5 3.43 6L22.18 9.5l-3.44-6z"/>
                                                 </svg>
@@ -1065,7 +1065,7 @@
                                                     $isFromParent = $task->parent_id && $attachment->attachable_id === $task->parent_id;
                                                 @endphp
                                                 <span class="p-2 text-gray-300 dark:text-gray-600 cursor-help"
-                                                    title="{{ $isFromParent ? 'Este archivo es del Plan Maestro y debe gestionarse allí.' : 'Este archivo pertenece a una subtarea.' }}">
+                                                    title="{{ $isFromParent ? __('html.file_from_master_plan_manage') : 'Este archivo pertenece a una subtarea.' }}">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-40"
                                                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -1504,7 +1504,7 @@
                     width: '32rem',
                     showConfirmButton: false,
                     showCancelButton: true,
-                    cancelButtonText: '{{ __("Cerrar") }}',
+                    cancelButtonText: '{{ __('Close') }}',
                     didOpen: () => {
                         loadDriveFolder(folderId);
                     },
@@ -1531,7 +1531,7 @@
                         if (folderId !== 'root') {
                             const backBtn = document.createElement('button');
                             backBtn.className = 'flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg text-sm transition-colors text-blue-600 font-bold';
-                            backBtn.innerHTML = `<span>⬅️</span> <span>{{ __("Volver") }}</span>`;
+                            backBtn.innerHTML = `<span>⬅️</span> <span>{{ __('Back') }}</span>`;
                             backBtn.onclick = () => loadDriveFolder('root'); // Simple back to root for now
                             container.appendChild(backBtn);
                         }
@@ -1686,7 +1686,7 @@
                         if (folderId !== 'root') {
                             const backBtn = document.createElement('button');
                             backBtn.className = 'flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg text-sm transition-colors text-blue-600 font-bold w-full text-left';
-                            backBtn.innerHTML = `<span>⬅️</span> <span>Ir a la raíz</span>`;
+                            backBtn.innerHTML = `<span>⬅️</span> <span>{{ __('tasks.go_to_root') }}</span>`;
                             backBtn.onclick = () => loadDriveUploadFolder('root', attachmentId);
                             container.appendChild(backBtn);
                         }

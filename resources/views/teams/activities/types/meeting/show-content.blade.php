@@ -22,11 +22,11 @@
 
         @if(!empty($meta['modality']))
         <div>
-            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Modalidad</p>
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{{ __('Modality') }}</p>
             <p class="text-sm font-bold text-gray-900 dark:text-white">
-                @if($meta['modality'] === 'remote') 💻 En remoto / Online
-                @elseif($meta['modality'] === 'presential') 🏢 Presencial
-                @elseif($meta['modality'] === 'hybrid') 🤝 Híbrido
+                @if($meta['modality'] === 'remote') 💻 {{ __('Remote / Online') }}
+                @elseif($meta['modality'] === 'presential') 🏢 {{ __('In-person') }}
+                @elseif($meta['modality'] === 'hybrid') 🤝 {{ __('Hybrid') }}
                 @else {{ ucfirst($meta['modality']) }}
                 @endif
             </p>
@@ -214,7 +214,7 @@
                                         <button type="button" 
                                                 onclick="resendMeetingInvitation('{{ $guest['email'] }}', '{{ addslashes($guest['name'] ?? 'Invitado') }}')"
                                                 class="p-1 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/30 rounded-lg transition-colors" 
-                                                title="Reenviar invitación por correo">
+                                                title="{{ __("html.resend_email_invitation") }}">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                             </svg>
@@ -242,7 +242,7 @@ function resendMeetingInvitation(email, name) {
         icon: 'question',
         showCancelButton: true,
         confirmButtonText: 'Sí, enviar invitación',
-        cancelButtonText: 'Cancelar',
+        cancelButtonText: '{{ __("Cancel") }}',
         confirmButtonColor: '#7c3aed',
         cancelButtonColor: '#6b7280',
     }).then((result) => {
@@ -343,7 +343,7 @@ function resendMeetingInvitation(email, name) {
             </h3>
             <button onclick="printSection('Descripción', 'description-content')" 
                     class="p-1.5 bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-xl transition-all border border-transparent hover:border-violet-100 dark:hover:border-violet-800 shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest"
-                    title="Imprimir descripción">
+                    title="{{ __("html.print_description") }}">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                 </svg>

@@ -116,19 +116,9 @@ class ActivityController extends Controller
 
         $activities = $q->get(['id', 'title', 'status', 'metadata', 'type']);
 
-        $typeLabels = [
-            'task'     => 'Tarea',
-            'document' => 'Doc',
-            'note'     => 'Nota',
-            'link'     => 'Enlace',
-            'agreement' => 'Acuerdo',
-            'meeting'  => 'Reunión',
-            'reminder' => 'Aviso',
-        ];
-
         return response()->json($activities->map(fn($a) => [
             'id'   => $a->id,
-            'text' => '[' . ($a->type ? ($typeLabels[$a->type] ?? $a->type) : 'Actividad') . '] ' . $a->title . ' — ' . strtoupper($a->status_value ?? ($a->status ?? '')),
+            'text' => '[' . $a->type_label . '] ' . $a->title . ' — ' . strtoupper($a->status_value ?? ($a->status ?? '')),
         ]));
     }
 

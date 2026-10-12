@@ -47,7 +47,7 @@
                             $isCollabKanban = isset($task->metadata['assignment_mode']) && $task->metadata['assignment_mode'] === 'shared';
                         @endphp
                         <span class="px-1.5 py-0.5 rounded-md {{ $isCollabKanban ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700/50' : 'bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-700/50' }} text-[8px] font-black uppercase tracking-tighter border shadow-sm">
-                            {{ $isCollabKanban ? (__('activities.collaborative_task') ?? 'Tarea Colaborativa') : __('tasks.plan_master') }}
+                            {{ $isCollabKanban ? __('activities.collaborative_task') : __('tasks.plan_master') }}
                         </span>
                     @endif
                     @if ($task->assigned_user_id === auth()->id() && $task->parent_id)
@@ -61,21 +61,21 @@
                         </a>
                     @endif
                     @if ($task->google_task_id)
-                        <span class="px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200/50 dark:border-blue-700/50 shadow-sm" title="Sincronizada con Google Tasks">
+                        <span class="px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200/50 dark:border-blue-700/50 shadow-sm" title="{{ __('Synchronized with Google Tasks') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
                         </span>
                     @endif
                     @if ($task->google_calendar_event_id)
-                        <span class="px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-700/50 shadow-sm" title="Sincronizada con Google Calendar">
+                        <span class="px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-700/50 shadow-sm" title="{{ __('Synchronized with Google Calendar') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                         </span>
                     @endif
                     @if ($task->is_autoprogrammable)
-                        <span class="px-1.5 py-0.5 rounded-md bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 border border-violet-200/50 dark:border-violet-700/50 shadow-sm" title="Plantilla de Autoprogramación">
+                        <span class="px-1.5 py-0.5 rounded-md bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 border border-violet-200/50 dark:border-violet-700/50 shadow-sm" title="{{ __('html.autoprogramming_template') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                         </span>
                     @elseif (!$task->is_autoprogrammable && $task->parent && $task->parent->is_autoprogrammable)
-                        <a href="{{ route('teams.activities.show', [$team, $task->parent_id]) }}" class="px-1.5 py-0.5 rounded-md bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 border border-violet-200/50 dark:border-violet-700/50 shadow-sm hover:bg-violet-200 dark:hover:bg-violet-900/60 transition-colors" title="Tarea autoprogramada (Ir a plantilla maestra)" onclick="event.stopPropagation();">
+                        <a href="{{ route('teams.activities.show', [$team, $task->parent_id]) }}" class="px-1.5 py-0.5 rounded-md bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 border border-violet-200/50 dark:border-violet-700/50 shadow-sm hover:bg-violet-200 dark:hover:bg-violet-900/60 transition-colors" title="{{ __('Autoprogrammed task (Go to master template)') }}" onclick="event.stopPropagation();">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                         </a>
                     @endif
@@ -92,32 +92,32 @@
                         </span>
                     @endif
                     @if($task->is_blocked || $task->status_value === 'blocked')
-                        <span class="px-1.5 py-0.5 rounded-md bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border border-red-200/50 dark:border-red-700/50 shadow-sm text-[8px] font-black uppercase tracking-tighter" title="Bloqueada">
+                        <span class="px-1.5 py-0.5 rounded-md bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border border-red-200/50 dark:border-red-700/50 shadow-sm text-[8px] font-black uppercase tracking-tighter" title="{{ __('Blocked') }}">
                             🔒 {{ __('tasks.blocked') }}
                         </span>
                     @endif
                     @if($task->instances_count > 0)
-                        <span class="px-1.5 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200/50 dark:border-indigo-700/50 shadow-sm text-[8px] font-black uppercase tracking-tighter" title="{{ $task->instances_count }} instanc{{ $task->instances_count === 1 ? 'ia' : 'ias' }}">
+                        <span class="px-1.5 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200/50 dark:border-indigo-700/50 shadow-sm text-[8px] font-black uppercase tracking-tighter" title="{{ $task->instances_count }} {{ __('instances') }}">
                             📋 {{ $task->instances_count }}
                         </span>
                     @endif
                     @if($task->has_private_notes)
-                        <span class="px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-700/50 shadow-sm" title="Notas privadas">
+                        <span class="px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-700/50 shadow-sm" title="{{ __('Private notes') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                         </span>
                     @endif
                     @if($task->has_attachments)
-                        <span class="px-1.5 py-0.5 rounded-md bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-300 border border-sky-200/50 dark:border-sky-700/50 shadow-sm" title="{{ $task->attachments->count() }} adjunto{{ $task->attachments->count() !== 1 ? 's' : '' }}">
+                        <span class="px-1.5 py-0.5 rounded-md bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-300 border border-sky-200/50 dark:border-sky-700/50 shadow-sm" title="{{ $task->attachments->count() }} {{ __('attachments') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
                         </span>
                     @endif
                     @if($task->google_task_id)
-                        <span class="px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200/50 dark:border-blue-700/50 shadow-sm flex items-center gap-0.5" title="Sincronizada con Google Tasks">
+                        <span class="px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200/50 dark:border-blue-700/50 shadow-sm flex items-center gap-0.5" title="{{ __('Synchronized with Google Tasks') }}">
                             <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
                         </span>
                     @endif
                     @if($task->google_calendar_event_id)
-                        <span class="px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-700/50 shadow-sm flex items-center gap-0.5" title="Sincronizada con Google Calendar">
+                        <span class="px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-700/50 shadow-sm flex items-center gap-0.5" title="{{ __('Synchronized with Google Calendar') }}">
                             <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                         </span>
                     @endif
@@ -142,7 +142,7 @@
                onclick="event.stopPropagation()"
                class="text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter hover:ring-2 hover:ring-violet-500 transition-all cursor-pointer shadow-sm"
                style="background-color: {{ $qCfg['color'] ?? '#d1d5db' }}40; color: {{ $qCfg['color'] ?? '#374151' }};"
-               title="{{ __('teams.view_dashboard') ?? 'Ver Eisenhower' }}">
+               title="{{ __('teams.view_dashboard') }}">
                 Q{{ $quadrant }}
             </a>
             @endif
@@ -196,43 +196,43 @@
             </div>
             @if($task->assignedUser)
                 <span class="text-[9px] font-bold text-gray-500 dark:text-gray-400 truncate max-w-[80px]">
-                    {{ $task->assignedUser->id === auth()->id() ? __('Tú') : explode(' ', $task->assignedUser->name)[0] }}
+                    {{ $task->assignedUser->id === auth()->id() ? __('You') : explode(' ', $task->assignedUser->name)[0] }}
                 </span>
             @endif
         </div>
         
         <div class="flex items-center gap-1.5">
             @if($task->today_time_minutes > 0)
-                <span class="text-[9px] font-bold text-violet-600 dark:text-violet-400 flex items-center gap-0.5" title="Tiempo hoy">
+                <span class="text-[9px] font-bold text-violet-600 dark:text-violet-400 flex items-center gap-0.5" title="{{ __('Time today') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     {{ floor($task->today_time_minutes / 60) }}h{{ $task->today_time_minutes % 60 }}m
                 </span>
             @endif
             @if(!$isTodayCard && $task->avg_quality_score !== null)
-                <span class="text-[9px] font-bold {{ $task->avg_quality_score >= 4 ? 'text-green-600' : ($task->avg_quality_score >= 3 ? 'text-yellow-600' : 'text-red-600') }}" title="Calificación promedio">
+                <span class="text-[9px] font-bold {{ $task->avg_quality_score >= 4 ? 'text-green-600' : ($task->avg_quality_score >= 3 ? 'text-yellow-600' : 'text-red-600') }}" title="{{ __('html.average_rating') }}">
                     ⭐ {{ number_format($task->avg_quality_score, 1) }}
                 </span>
             @endif
             @if(!$isTodayCard && $task->skills->isNotEmpty())
-                <span class="text-[9px] font-bold text-sky-600 dark:text-sky-400 flex items-center gap-0.5" title="Habilidades">
+                <span class="text-[9px] font-bold text-sky-600 dark:text-sky-400 flex items-center gap-0.5" title="{{ __('Skills') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
                     {{ $task->skills->count() }}
                 </span>
             @endif
             @if(!$isTodayCard && $task->tags->isNotEmpty())
-                <span class="text-[9px] font-bold text-gray-500 dark:text-gray-400 flex items-center gap-0.5" title="Etiquetas">
+                <span class="text-[9px] font-bold text-gray-500 dark:text-gray-400 flex items-center gap-0.5" title="{{ __('Tags') }}">
                     #{{ $task->tags->count() }}
                 </span>
             @endif
             @if($task->days_remaining !== null)
                 <div class="flex items-center gap-1 text-[10px] font-bold {{ $task->due_date->isPast() && !$task->isCompleted() ? 'text-red-500' : ($task->days_remaining === 0 ? 'text-orange-500' : 'text-gray-400') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     @if($task->days_remaining < 0)
-                        {{ abs($task->days_remaining) }}d atrasada
+                        {{ abs($task->days_remaining) }}d {{ __('overdue') }}
                     @elseif($task->days_remaining === 0)
-                        Hoy
+                        {{ __('Today') }}
                     @else
                         {{ $task->days_remaining }}d
                     @endif

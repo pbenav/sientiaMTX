@@ -134,7 +134,7 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="{{ $message->hasVotedBy(auth()->user()) ? 'currentColor' : 'none' }}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3" />
                                     </svg>
-                                    <span>Votar</span> (<span class="votes-count">{{ $message->votes_count ?? $message->votes()->count() }}</span>)
+                                    <span>{{ __('Votar') }}</span> (<span class="votes-count">{{ $message->votes_count ?? $message->votes()->count() }}</span>)
                                 </button>
 
                                 <button type="button" @click="startReply({{ $message->id }}, '{{ $message->user->name }}')" 
@@ -155,14 +155,14 @@
                                     @if(auth()->id() === $message->user_id)
                                         <button type="button" @click="startWidgetEdit({{ $message->id }}, {{ json_encode($message->content) }})" 
                                             class="text-[9px] font-bold text-blue-500 hover:text-blue-600 uppercase tracking-tighter transition-colors">
-                                            {{ __('Editar') }}
+                                            {{ __('Edit') }}
                                         </button>
                                     @endif
-                                    <form action="{{ route('teams.forum.messages.destroy', [$team, $message]) }}" method="POST" onsubmit="return confirm('¿Eliminar mensaje?')">
+                                    <form action="{{ route('teams.forum.messages.destroy', [$team, $message]) }}" method="POST" onsubmit="return confirm('{{ __('swal.confirm_delete_message') }}')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-[9px] font-bold text-red-400 hover:text-red-500 uppercase tracking-tighter transition-colors">
-                                            {{ __('Eliminar') }}
+                                            {{ __('Delete') }}
                                         </button>
                                     </form>
                                 @endif
@@ -191,14 +191,14 @@
                                                 @if(auth()->id() === $reply->user_id)
                                                     <button type="button" @click="startWidgetEdit({{ $reply->id }}, {{ json_encode($reply->content) }})" 
                                                         class="text-[8px] font-bold text-blue-400 hover:text-blue-500 uppercase tracking-tighter">
-                                                        {{ __('Editar') }}
+                                                        {{ __('Edit') }}
                                                     </button>
                                                 @endif
-                                                <form action="{{ route('teams.forum.messages.destroy', [$team, $reply]) }}" method="POST" onsubmit="return confirm('¿Eliminar respuesta?')">
+                                                <form action="{{ route('teams.forum.messages.destroy', [$team, $reply]) }}" method="POST" onsubmit="return confirm('{{ __('swal.confirm_delete_reply') }}')">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="text-[8px] font-bold text-red-300 hover:text-red-400 uppercase tracking-tighter">
-                                                        {{ __('Eliminar') }}
+                                                        {{ __('Delete') }}
                                                     </button>
                                                 </form>
                                             </div>
@@ -242,8 +242,8 @@
                         <button type="submit"
                             :class="editingMessageId ? 'bg-amber-500 hover:bg-amber-600' : 'bg-violet-600 hover:bg-violet-700'"
                             class="px-4 py-2 text-white rounded-xl transition-all shadow-md flex items-center gap-2 text-xs font-bold"
-                            title="Enviar mensaje">
-                            <span x-text="editingMessageId ? 'Actualizar' : 'Enviar'"></span>
+                            title="{{ __('Send') }} mensaje">
+                            <span x-text="editingMessageId ? '{{ __('Update') }}' : '{{ __('Send') }}'"></span>
                             <svg x-show="!editingMessageId" xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
@@ -256,7 +256,7 @@
                         <!-- Cancel Button -->
                         <button x-show="editingMessageId" style="display:none;" type="button" @click="cancelWidgetEdit()"
                             class="ml-2 px-4 py-2 bg-gray-100 text-gray-500 hover:bg-gray-200 rounded-xl transition-all text-xs font-bold">
-                            {{ __('Cancelar') }}
+                            {{ __('Cancel') }}
                         </button>
                     </div>
                 </form>

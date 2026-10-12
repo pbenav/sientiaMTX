@@ -37,7 +37,7 @@
                         @if (auth()->id() === $thread->user_id || auth()->user()->getRole($team) === 'coordinator')
                             <h2 x-show="!editingTitle" @click="editingTitle = true; setTimeout(() => $refs.titleInput.focus(), 50)"
                                 class="font-bold text-xl text-gray-800 dark:text-gray-200 leading-tight truncate cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-0.5 rounded transition-colors -ml-2 border border-transparent hover:border-gray-200 dark:hover:border-gray-700"
-                                title="Editar título">
+                                title="{{ __('Edit') }} título">
                                 {{ $thread->title }}
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block ml-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                             </h2>
@@ -47,8 +47,8 @@
                                 <div class="flex items-center gap-2">
                                     <input type="text" name="title" x-ref="titleInput" value="{{ $thread->title }}"
                                         class="font-bold text-xl text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-900 border-2 border-violet-500 rounded-xl px-4 py-2 w-full focus:ring-0 focus:outline-none -ml-2 transition-all">
-                                    <button type="submit" class="px-5 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-violet-600/20 transition-all active:scale-95">Guardar</button>
-                                    <button type="button" @click="editingTitle = false" class="px-5 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-xl text-sm font-bold transition-all">Cancelar</button>
+                                    <button type="submit" class="px-5 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-violet-600/20 transition-all active:scale-95">{{ __('Save') }}</button>
+                                    <button type="button" @click="editingTitle = false" class="px-5 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-xl text-sm font-bold transition-all">{{ __("Cancel") }}</button>
                                 </div>
 
 
@@ -87,7 +87,7 @@
                         <span class="shrink-0">•</span>
                         <span class="shrink-0">{{ $thread->created_at->format('d M y, H:i') }}</span>
                         <span class="shrink-0">•</span>
-                        <span class="flex items-center gap-1.5 shrink-0" title="Vistas">
+                        <span class="flex items-center gap-1.5 shrink-0" title="{{ __("html.views") }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -99,7 +99,7 @@
                             <a href="{{ route('teams.activities.show', [$team, $thread->task]) }}"
                                 class="text-blue-600 dark:text-blue-400 hover:underline truncate flex items-center gap-1">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.172 13.828a4 4 0 015.656 0l4 4a4 4 0 01-5.656 5.656l-1.102-1.101"/></svg>
-                                <span>Tarea: {{ Str::limit($thread->task->title, 30) }}</span>
+                                <span>{{ __('Tarea:') }} {{ Str::limit($thread->task->title, 30) }}</span>
                             </a>
                         @else
                             @if (auth()->id() === $thread->user_id || auth()->user()->getRole($team) === 'coordinator')
@@ -160,7 +160,7 @@
                             @method('DELETE')
                             <button type="submit"
                                 class="p-2 bg-white border border-gray-200 text-gray-500 hover:text-red-600 hover:bg-red-50 hover:border-red-200 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-red-900/30 dark:hover:border-red-800 dark:hover:text-red-400 rounded-xl transition-colors shadow-sm"
-                                title="Eliminar hilo">
+                                title="{{ __('Delete') }} hilo">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -171,7 +171,7 @@
 
                         <button type="button" @click="$dispatch('open-modal', 'print-forum-modal'); $dispatch('set-print-target', { mode: 'thread' })"
                             class="p-2 bg-white text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 border border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-emerald-900/30 dark:hover:text-emerald-400 rounded-xl transition-colors shadow-sm"
-                            title="Imprimir hilo">
+                            title="{{ __("html.print_thread") }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                             </svg>
@@ -207,11 +207,11 @@
 
         <div class="flex items-center justify-end mb-4">
             <form action="{{ route('teams.forum.show', [$team, $thread]) }}" method="GET" class="flex items-center gap-3">
-                <label for="sort_messages" class="text-xs font-bold text-gray-500 uppercase tracking-widest">{{ __('Ordenar:') }}</label>
+                <label for="sort_messages" class="text-xs font-bold text-gray-500 uppercase tracking-widest">{{ __('Sort:') }}</label>
                 <select name="sort_messages" id="sort_messages" onchange="this.form.submit()"
                     class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl text-xs font-bold py-1.5 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all cursor-pointer text-gray-700 dark:text-gray-300">
-                    <option value="oldest" {{ ($filters['sort_messages'] ?? 'oldest') === 'oldest' ? 'selected' : '' }}>Más antiguos primero</option>
-                    <option value="newest" {{ ($filters['sort_messages'] ?? 'oldest') === 'newest' ? 'selected' : '' }}>Más recientes primero</option>
+                    <option value="oldest" {{ ($filters['sort_messages'] ?? 'oldest') === 'oldest' ? 'selected' : '' }}>{{ __('Oldest first') }}</option>
+                    <option value="newest" {{ ($filters['sort_messages'] ?? 'oldest') === 'newest' ? 'selected' : '' }}>{{ __('Newest first') }}</option>
                 </select>
             </form>
         </div>
@@ -324,7 +324,7 @@
                                     name="content"
                                     id="reply-content"
                                     rows="8"
-                                    placeholder="Escribe tu respuesta aquí..."
+                                    placeholder="{{ __('Write your reply here...') }}"
                                     :upload-url="route('teams.forum.upload_image', $team)"
                                     :mentions-url="route('teams.mentions', $team)"
                                 />
@@ -361,7 +361,7 @@
                                             </button>
                                         @else
                                             <a href="{{ route('profile.edit', ['tab' => 'integrations']) }}"
-                                                class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-gray-500 rounded-xl cursor-pointer transition-all group" title="Vincular Drive">
+                                                class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-gray-500 rounded-xl cursor-pointer transition-all group" title="{{ __("html.link_drive") }}">
                                                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.172 13.828a4 4 0 015.656 0l4 4a4 4 0 01-5.656 5.656l-1.102-1.101" /></svg>
                                                 <span class="text-[10px] font-black text-gray-400 uppercase tracking-tight">{{ __('Vincular') }}</span>
                                             </a>
@@ -428,7 +428,7 @@
                         <option value="">{{ __('forum.none') ?? '-- Ninguna (Biblioteca de Conocimiento) --' }}</option>
                         @foreach ($availableTasks as $t)
                             <option value="{{ $t->id }}" {{ $thread->task_id == $t->id ? 'selected' : '' }}
-                                data-assignee="{{ $t->assignedUser ? $t->assignedUser->name : ($t->assignedTo->count() > 0 ? $t->assignedTo->first()->name : 'Sin asignar') }}">
+                                data-assignee="{{ $t->assignedUser ? $t->assignedUser->name : ($t->assignedTo->count() > 0 ? $t->assignedTo->first()->name : __('Unassigned')) }}">
                                 [{{ __('tasks.statuses.' . $t->status) }}] {{ $t->title }}
                             </option>
                         @endforeach
@@ -437,7 +437,7 @@
 
                 <div class="mt-8 flex justify-end gap-3">
                     <x-secondary-button x-on:click="$dispatch('close')">
-                        {{ __('forum.cancel') ?? 'Cancelar' }}
+                        {{ __('forum.cancel') ?? __('Cancel') }}
                     </x-secondary-button>
 
                     <x-primary-button class="bg-blue-600 hover:bg-blue-500 shadow-blue-600/20">
@@ -489,7 +489,7 @@
                         </svg>
                     </div>
                     <h2 class="text-xl font-bold text-gray-900 dark:text-white heading">
-                        Opciones de Impresión
+                        {{ __('docs.print_options') }}
                     </h2>
                 </div>
 
@@ -531,7 +531,7 @@
                         </label>
                         <label class="flex items-center gap-3 p-2.5 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30 cursor-pointer">
                             <input type="checkbox" x-model="includeHeaders" class="rounded text-emerald-600 focus:ring-emerald-500">
-                            <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Incluir cabecera del hilo (Título, Equipo, Autor original y Fecha)</span>
+                            <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Incluir cabecera del hilo (Título, {{ __('Team') }}, Autor original y Fecha)</span>
                         </label>
                         <label class="flex items-center gap-3 p-2.5 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30 cursor-pointer">
                             <input type="checkbox" x-model="includeAuthorMeta" class="rounded text-emerald-600 focus:ring-emerald-500">
@@ -546,7 +546,7 @@
 
                 <div class="mt-8 flex justify-end gap-3">
                     <x-secondary-button x-on:click="$dispatch('close')">
-                        Cancelar
+                        {{ __("Cancel") }}
                     </x-secondary-button>
 
                     <button type="button"
@@ -555,7 +555,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                         </svg>
-                        Imprimir Documento
+                        {{ __('Imprimir') }} Documento
                     </button>
                 </div>
             </div>
@@ -976,7 +976,7 @@
                     confirmButtonColor: '#ef4444',
                     cancelButtonColor: '#94a3b8',
                     confirmButtonText: '{{ __('Sí, eliminar todo') }}',
-                    cancelButtonText: '{{ __('Cancelar') }}',
+                    cancelButtonText: '{{ __('Cancel') }}',
                     customClass: {
                         popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
                         title: 'text-red-600 dark:text-red-400 font-black uppercase tracking-tighter pt-8 text-lg',
@@ -1013,7 +1013,7 @@
             }
 
             window.confirmDeleteMessage = function(form, isFirst) {
-                const text = isFirst ? '{{ __('Este es el primer post. Borrarlo eliminará todo el hilo. ¿Estás seguro?') }}' : '{{ __('¿Eliminar este mensaje?') }}';
+                const text = isFirst ? '{{ __('Este es el primer post. Borrarlo eliminará todo el hilo. Are you sure?') }}' : '{{ __('¿Eliminar este mensaje?') }}';
                 Swal.fire({
                     title: '{{ __('Eliminar mensaje') }}',
                     text: text,
@@ -1021,8 +1021,8 @@
                     showCancelButton: true,
                     confirmButtonColor: '#ef4444',
                     cancelButtonColor: '#94a3b8',
-                    confirmButtonText: '{{ __('Sí, eliminar') }}',
-                    cancelButtonText: '{{ __('Cancelar') }}',
+                    confirmButtonText: '{{ __('Yes, delete') }}',
+                    cancelButtonText: '{{ __('Cancel') }}',
                     customClass: {
                         popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
                         title: 'text-red-600 dark:text-red-400 font-black uppercase tracking-tighter pt-8 text-lg',
@@ -1047,9 +1047,9 @@
                         icon: 'question',
                         showDenyButton: true,
                         showCancelButton: true,
-                        confirmButtonText: 'Eliminar de Drive y MTX',
+                        confirmButtonText: '{{ __('Delete') }} de Drive y MTX',
                         denyButtonText: 'Solo desvincular de MTX',
-                        cancelButtonText: 'Cancelar',
+                        cancelButtonText: '{{ __("Cancel") }}',
                         confirmButtonColor: '#ef4444',
                         denyButtonColor: '#6b7280',
                         customClass: {
@@ -1078,8 +1078,8 @@
                         showCancelButton: true,
                         confirmButtonColor: '#ef4444',
                         cancelButtonColor: '#6b7280',
-                        confirmButtonText: '{{ __('Sí, eliminar') }}',
-                        cancelButtonText: '{{ __('Cancelar') }}',
+                        confirmButtonText: '{{ __('Yes, delete') }}',
+                        cancelButtonText: '{{ __('Cancel') }}',
                         customClass: {
                             popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
                             confirmButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]',
@@ -1129,7 +1129,7 @@
                                     window.location.reload();
                                 });
                             } else {
-                                throw new Error(data.message || 'Error al guardar la imagen');
+                                throw new Error(data.message || '{{ __("Error al guardar") }} la imagen');
                             }
                         })
                         .catch(error => {
@@ -1147,8 +1147,8 @@
                     showCancelButton: true,
                     confirmButtonColor: '#7c3aed',
                     cancelButtonColor: '#6b7280',
-                    confirmButtonText: 'Guardar',
-                    cancelButtonText: 'Cancelar',
+                    confirmButtonText: '{{ __('Save') }}',
+                    cancelButtonText: '{{ __("Cancel") }}',
                     customClass: {
                         popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
                         confirmButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]',
@@ -1260,12 +1260,12 @@
                         new TomSelect(el, {
                         create: false,
                         sortField: { field: 'text', direction: 'asc' },
-                        placeholder: 'Buscar tarea...',
+                        placeholder: '{{ __('Search') }} tarea...',
                         allowEmptyOption: true,
                         render: {
                             option: function(data, escape) {
                                 // TomSelect maps data-assignee from native <option> to data.assignee
-                                const usr = data.assignee || 'Sin asignar';
+                                const usr = data.assignee || '{{ __('Unassigned') }}';
                                 return `<div class="flex items-center gap-3 py-0.5">
                                     <div class="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 shrink-0 border border-gray-200/50 dark:border-gray-700/50">
                                         <span class="text-[8px] font-mono font-black">#${escape(data.value)}</span>
@@ -1436,7 +1436,7 @@
              class="dark:[background:rgba(17,24,39,0.92)] dark:[border-color:rgba(55,65,81,0.8)]">
 
              <!-- Drag Handle -->
-             <div class="cursor-grab text-gray-300 hover:text-gray-500 dark:text-gray-700 dark:hover:text-gray-500 transition-colors px-1 select-none flex items-center justify-center" title="Arrastrar">
+             <div class="cursor-grab text-gray-300 hover:text-gray-500 dark:text-gray-700 dark:hover:text-gray-500 transition-colors px-1 select-none flex items-center justify-center" title="{{ __("html.drag") }}">
                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
                      <circle cx="9" cy="5" r="1.5" />
                      <circle cx="15" cy="5" r="1.5" />
@@ -1453,7 +1453,7 @@
                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                  </svg>
-                 <span>Volver</span>
+                 <span>{{ __('Back') }}</span>
              </a>
 
              <!-- Divider -->
@@ -1480,7 +1480,7 @@
                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
                  </svg>
-                 <span>Inicio</span>
+                 <span>{{ __('Home') }}</span>
              </button>
         </div>
 @endpush

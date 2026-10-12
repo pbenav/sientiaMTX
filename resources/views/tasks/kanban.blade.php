@@ -96,7 +96,7 @@
 
         <div class="mt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <x-demo-hint>
-                El tablero Kanban organiza las tareas en columnas personalizables, permitiendo un seguimiento visual del flujo de trabajo (Workflow). Puedes arrastrar tarjetas entre estados y actualizar su progreso rápidamente.
+                {{ __('The Kanban board organizes tasks into customizable columns, allowing visual tracking of workflow. You can drag cards between states and quickly update their progress.') }}
             </x-demo-hint>
         </div>
 
@@ -120,7 +120,7 @@
                     
                     <div class="absolute inset-y-0 right-2 flex items-center gap-1">
                         @if(!empty($filters['search']))
-                            <a href="{{ route('teams.kanban', [$team, 'reset_filters' => 1]) }}" class="p-1.5 text-gray-400 hover:text-red-500 transition-colors" title="{{ __('tasks.clear_search') ?? 'Limpiar búsqueda' }}">
+                            <a href="{{ route('teams.kanban', [$team, 'reset_filters' => 1]) }}" class="p-1.5 text-gray-400 hover:text-red-500 transition-colors" title="{{ __('tasks.clear_search') ?? __('html.clear_search') }}">
                                 <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
@@ -169,7 +169,7 @@
                 <x-kanban.filter-select
                     name="expediente_id"
                     :selected="$filters['expediente_id'] ?? null"
-                    placeholder="{{ __('Expediente') }}"
+                    placeholder="{{ __('File') }}"
                     width="w-40"
                 >
                     @foreach($expedientes as $exp)
@@ -194,9 +194,11 @@
                     placeholder="{{ __('tasks.type') }}"
                     width="w-40"
                 >
+                    <option value="task" {{ ($filters['type'] ?? null) === 'task' ? 'selected' : '' }}>📋 {{ __('activities.types.task') }}</option>
+                    <option value="agreement" {{ ($filters['type'] ?? null) === 'agreement' ? 'selected' : '' }}>⚖️ {{ __('activities.types.agreement') }}</option>
                     <option value="template" {{ ($filters['type'] ?? null) === 'template' ? 'selected' : '' }}>{{ __('tasks.template') }}</option>
                     <option value="instance" {{ ($filters['type'] ?? null) === 'instance' ? 'selected' : '' }}>{{ __('tasks.subtask') }}</option>
-                    <option value="plain" {{ ($filters['type'] ?? null) === 'plain' ? 'selected' : '' }}>{{ __('tasks.task') }}</option>
+                    <option value="plain" {{ ($filters['type'] ?? null) === 'plain' ? 'selected' : '' }}>{{ __('activities.types.task') }} ({{ __('Simple') }})</option>
                 </x-kanban.filter-select>
 
                 <x-kanban.filter-select
@@ -205,7 +207,7 @@
                     placeholder="{{ __('tasks.urgency') }}"
                     width="w-36"
                 >
-                    @foreach(['very_low','low','medium','high','very_high'] as $u)
+                    @foreach(['low','medium','high','critical'] as $u)
                         <option value="{{ $u }}" {{ ($filters['urgency'] ?? null) === $u ? 'selected' : '' }}>{{ __("tasks.urgencies.{$u}") }}</option>
                     @endforeach
                 </x-kanban.filter-select>
@@ -218,6 +220,8 @@
                 >
                     <option value="individual" {{ ($filters['assignment_mode'] ?? null) === 'individual' ? 'selected' : '' }}>{{ __('tasks.assignment_individual') }}</option>
                     <option value="shared" {{ ($filters['assignment_mode'] ?? null) === 'shared' ? 'selected' : '' }}>{{ __('tasks.assignment_collaborative') }}</option>
+                    <option value="unassigned" {{ ($filters['assignment_mode'] ?? null) === 'unassigned' ? 'selected' : '' }}>{{ __('tasks.unassigned') }}</option>
+                    <option value="assigned" {{ ($filters['assignment_mode'] ?? null) === 'assigned' ? 'selected' : '' }}>{{ __('tasks.assigned') }}</option>
                 </x-kanban.filter-select>
 
                 <x-kanban.filter-select

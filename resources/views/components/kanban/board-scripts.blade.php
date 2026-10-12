@@ -121,12 +121,12 @@
 
         window.archiveAllCompleted = window.kanbanArchiveAllCompleted = function(columnId) {
             Swal.fire({
-                title: '¿Archivar todas las tareas?',
-                text: 'Se ocultarán del tablón principal todas las tareas completadas de esta columna.',
+                title: '{{ __('Archive all tasks?') }}',
+                text: '{{ __('All completed tasks in this column will be hidden from the main board.') }}',
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonText: 'Sí, archivar todas',
-                cancelButtonText: 'Cancelar',
+                confirmButtonText: '{{ __('Yes, archive all') }}',
+                cancelButtonText: '{{ __('Cancel') }}',
                 confirmButtonColor: '#10b981',
                 background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
                 color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#111827',
@@ -261,7 +261,7 @@
                     }
                 } else if (!data.success) {
                     console.error('[Kanban] Server returned failure:', data.error || data.message);
-                    Swal.fire({ icon: 'error', title: 'Error al actualizar', text: data.error || data.message || 'Error desconocido.', toast: true, position: 'bottom-end', showConfirmButton: false, timer: 3000 });
+                    Swal.fire({ icon: 'error', title: '{{ __('Error updating') }}', text: data.error || data.message || '{{ __('Unknown error.') }}', toast: true, position: 'bottom-end', showConfirmButton: false, timer: 3000 });
                     setTimeout(() => window.location.reload(), 2000);
                 }
             }).catch(error => console.error('[Kanban] Fetch Error:', error));
@@ -303,18 +303,18 @@
 
         window.createNewColumn = window.kanbanCreateNewColumn = function() {
             Swal.fire({
-                title: '{{ __('Nueva Columna') }}',
+                title: '{{ __('New Column') }}',
                 input: 'text',
-                inputLabel: '{{ __('Título de la columna') }}',
-                inputPlaceholder: '{{ __('Ej: En revisión, Testing...') }}',
+                inputLabel: '{{ __('Column Title') }}',
+                inputPlaceholder: '{{ __('e.g., In Review, Testing...') }}',
                 showCancelButton: true,
-                confirmButtonText: '{{ __('Crear') }}',
-                cancelButtonText: '{{ __('Cancelar') }}',
+                confirmButtonText: '{{ __('Create') }}',
+                cancelButtonText: '{{ __('Cancel') }}',
                 confirmButtonColor: '#7c3aed',
                 background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
                 color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#111827',
                 preConfirm: (title) => {
-                    if (!title) { Swal.showValidationMessage('El título es obligatorio'); }
+                    if (!title) { Swal.showValidationMessage('{{ __('The title is required') }}'); }
                     return title;
                 }
             }).then((result) => {
@@ -332,12 +332,12 @@
 
         window.deleteColumn = window.kanbanDeleteColumn = function(columnId) {
             Swal.fire({
-                title: '¿Eliminar columna?',
-                text: 'Las tareas de esta columna se moverán automáticamente a la columna "Pendiente".',
+                title: '{{ __('Delete column?') }}',
+                text: '{{ __('Tasks in this column will automatically be moved to the Pending column.') }}',
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonText: 'Sí, eliminar',
-                cancelButtonText: 'Cancelar',
+                confirmButtonText: '{{ __('Yes, delete') }}',
+                cancelButtonText: '{{ __('Cancel') }}',
                 confirmButtonColor: '#ef4444',
                 background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
                 color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#111827',

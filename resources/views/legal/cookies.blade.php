@@ -1,4 +1,4 @@
-<x-legal-layout title="Política de Cookies">
+<x-legal-layout :title="__('html.cookies_policy')">
 @if($content)
     {!! $content !!}
 @else

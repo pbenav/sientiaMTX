@@ -8,9 +8,9 @@
                 </svg>
             </div>
             <div>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">Configuración Global</h1>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">{{ __('Global Settings') }}</h1>
                 <x-demo-hint>
-                    El panel de configuración principal permite definir los límites globales de la aplicación, gestionar integraciones de terceros y configurar los servidores de correo SMTP utilizados para las notificaciones automáticas de todo el sistema.
+                    {{ __('The main configuration panel allows defining global application limits, managing third-party integrations, and configuring SMTP mail servers used for automated notifications throughout the system.') }}
                 </x-demo-hint>
             </div>
         </div>
@@ -72,7 +72,7 @@
 
                                 <!-- Quick Notes Audio Limit -->
                                 <div class="md:col-span-1">
-                                    <x-input-label for="quick_notes_audio_max_duration" value="Duración máx. audio notas (segundos)" />
+                                    <x-input-label for="quick_notes_audio_max_duration" :value="__('Max Audio Note Duration (Seconds)')" />
                                     <x-text-input id="quick_notes_audio_max_duration" name="quick_notes_audio_max_duration" type="number"
                                         class="mt-1 block w-full" :value="old('quick_notes_audio_max_duration', $limits['quick_notes_audio_max_duration'])" required min="5" max="300" />
                                     <x-input-error :messages="$errors->get('quick_notes_audio_max_duration')" class="mt-2" />
@@ -80,13 +80,13 @@
 
                                 <!-- Zona Horaria Global -->
                                 <div class="md:col-span-3" x-data="{ search: '', tz: '{{ old('site_timezone', $site_timezone) }}' }">
-                                    <x-input-label for="site_timezone" value="Zona Horaria Global del Sitio" />
+                                    <x-input-label for="site_timezone" :value="__('Global Site Timezone')" />
                                     <p class="text-xs text-gray-500 dark:text-gray-400 mb-2 mt-0.5">
-                                        Zona horaria por defecto para todos los usuarios. Afecta a la visualización de fechas, horas y notificaciones.
+                                        {{ __('Default timezone for all users. Affects date, time and notification display.') }}
                                     </p>
                                     <div class="relative">
                                         <input type="text" x-model="search"
-                                            placeholder="Buscar zona horaria (ej: Madrid, London, UTC)..."
+                                            :placeholder="__('Search timezone (e.g. Madrid, London, UTC)...')"
                                             class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:border-violet-500 focus:ring focus:ring-violet-500/20 transition-all mb-2" />
                                         <select id="site_timezone" name="site_timezone" x-model="tz"
                                             class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:border-violet-500 transition-all cursor-pointer">
@@ -100,7 +100,7 @@
                                         </select>
                                     </div>
                                     <p class="mt-1.5 text-xs font-medium text-violet-600 dark:text-violet-400">
-                                        Zona activa actualmente: <span class="font-bold">{{ $site_timezone }}</span>
+                                        {{ __('Currently active timezone:') }} <span class="font-bold">{{ $site_timezone }}</span>
                                         ({{ now()->format('d/m/Y H:i') }})
                                     </p>
                                     <x-input-error :messages="$errors->get('site_timezone')" class="mt-2" />
@@ -120,11 +120,11 @@
                                             {{ $limits['mfa_enabled'] ? 'checked' : '' }}
                                             class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-violet-600 shadow-sm focus:ring-violet-500">
                                         <label for="mfa_enabled" class="text-sm font-bold text-gray-700 dark:text-gray-300">
-                                            🛡️ {{ __('Habilitar Autenticación de Doble Factor (MFA / 2FA) Globalmente') }}
+                                            🛡️ {{ __('Enable Two-Factor Authentication (MFA / 2FA) Globally') }}
                                         </label>
                                     </div>
                                     <p class="text-xs text-gray-500 dark:text-gray-400 pl-6">
-                                        {{ __('Si se desactiva, los usuarios no podrán configurar el doble factor en su perfil ni se les solicitará código al iniciar sesión. Es opcional bajo las directrices del Esquema Nacional de Seguridad (ENS).') }}
+                                        {{ __('If disabled, users cannot configure two-factor auth on their profile nor will they be asked for a code upon logging in. Optional under ENS guidelines.') }}
                                     </p>
                                 </div>
 
@@ -134,11 +134,11 @@
                                             {{ $limits['require_approval'] ? 'checked' : '' }}
                                             class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-rose-600 shadow-sm focus:ring-rose-500">
                                         <label for="require_approval" class="text-sm font-bold text-gray-700 dark:text-gray-300">
-                                            🎟️ {{ __('Requerir Aprobación / Pase VIP para Nuevos Usuarios') }}
+                                            🎟️ {{ __('Require Approval / VIP Pass for New Users') }}
                                         </label>
                                     </div>
                                     <p class="text-xs text-gray-500 dark:text-gray-400 pl-6">
-                                        {{ __('Si se activa, los usuarios que se registren se enviarán a una lista de espera hasta que un administrador los apruebe o canjeen un código VIP. Desactívalo para permitir acceso libre a toda la plataforma.') }}
+                                        {{ __('If enabled, registered users are sent to a waitlist until approved by an administrator or redeeming a VIP code. Disable to allow open access.') }}
                                     </p>
                                 </div>
 
@@ -151,27 +151,27 @@
                                             {{ $limits['purge_inactive_enabled'] ? 'checked' : '' }}
                                             class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-orange-600 shadow-sm focus:ring-orange-500">
                                         <label for="purge_inactive_enabled" class="text-sm font-bold text-gray-700 dark:text-gray-300">
-                                            🧹 {{ __('Activar Purga Automática de Usuarios Inactivos') }}
+                                            🧹 {{ __('Enable Automatic Purge of Inactive Users') }}
                                         </label>
                                     </div>
                                     <p class="text-xs text-gray-500 dark:text-gray-400 pl-6">
-                                        {{ __('Detecta usuarios obsoletos, envía un correo de aviso de X días y, si no reaccionan, elimina la cuenta de forma permanente. Por seguridad, NUNCA afecta a administradores.') }}
+                                        {{ __('Detects dormant users, sends a warning email after X days, and permanently deletes unreactive accounts. Never affects administrators.') }}
                                     </p>
                                     
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pl-6 pt-2" x-show="isPurgeOn" x-transition x-cloak>
                                         <div>
-                                            <x-input-label for="purge_inactive_days" value="Umbral de Inactividad (Días)" />
+                                            <x-input-label for="purge_inactive_days" :value="__('Inactivity Threshold (Days)')" />
                                             <x-text-input id="purge_inactive_days" name="purge_inactive_days" type="number"
                                                 class="mt-1 block w-full bg-orange-50/30 dark:bg-orange-900/10 border-orange-200 dark:border-orange-900/50 text-sm" 
                                                 :value="old('purge_inactive_days', $limits['purge_inactive_days'])" min="1" />
-                                            <p class="text-[10px] text-gray-400 mt-1">Pasados estos días sin acceso, se enviará el aviso por email.</p>
+                                            <p class="text-[10px] text-gray-400 mt-1">{{ __('After these days without login, a warning email will be sent.') }}</p>
                                         </div>
                                         <div>
-                                            <x-input-label for="purge_warning_days" value="Plazo de Aviso / Gracia (Días)" />
+                                            <x-input-label for="purge_warning_days" :value="__('Warning / Grace Period (Days)')" />
                                             <x-text-input id="purge_warning_days" name="purge_warning_days" type="number"
                                                 class="mt-1 block w-full bg-orange-50/30 dark:bg-orange-900/10 border-orange-200 dark:border-orange-900/50 text-sm" 
                                                 :value="old('purge_warning_days', $limits['purge_warning_days'])" min="1" />
-                                            <p class="text-[10px] text-gray-400 mt-1">Días extra para responder antes de la purga definitiva.</p>
+                                            <p class="text-[10px] text-gray-400 mt-1">{{ __('Extra days to respond before final account purge.') }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -430,15 +430,15 @@
                             <div class="flex items-center gap-2 mb-2">
                                 <div class="w-2 h-2 rounded-full {{ $isActiveError ? 'bg-red-500' : 'bg-emerald-500 animate-pulse' }}"></div>
                                 <span class="text-xs font-bold uppercase tracking-wider {{ $isActiveError ? 'text-red-700 dark:text-red-400' : 'text-emerald-700 dark:text-emerald-400' }}">
-                                    {{ $isActiveError ? 'Error en Webhook' : 'Webhook Activo' }}
+                                    {{ $isActiveError ? __('Webhook Error') : __('Webhook Active') }}
                                 </span>
                             </div>
                             <div class="space-y-1">
-                                <p class="text-xs text-gray-600 dark:text-gray-400"><strong>URL:</strong> {{ $isDemoMode ? app(\App\Services\DemoModeService::class)->mask(($telegram['webhook_info']['url'] ?? ''), 'url') : (($telegram['webhook_info']['url'] ?? null) ?: 'No registrada') }}</p>
-                                <p class="text-xs text-gray-600 dark:text-gray-400"><strong>Updates pendientes:</strong> {{ $pendingUpdates }}</p>
+                                <p class="text-xs text-gray-600 dark:text-gray-400"><strong>URL:</strong> {{ $isDemoMode ? app(\App\Services\DemoModeService::class)->mask(($telegram['webhook_info']['url'] ?? ''), 'url') : (($telegram['webhook_info']['url'] ?? null) ?: __('Not registered')) }}</p>
+                                <p class="text-xs text-gray-600 dark:text-gray-400"><strong>{{ __('Pending updates:') }}</strong> {{ $pendingUpdates }}</p>
                                 @if($hasError)
                                     <p class="text-[10px] {{ $isActiveError ? 'text-red-600 dark:text-red-400 font-mono mt-2' : 'text-gray-400 mt-2 italic' }}">
-                                        <strong>{{ $isActiveError ? 'Último error:' : 'Último error registrado (ya resuelto):' }}</strong> 
+                                        <strong>{{ $isActiveError ? __('Last error:') : __('Last recorded error (resolved):') }}</strong> 
                                         {{ $telegram['webhook_info']['last_error_message'] }}
                                         @if($errorDate)
                                             ({{ \Carbon\Carbon::createFromTimestamp($errorDate)->diffForHumans() }})
@@ -509,8 +509,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <h3 class="text-lg font-bold text-gray-900 dark:text-white heading">Integración con CTH</h3>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">Configura la URL y la clave compartida (Secret) para conectarte con el servidor principal de Sientia CTH.</p>
+                                <h3 class="text-lg font-bold text-gray-900 dark:text-white heading">{{ __('CTH Integration') }}</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Configure the URL and shared Secret to connect with the main Sientia CTH server.') }}</p>
                             </div>
                         </div>
 
@@ -518,23 +518,23 @@
                             @csrf
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <x-input-label for="CTH_API_URL" value="URL del Servidor CTH" />
+                                    <x-input-label for="CTH_API_URL" :value="__('CTH Server URL')" />
                                     <x-text-input id="CTH_API_URL" name="CTH_API_URL" type="url" class="mt-1 block w-full bg-gray-50" :value="$cth['url']" placeholder="https://cth.sientia.com" />
-                                    <p class="text-[11px] text-gray-400 mt-2">La URL base de CTH (ej: https://cth.sientia.com). No incluyas rutas al final.</p>
+                                    <p class="text-[11px] text-gray-400 mt-2">{{ __('The base URL for CTH (e.g. https://cth.sientia.com). Do not include trailing paths.') }}</p>
                                     <x-input-error :messages="$errors->get('CTH_API_URL')" class="mt-2" />
                                 </div>
                                 
                                 <div>
-                                    <x-input-label for="CTH_S2S_SECRET" value="Clave de Seguridad S2S" />
-                                    <x-text-input id="CTH_S2S_SECRET" name="CTH_S2S_SECRET" type="password" class="mt-1 block w-full bg-gray-50" :value="$cth['secret']" placeholder="Introduce el secreto compartido" />
-                                    <p class="text-[11px] text-gray-400 mt-2">Debe coincidir exactamente con el Secret configurado en el servidor CTH.</p>
+                                    <x-input-label for="CTH_S2S_SECRET" :value="__('S2S Security Secret')" />
+                                    <x-text-input id="CTH_S2S_SECRET" name="CTH_S2S_SECRET" type="password" class="mt-1 block w-full bg-gray-50" :value="$cth['secret']" :placeholder="__('Enter the shared secret')" />
+                                    <p class="text-[11px] text-gray-400 mt-2">{{ __('Must match exactly the Secret configured on the CTH server.') }}</p>
                                     <x-input-error :messages="$errors->get('CTH_S2S_SECRET')" class="mt-2" />
                                 </div>
                             </div>
                             
                             <div class="flex items-center justify-end pt-6 border-t border-gray-100 dark:border-gray-800">
                                 <x-primary-button class="px-8 py-3 bg-blue-600 hover:bg-blue-500 focus:bg-blue-500 active:bg-blue-700">
-                                    Guardar Integración CTH
+                                    {{ __('Save CTH Integration') }}
                                 </x-primary-button>
                             </div>
                         </form>
@@ -547,8 +547,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                     <div class="text-sm text-amber-800 dark:text-amber-200/90 leading-relaxed">
-                        <p class="font-bold mb-1">Nota sobre los cambios en el archivo .env</p>
-                        <p>Al guardar esta configuración, se modificará tu archivo .env y se borrará la caché de configuración. Los cambios deberían aplicarse de inmediato, pero en algunos entornos podría ser necesario reiniciar el servidor web.</p>
+                        <p class="font-bold mb-1">{{ __('Note on .env file changes') }}</p>
+                        <p>{{ __('Saving these settings will update your .env file and clear the configuration cache. Changes should apply immediately, but some environments may require restarting the web server.') }}</p>
                     </div>
                 </div>
             </div>
@@ -601,13 +601,13 @@
             <div>
                 <x-input-label for="test_chat_id" :value="__('notifications.telegram_chat_id')" />
                 <x-text-input id="test_chat_id" name="test_chat_id" type="text" class="mt-1 block w-full"
-                    placeholder="Ej: 123456789" required />
+                    :placeholder="__('e.g. 123456789')" required />
                 <x-input-error :messages="$errors->get('test_chat_id')" class="mt-2" />
             </div>
 
             <div class="mt-8 flex justify-end gap-3">
                 <x-secondary-button x-on:click="$dispatch('close')">
-                    {{ __('profile.cancel') }}
+                    {{ __('Cancel') }}
                 </x-secondary-button>
 
                 <x-primary-button class="bg-sky-600 hover:bg-sky-500">

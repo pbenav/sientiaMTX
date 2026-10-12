@@ -20,13 +20,13 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                     </svg>
-                    <span class="truncate">Escritorio: Resiliencia Colectiva</span>
+                    <span class="truncate">{{ __('Desktop') }}: {{ __("metrics.collective_resilience") }}</span>
                 </h1>
             </div>
 
             <div class="flex items-center gap-2 shrink-0">
                 <div class="flex items-center gap-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/30 border border-amber-100 dark:border-amber-800 rounded-xl shadow-sm hidden sm:flex">
-                    <span class="text-amber-600 dark:text-amber-400 font-black text-[10px] uppercase tracking-widest">Nivel 1</span>
+                    <span class="text-amber-600 dark:text-amber-400 font-black text-[10px] uppercase tracking-widest">{{ __('Level 1') }}</span>
                     <div class="w-16 h-1 bg-amber-200 dark:bg-amber-800 rounded-full overflow-hidden">
                         <div class="h-full bg-amber-500" style="width: 25%"></div>
                     </div>
@@ -37,7 +37,7 @@
 
         <div class="mt-2">
             <x-demo-hint>
-                El Escritorio de Equipo, o tablero de Resiliencia Colectiva, actúa como el pulso vital de la organización. Aquí se monitoriza la energía y progreso global (XP/RP), el mapa térmico territorial de intervenciones, el estado de los servidores (Sentinel) y se fomenta la moral enviando "Kudos" a los compañeros.
+                {{ __('time-logs.team_desktop_desc') }}
             </x-demo-hint>
         </div>
 
@@ -55,30 +55,28 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
                     </div>
-                    <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-4">Estado de Energía</p>
+                    <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-4">{{ __('Energy Status') }}</p>
                     @php
                         $energy = auth()->user()->energy_level ?? 0;
-                        $label = 'Óptimo';
-                        $advice = '¡Energía a tope! Momento ideal para tareas de alta carga cognitiva.';
                         
                         if ($energy >= 80) {
-                            $label = 'Excelente';
-                            $advice = '¡A tope! Momento ideal para tareas complejas y retos.';
+                            $label = __('Excellent');
+                            $advice = __('Full power! Ideal moment for complex tasks and challenges.');
                             $pillClass = 'text-emerald-600 bg-emerald-200';
                             $bgClass = 'bg-emerald-500';
                         } elseif ($energy >= 50) {
-                            $label = 'Estable';
-                            $advice = 'Mantén el ritmo. Vas por buen camino.';
+                            $label = __('Stable');
+                            $advice = __('Keep the pace. You are on the right track.');
                             $pillClass = 'text-blue-600 bg-blue-100';
                             $bgClass = 'bg-blue-500';
                         } elseif ($energy >= 30) {
-                            $label = 'Cansancio';
-                            $advice = 'Batería media. Considera una tarea ligera o un café.';
+                            $label = __('Tiredness');
+                            $advice = __('Medium battery. Consider a light task or a coffee.');
                             $pillClass = 'text-amber-600 bg-amber-100';
                             $bgClass = 'bg-amber-500';
                         } else {
-                            $label = 'Agotado';
-                            $advice = '¡Para un momento! Prioriza tu bienestar ahora mismo.';
+                            $label = __('Exhausted');
+                            $advice = __('Stop for a moment! Prioritize your well-being right now.');
                             $pillClass = 'text-rose-600 bg-rose-100';
                             $bgClass = 'bg-rose-500';
                         }
@@ -98,21 +96,21 @@
                     <p class="text-[10px] font-medium text-gray-500 dark:text-gray-400 leading-tight">{{ $advice }}</p>
                 </div>
 
-                <!-- Kudos Recibidos -->
+                <!-- {{ __('Received Kudos') }} -->
                 <div x-data="{ open: false }" class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl p-6 border border-gray-100 dark:border-gray-800 relative group cursor-pointer hover:shadow-violet-500/5 transition-all" @click="open = true">
                     <div class="absolute top-4 right-4 animate-bounce">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-violet-500 opacity-20 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                         </svg>
                     </div>
-                    <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Kudos Recibidos</p>
+                    <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">{{ __('Received Kudos') }}</p>
                     <div class="flex items-baseline gap-2">
                         <h3 class="text-4xl font-black text-violet-600 dark:text-violet-400 tabular-nums">{{ auth()->user()->receivedKudos()->count() }}</h3>
-                        <span class="text-xs font-bold text-gray-500 uppercase">Reconocimientos</span>
+                        <span class="text-xs font-bold text-gray-500 uppercase">{{ __('acknowledgments') }}</span>
                     </div>
                     <div class="mt-4">
                         <button type="button" class="w-full py-2 px-4 bg-violet-600 hover:bg-violet-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg hover:shadow-violet-500/25">
-                            Enviar Apoyo / Kudo
+                            {{ __('Send Support / Kudo') }}
                         </button>
                     </div>
 
@@ -130,16 +128,16 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                     </svg>
-                                    Enviar Kudo
+                                    {{ __('Send Kudo') }}
                                 </h3>
-                                <p class="text-xs text-gray-500 mt-1">Reconoce el esfuerzo horizontal de un compañero.</p>
+                                <p class="text-xs text-gray-500 mt-1">{{ __('Acknowledge the horizontal effort of a colleague.') }}</p>
                             </div>
-                            <form action="{{ route('teams.kudos.store', $team) }}" method="POST" class="p-6 space-y-4" x-data="{ types: ['Ayuda Técnica'] }" @submit="if(types.length === 0) { $event.preventDefault(); Swal.fire({title: '¡Ojo!', text: 'Selecciona al menos una categoría', icon: 'warning', confirmButtonColor: '#8b5cf6', customClass: { popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white', confirmButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]' }}); }">
+                            <form action="{{ route('teams.kudos.store', $team) }}" method="POST" class="p-6 space-y-4" x-data="{ types: ['Technical Help'] }" @submit="if(types.length === 0) { $event.preventDefault(); Swal.fire({title: '{{ __('swal.title_warning') }}', text: '{{ __('swal.warning_select_category') }}', icon: 'warning', confirmButtonColor: '#8b5cf6', customClass: { popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white', confirmButton: 'rounded-2xl px-6 py-3 uppercase tracking-widest font-black text-[10px]' }}); }">
                                 @csrf
                                 <div>
-                                    <label class="block text-[10px] font-black uppercase text-gray-400 mb-2">¿Para quién?</label>
+                                    <label class="block text-[10px] font-black uppercase text-gray-400 mb-2">{{ __('time-logs.for_whom') }}</label>
                                     <select name="receiver_id" required class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-violet-500 transition-all text-gray-900 dark:text-white">
-                                        <option value="">Selecciona compañero...</option>
+                                        <option value="">{{ __('Select colleague...') }}</option>
                                         @foreach($teamMembers as $member)
                                             @if($member->id !== auth()->id())
                                                 <option value="{{ $member->id }}">{{ $member->name }}</option>
@@ -148,21 +146,31 @@
                                     </select>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
-                                    @foreach(['Ayuda Técnica', 'Apoyo Moral', 'Innovación', 'Resiliencia', 'Gestión Caos', 'Compañerismo'] as $cat)
+                                    @php
+                                        $kudoCats = [
+                                            'Technical Help' => __('Technical Help'),
+                                            'Moral Support' => __('Moral Support'),
+                                            'Innovation' => __('Innovation'),
+                                            'Resilience' => __('Resilience'),
+                                            'Chaos Management' => __('Chaos Management'),
+                                            'Teamwork' => __('Teamwork')
+                                        ];
+                                    @endphp
+                                    @foreach($kudoCats as $catVal => $catLabel)
                                         <label class="cursor-pointer">
-                                            <input type="checkbox" name="type[]" value="{{ $cat }}" class="peer sr-only" x-model="types">
+                                            <input type="checkbox" name="type[]" value="{{ $catVal }}" class="peer sr-only" x-model="types">
                                             <div class="p-2 border border-gray-100 dark:border-gray-700 rounded-lg text-center text-[10px] font-bold text-gray-600 dark:text-gray-400 peer-checked:bg-violet-600 peer-checked:text-white peer-checked:border-violet-600 transition-all uppercase tracking-tighter">
-                                                {{ $cat }}
+                                                {{ $catLabel }}
                                             </div>
                                         </label>
                                     @endforeach
                                 </div>
                                 <div>
-                                    <textarea name="message" rows="2" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-violet-500 transition-all text-gray-900 dark:text-white" placeholder="Gracias por echarme un cable con..."></textarea>
+                                    <textarea name="message" rows="2" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-violet-500 transition-all text-gray-900 dark:text-white" placeholder="{{ __('Thanks for helping me with...') }}"></textarea>
                                 </div>
                                 <div class="flex gap-3 pt-2">
-                                    <button type="button" @click="open = false" class="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white text-xs font-black uppercase rounded-xl hover:bg-gray-200 transition-all">Cancelar</button>
-                                    <button type="submit" class="flex-2 px-8 py-3 bg-violet-600 hover:bg-violet-500 text-white text-xs font-black uppercase rounded-xl transition-all shadow-lg shadow-violet-500/25">Lanzar Kudo ✨</button>
+                                    <button type="button" @click="open = false" class="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white text-xs font-black uppercase rounded-xl hover:bg-gray-200 transition-all">{{ __('Cancel') }}</button>
+                                    <button type="submit" class="flex-2 px-8 py-3 bg-violet-600 hover:bg-violet-500 text-white text-xs font-black uppercase rounded-xl transition-all shadow-lg shadow-violet-500/25">{{ __('time-logs.launch_kudo') }} ✨</button>
                                 </div>
                             </form>
                         </div>
@@ -172,20 +180,20 @@
                 <!-- Impacto Colectivo -->
                 <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl p-6 border border-gray-100 dark:border-gray-800 relative group flex items-center justify-between cursor-pointer" @click="teamModalOpen = true">
                     <div>
-                        <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Impacto Colectivo (Red)</p>
+                        <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">{{ __('Collective Impact (Network)') }}</p>
                         <h3 class="text-4xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums">
                             {{ number_format($team->members->sum('experience_points')) }}
                         </h3>
-                        <p class="text-[10px] text-gray-500 mt-1">Suma global de labor de todo el equipo.</p>
+                        <p class="text-[10px] text-gray-500 mt-1">{{ __('Global sum of all team work.') }}</p>
                     </div>
-                    <div class="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 dark:border-emerald-800/50 transition-all hover:bg-emerald-100 dark:hover:bg-emerald-900/40 hover:scale-110 shadow-sm group-hover:shadow-emerald-500/10" title="Ver equipo">
+                    <div class="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 dark:border-emerald-800/50 transition-all hover:bg-emerald-100 dark:hover:bg-emerald-900/40 hover:scale-110 shadow-sm group-hover:shadow-emerald-500/10" title="{{ __('html.view_team') }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
                     </div>
                 </div>
 
-                <!-- Sentinel Widget -->
+                <!-- {{ __('sentinel') }} Widget -->
                 @php
                     $upServicesCount = $services->where('status', 'up')->count();
                     $totalServicesCount = $services->count();
@@ -215,13 +223,13 @@
                 <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl p-6 border border-gray-100 dark:border-gray-800 relative group flex items-center justify-between cursor-pointer animate-fade-in" 
                      onclick="document.getElementById('sentinel-services-panel')?.scrollIntoView({ behavior: 'smooth' })">
                     <div>
-                        <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Estado de Sentinel</p>
+                        <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">{{ __('Sentinel Status') }}</p>
                         <h3 class="text-4xl font-black {{ $sentinelColor }} tabular-nums transition-colors duration-500">
                             {{ $sentinelStatus }}%
                         </h3>
-                        <p class="text-[10px] text-gray-500 mt-1">{{ $upServicesCount }} de {{ $totalServicesCount }} servicios en línea.</p>
+                        <p class="text-[10px] text-gray-500 mt-1">{{ __(':up of :total services online.', ['up' => $upServicesCount, 'total' => $totalServicesCount]) }}</p>
                     </div>
-                    <div class="p-4 {{ $sentinelBgIcon }} rounded-2xl border {{ $sentinelBorderIcon }} transition-all {{ $sentinelHoverIcon }} hover:scale-110 shadow-sm {{ $sentinelShadow }}" title="Ir a Sentinel">
+                    <div class="p-4 {{ $sentinelBgIcon }} rounded-2xl border {{ $sentinelBorderIcon }} transition-all {{ $sentinelHoverIcon }} hover:scale-110 shadow-sm {{ $sentinelShadow }}" title="{{ __("html.go_to_sentinel") }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                         </svg>
@@ -260,10 +268,10 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                                     </svg>
                                 </div>
-                                Escuadra: {{ $team->name }}
+                                {{ __('Squad: :name', ['name' => $team->name]) }}
                             </h3>
                             <p class="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-1 uppercase tracking-widest">
-                                {{ $teamMembers->filter(fn($m) => $m->getStatusInfo()['status'] !== 'offline')->count() }} Miembros activos en red
+                                {{ $teamMembers->filter(fn($m) => $m->getStatusInfo()['status'] !== 'offline')->count() }} {{ __("time-logs.active_members") }}
                             </p>
                         </div>
                         <button @click="teamModalOpen = false" class="p-3 bg-gray-100 dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:hover:text-white rounded-2xl transition-all hover:rotate-90">
@@ -300,7 +308,7 @@
                                     <!-- Energy Level Bar -->
                                     <div class="mt-4 px-1">
                                         <div class="flex items-center justify-between mb-1">
-                                            <span class="text-[8px] font-black text-gray-400 uppercase tracking-widest">Energía</span>
+                                            <span class="text-[8px] font-black text-gray-400 uppercase tracking-widest">{{ __('Energy') }}</span>
                                             <span class="text-[8px] font-black text-gray-500">{{ $member->energy_level }}%</span>
                                         </div>
                                         <div class="w-full h-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
@@ -309,11 +317,11 @@
                                     </div>
                                     <div class="mt-5 grid grid-cols-2 gap-3 relative z-10">
                                         <div class="bg-gray-50 dark:bg-gray-900/50 rounded-2xl p-3 border border-gray-100/50 dark:border-gray-800">
-                                            <p class="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Experiencia</p>
+                                            <p class="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">{{ __('Experience') }}</p>
                                             <p class="text-xs font-black text-emerald-600 dark:text-emerald-400">{{ number_format($member->experience_points) }} XP</p>
                                         </div>
                                         <div class="bg-gray-50 dark:bg-gray-900/50 rounded-2xl p-3 border border-gray-100/50 dark:border-gray-800">
-                                            <p class="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Resiliencia</p>
+                                            <p class="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">{{ __('Resilience') }}</p>
                                             <p class="text-xs font-black text-violet-600 dark:text-violet-400">{{ number_format($member->resilience_points) }} RP</p>
                                         </div>
                                     </div>
@@ -335,7 +343,7 @@
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
                                                 </svg>
-                                                Últimas Medallas
+                                                {{ __('Latest Badges') }}
                                             </p>
                                             <div class="flex flex-wrap gap-2">
                                                 @foreach($latestBadges as $badge)
@@ -364,7 +372,7 @@
 
                     <!-- Modal Footer -->
                     <div class="px-10 py-6 bg-gray-50/50 dark:bg-gray-800/30 border-t border-gray-100 dark:border-gray-800 text-center">
-                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] italic">"La resiliencia no es individual, es el tejido que nos une."</p>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] italic">"{{ __('Resilience is not individual, it is the fabric that binds us together.') }}"</p>
                     </div>
                 </div>
             </div>
@@ -377,9 +385,9 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                         </svg>
-                        Capacidad del Equipo (Especialización Colectiva)
+                        {{ __('Team Capacity (Collective Specialization)') }}
                     </h4>
-                    <span class="text-[9px] font-bold text-violet-400 uppercase">XP Realizada vs Planificada</span>
+                    <span class="text-[9px] font-bold text-violet-400 uppercase">{{ __('time-logs.xp_completed_vs_planned') }}</span>
                 </div>
                 <div class="p-6">
                     <div class="flex flex-wrap justify-between gap-y-6 gap-x-2">
@@ -437,7 +445,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                                     </svg>
                                 </div>
-                                <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Este equipo aún no ha desarrollado habilidades</p>
+                                <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">{{ __("time-logs.no_skills_yet") }}</p>
                             </div>
                         @else
                             @foreach($allSkills as $skill)
@@ -479,7 +487,7 @@
                                             class="text-violet-500 transition-all duration-1000" />
                                     </svg>
                                     <div class="absolute inset-0 flex flex-col items-center justify-center">
-                                        <span class="text-[8px] font-black text-violet-400 uppercase leading-none">Nivel</span>
+                                        <span class="text-[8px] font-black text-violet-400 uppercase leading-none">{{ __('Level') }}</span>
                                         <span class="text-xl font-black text-gray-900 dark:text-white leading-none">{{ $level }}</span>
                                     </div>
                                     
@@ -503,7 +511,7 @@
                                 <div class="mt-1 flex flex-col items-center gap-1">
                                     <div class="text-[9px] font-black text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 px-2 py-0.5 rounded-full border border-violet-100 dark:border-violet-800/50">{{ number_format($xp) }} XP</div>
                                     @if($plan > 0)
-                                        <div class="text-[8px] font-black text-violet-400 uppercase italic tracking-tighter">{{ number_format($plan) }} XP en curso</div>
+                                        <div class="text-[8px] font-black text-violet-400 uppercase italic tracking-tighter">{{ number_format($plan) }} {{ __('XP in progress') }}</div>
                                     @endif
                                 </div>
                             </div>
@@ -554,7 +562,7 @@
                                             <div>
                                                 <h4 class="text-[10px] font-black uppercase text-gray-400 mb-4 tracking-widest flex items-center gap-2">
                                                     <svg class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                                                    Aportación por Miembro
+                                                    {{ __('Contribution by Member') }}
                                                 </h4>
                                                 <div class="space-y-3">
                                                     @php
@@ -563,7 +571,7 @@
                                                     @forelse($skillMembers as $sm)
                                                         @php $u = $teamMembers->firstWhere('id', $sm->user_id); @endphp
                                                         @if($u)
-                                                        <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+                                                         <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700/50">
                                                             <img src="{{ $u->profile_photo_url }}" class="w-10 h-10 rounded-xl object-cover shadow-sm">
                                                             <div class="flex-1 min-w-0">
                                                                 <div class="text-sm font-bold text-gray-900 dark:text-white truncate">{{ $u->name }}</div>
@@ -574,15 +582,15 @@
                                                         </div>
                                                         @endif
                                                     @empty
-                                                        <p class="text-xs text-gray-500 italic p-4 text-center bg-gray-50 dark:bg-gray-800/30 rounded-2xl">Sin aportaciones aún.</p>
+                                                        <p class="text-xs text-gray-500 italic p-4 text-center bg-gray-50 dark:bg-gray-800/30 rounded-2xl">{{ __('No contributions yet.') }}</p>
                                                     @endforelse
                                                 </div>
                                             </div>
-                                            <!-- Tareas -->
+                                            <!-- {{ __('tasks') }} -->
                                             <div class="flex flex-col">
                                                 <h4 class="text-[10px] font-black uppercase text-gray-400 mb-4 tracking-widest flex items-center gap-2 shrink-0">
                                                     <svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
-                                                    Últimas Tareas
+                                                    {{ __("time-logs.recent_tasks") }}
                                                 </h4>
                                                 
                                                 <div class="space-y-3 relative flex-1 min-h-[100px]">
@@ -597,26 +605,26 @@
                                                             <div class="flex items-center gap-2 mt-2">
                                                                 <span class="text-[9px] font-black uppercase px-2 py-1 rounded-md"
                                                                       :class="st.status === 'completed' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400'"
-                                                                      x-text="st.status === 'completed' ? 'Completada' : (st.status === 'pending' ? 'Pendiente' : 'En progreso')">
+                                                                      x-text="st.status === 'completed' ? '{{ __('Completed') }}' : (st.status === 'pending' ? '{{ __('Pending') }}' : '{{ __('In Progress') }}')">
                                                                 </span>
-                                                                <span class="text-[9px] font-bold text-gray-500 uppercase bg-white dark:bg-gray-900 px-2 py-1 rounded-md border border-gray-200 dark:border-gray-700" x-text="`Carga: ${st.cognitive_load}/5`"></span>
+                                                                <span class="text-[9px] font-bold text-gray-500 uppercase bg-white dark:bg-gray-900 px-2 py-1 rounded-md border border-gray-200 dark:border-gray-700" x-text="`{{ __('Load') }}: ${st.cognitive_load}/5`"></span>
                                                             </div>
                                                         </div>
                                                     </template>
                                                     
-                                                    <div x-show="!loading && tasks.length === 0" class="text-xs text-gray-500 italic p-4 text-center bg-gray-50 dark:bg-gray-800/30 rounded-2xl">No hay tareas asociadas.</div>
+                                                    <div x-show="!loading && tasks.length === 0" class="text-xs text-gray-500 italic p-4 text-center bg-gray-50 dark:bg-gray-800/30 rounded-2xl">{{ __('No associated tasks.') }}</div>
                                                 </div>
 
                                                 <!-- Pagination controls -->
                                                 <div x-show="lastPage > 1" class="mt-4 flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4 shrink-0">
                                                     <button @click="loadTasks(page - 1)" :disabled="page <= 1" class="px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-violet-100 hover:text-violet-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                                                        Anterior
+                                                        {{ __('Previous') }}
                                                     </button>
                                                     <span class="text-xs font-bold text-gray-500 dark:text-gray-400">
-                                                        Pág. <span x-text="page"></span> de <span x-text="lastPage"></span>
+                                                        {{ __('Page') }} <span x-text="page"></span> {{ __('of') }} <span x-text="lastPage"></span>
                                                     </span>
                                                     <button @click="loadTasks(page + 1)" :disabled="page >= lastPage" class="px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-violet-100 hover:text-violet-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                                                        Siguiente
+                                                        {{ __('Next') }}
                                                     </button>
                                                 </div>
                                             </div>
@@ -631,7 +639,7 @@
             </div>
             </div>
             
-            <!-- Mis Medallas (Compact Widget) -->
+            <!-- {{ __("time-logs.my_badges") }} (Compact Widget) -->
             <div class="xl:col-span-1 flex flex-col">
                 <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-100 dark:border-gray-800 flex flex-col h-full relative group">
                     <div class="p-4 border-b border-gray-50 dark:border-gray-800 flex items-center justify-between bg-emerald-50/10 dark:bg-emerald-950/10">
@@ -639,9 +647,9 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                             </svg>
-                            Mis Medallas
+                            {{ __("time-logs.my_badges") }}
                         </h4>
-                        <a href="{{ route('metrics.gamification.index') }}" class="text-[9px] font-bold text-emerald-500 uppercase hover:underline">Ver todas</a>
+                        <a href="{{ route('metrics.gamification.index') }}" class="text-[9px] font-bold text-emerald-500 uppercase hover:underline">{{ __('View all') }}</a>
                     </div>
                     <div class="p-5 flex-1 flex flex-col overflow-y-auto custom-scrollbar max-h-[400px]">
                         @php
@@ -654,8 +662,8 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                     </svg>
                                 </div>
-                                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Aún no tienes medallas</p>
-                                <p class="text-[9px] text-gray-500 mt-1">Completa retos para desbloquearlas</p>
+                                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ __('You do not have badges yet') }}</p>
+                                <p class="text-[9px] text-gray-500 mt-1">{{ __('Complete challenges to unlock them') }}</p>
                             </div>
                         @else
                             <div class="grid grid-cols-2 gap-3">
@@ -687,10 +695,10 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
-                            Impacto Territorial
+                            {{ __('Territorial Impact') }}
                         </h4>
                         <button type="button" @click="$dispatch('open-zone-modal')" class="px-2.5 py-1.5 bg-white dark:bg-gray-800 text-emerald-600 border border-emerald-200 hover:bg-emerald-50 text-[9px] font-black uppercase rounded-lg transition-all flex items-center gap-1.5 shadow-sm cursor-pointer relative z-10">
-                            📍 Mi Zona
+                            📍 {{ __('My Zone') }}
                         </button>
                     </div>
                         <div class="relative w-full group h-[350px]">
@@ -701,7 +709,7 @@
                             <div class="absolute bottom-3 left-3 z-[5] bg-white/90 dark:bg-gray-900/90 backdrop-blur-md px-3 py-2 rounded-xl border border-gray-100 shadow-sm">
                             <div class="flex items-center gap-2">
                                 <div class="w-16 h-1 rounded-full bg-gradient-to-r from-blue-400 via-emerald-400 to-rose-400"></div>
-                                <span class="text-[7px] font-black text-gray-400 uppercase">Resiliencia</span>
+                                <span class="text-[7px] font-black text-gray-400 uppercase">{{ __('Resilience') }}</span>
                             </div>
                         </div>
                     </div>
@@ -744,28 +752,28 @@
                         <div class="flex justify-between items-center">
                             <h4 class="font-black text-gray-900 dark:text-gray-100 uppercase tracking-widest text-[10px] flex items-center gap-2">
                                 <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                {{ __('Red Activa') }}
+                                {{ __('Active Network') }}
                             </h4>
                             <div class="flex items-center gap-2">
                                 <button x-show="groupMode && selectedUsers.length > 0" @click="
                                     fetch('/chat/group', {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
-                                        body: JSON.stringify({ receiver_ids: selectedUsers, name: inheritedGroupName ? 'Grupo ' + inheritedGroupName : null })
+                                        body: JSON.stringify({ receiver_ids: selectedUsers, name: inheritedGroupName ? '{{ __('Group') }} ' + inheritedGroupName : null })
                                     }).then(r => r.json()).then(d => {
                                         if(d.success) { 
-                                            $dispatch('open-chat', { id: d.group.id, name: d.group.name, photo: d.group.photo, status: d.group.status, email: '', telegram: '', is_group: true });
+                                             $dispatch('open-chat', { id: d.group.id, name: d.group.name, photo: d.group.photo, status: d.group.status, email: '', telegram: '', is_group: true });
                                             groupMode = false; selectedUsers = []; inheritedGroupName = '';
                                         }
-                                        else { Swal.fire({ icon: 'error', title: 'Error', text: d.message }); }
+                                        else { Swal.fire({ icon: 'error', title: '{{ __('swal.title_error') }}', text: d.message }); }
                                     });
                                 " class="text-[9px] font-black px-2 py-1.5 rounded-lg bg-emerald-500 text-white shadow-sm hover:bg-emerald-600 transition-colors uppercase flex items-center gap-1">
                                     <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path></svg>
-                                    Iniciar <span x-text="'(' + selectedUsers.length + ')'"></span>
+                                    {{ __('Start') }} <span x-text="'(' + selectedUsers.length + ')'"></span>
                                 </button>
                                 <button @click="groupMode = !groupMode; selectedUsers = []; inheritedGroupName = '';" class="text-[9px] font-black px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors uppercase">
-                                    <span x-show="!groupMode">Grupal</span>
-                                    <span x-show="groupMode">Cancelar</span>
+                                    <span x-show="!groupMode">{{ __('Group') }}</span>
+                                    <span x-show="groupMode">{{ __('Cancel') }}</span>
                                 </button>
                             </div>
                         </div>
@@ -777,11 +785,11 @@
                                     <input type="checkbox" class="w-3 h-3 rounded border-gray-300 text-emerald-500 focus:ring-emerald-500" 
                                            :checked="activeMemberIds.length > 0 && activeMemberIds.every(id => selectedUsers.includes(id))"
                                            @click="selectAll()">
-                                    Todos los activos
+                                    {{ __('All active') }}
                                 </label>
                                 <div class="w-px h-3 bg-gray-200 dark:bg-gray-700 shrink-0"></div>
                                 <select @change="selectGroup($event)" class="text-[9px] font-bold border-gray-200 dark:border-gray-700 rounded-lg py-1 px-2 bg-white dark:bg-gray-900 focus:ring-0 focus:border-emerald-500 transition-all flex-1 min-w-0">
-                                    <option value="">Seleccionar grupo...</option>
+                                    <option value="">{{ __('Select group...') }}</option>
                                     <template x-for="group in teamGroups" :key="group.id">
                                         <option :value="group.id" x-text="group.name"></option>
                                     </template>
@@ -833,7 +841,7 @@
                             </div>
                         </div>
 
-                        <!-- Historial de Chats Grupales Recientes (Acceso Rápido) -->
+                        <!-- Recent Group Chats -->
                         <div x-data="{ openGroups: false, recentGroups: [] }" 
                              x-init="$watch('openGroups', value => { if(value) fetch('/chat/groups/recent').then(r=>r.json()).then(d => recentGroups = d.groups || []) })"
                              class="border-t border-gray-100 dark:border-gray-800">
@@ -841,7 +849,7 @@
                                     class="w-full px-5 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800/10 transition-colors">
                                 <span class="text-[9px] font-black uppercase text-gray-500 tracking-wider flex items-center gap-1.5">
                                     <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                                    {{ __('Chats Grupales Recientes') }}
+                                    {{ __('Recent Group Chats') }}
                                 </span>
                                 <svg class="w-3 h-3 text-gray-400 transition-transform duration-300" :class="openGroups ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
                             </button>
@@ -850,13 +858,13 @@
                                 <template x-for="g in recentGroups" :key="g.id">
                                     <div @click="$dispatch('open-chat', { id: g.id, name: g.name, photo: g.photo, status: g.status, email: '', telegram: '', is_group: true })" 
                                          class="flex items-center justify-between group p-2 hover:bg-gray-50 dark:hover:bg-gray-800/20 rounded-2xl transition-all duration-300 cursor-pointer w-full relative border border-transparent hover:border-gray-100 dark:hover:border-gray-800">
-                                        <div class="flex items-center gap-3 min-w-0">
+                                         <div class="flex items-center gap-3 min-w-0">
                                             <img :src="g.photo" class="w-8 h-8 rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform shrink-0">
                                             <div class="min-w-0">
                                                 <p class="text-[10px] font-black text-gray-900 dark:text-white uppercase truncate tracking-tight" x-text="g.name"></p>
                                                 <p class="text-[9px] text-gray-500 dark:text-gray-400 truncate tracking-tight">
                                                     <span class="font-bold text-emerald-600 dark:text-emerald-400" x-text="g.last_message ? g.last_message.sender_name + ': ' : ''"></span>
-                                                    <span x-text="g.last_message ? g.last_message.text : 'Sin mensajes'"></span>
+                                                    <span x-text="g.last_message ? g.last_message.text : '{{ __('No messages') }}'"></span>
                                                 </p>
                                             </div>
                                         </div>
@@ -864,7 +872,7 @@
                                     </div>
                                 </template>
                                 <div x-show="recentGroups.length === 0" class="text-center py-4 text-[10px] font-medium text-gray-400">
-                                    {{ __('No tienes chats grupales recientes') }}
+                                    {{ __('You have no recent group chats') }}
                                 </div>
                             </div>
                         </div>
@@ -873,19 +881,19 @@
                             <div class="flex items-center justify-center gap-4">
                                 <div class="flex items-center gap-1.5">
                                     <div class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></div>
-                                    <span class="text-[8px] font-black text-gray-500 uppercase tracking-widest">{{ __('En labor') }} <span class="bg-white dark:bg-gray-800 px-1 py-0.5 rounded shadow-sm text-gray-900 dark:text-gray-100 ml-0.5" x-text="counts.working"></span></span>
+                                    <span class="text-[8px] font-black text-gray-500 uppercase tracking-widest">{{ __('Working') }} <span class="bg-white dark:bg-gray-800 px-1 py-0.5 rounded shadow-sm text-gray-900 dark:text-gray-100 ml-0.5" x-text="counts.working"></span></span>
                                 </div>
                                 <div class="flex items-center gap-1.5">
                                     <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></div>
-                                    <span class="text-[8px] font-black text-gray-500 uppercase tracking-widest">{{ __('Activo') }} <span class="bg-white dark:bg-gray-800 px-1 py-0.5 rounded shadow-sm text-gray-900 dark:text-gray-100 ml-0.5" x-text="counts.online"></span></span>
+                                    <span class="text-[8px] font-black text-gray-500 uppercase tracking-widest">{{ __('Active') }} <span class="bg-white dark:bg-gray-800 px-1 py-0.5 rounded shadow-sm text-gray-900 dark:text-gray-100 ml-0.5" x-text="counts.online"></span></span>
                                 </div>
                                 <div class="flex items-center gap-1.5">
                                     <div class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
-                                    <span class="text-[8px] font-black text-gray-500 uppercase tracking-widest">{{ __('Dormido') }} <span class="bg-white dark:bg-gray-800 px-1 py-0.5 rounded shadow-sm text-gray-900 dark:text-gray-100 ml-0.5" x-text="counts.sleeping"></span></span>
+                                    <span class="text-[8px] font-black text-gray-500 uppercase tracking-widest">{{ __('Away') }} <span class="bg-white dark:bg-gray-800 px-1 py-0.5 rounded shadow-sm text-gray-900 dark:text-gray-100 ml-0.5" x-text="counts.sleeping"></span></span>
                                 </div>
                                 <div class="flex items-center gap-1.5">
                                     <div class="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-700"></div>
-                                    <span class="text-[8px] font-black text-gray-500 uppercase tracking-widest">{{ __('Inactivo') }} <span class="bg-white dark:bg-gray-800 px-1 py-0.5 rounded shadow-sm text-gray-900 dark:text-gray-100 ml-0.5" x-text="counts.offline"></span></span>
+                                    <span class="text-[8px] font-black text-gray-500 uppercase tracking-widest">{{ __('Offline') }} <span class="bg-white dark:bg-gray-800 px-1 py-0.5 rounded shadow-sm text-gray-900 dark:text-gray-100 ml-0.5" x-text="counts.offline"></span></span>
                                 </div>
                             </div>
                         </div>
@@ -896,7 +904,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
                 <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-100 flex flex-col">
                     <div class="p-6 border-b border-gray-50 bg-rose-50/30 flex items-center justify-between">
-                        <h4 class="font-black text-gray-900 flex items-center gap-2 uppercase tracking-widest text-[10px]">Kudos Recibidos</h4>
+                        <h4 class="font-black text-gray-900 flex items-center gap-2 uppercase tracking-widest text-[10px]">{{ __('Received Kudos') }}</h4>
                         <span class="text-xs font-black text-rose-600 uppercase tracking-widest">{{ auth()->user()->receivedKudos()->count() }}</span>
                     </div>
                     <div class="p-6 space-y-4 max-h-[400px] overflow-y-auto no-scrollbar">
@@ -906,7 +914,7 @@
                                     alt="{{ $kudo->sender->name ?? '?' }}"
                                     class="w-10 h-10 rounded-full object-cover shadow-sm border border-white dark:border-gray-800 shrink-0">
                                 <div class="min-w-0">
-                                    <span class="text-sm font-bold text-gray-900 dark:text-gray-100 truncate block">{{ $kudo->sender->name ?? 'Anónimo' }}</span>
+                                    <span class="text-sm font-bold text-gray-900 dark:text-gray-100 truncate block">{{ $kudo->sender->name ?? __('Anonymous') }}</span>
                                     @if($kudo->type)
                                         <div class="flex flex-wrap gap-1 mt-1 mb-1.5">
                                             @foreach(explode(', ', $kudo->type) as $category)
@@ -920,14 +928,14 @@
                                 </div>
                             </div>
                         @empty
-                            <p class="text-center text-gray-500 py-8 italic text-xs">Sin reconocimientos aún.</p>
+                            <p class="text-center text-gray-500 py-8 italic text-xs">{{ __('No acknowledgments yet.') }}</p>
                         @endforelse
                     </div>
                 </div>
 
                 <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-100 flex flex-col">
                     <div class="p-6 border-b border-gray-50 bg-amber-50/30 flex items-center justify-between">
-                        <h4 class="font-black text-gray-900 flex items-center gap-2 uppercase tracking-widest text-[10px]">Kudos Enviados</h4>
+                        <h4 class="font-black text-gray-900 flex items-center gap-2 uppercase tracking-widest text-[10px]">{{ __('Sent Kudos') }}</h4>
                         <span class="text-xs font-black text-amber-600 uppercase tracking-widest">{{ auth()->user()->givenKudos()->count() }}</span>
                     </div>
                     <div class="p-6 space-y-4 max-h-[400px] overflow-y-auto no-scrollbar">
@@ -937,7 +945,7 @@
                                     alt="{{ $kudo->receiver->name ?? '?' }}"
                                     class="w-10 h-10 rounded-full object-cover shadow-sm border border-white dark:border-gray-800 shrink-0">
                                 <div class="min-w-0">
-                                    <span class="text-sm font-bold text-gray-900 dark:text-gray-100 truncate block">{{ $kudo->receiver->name ?? 'Anónimo' }}</span>
+                                    <span class="text-sm font-bold text-gray-900 dark:text-gray-100 truncate block">{{ $kudo->receiver->name ?? __('Anonymous') }}</span>
                                     @if($kudo->type)
                                         <div class="flex flex-wrap gap-1 mt-1 mb-1.5">
                                             @foreach(explode(', ', $kudo->type) as $category)
@@ -951,14 +959,14 @@
                                 </div>
                             </div>
                         @empty
-                            <p class="text-center text-gray-500 py-8 italic text-xs">No has enviado kudos aún.</p>
+                            <p class="text-center text-gray-500 py-8 italic text-xs">{{ __('You have not sent kudos yet.') }}</p>
                         @endforelse
                     </div>
                 </div>
 
                 <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-100 flex flex-col">
                     <div class="p-6 border-b border-gray-50 bg-violet-50/30 flex items-center justify-between">
-                        <h4 class="font-black text-gray-900 flex items-center gap-2 uppercase tracking-widest text-[10px]">Logros Recientes</h4>
+                        <h4 class="font-black text-gray-900 flex items-center gap-2 uppercase tracking-widest text-[10px]">{{ __('Recent Achievements') }}</h4>
                     </div>
                     <div class="p-6 space-y-4 max-h-[400px] overflow-y-auto no-scrollbar">
                         @forelse(auth()->user()->gamificationLogs()->orderBy('created_at', 'desc')->limit(10)->get() as $log)
@@ -970,7 +978,7 @@
                                 </div>
                             </div>
                         @empty
-                            <p class="text-center text-gray-500 py-8 italic text-xs">¡Empieza tu aventura!</p>
+                            <p class="text-center text-gray-500 py-8 italic text-xs">{{ __('Start your adventure!') }}</p>
                         @endforelse
                     </div>
                 </div>
@@ -979,12 +987,12 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4">
                 <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-100 dark:border-gray-800/80 flex flex-col">
                     <div class="p-6 border-b border-gray-50 dark:border-gray-800/50 flex items-center justify-between">
-                        <h4 class="font-black text-gray-900 dark:text-gray-100">Contabilidad de Esfuerzo</h4>
+                        <h4 class="font-black text-gray-900 dark:text-gray-100">{{ __('Effort Accounting') }}</h4>
                         <form action="" method="GET" class="flex items-center gap-2">
                             @if(request('presence_limit'))
                                 <input type="hidden" name="presence_limit" value="{{ request('presence_limit') }}">
                             @endif
-                            <label class="text-[9px] font-black uppercase text-gray-400 dark:text-gray-500">Ver:</label>
+                            <label class="text-[9px] font-black uppercase text-gray-400 dark:text-gray-500">{{ __('View:') }}</label>
                             <select name="effort_limit" onchange="this.form.submit()" class="text-[10px] font-bold border-gray-200 dark:border-gray-700 rounded-lg py-0.5 pl-2 pr-8 bg-gray-50 dark:bg-gray-800 dark:text-gray-200 focus:ring-0 focus:border-violet-500 transition-all">
                                 <option value="5" {{ request('effort_limit') == 5 ? 'selected' : '' }}>5</option>
                                 <option value="10" {{ (!request('effort_limit') || request('effort_limit') == 10) ? 'selected' : '' }}>10</option>
@@ -996,7 +1004,7 @@
                     </div>
                     <div class="overflow-x-auto overflow-y-auto max-h-[400px] no-scrollbar">
                         <table class="w-full text-left">
-                        <thead class="bg-gray-50 dark:bg-gray-800/40"><tr><th class="px-6 py-4 text-[10px] font-black uppercase text-gray-400 dark:text-gray-500">Actividad</th><th class="px-6 py-4 text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 text-right">Tiempo</th></tr></thead>
+                        <thead class="bg-gray-50 dark:bg-gray-800/40"><tr><th class="px-6 py-4 text-[10px] font-black uppercase text-gray-400 dark:text-gray-500">{{ __('Activity') }}</th><th class="px-6 py-4 text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 text-right">{{ __('Time') }}</th></tr></thead>
                         <tbody class="divide-y divide-gray-50 dark:divide-gray-800/50">
                             @foreach($tasks as $task)
                                 <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/10 transition-colors">
@@ -1045,18 +1053,18 @@
                                                 @endif
                                                 @if($task->parent)
                                                     <span class="text-gray-400 dark:text-gray-600">•</span>
-                                                    <span class="text-violet-600 dark:text-violet-400 truncate max-w-[200px]" title="Instancia de: {{ $task->parent->title }}">
-                                                        Instancia de: {{ $task->parent->title }}
+                                                    <span class="text-violet-600 dark:text-violet-400 truncate max-w-[200px]" title="{{ __("html.instance_of") }}: {{ $task->parent->title }}">
+                                                        {{ __('Instance of:') }} {{ $task->parent->title }}
                                                     </span>
                                                 @endif
                                                 @if($task->scheduled_date)
                                                     <span class="text-gray-400 dark:text-gray-600">•</span>
-                                                    <span>Prog: {{ \Carbon\Carbon::parse($task->scheduled_date)->format('d/m/Y') }}</span>
+                                                    <span>{{ __('Sched:') }} {{ \Carbon\Carbon::parse($task->scheduled_date)->format('d/m/Y') }}</span>
                                                 @endif
                                                 @if($task->due_date)
                                                     <span class="text-gray-400 dark:text-gray-600">•</span>
                                                     <span class="{{ \Carbon\Carbon::parse($task->due_date)->isPast() && !$task->isCompleted() ? 'text-red-500 font-black' : '' }}">
-                                                        Vence: {{ \Carbon\Carbon::parse($task->due_date)->format('d/m/Y') }}
+                                                        {{ __('Due:') }} {{ \Carbon\Carbon::parse($task->due_date)->format('d/m/Y') }}
                                                     </span>
                                                 @endif
                                             </div>
@@ -1075,12 +1083,12 @@
 
                 <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-sm rounded-3xl border border-gray-100 dark:border-gray-800/80 flex flex-col">
                     <div class="p-6 border-b border-gray-50 dark:border-gray-800/50 flex items-center justify-between">
-                        <h4 class="font-black text-gray-900 dark:text-gray-100">Registro de Presencia</h4>
+                        <h4 class="font-black text-gray-900 dark:text-gray-100">{{ __('Presence Log') }}</h4>
                         <form action="" method="GET" class="flex items-center gap-2">
                             @if(request('effort_limit'))
                                 <input type="hidden" name="effort_limit" value="{{ request('effort_limit') }}">
                             @endif
-                            <label class="text-[9px] font-black uppercase text-gray-400 dark:text-gray-500">Ver:</label>
+                            <label class="text-[9px] font-black uppercase text-gray-400 dark:text-gray-500">{{ __('View:') }}</label>
                             <select name="presence_limit" onchange="this.form.submit()" class="text-[10px] font-bold border-gray-200 dark:border-gray-700 rounded-lg py-0.5 pl-2 pr-8 bg-gray-50 dark:bg-gray-800 dark:text-gray-200 focus:ring-0 focus:border-emerald-500 transition-all">
                                 <option value="5" {{ request('presence_limit') == 5 ? 'selected' : '' }}>5</option>
                                 <option value="10" {{ (!request('presence_limit') || request('presence_limit') == 10) ? 'selected' : '' }}>10</option>
@@ -1099,7 +1107,7 @@
 
                     <div class="overflow-x-auto overflow-y-auto max-h-[400px] no-scrollbar">
                         <table class="w-full text-left">
-                        <thead class="bg-gray-50"><tr><th class="px-6 py-4 text-[10px] font-black uppercase text-gray-400">Fecha</th><th class="px-6 py-4 text-[10px] font-black uppercase text-gray-400 text-right">Total</th></tr></thead>
+                        <thead class="bg-gray-50"><tr><th class="px-6 py-4 text-[10px] font-black uppercase text-gray-400">{{ __('Date') }}</th><th class="px-6 py-4 text-[10px] font-black uppercase text-gray-400 text-right">{{ __('Total') }}</th></tr></thead>
                         <tbody class="divide-y divide-gray-50">
                             @foreach($workdayLogs as $log)
                                 <tr>
@@ -1107,15 +1115,15 @@
                                     <td class="px-6 py-4 text-right text-xs font-black">
                                         <div class="flex items-center justify-end gap-2">
                                             @if($log->is_active)
-                                                <span class="text-[9px] font-black uppercase text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 px-2 py-0.5 rounded-full">Activa</span>
+                                                <span class="text-[9px] font-black uppercase text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 px-2 py-0.5 rounded-full">{{ __('Active') }}</span>
                                             @endif
                                             @if($log->has_anomaly)
-                                                <span title="Se detectó una jornada anómala ({{ $log->anomaly_count }} registro{{ $log->anomaly_count > 1 ? 's' : '' }}). El tiempo mostrado corresponde a la jornada esperada según tu horario configurado."
+                                                <span title="{{ __("html.anomalous_day_detected") }} ({{ $log->anomaly_count }} registro{{ $log->anomaly_count > 1 ? 's' : '' }}). El tiempo mostrado corresponde a la jornada esperada según tu horario configurado."
                                                       class="text-[9px] font-black uppercase text-amber-600 bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400 px-2 py-0.5 rounded-full cursor-help flex items-center gap-1">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
                                                     </svg>
-                                                    Normalizado
+                                                    {{ __('Normalized') }}
                                                 </span>
                                             @endif
                                             <span>{{ floor($log->total_minutes / 60).'h '.($log->total_minutes % 60).'m' }}</span>
@@ -1240,18 +1248,18 @@
                 validPoints.forEach(p => {
                     let markerBg = '#9ca3af'; // Gris por defecto (Inactivo)
                     let pulseClass = '';
-                    let statusLabel = 'Inactivo';
+                    let statusLabel = '{{ __('Offline') }}';
                     let labelColor = 'gray-500';
 
                     if (p.is_working) {
                         markerBg = '#f43f5e'; // Rosa (Trabajando)
                         pulseClass = 'pulse-rose';
-                        statusLabel = 'Trabajando';
+                        statusLabel = '{{ __('Working') }}';
                         labelColor = 'rose-500';
                     } else if (p.is_active) {
                         markerBg = '#10b981'; // Esmeralda (Activo)
                         pulseClass = 'pulse-emerald';
-                        statusLabel = 'Activo';
+                        statusLabel = '{{ __('Active') }}';
                         labelColor = 'emerald-500';
                     }
 
@@ -1265,7 +1273,7 @@
                     });
 
                     const marker = L.marker([p.lat, p.lng], { icon: customIcon }).addTo(userMarkersGroup)
-                     .bindPopup(`<div class="text-center font-sans tracking-tight leading-tight"><span class="text-[9px] font-black uppercase text-${labelColor}">${statusLabel} • ${p.area || 'Zona Activa'}</span><br><b class="text-xs text-gray-900">${p.name}</b></div>`);
+                     .bindPopup(`<div class="text-center font-sans tracking-tight leading-tight"><span class="text-[9px] font-black uppercase text-${labelColor}">${statusLabel} • ${p.area || '{{ __('Active Zone') }}'}</span><br><b class="text-xs text-gray-900">${p.name}</b></div>`);
 
                     marker.on('mouseover', function (e) { this.openPopup(); });
                     marker.on('mouseout', function (e) { this.closePopup(); });
@@ -1306,7 +1314,7 @@
             // Primer renderizado
             window.updateMapPoints(heatmapPoints);
 
-            // Señales de Incidencia Sentinel
+            // Señales de Incidencia {{ __('Sentinel') }}
             const incidencePoints = @json($incidencePoints ?? []);
             
             incidencePoints.forEach(p => {
@@ -1323,11 +1331,11 @@
                     iconSize: [0, 0]
                 });
 
-                const label = p.type === 'down' ? '⚠️ Alerta Sentinel' : '✅ Recuperación Sentinel';
+                const label = p.type === 'down' ? '⚠️ {{ __('Sentinel Alert') }}' : '✅ {{ __('Sentinel Recovery') }}';
                 const labelColor = p.type === 'down' ? 'rose' : 'emerald';
 
                 L.marker([p.lat, p.lng], { icon: pulseIcon }).addTo(map)
-                 .bindPopup(`<div class="text-center font-sans tracking-tight leading-tight"><span class="text-[9px] font-black uppercase text-${labelColor}-600">${label}</span><br><b class="text-xs text-gray-900">${p.service}</b><br><span class="text-[10px] text-gray-500">Reportado por: ${p.user}</span><br><span class="text-[8px] font-black text-gray-400 uppercase mt-1 block">${p.time}</span></div>`);
+                 .bindPopup(`<div class="text-center font-sans tracking-tight leading-tight"><span class="text-[9px] font-black uppercase text-${labelColor}-600">${label}</span><br><b class="text-xs text-gray-900">${p.service}</b><br><span class="text-[10px] text-gray-500">{{ __('Reported by:') }} ${p.user}</span><br><span class="text-[8px] font-black text-gray-400 uppercase mt-1 block">${p.time}</span></div>`);
             });
         });
     </script>
@@ -1362,7 +1370,7 @@
         },
         getUserLocation() {
             if (!navigator.geolocation) {
-                alert('Tu navegador no soporta geolocalización directa.');
+                alert('{{ __('swal.alert_geolocation_not_supported') }}');
                 return;
             }
             this.isSearching = true;
@@ -1371,12 +1379,12 @@
                     this.$refs.latInput.value = pos.coords.latitude;
                     this.$refs.lngInput.value = pos.coords.longitude;
                     this.isSearching = false;
-                    this.searchQuery = 'Ubicación actual capturada 🛰️';
+                    this.searchQuery = '{{ __('Current location captured 🛰️') }}';
                     this.syncMap();
                 },
                 (err) => {
                     this.isSearching = false;
-                    alert('No se pudo obtener la ubicación. Asegúrate de dar permisos.');
+                    alert('{{ __('swal.alert_location_unavailable') }}');
                 },
                 { enableHighAccuracy: true }
             );
@@ -1432,7 +1440,7 @@
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-xl font-black text-gray-900 dark:text-white uppercase flex items-center gap-2">
                         <span class="p-2 bg-emerald-500/10 text-emerald-500 rounded-xl">📍</span>
-                        Tu Área de Acción
+                        {{ __('Your Action Area') }}
                     </h3>
                     <button @click="open = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -1443,9 +1451,9 @@
                     @csrf @method('PATCH')
                     
                     <div class="relative">
-                        <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">Buscador GPS / Dirección</label>
+                        <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">{{ __('GPS / Address Search') }}</label>
                         <div class="relative">
-                            <input type="text" x-model="searchQuery" @keydown.enter.prevent="searchLocation()" placeholder="Ciudad, calle o código postal..." class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 outline-none">
+                            <input type="text" x-model="searchQuery" @keydown.enter.prevent="searchLocation()" placeholder="{{ __('City, street or postal code...') }}" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 outline-none">
                             <button type="button" @click="searchLocation()" class="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-xl transition-all">
                                 <svg x-show="!isSearching" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -1469,7 +1477,7 @@
                     </div>
                     <div class="flex items-center justify-between gap-3 px-1">
                         <div class="h-px bg-gray-100 dark:bg-gray-800 flex-1"></div>
-                        <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Ó también</span>
+                        <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">{{ __('Or also') }}</span>
                         <div class="h-px bg-gray-100 dark:bg-gray-800 flex-1"></div>
                     </div>
 
@@ -1478,33 +1486,33 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        Autodetectar Mi GPS 📡
+                        {{ __('Autodetect My GPS 📡') }}
                     </button>
 
                     <div>
-                        <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">Nombre de tu territorio</label>
-                        <input type="text" name="working_area_name" value="{{ auth()->user()->working_area_name }}" placeholder="Ej: Zafarraya Central" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 outline-none" required>
+                        <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">{{ __('time-logs.territory_name') }}</label>
+                        <input type="text" name="working_area_name" value="{{ auth()->user()->working_area_name }}" placeholder="{{ __('e.g. Central Area') }}" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 outline-none" required>
                     </div>
 
                     <div class="space-y-1">
-                        <label class="block text-[10px] font-black text-gray-400 uppercase ml-1">O ajusta arrastrando el pin 🗺️</label>
+                        <label class="block text-[10px] font-black text-gray-400 uppercase ml-1">{{ __('Or adjust by dragging the pin 🗺️') }}</label>
                         <div id="mini-picker-map" class="w-full h-48 bg-gray-100 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-inner overflow-hidden relative z-10"></div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">Latitud</label>
+                            <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">{{ __('Latitude') }}</label>
                             <input type="number" name="location_lat" x-ref="latInput" step="any" value="{{ auth()->user()->location_lat }}" placeholder="37.0..." class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 outline-none" required>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">Longitud</label>
+                            <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">{{ __('Longitude') }}</label>
                             <input type="number" name="location_lng" x-ref="lngInput" step="any" value="{{ auth()->user()->location_lng }}" placeholder="-4.1..." class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 outline-none" required>
                         </div>
                     </div>
 
                     <div>
                         <div class="flex justify-between items-center mb-1.5 ml-1">
-                            <label class="text-[10px] font-black text-gray-400 uppercase">Radio de Impacto</label>
+                            <label class="text-[10px] font-black text-gray-400 uppercase">{{ __('time-logs.impact_radius') }}</label>
                             <span class="text-[10px] font-black text-emerald-500"><span id="impact-val-display">{{ auth()->user()->impact_radius ?? 10 }}</span> km</span>
                         </div>
                         <input type="range" name="impact_radius" min="1" max="50" value="{{ auth()->user()->impact_radius ?? 10 }}" 
@@ -1514,7 +1522,7 @@
 
                     <div class="flex gap-4 pt-4">
                         <button type="submit" class="w-full py-5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black uppercase text-xs shadow-xl shadow-emerald-500/25 transition-all active:scale-[0.98]">
-                            Guardar Mi Perímetro 📍
+                            {{ __("time-logs.save_perimeter") }}
                         </button>
                     </div>
                 </form>
@@ -1547,7 +1555,7 @@
          class="dark:[background:rgba(17,24,39,0.92)] dark:[border-color:rgba(55,65,81,0.8)]">
          
          <!-- Drag Handle -->
-         <div class="cursor-grab text-gray-300 hover:text-gray-500 dark:text-gray-700 dark:hover:text-gray-500 transition-colors px-1 select-none flex items-center justify-center" title="Arrastrar">
+         <div class="cursor-grab text-gray-300 hover:text-gray-500 dark:text-gray-700 dark:hover:text-gray-500 transition-colors px-1 select-none flex items-center justify-center" title="{{ __("html.drag") }}">
              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
                  <circle cx="9" cy="5" r="1.5" />
                  <circle cx="15" cy="5" r="1.5" />
@@ -1564,7 +1572,7 @@
              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
              </svg>
-             <span>Equipos</span>
+             <span>{{ __('Teams') }}</span>
          </a>
 
          <!-- Divider -->
@@ -1584,7 +1592,7 @@
              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
              </svg>
-             <span class="hidden sm:inline">Sentinel</span>
+             <span class="hidden sm:inline">{{ __('Sentinel') }}</span>
          </button>
 
          <!-- Divider -->
@@ -1600,7 +1608,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
               </svg>
-              <span>Inicio</span>
+              <span>{{ __('Top') }}</span>
          </button>
     </div>
 
@@ -1737,7 +1745,7 @@
                     data: {
                         labels: logsData.map(d => d.date),
                         datasets: [{
-                            label: 'Horas Trabajadas',
+                            label: '{{ __('Hours Worked') }}',
                             data: logsData.map(d => d.hours),
                             backgroundColor: '#10b981',
                             borderRadius: 4,

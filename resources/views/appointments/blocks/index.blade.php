@@ -1,5 +1,5 @@
 <x-app-layout maxWidth="max-w-none">
-@section('title', 'Bloqueos de Tramos — Citas Previas')
+@section('title', __('Slot Blocks — Appointments'))
 
 <x-slot name="header">
     <div class="flex items-center gap-3 flex-wrap">
@@ -16,14 +16,14 @@
                 <svg class="h-4 w-4 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
                 </svg>
-                <span class="truncate">Bloqueos de Urgencia</span>
+                <span class="truncate">{{ __('Emergency Blocks') }}</span>
             </h1>
         </div>
     </div>
     
     <div class="mt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-gray-100 dark:border-gray-800 pt-3">
         <x-demo-hint>
-            Esta pantalla permite al equipo cerrar de emergencia tramos horarios en sus agendas (por baja médica repentina, reunión urgente, etc). A diferencia de la configuración normal del horario, un "bloqueo" sobrescribe cualquier disponibilidad e incluso puede cancelar y notificar automáticamente a los ciudadanos que ya tenían una cita programada en ese tramo.
+            {!! __('This screen allows the team to emergency close time slots in their schedules (due to sudden medical leave, urgent meeting, etc.). Unlike normal schedule settings, a "block" overrides any availability and can even automatically cancel and notify citizens who already had an appointment booked in that slot.') !!}
         </x-demo-hint>
     </div>
     @include('appointments.partials.nav')
@@ -45,16 +45,16 @@
             <div class="xl:col-span-2">
                 <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
                     <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-red-50/50 dark:bg-red-900/10">
-                        <p class="text-xs font-black uppercase tracking-widest text-red-500">🚫 Nuevo Bloqueo</p>
+                        <p class="text-xs font-black uppercase tracking-widest text-red-500">🚫 {{ __('New Block') }}</p>
                     </div>
                     <form method="POST" action="{{ route('appointments.blocks.store', $team) }}" class="p-6 space-y-4">
                         @csrf
 
                         <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Servicio afectado</label>
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">{{ __('Affected service') }}</label>
                             <select name="service_id"
                                     class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-red-500 focus:ring focus:ring-red-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all">
-                                <option value="">Todos los servicios</option>
+                                <option value="">{{ __('All services') }}</option>
                                 @foreach($services as $s)
                                     <option value="{{ $s->id }}">{{ $s->name }}</option>
                                 @endforeach
@@ -63,14 +63,14 @@
 
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Inicio *</label>
+                                <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">{{ __('Start *') }}</label>
                                 <input type="datetime-local" name="start_datetime" required
                                        value="{{ old('start_datetime') }}"
                                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-red-500 focus:ring focus:ring-red-500/20 rounded-xl px-3 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all">
                                 @error('start_datetime') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                             </div>
                             <div>
-                                <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Fin *</label>
+                                <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">{{ __('End *') }}</label>
                                 <input type="datetime-local" name="end_datetime" required
                                        value="{{ old('end_datetime') }}"
                                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-red-500 focus:ring focus:ring-red-500/20 rounded-xl px-3 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all">
@@ -79,14 +79,14 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Motivo del bloqueo</label>
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">{{ __('Block reason') }}</label>
                             <input type="text" name="reason" value="{{ old('reason') }}"
-                                   placeholder="Ej: Vacaciones, Baja, Reunión de urgencia..."
+                                   placeholder="{{ __('e.g. Vacation, Sick leave, Urgent meeting...') }}"
                                    class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-red-500 focus:ring focus:ring-red-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all">
                         </div>
 
                         <div class="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-900">
-                            <p class="text-xs font-black text-red-700 dark:text-red-400">Notificar a citas afectadas</p>
+                            <p class="text-xs font-black text-red-700 dark:text-red-400">{{ __('Notify affected appointments') }}</p>
                             <label class="relative inline-flex items-center cursor-pointer shrink-0">
                                 <input type="hidden" name="notify_affected" value="0">
                                 <input type="checkbox" name="notify_affected" value="1" checked class="sr-only peer">
@@ -96,7 +96,7 @@
 
                         <button type="submit"
                                 class="w-full py-3 text-xs font-black uppercase tracking-widest bg-red-600 hover:bg-red-500 text-white rounded-xl shadow-lg shadow-red-500/20 transition-all active:scale-95">
-                            🚫 Crear Bloqueo
+                            🚫 {{ __('Create Block') }}
                         </button>
                     </form>
                 </div>
@@ -106,9 +106,9 @@
             <div class="xl:col-span-3">
                 <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
                     <div class="p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-                        <p class="text-xs font-black uppercase tracking-widest text-gray-400">Bloqueos Activos y Futuros</p>
+                        <p class="text-xs font-black uppercase tracking-widest text-gray-400">{{ __('Active and Future Blocks') }}</p>
                         <span class="text-[10px] font-black text-red-600 bg-red-50 dark:bg-red-900/30 dark:text-red-400 px-2.5 py-1 rounded-lg">
-                            {{ $blocks->count() }} bloqueos
+                            {{ $blocks->count() }} {{ __('blocks') }}
                         </span>
                     </div>
                     <div class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -121,18 +121,18 @@
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm font-black text-gray-900 dark:text-white">
-                                        {{ $block->reason ?? 'Sin motivo especificado' }}
+                                        {{ $block->reason ?? __('No reason specified') }}
                                     </p>
                                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                                         {{ $block->start_datetime->format('d/m/Y H:i') }} → {{ $block->end_datetime->format('d/m/Y H:i') }}
                                     </p>
                                     @if($block->service)
                                         <span class="text-[9px] font-black text-cyan-700 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/30 px-1.5 py-0.5 rounded mt-1 inline-block">
-                                            Solo: {{ $block->service->name }}
+                                            {{ __('Only:') }} {{ $block->service->name }}
                                         </span>
                                     @else
                                         <span class="text-[9px] font-black text-gray-500 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded mt-1 inline-block">
-                                            Todos los servicios
+                                            {{ __('All services') }}
                                         </span>
                                     @endif
                                 </div>
@@ -141,7 +141,7 @@
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                                     </a>
                                     <form method="POST" action="{{ route('appointments.blocks.destroy', [$team, $block]) }}"
-                                          onsubmit="return confirm('¿Eliminar este bloqueo?')">
+                                          onsubmit="return confirm('{{ __('Are you sure you want to delete this block?') }}')">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -152,8 +152,8 @@
                         @empty
                             <div class="p-10 text-center">
                                 <p class="text-3xl mb-3">✅</p>
-                                <p class="text-sm font-bold text-gray-500 dark:text-gray-400">Sin bloqueos activos</p>
-                                <p class="text-xs text-gray-400 mt-1">Tu agenda está completamente disponible</p>
+                                <p class="text-sm font-bold text-gray-500 dark:text-gray-400">{{ __('No active blocks') }}</p>
+                                <p class="text-xs text-gray-400 mt-1">{{ __('Your schedule is completely available') }}</p>
                             </div>
                         @endforelse
                     </div>

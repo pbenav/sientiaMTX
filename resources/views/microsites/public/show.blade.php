@@ -7,7 +7,7 @@
 
     <title>{{ $microsite->title }}</title>
     
-    <meta name="description" content="Micrositio publicado por {{ $microsite->team->name }}">
+    <meta name="description" content="{{ __('Microsite published by :team', ['team' => $microsite->team->name]) }}">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -42,7 +42,7 @@
     <div class="bg-gray-900 text-white py-2 px-4 shadow-md text-xs sm:text-sm flex justify-between items-center z-50 relative">
         <div class="flex items-center gap-2">
             <span class="font-bold opacity-80 uppercase tracking-widest text-[10px] bg-white/10 px-2 py-0.5 rounded-md">
-                Publicado por
+                {{ __('Published by') }}
             </span>
             <span class="font-semibold">{{ $microsite->team->name }}</span>
         </div>
@@ -54,7 +54,7 @@
             @endphp
             <button type="button" onclick="openQrModal('{{ base64_encode($qrCodeSvg) }}', 'qr-micrositio-{{ $microsite->slug }}.svg')"
                class="p-1 border border-gray-700 hover:border-pink-500 rounded-md flex items-center justify-center transition-all group"
-               title="{{ __('Ver código QR') }}">
+               title="{{ __('html.qr_code') }}">
                 {!! preg_replace('/<\?xml.*?\?>\n?/', '', $qrCodeSmall) !!}
             </button>
             
@@ -62,7 +62,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
-                <span class="hidden sm:inline">Directorio de Micrositios</span>
+                <span class="hidden sm:inline">{{ __('Microsites Directory') }}</span>
             </a>
         </div>
     </div>
@@ -74,8 +74,8 @@
 
     <!-- Footer Sientia MTX -->
     <footer class="bg-gray-100 dark:bg-gray-900 py-6 border-t border-gray-200 dark:border-gray-800 text-center text-xs text-gray-500 dark:text-gray-400 mt-auto">
-        <p>&copy; {{ date('Y') }} Sientia MTX. Plataforma de Resiliencia y Gestión Eficiente.</p>
-        <p class="mt-1 opacity-60">Este contenido ha sido publicado por un usuario y no refleja necesariamente la opinión de Sientia MTX.</p>
+        <p>&copy; {{ date('Y') }} Sientia MTX. {{ __('Resilience and Efficient Management Platform.') }}</p>
+        <p class="mt-1 opacity-60">{{ __('This content was published by a user and does not necessarily reflect the views of Sientia MTX.') }}</p>
     </footer>
 
     <script>
@@ -94,7 +94,7 @@
         });
         document.addEventListener('fullscreenchange', function () {
             document.querySelectorAll('[data-ms-fullscreen]').forEach(function (btn) {
-                btn.textContent = document.fullscreenElement ? '✕ Salir' : '⛶ Pantalla completa';
+                btn.textContent = document.fullscreenElement ? '✕ {{ __('Exit') }}' : '⛶ {{ __('Fullscreen') }}';
             });
         });
     </script>

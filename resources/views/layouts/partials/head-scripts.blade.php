@@ -76,16 +76,16 @@
                         .then(r => r.json())
                         .then(d => {
                             if (d.success) {
-                                Swal.fire({ icon: 'success', title: 'Añadido', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
+                                Swal.fire({ icon: 'success', title: '{{ __('swal.success_added') }}', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
                                 this.member.status = d.status;
                                 this.addingMember = false;
                                 this.searchUserQuery = '';
                                 this.fetchMessages();
                             } else {
-                                Swal.fire({ icon: 'error', title: 'Error', text: d.message, toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                                Swal.fire({ icon: 'error', title: '{{ __('swal.title_error') }}', text: d.message, toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
                             }
                         })
-                        .catch(e => Swal.fire({ icon: 'error', title: 'Error de red', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false }));
+                        .catch(e => Swal.fire({ icon: 'error', title: '{{ __('swal.error_network') }}', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false }));
                     } else {
                         fetch('/chat/group', {
                             method: 'POST',
@@ -95,15 +95,15 @@
                         .then(r => r.json())
                         .then(d => {
                             if (d.success) {
-                                Swal.fire({ icon: 'success', title: 'Grupo creado', text: 'Chat convertido a grupal', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
+                                Swal.fire({ icon: 'success', title: '{{ __('swal.success_group_created') }}', text: '{{ __('swal.success_group_converted') }}', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
                                 this.addingMember = false;
                                 this.searchUserQuery = '';
                                 this.openChat(d.group);
                             } else {
-                                Swal.fire({ icon: 'error', title: 'Error', text: d.message, toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                                Swal.fire({ icon: 'error', title: '{{ __('swal.title_error') }}', text: d.message, toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
                             }
                         })
-                        .catch(e => Swal.fire({ icon: 'error', title: 'Error de red', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false }));
+                        .catch(e => Swal.fire({ icon: 'error', title: '{{ __('swal.error_network') }}', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false }));
                     }
                 },
                 renameActiveGroup(newName) {
@@ -123,9 +123,9 @@
                         if (d.success) {
                             this.member.name = d.name;
                             try { localStorage.setItem('sientia_last_chat', JSON.stringify(this.member)); } catch(e) {}
-                            Swal.fire({ icon: 'success', title: 'Grupo renombrado', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
+                            Swal.fire({ icon: 'success', title: '{{ __('swal.success_group_renamed') }}', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
                         } else {
-                            Swal.fire({ icon: 'error', title: 'Error', text: d.message, toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                            Swal.fire({ icon: 'error', title: '{{ __('swal.title_error') }}', text: d.message, toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
                         }
                     })
                     .catch(e => console.error('Error renaming group:', e));
@@ -139,8 +139,8 @@
                         showCancelButton: true,
                         confirmButtonColor: '#ef4444',
                         cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'Sí, eliminar',
-                        cancelButtonText: 'Cancelar',
+                        confirmButtonText: '{{ __('swal.btn_yes_delete') }}',
+                        cancelButtonText: '{{ __('swal.btn_cancel') }}',
                         customClass: {
                             popup: 'rounded-[2rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
                             confirmButton: 'rounded-xl px-6 py-2.5 text-[11px] font-black uppercase tracking-widest',
@@ -158,7 +158,7 @@
                             .then(r => r.json())
                             .then(d => {
                                 if (d.success) {
-                                    Swal.fire({ icon: 'success', title: 'Grupo eliminado', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
+                                    Swal.fire({ icon: 'success', title: '{{ __('swal.success_group_deleted') }}', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
                                     if (this.member && String(this.member.id) === `group_${cleanGroupId}`) {
                                         this.chatOpen = false;
                                         this.member = null;
@@ -166,7 +166,7 @@
                                     }
                                     this.fetchRecentGroups();
                                 } else {
-                                    Swal.fire({ icon: 'error', title: 'Error', text: d.message, toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                                    Swal.fire({ icon: 'error', title: '{{ __('swal.title_error') }}', text: d.message, toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
                                 }
                             })
                             .catch(e => console.error('Error deleting group:', e));
@@ -259,7 +259,7 @@
                                 }
                             } catch (e) {}
                         }
-                        Swal.fire({ icon: 'info', title: 'Chat Interno', text: 'No tienes ninguna sala de chat activa. Selecciona un usuario o grupo en la Red Activa o abre un mensaje pendiente.', toast: true, position: 'top-end', timer: 4000, showConfirmButton: false });
+                        Swal.fire({ icon: 'info', title: '{{ __('swal.chat_internal') }}', text: '{{ __('swal.chat_no_active_room') }}', toast: true, position: 'top-end', timer: 4000, showConfirmButton: false });
                     }
                 },
 
@@ -338,7 +338,7 @@
                         console.error('Error sending message:', err);
                         // Quitar el mensaje optimista si falló el envío
                         this.messages = this.messages.filter(m => m.id !== optimisticMsg.id);
-                        Swal.fire({ icon: 'error', title: 'Error al enviar', text: 'No se pudo enviar el mensaje.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                        Swal.fire({ icon: 'error', title: '{{ __('swal.error_send') }}', text: '{{ __('swal.error_could_not_send_message') }}', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
                     })
                     .finally(() => this.isUploading = false);
                 },
@@ -351,8 +351,8 @@
                         showCancelButton: true,
                         confirmButtonColor: '#ef4444',
                         cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'Eliminar',
-                        cancelButtonText: 'Cancelar',
+                        confirmButtonText: '{{ __('swal.btn_delete') }}',
+                        cancelButtonText: '{{ __('swal.btn_cancel') }}',
                         customClass: {
                             popup: 'rounded-[2rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
                             confirmButton: 'rounded-xl px-6 py-2.5 text-[11px] font-black uppercase tracking-widest',
@@ -372,7 +372,7 @@
                                 if (d.success) {
                                     this.messages = this.messages.filter(m => m.id !== msgId);
                                 } else {
-                                    Swal.fire({ icon: 'error', title: 'Error', text: d.message, toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                                    Swal.fire({ icon: 'error', title: '{{ __('swal.title_error') }}', text: d.message, toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
                                 }
                             })
                             .catch(e => console.error('Error deleting message:', e));
@@ -388,8 +388,8 @@
                         text: 'Se eliminarán todos los mensajes de esta conversación de forma permanente.',
                         icon: 'warning',
                         showCancelButton: true,
-                        confirmButtonText: 'Sí, limpiar 🧹',
-                        cancelButtonText: 'Cancelar ❌',
+                        confirmButtonText: '{{ __('swal.btn_yes_clean') }}',
+                        cancelButtonText: '{{ __('swal.btn_cancel_x') }}',
                         confirmButtonColor: '#e11d48',
                         cancelButtonColor: '#4b5563',
                         customClass: {
@@ -559,7 +559,7 @@
                 scrollToBottom() { const c = this.$refs.chatContainer; if (c) c.scrollTop = c.scrollHeight; },
                 clearPendingAttachments() { if (this.previewUrl && this.previewUrl.startsWith('blob:')) URL.revokeObjectURL(this.previewUrl); this.pendingFile = null; this.previewUrl = null; this.pendingDriveFile = null; },
                 handleFileSelect(e) { const f = e.target.files[0]; if (f) this.processFile(f); e.target.value = ''; },
-                processFile(f) { if (f.size > 10 * 1024 * 1024) { alert('⚠️ Límite 10MB'); return; } this.pendingFile = f; this.previewUrl = URL.createObjectURL(f); this.$nextTick(() => this.$refs.chatInput.focus()); },
+                processFile(f) { if (f.size > 10 * 1024 * 1024) { alert('{{ __('swal.alert_file_limit_10mb') }}'); return; } this.pendingFile = f; this.previewUrl = URL.createObjectURL(f); this.$nextTick(() => this.$refs.chatInput.focus()); },
                 handlePaste(e) { const items = (e.clipboardData || e.originalEvent.clipboardData).items; for (let i in items) { if (items[i].kind === 'file') { const b = items[i].getAsFile(); const f = new File([b], `img_${Date.now()}.png`, { type: b.type }); this.processFile(f); } } },
                 insertEmoji(e) { const i = this.$refs.chatInput; const s = i.selectionStart; const en = i.selectionEnd; this.message = this.message.substring(0, s) + e + this.message.substring(en); this.$nextTick(() => { i.focus(); const n = s + e.length; i.setSelectionRange(n, n); }); },
                 startSientiaCall() {
@@ -572,13 +572,13 @@
                     .then(r => r.json())
                     .then(d => {
                         if (!d.success || !d.room) {
-                            Swal.fire({ icon: 'error', title: 'Error', text: d.message || 'No se pudo iniciar la llamada.', toast: true, position: 'top-end', timer: 4000, showConfirmButton: false });
+                            Swal.fire({ icon: 'error', title: '{{ __('swal.title_error') }}', text: d.message || 'No se pudo iniciar la llamada.', toast: true, position: 'top-end', timer: 4000, showConfirmButton: false });
                             return;
                         }
                         window.open('https://meet.jit.si/' + d.room, '_blank');
                         this.fetchMessages();
                     })
-                    .catch(() => Swal.fire({ icon: 'error', title: 'Error de red', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false }));
+                    .catch(() => Swal.fire({ icon: 'error', title: '{{ __('swal.error_network') }}', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false }));
                 },
                 startGoogleMeet() {
                     if (this.member.id === {{ auth()->id() }}) return;
@@ -623,7 +623,7 @@
                     })
                     .catch(() => {
                         Swal.close();
-                        Swal.fire({ icon: 'error', title: 'Error de red', text: 'No se pudo conectar con el servidor.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                        Swal.fire({ icon: 'error', title: '{{ __('swal.error_network') }}', text: 'No se pudo conectar con el servidor.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
                     });
                 }
             }));
@@ -1102,7 +1102,7 @@
                 let includeAttachments = false;
                 if (attachments.length > 0 && typeof Swal !== 'undefined') {
                     const result = await Swal.fire({
-                        title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Imprimir Anexos</span>',
+                        title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">{{ __('docs.print_annexes') }}</span>',
                         html: '<div class="text-sm text-gray-500 dark:text-gray-400 mt-2">El documento tiene <strong>' + attachments.length + '</strong> archivo(s) adjunto(s).<br><br>¿Deseas añadirlos al final del libro como anexos? (Las imágenes se imprimirán, otros archivos se listarán).</div>',
                         icon: 'question',
                         showCancelButton: true,
@@ -1126,7 +1126,7 @@
                         <div class="toc-item">
                             <span class="toc-title">${idx + 1}. ${chap.title}</span>
                             <span class="toc-dots"></span>
-                            <span class="toc-page">Capítulo ${idx + 1}</span>
+                            <span class="toc-page">{{ __('Chapter') }} ${idx + 1}</span>
                         </div>
                     `;
 
@@ -1176,7 +1176,7 @@
                     </div>
 
                     <div class="toc-page">
-                        <h2 class="toc-main-title">Índice General</h2>
+                        <h2 class="toc-main-title">{{ __('Índice General') }}</h2>
                         ${tocHtml}
                     </div>
 
@@ -1200,7 +1200,7 @@
                         <div class="chapter-page">
                             <div class="chapter-header">
                                 <span class="chapter-num">ANEXOS</span>
-                                <h2 class="chapter-title">Archivos Adjuntos</h2>
+                                <h2 class="chapter-title">{{ __('Archivos Adjuntos') }}</h2>
                             </div>
                             <div class="chapter-body">
                                 ${annexHtml}
@@ -1235,7 +1235,7 @@
             if (typeof Swal !== 'undefined') {
                 var dialogClosed = false;
                 await Swal.fire({
-                    title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Opciones de Impresión</span>',
+                    title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">{{ __('docs.print_options') }}</span>',
                     background: isDark ? '#0f172a' : '#ffffff',
                     color:      isDark ? '#f3f4f6' : '#1f2937',
                     showConfirmButton: false,

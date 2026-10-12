@@ -1,5 +1,5 @@
 <x-app-layout>
-    @section('title', 'Editar ' . $activity->type_label . ': ' . $activity->title)
+    @section('title', __('Edit') . ' ' . $activity->type_label . ': ' . $activity->title)
 
     <x-slot name="header">
         <div class="flex items-center gap-3">
@@ -14,7 +14,7 @@
                 @include('teams.partials.breadcrumb')
                 <div class="flex items-center gap-4">
                     <h1 class="text-xl font-bold text-gray-900 dark:text-white heading truncate">
-                        Editar Actividad: {{ $activity->title }}
+                        {{ __('Edit') }} {{ __('Activity') }}: {{ $activity->title }}
                         <span class="ml-2 text-sm font-medium text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400 px-2 py-1 rounded-md">
                             @if ($activity->is_template)
                                 @if(isset($activity->metadata['assignment_mode']) && $activity->metadata['assignment_mode'] === 'shared')
@@ -78,18 +78,18 @@
                 @endif
                     <!-- Tabs Nav -->
                     <div class="flex gap-4 border-b border-gray-200 dark:border-gray-800 pb-2 mb-6 overflow-x-auto">
-                        <button type="button" @click="setActiveTab('general')" :class="activeTab === 'general' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">General</button>
+                        <button type="button" @click="setActiveTab('general')" :class="activeTab === 'general' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">{{ __('general') }}</button>
                         @if($activity->type === 'document')
-                            <button type="button" @click="activeTab = 'chapters'" :class="activeTab === 'chapters' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">Capítulos</button>
+                            <button type="button" @click="activeTab = 'chapters'" :class="activeTab === 'chapters' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">{{ __('cap_tulos') }}</button>
                         @endif
-                        <button type="button" @click="activeTab = 'planning'" :class="activeTab === 'planning' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">Planificación y Estado</button>
-                        <button type="button" @click="activeTab = 'team'" :class="activeTab === 'team' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">Equipo y Ejecución</button>
-                        <button type="button" @click="activeTab = 'context'" :class="activeTab === 'context' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">Contexto y Vinculaciones</button>
-                        <button type="button" @click="setActiveTab('attachments')" :class="activeTab === 'attachments' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">Adjuntos</button>
+                        <button type="button" @click="activeTab = 'planning'" :class="activeTab === 'planning' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">{{ __('planificaci_n_y_estado') }}</button>
+                        <button type="button" @click="activeTab = 'team'" :class="activeTab === 'team' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">{{ __('equipo_y_ejecuci_n') }}</button>
+                        <button type="button" @click="activeTab = 'context'" :class="activeTab === 'context' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">{{ __('contexto_y_vinculaciones') }}</button>
+                        <button type="button" @click="setActiveTab('attachments')" :class="activeTab === 'attachments' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">{{ __('adjuntos') }}</button>
                     </div>
 
                     <div x-show="activeTab === 'general'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
-                        <!-- BLOCK: Título de la Actividad -->
+                        <!-- BLOCK: {{ __('Título de la Actividad') }} -->
     <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-1">
         <div class="absolute top-0 right-0 p-8 opacity-5">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
@@ -100,14 +100,14 @@
             </div>
             <div>
                 <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
-                    Título de la Actividad
+                    {{ __('Título de la Actividad') }}
                 </h3>
                 <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Identificación principal</p>
             </div>
         </div>
         <div class="space-y-6 relative z-10">
             <div>
-                    <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">Título de la Actividad</label>
+                    <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">{{ __('Título de la Actividad') }}</label>
                     <input type="text" name="title" value="{{ old('title', $activity->title) }}" required
                         class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-2xl px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 outline-none transition-all"
                         placeholder="Ej. Redactar el acta de inicio...">
@@ -172,17 +172,17 @@
                         <!-- DOCUMENTO ESPECÍFICO -->
                         <div>
                             <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                                Esta actividad es un documento colaborativo accesible mediante OnlyOffice.
+                                {{ __('This activity is a collaborative document accessible via OnlyOffice.') }}
                             </p>
                             <div class="mt-4">
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Versión Actual</label>
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">{{ __('Current Version') }}</label>
                                 <input type="text" name="version" value="{{ old('version', data_get($activity->metadata, 'version', '1.0.0')) }}" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white outline-none">
                             </div>
                         </div>
                     @elseif ($activity->type === 'link')
                         <!-- ENLACE ESPECÍFICO (CRUD) -->
                         <div>
-                            <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Colección de Enlaces</label>
+                            <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">{{ __('Link Collection') }}</label>
                             <x-link-crud :initialLinks="old('metadata.links', data_get($activity->metadata, 'links', []))" />
                             @error('metadata.links')
                                 <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
@@ -235,7 +235,7 @@
                             </div>
 
                             <div>
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Fecha del Acuerdo</label>
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">{{ __('Fecha del Acuerdo') }}</label>
                                 <input type="date" name="metadata[agreement_date]" value="{{ old('metadata.agreement_date', data_get($activity->metadata, 'agreement_date', now()->format('Y-m-d'))) }}" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none">
                             </div>
                         </div>
@@ -243,16 +243,16 @@
                         <!-- REUNIÓN ESPECÍFICO -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Modalidad</label>
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">{{ __('Modality') }}</label>
                                 <select name="metadata[modality]" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none cursor-pointer">
-                                    <option value="remote" {{ old('metadata.modality', data_get($activity->metadata, 'modality')) == 'remote' ? 'selected' : '' }}>💻 En remoto / Online</option>
-                                    <option value="presential" {{ old('metadata.modality', data_get($activity->metadata, 'modality', 'presential')) == 'presential' ? 'selected' : '' }}>🏢 Presencial</option>
-                                    <option value="hybrid" {{ old('metadata.modality', data_get($activity->metadata, 'modality')) == 'hybrid' ? 'selected' : '' }}>🤝 Híbrido</option>
+                                    <option value="remote" {{ old('metadata.modality', data_get($activity->metadata, 'modality')) == 'remote' ? 'selected' : '' }}>💻 {{ __('Remote / Online') }}</option>
+                                    <option value="presential" {{ old('metadata.modality', data_get($activity->metadata, 'modality', 'presential')) == 'presential' ? 'selected' : '' }}>🏢 {{ __('In-person') }}</option>
+                                    <option value="hybrid" {{ old('metadata.modality', data_get($activity->metadata, 'modality')) == 'hybrid' ? 'selected' : '' }}>🤝 {{ __('Hybrid') }}</option>
                                 </select>
                             </div>
 
                             <div>
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Duración (Minutos)</label>
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">{{ __('Duration (Minutes)') }}</label>
                                 <input type="number" name="metadata[duration_minutes]" value="{{ old('metadata.duration_minutes', data_get($activity->metadata, 'duration_minutes', 60)) }}" min="1" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none">
                             </div>
 
@@ -293,7 +293,7 @@
                                 }
                             }">
                                 <div class="flex items-center justify-between mb-2">
-                                    <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400">Lugar / Enlace Videollamada</label>
+                                    <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400">{{ __('Lugar / Enlace Videollamada') }}</label>
                                     <div class="flex items-center gap-2">
                                         <button type="button" @click="generateJitsi()" class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5 border border-emerald-100 dark:border-emerald-800/50">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z"/></svg>
@@ -316,7 +316,7 @@
         </div>
     </div>
     @endif
-                        <!-- BLOCK: Nivel de Visibilidad -->
+                        <!-- BLOCK: {{ __('nivel') }} de Visibilidad -->
     <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-7">
         <div class="absolute top-0 right-0 p-8 opacity-5">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
@@ -327,7 +327,7 @@
             </div>
             <div>
                 <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
-                    Nivel de Visibilidad
+                    {{ __('nivel') }} de Visibilidad
                 </h3>
                 <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Privacidad y acceso</p>
             </div>
@@ -412,7 +412,7 @@
 
                     </div>
                     <div x-show="activeTab === 'team'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
-                        <!-- BLOCK: Miembros Asignados -->
+                        <!-- BLOCK: Miembros {{ __('Asignados') }} -->
     <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-6">
         <div class="absolute top-0 right-0 p-8 opacity-5">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
@@ -423,9 +423,9 @@
             </div>
             <div>
                 <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
-                    Miembros Asignados
+                    {{ __('Assigned Members') }}
                 </h3>
-                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Responsables y colaboradores</p>
+                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">{{ __('Responsible and collaborators') }}</p>
             </div>
         </div>
         <div class="space-y-6 relative z-10">
@@ -460,15 +460,15 @@
                         <div class="space-y-3">
                             <div class="flex items-center justify-between">
                                 <label class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                    Miembros Asignados
+                                    {{ __('Assigned Members') }}
                                 </label>
                                 <div class="flex gap-2">
                                     <button type="button" @click="selectAll(true)" class="text-[10px] font-black uppercase tracking-widest text-violet-600 hover:text-violet-700 dark:text-violet-400 transition-colors">
-                                        Todos
+                                        {{ __('All') }}
                                     </button>
                                     <span class="text-gray-300 dark:text-gray-700 text-[10px]">|</span>
                                     <button type="button" @click="selectAll(false)" class="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-gray-700 dark:text-gray-400 transition-colors">
-                                        Ninguno
+                                        {{ __('None') }}
                                     </button>
                                 </div>
                             </div>
@@ -492,7 +492,7 @@
                     @if ($groups->count() > 0)
                         <div class="space-y-3">
                             <label class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                Grupos Asignados
+                                {{ __('Assigned Groups') }}
                             </label>
                             <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 space-y-2.5 max-h-80 overflow-y-auto">
                                 @foreach ($groups as $group)
@@ -504,7 +504,7 @@
                                             class="group-checkbox accent-violet-600 w-5 h-5 rounded-lg border-gray-300 dark:border-gray-600 focus:ring-violet-500/20">
                                         <div class="flex flex-col min-w-0">
                                             <span class="text-sm font-bold text-gray-700 dark:text-gray-200 truncate group-hover:text-gray-900 transition-colors leading-tight">{{ $group->name }}</span>
-                                            <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">{{ $group->users->count() }} Miembros</span>
+                                            <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">{{ $group->users->count() }} {{ __('teams.members') }}</span>
                                         </div>
                                     </label>
                                 @endforeach
@@ -532,7 +532,7 @@
             </div>
         </div>
 
-        <!-- BLOCK: Gamificación, Impacto y Bienestar -->
+        <!-- BLOCK: {{ __('gamificaci_n') }}, Impacto y Bienestar -->
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-12">
             <div class="absolute top-0 right-0 p-8 opacity-5">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
@@ -543,14 +543,14 @@
                 </div>
                 <div>
                     <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
-                        Gamificación, Impacto y Bienestar
+                        {{ __('gamificaci_n') }}, Impacto y Bienestar
                     </h3>
                     <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Métricas humanas, resiliencia y esfuerzo mental</p>
                 </div>
             </div>
             <div class="space-y-8 relative z-10">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <!-- Columna 1: Impacto Humano y Gamificación -->
+                    <!-- Columna 1: Impacto Humano y {{ __('gamificaci_n') }} -->
                     <div class="space-y-6">
                         <div>
                             <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">
@@ -565,7 +565,7 @@
                                 <input type="checkbox" name="metadata[is_out_of_skill_tree]" value="1" {{ old('metadata.is_out_of_skill_tree', data_get($activity->metadata, 'is_out_of_skill_tree', false)) ? 'checked' : '' }} class="accent-violet-600 rounded w-5 h-5 focus:ring-violet-500/20">
                                 <div class="flex flex-col">
                                     <span class="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Fuera de mi Skill Tree</span>
-                                    <span class="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-0.5">+ Puntos de Resiliencia</span>
+                                    <span class="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-0.5">+ Puntos de {{ __('resiliencia') }}</span>
                                 </div>
                             </label>
 
@@ -600,7 +600,7 @@
                     <!-- Columna 3: Carga Cognitiva -->
                     <div x-data="{ load: {{ old('metadata.cognitive_load', data_get($activity->metadata, 'cognitive_load', 1)) }} }">
                         <label class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center justify-between">
-                            <span>Carga Cognitiva (Drenaje de Energía)</span>
+                            <span>{{ __('activities.cognitive_load') }}</span>
                             <span :class="{
                                 'text-emerald-500': load <= 3,
                                 'text-blue-500': load > 3 && load <= 6,
@@ -613,9 +613,9 @@
                             <input type="range" name="metadata[cognitive_load]" min="1" max="10" step="1" x-model="load"
                                 class="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-amber-500 shadow-inner">
                             <div class="flex justify-between text-[10px] text-gray-400 mt-3 font-black uppercase tracking-tighter">
-                                <span>Baja (1)</span>
-                                <span>Media (5)</span>
-                                <span>Extrema (10)</span>
+                                <span>{{ __('Baja (1)') }}</span>
+                                <span>{{ __('Media (5)') }}</span>
+                                <span>{{ __('Extrema') }} (10)</span>
                             </div>
                         </div>
                     </div>
@@ -705,7 +705,7 @@
                             </svg>
                         </div>
                         <div class="flex flex-col">
-                            <span class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white">{{ __('Prioridad Automática') }}</span>
+                            <span class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white">{{ __('Automatic Priority') }}</span>
                             <span class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                                 @if($activity->type === 'meeting')
                                     {{ __('La prioridad aumentará automáticamente conforme se acerque la fecha de la reunión.') }}
@@ -725,7 +725,7 @@
                 @endif
 <div class='my-8 border-t border-gray-100 dark:border-gray-800'></div>
 <div class="bg-gray-50/30 dark:bg-gray-800/10 p-6 rounded-3xl border border-gray-150 dark:border-gray-800">
-                    <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">Porcentaje de Progreso</label>
+                    <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">{{ __('Porcentaje de Progreso') }}</label>
                     <div x-data="{ progress: {{ old('progress_percentage', $activity->progress_percentage ?? 0) }} }" class="space-y-2">
                         <div class="flex items-center justify-between">
                             <input type="range" name="progress_percentage" min="0" max="100" step="5" x-model="progress"
@@ -783,10 +783,10 @@
                         <input type="datetime-local" name="scheduled_date" x-model="startDate"
                             class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 outline-none">
                         <div class="flex flex-wrap gap-1.5 mt-2.5 font-sans">
-                            <button type="button" @click="addDaysStart(0)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-800/50 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors shadow-sm">Ahora</button>
+                            <button type="button" @click="addDaysStart(0)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-800/50 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors shadow-sm">{{ __('ahora') }}</button>
                             <button type="button" @click="addDaysStart(1)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Día</button>
                             <button type="button" @click="addDaysStart(7)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Sem</button>
-                            <button type="button" @click="addDaysStart(15)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+15 Días</button>
+                            <button type="button" @click="addDaysStart(15)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">{{ __('_15_d_as') }}</button>
                             <button type="button" @click="addDaysStart(30)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Mes</button>
                         </div>
                     </div>
@@ -796,10 +796,10 @@
                         <input type="datetime-local" name="due_date" x-model="endDate"
                             class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 outline-none">
                         <div class="flex flex-wrap gap-1.5 mt-2.5 font-sans">
-                            <button type="button" @click="addDaysEnd(0)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-800/50 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors shadow-sm">Ahora</button>
+                            <button type="button" @click="addDaysEnd(0)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-800/50 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors shadow-sm">{{ __('ahora') }}</button>
                             <button type="button" @click="addDaysEnd(1)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Día</button>
                             <button type="button" @click="addDaysEnd(7)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Sem</button>
-                            <button type="button" @click="addDaysEnd(15)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+15 Días</button>
+                            <button type="button" @click="addDaysEnd(15)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">{{ __('_15_d_as') }}</button>
                             <button type="button" @click="addDaysEnd(30)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Mes</button>
                         </div>
                     </div>
@@ -831,13 +831,13 @@
                                 </svg>
                             </div>
                             <div>
-                                <h3 class="text-xs font-black uppercase tracking-widest text-pink-700 dark:text-pink-400">Configuración de Notificación</h3>
+                                <h3 class="text-xs font-black uppercase tracking-widest text-pink-700 dark:text-pink-400">{{ __('Settings') }} de Notificación</h3>
                                 <p class="text-[10px] text-gray-500 dark:text-gray-400">Elige los canales y cuándo se enviará la notificación.</p>
                             </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="md:col-span-2">
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Canales de Notificación</label>
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">{{ __('Canales de Notificación') }}</label>
                                 @php
                                     $channels = data_get($activity->metadata, 'channels', ['email']);
                                     $isWhatsappEnabled = config('services.whatsapp.enabled', true) && ($team->settings['has_whatsapp'] ?? false);
@@ -1006,66 +1006,66 @@
                                                 <div class="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-violet-500 flex items-center justify-center transition-all">
                                                     <div class="w-2 h-2 rounded-full bg-violet-500 hidden peer-checked:block"></div>
                                                 </div>
-                                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Un día específico de la semana</span>
+                                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('A specific day of the week') }}</span>
                                             </label>
                                         </div>
 
                                         <div x-show="monthlyType === 'ordinal'" class="flex items-center gap-2 mt-3" x-transition>
-                                            <span class="text-sm text-gray-500">El</span>
+                                            <span class="text-sm text-gray-500">{{ __("The") }}</span>
                                             <select name="autoprogram_settings[monthly_ordinal]" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-3 py-1.5 text-sm text-gray-900 dark:text-white outline-none">
-                                                <option value="first" {{ ($autoSettings['monthly_ordinal'] ?? '') === 'first' ? 'selected' : '' }}>Primer</option>
-                                                <option value="second" {{ ($autoSettings['monthly_ordinal'] ?? '') === 'second' ? 'selected' : '' }}>Segundo</option>
-                                                <option value="third" {{ ($autoSettings['monthly_ordinal'] ?? '') === 'third' ? 'selected' : '' }}>Tercer</option>
-                                                <option value="fourth" {{ ($autoSettings['monthly_ordinal'] ?? '') === 'fourth' ? 'selected' : '' }}>Cuarto</option>
-                                                <option value="last" {{ ($autoSettings['monthly_ordinal'] ?? '') === 'last' ? 'selected' : '' }}>Último</option>
+                                                <option value="first" {{ ($autoSettings['monthly_ordinal'] ?? '') === 'first' ? 'selected' : '' }}>{{ __("First") }}</option>
+                                                <option value="second" {{ ($autoSettings['monthly_ordinal'] ?? '') === 'second' ? 'selected' : '' }}>{{ __("Second") }}</option>
+                                                <option value="third" {{ ($autoSettings['monthly_ordinal'] ?? '') === 'third' ? 'selected' : '' }}>{{ __("Third") }}</option>
+                                                <option value="fourth" {{ ($autoSettings['monthly_ordinal'] ?? '') === 'fourth' ? 'selected' : '' }}>{{ __("Fourth") }}</option>
+                                                <option value="last" {{ ($autoSettings['monthly_ordinal'] ?? '') === 'last' ? 'selected' : '' }}>{{ __("Last") }}</option>
                                             </select>
                                             <select name="autoprogram_settings[monthly_day]" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-3 py-1.5 text-sm text-gray-900 dark:text-white outline-none">
-                                                <option value="monday" {{ ($autoSettings['monthly_day'] ?? '') === 'monday' ? 'selected' : '' }}>Lunes</option>
-                                                <option value="tuesday" {{ ($autoSettings['monthly_day'] ?? '') === 'tuesday' ? 'selected' : '' }}>Martes</option>
-                                                <option value="wednesday" {{ ($autoSettings['monthly_day'] ?? '') === 'wednesday' ? 'selected' : '' }}>Miércoles</option>
-                                                <option value="thursday" {{ ($autoSettings['monthly_day'] ?? '') === 'thursday' ? 'selected' : '' }}>Jueves</option>
-                                                <option value="friday" {{ ($autoSettings['monthly_day'] ?? '') === 'friday' ? 'selected' : '' }}>Viernes</option>
-                                                <option value="saturday" {{ ($autoSettings['monthly_day'] ?? '') === 'saturday' ? 'selected' : '' }}>Sábado</option>
-                                                <option value="sunday" {{ ($autoSettings['monthly_day'] ?? '') === 'sunday' ? 'selected' : '' }}>Domingo</option>
+                                                <option value="monday" {{ ($autoSettings['monthly_day'] ?? '') === 'monday' ? 'selected' : '' }}>{{ __("Monday") }}</option>
+                                                <option value="tuesday" {{ ($autoSettings['monthly_day'] ?? '') === 'tuesday' ? 'selected' : '' }}>{{ __("Tuesday") }}</option>
+                                                <option value="wednesday" {{ ($autoSettings['monthly_day'] ?? '') === 'wednesday' ? 'selected' : '' }}>{{ __("Wednesday") }}</option>
+                                                <option value="thursday" {{ ($autoSettings['monthly_day'] ?? '') === 'thursday' ? 'selected' : '' }}>{{ __("Thursday") }}</option>
+                                                <option value="friday" {{ ($autoSettings['monthly_day'] ?? '') === 'friday' ? 'selected' : '' }}>{{ __("Friday") }}</option>
+                                                <option value="saturday" {{ ($autoSettings['monthly_day'] ?? '') === 'saturday' ? 'selected' : '' }}>{{ __("Saturday") }}</option>
+                                                <option value="sunday" {{ ($autoSettings['monthly_day'] ?? '') === 'sunday' ? 'selected' : '' }}>{{ __("Sunday") }}</option>
                                             </select>
-                                            <span class="text-sm text-gray-500">del mes</span>
+                                            <span class="text-sm text-gray-500">{{ __("of the month") }}</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="space-y-3">
                                     <label class="flex items-center gap-2 text-xs font-bold text-violet-600 dark:text-violet-400">
-                                        Antelación de creación (despertar)
+                                        {{ __("Advance creation time (wake up)") }}
                                     </label>
                                     <div class="flex items-center gap-3">
                                         <input type="number" name="autoprogram_settings[lead_value]" value="{{ old('autoprogram_settings.lead_value', $autoSettings['lead_value'] ?? 7) }}" min="1" class="w-24 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none">
                                         <select name="autoprogram_settings[lead_unit]" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none">
-                                            <option value="hours" {{ ($autoSettings['lead_unit'] ?? '') === 'hours' ? 'selected' : '' }}>Horas</option>
-                                            <option value="days" {{ ($autoSettings['lead_unit'] ?? 'days') === 'days' ? 'selected' : '' }}>Días</option>
-                                            <option value="weeks" {{ ($autoSettings['lead_unit'] ?? '') === 'weeks' ? 'selected' : '' }}>Semanas</option>
-                                            <option value="months" {{ ($autoSettings['lead_unit'] ?? '') === 'months' ? 'selected' : '' }}>Meses</option>
+                                            <option value="hours" {{ ($autoSettings['lead_unit'] ?? '') === 'hours' ? 'selected' : '' }}>{{ __("Hours") }}</option>
+                                            <option value="days" {{ ($autoSettings['lead_unit'] ?? 'days') === 'days' ? 'selected' : '' }}>{{ __("Days") }}</option>
+                                            <option value="weeks" {{ ($autoSettings['lead_unit'] ?? '') === 'weeks' ? 'selected' : '' }}>{{ __("Weeks") }}</option>
+                                            <option value="months" {{ ($autoSettings['lead_unit'] ?? '') === 'months' ? 'selected' : '' }}>{{ __("Months") }}</option>
                                         </select>
-                                        <span class="text-[10px] text-gray-400 italic">antes de la fecha señalada</span>
+                                        <span class="text-[10px] text-gray-400 italic">{{ __("before the specified date") }}</span>
                                     </div>
                                 </div>
 
                                 <div class="space-y-3">
                                     <label class="flex items-center gap-2 text-xs font-bold text-violet-600 dark:text-violet-400">
-                                        Terminar
+                                        {{ __("End") }}
                                     </label>
                                     <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
                                         <div class="relative flex items-center gap-3 group">
                                             <label class="flex items-center gap-3 cursor-pointer">
                                                 <input type="radio" id="limit_type_count_1" name="autoprogram_settings[limit_type]" value="count" {{ ($autoSettings['limit_type'] ?? 'count') === 'count' ? 'checked' : '' }} class="w-4 h-4 text-violet-600 border-gray-300 focus:ring-violet-500 dark:border-gray-600 dark:bg-gray-800 dark:focus:ring-violet-600 dark:focus:ring-offset-gray-900 transition-all cursor-pointer">
-                                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Después de</span>
+                                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __("After") }}</span>
                                             </label>
                                             <input type="number" onclick="document.getElementById('limit_type_count_1').checked = true" name="autoprogram_settings[limit_value_count]" value="{{ old('autoprogram_settings.limit_value_count', $autoSettings['limit_value_count'] ?? 5) }}" min="1" class="w-16 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-lg px-2 py-1 text-xs text-gray-900 dark:text-white outline-none transition-all">
-                                            <span class="text-xs text-gray-500">veces</span>
+                                            <span class="text-xs text-gray-500">{{ __("times") }}</span>
                                         </div>
                                         <div class="relative flex items-center gap-3 group">
                                             <label class="flex items-center gap-3 cursor-pointer">
                                                 <input type="radio" id="limit_type_date_1" name="autoprogram_settings[limit_type]" value="date" {{ ($autoSettings['limit_type'] ?? '') === 'date' ? 'checked' : '' }} class="w-4 h-4 text-violet-600 border-gray-300 focus:ring-violet-500 dark:border-gray-600 dark:bg-gray-800 dark:focus:ring-violet-600 dark:focus:ring-offset-gray-900 transition-all cursor-pointer">
-                                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">El día</span>
+                                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __("On date") }}</span>
                                             </label>
                                             <input type="date" onclick="document.getElementById('limit_type_date_1').checked = true" name="autoprogram_settings[limit_value_date]" value="{{ old('autoprogram_settings.limit_value_date', $autoSettings['limit_value_date'] ?? '') }}" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-lg px-2 py-1 text-xs text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
                                         </div>
@@ -1075,11 +1075,11 @@
                                 <div class="flex flex-wrap gap-4 pt-2">
                                     <label class="flex items-center gap-2 cursor-pointer group">
                                         <input type="checkbox" name="autoprogram_settings[skip_weekends]" value="1" {{ ($autoSettings['skip_weekends'] ?? false) ? 'checked' : '' }} class="accent-violet-600 rounded">
-                                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Saltar fines de semana</span>
+                                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ __("Skip weekends") }}</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer group">
                                         <input type="checkbox" name="autoprogram_settings[sequential]" value="1" {{ ($autoSettings['sequential'] ?? false) ? 'checked' : '' }} class="accent-violet-600 rounded">
-                                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Dependencias secuenciales (Gantt)</span>
+                                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ __("Sequential dependencies (Gantt)") }}</span>
                                     </label>
                                 </div>
                             </div>
@@ -1093,7 +1093,7 @@
                     </div>
                     </div>
                     <div x-show="activeTab === 'context'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
-                        <!-- BLOCK: Contexto y Vinculaciones -->
+                        <!-- BLOCK: {{ __('contexto_y_vinculaciones') }} -->
     <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-11">
         <div class="absolute top-0 right-0 p-8 opacity-5">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
@@ -1104,7 +1104,7 @@
             </div>
             <div>
                 <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
-                    Contexto y Vinculaciones
+                    {{ __('contexto_y_vinculaciones') }}
                 </h3>
                 <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Relaciones con expedientes y servicios</p>
             </div>
@@ -1126,7 +1126,7 @@
                     <div>
                         <div class="flex items-center justify-between mb-2">
                             <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400">
-                                {{ __('Expediente Vinculado') }}
+                                {{ __('Linked File') }}
                             </label>
                             @if(!($activity->parent_id && !$activity->is_template))
                                 <button type="button" onclick="quickCreateExpediente({{ $team->id }})" class="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors">
@@ -1146,19 +1146,19 @@
                                         </span>
                                         <span class="text-sm font-bold text-gray-700 dark:text-gray-300">{{ $activity->expediente->title }}</span>
                                     @else
-                                        <span class="text-sm text-gray-400 italic">(Ningún expediente)</span>
+                                        <span class="text-sm text-gray-400 italic">({{ __("No case") }})</span>
                                     @endif
                                 </div>
                                 <div class="flex items-center gap-1 text-[10px] font-bold text-gray-400 bg-white dark:bg-gray-800 px-2 py-1 rounded-lg shadow-sm">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                    Heredado del Maestro
+                                    {{ __("Inherited from Master") }}
                                 </div>
                             </div>
                             <!-- Hidden input to preserve existing value on submission -->
                             <input type="hidden" name="expediente_id" value="{{ $activity->expediente_id }}">
                         @else
                             <select name="expediente_id" id="expediente_id_select" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white transition-all cursor-pointer font-medium">
-                                <option value="">(Ningún expediente)</option>
+                                <option value="">({{ __("No case") }})</option>
                                 @foreach ($expedientes as $exp)
                                     <option value="{{ $exp->id }}" data-code="{{ $exp->code }}" {{ old('expediente_id', $activity->expediente_id) == $exp->id ? 'selected' : '' }}>
                                         {{ $exp->code }} — {{ $exp->title }}
@@ -1177,7 +1177,7 @@
                                 <option value="">(Ninguna)</option>
                                 @foreach ($parentActivities as $parent)
                                     <option value="{{ $parent->id }}" {{ old('parent_id', $activity->parent_id) == $parent->id ? 'selected' : '' }}
-                                        data-assignee="{{ $parent->creator ? $parent->creator->name : 'Sin asignar' }}"
+                                        data-assignee="{{ $parent->creator ? $parent->creator->name : __('Unassigned') }}"
                                         data-expediente="{{ $parent->expediente ? $parent->expediente->code : '' }}">
                                         {{ $parent->title }}
                                     </option>
@@ -1205,7 +1205,7 @@
                     </div>
 
                     <div x-show="activeTab === 'attachments'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
-                        <!-- BLOCK: Archivos Adjuntos -->
+                        <!-- BLOCK: {{ __('archivos') }} {{ __('adjuntos') }} -->
     <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-[13]">
         <div class="absolute top-0 right-0 p-8 opacity-5">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
@@ -1216,7 +1216,7 @@
             </div>
             <div>
                 <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
-                    Archivos Adjuntos
+                    {{ __('archivos') }} {{ __('adjuntos') }}
                 </h3>
                 <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Documentos y evidencias</p>
             </div>
@@ -1251,7 +1251,7 @@
 
                                 <div x-show="open" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95 -translate-y-1" x-transition:enter-end="opacity-100 scale-100 translate-y-0" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" x-cloak class="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl z-[300] overflow-hidden ring-1 ring-black/5 dark:ring-white/5">
                                     <div class="px-3 pt-3 pb-1.5">
-                                        <p class="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Crear con OnlyOffice</p>
+                                        <p class="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('Create') }} con OnlyOffice</p>
                                     </div>
                                     <button type="button" onclick="sessionStorage.setItem('needs_office_reload', '1'); document.getElementById('edit-act-docx-form').submit()" class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group/item">
                                         <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0 group-hover/item:scale-110 transition-transform">
@@ -1296,10 +1296,10 @@
                         <input type="hidden" name="drive_attachments" id="drive_attachments_input">
                     </div>
 
-                    <!-- Archivos existentes -->
+                    <!-- {{ __('archivos') }} existentes -->
                     @if ($activity->attachments->count() > 0)
                         <div class="mb-4">
-                            <h4 class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">Archivos ya subidos</h4>
+                            <h4 class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">{{ __('archivos') }} ya subidos</h4>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 @foreach ($activity->attachments as $attach)
                                     <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
@@ -1326,7 +1326,7 @@
                                             @if($attach->is_office_compatible)
                                                 <a href="{{ route('onlyoffice.activity.edit', $attach) }}" target="_blank" rel="noopener noreferrer"
                                                    class="text-teal-500 hover:text-teal-700 p-1 hover:bg-teal-50 dark:hover:bg-teal-950/20 rounded-lg transition-all"
-                                                   title="Editar con Office">
+                                                   title="{{ __('Edit') }} con Office">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                     </svg>
@@ -1335,14 +1335,14 @@
 
                                             <a href="{{ route('teams.activities.attachments.download', [$team, $activity, $attach]) }}"
                                                class="text-gray-500 hover:text-violet-600 p-1 hover:bg-violet-50 dark:hover:bg-violet-950/20 rounded-lg transition-all"
-                                               title="Descargar">
+                                               title="{{ __("html.download") }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                                 </svg>
                                             </a>
 
                                             <!-- Botón para eliminar archivo de la DB -->
-                                            <button type="button" onclick="deleteExistingAttachment(this, {{ $attach->id }})" class="text-red-500 hover:text-red-700 p-1 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-all" title="Eliminar">
+                                            <button type="button" onclick="deleteExistingAttachment(this, {{ $attach->id }})" class="text-red-500 hover:text-red-700 p-1 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-all" title="{{ __('Delete') }}">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
@@ -1366,19 +1366,19 @@
 <!-- Botones de Acción -->
                 <div class="flex flex-wrap items-center justify-end gap-3 pt-6 border-t border-gray-100 dark:border-gray-800 order-[20]">
                     <a href="{{ route('teams.activities.show', [$team, $activity]) }}"
-                        class="text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 transition-all font-medium">Cancelar</a>
+                        class="text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 transition-all font-medium">{{ __("Cancel") }}</a>
 
                     @if ($isAnotherUserCreator || $isExternalEvent)
                         <button type="button" id="btn-create-parallel"
                             class="text-sm bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-lg hover:shadow-emerald-500/25 flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
-                            Crear como Paralela
+                            {{ __('Create') }} como Paralela
                         </button>
                     @endif
 
                     <button type="submit"
                         class="text-sm bg-violet-600 hover:bg-violet-500 text-white px-8 py-2.5 rounded-xl font-bold transition-all shadow-lg hover:shadow-violet-500/25">
-                        Guardar Cambios
+                        {{ __('Save') }} Cambios
                     </button>
                 </div>
             </form>
@@ -1426,14 +1426,14 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                             </svg>
-                            📖 Imprimir Libro
+                            📖 {{ __('Imprimir') }} Libro
                         </button>
                         @if($canEditDocument)
                             <button type="button" @click="$dispatch('open-add-chapter-modal')" class="flex items-center gap-1.5 text-xs bg-violet-600 hover:bg-violet-500 text-white px-4 py-2 rounded-xl font-bold transition-all shadow-lg shadow-violet-500/25 active:scale-95">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                                 </svg>
-                                Añadir Capítulo
+                                Añadir {{ __('Chapter') }}
                             </button>
                         @endif
                     </div>
@@ -1441,7 +1441,7 @@
 
                 @if (empty($chapters))
                     <div class="text-center py-8">
-                        <p class="text-xs text-gray-400 italic">No hay capítulos registrados en este documento. Haz clic en "Añadir Capítulo" para comenzar.</p>
+                        <p class="text-xs text-gray-400 italic">No hay capítulos registrados en este documento. Haz clic en "Añadir {{ __('Chapter') }}" para comenzar.</p>
                     </div>
                 @else
                     <div class="space-y-6">
@@ -1458,26 +1458,26 @@
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-1 shrink-0">
-                                        <button type="button" @click.stop="$dispatch('ai:analyze-task', { taskId: {{ $activity->id }}, teamId: {{ $team->id }}, taskTitle: '{{ addslashes($activity->title) }}', section: 'chapter-{{ $idx }}' })" class="p-1.5 text-gray-400 hover:text-indigo-500 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors" title="Enviar a Ax.ia">
+                                        <button type="button" @click.stop="$dispatch('ai:analyze-task', { taskId: {{ $activity->id }}, teamId: {{ $team->id }}, taskTitle: '{{ addslashes($activity->title) }}', section: 'chapter-{{ $idx }}' })" class="p-1.5 text-gray-400 hover:text-indigo-500 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors" title="{{ __('Send') }} a Ax.ia">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                             </svg>
                                         </button>
-                                        <button type="button" onclick="printSection('{{ addslashes($chapter['title'] ?? 'Capítulo ' . ($idx + 1)) }}', 'chapter-content-{{ $chapter['id'] }}')" class="p-1.5 text-gray-400 hover:text-orange-500 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors" title="Imprimir / Previsualizar">
+                                        <button type="button" onclick="printSection('{{ addslashes($chapter['title'] ?? 'Capítulo ' . ($idx + 1)) }}', 'chapter-content-{{ $chapter['id'] }}')" class="p-1.5 text-gray-400 hover:text-orange-500 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors" title="{{ __('Imprimir') }} / Previsualizar">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                                             </svg>
                                         </button>
                                         @if($canEditDocument)
-                                            <button type="button" @click="editing = !editing" class="p-1.5 text-gray-400 hover:text-blue-500 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors" title="Editar capítulo">
+                                            <button type="button" @click="editing = !editing" class="p-1.5 text-gray-400 hover:text-blue-500 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors" title="{{ __('Edit') }} capítulo">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                                 </svg>
                                             </button>
-                                            <form action="{{ route('teams.activities.chapters.destroy', [$team, $activity, $chapter['id']]) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar este capítulo?');">
+                                            <form action="{{ route('teams.activities.chapters.destroy', [$team, $activity, $chapter['id']]) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('swal.confirm_delete_chapter') }}');">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all" title="Eliminar capítulo">
+                                                <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all" title="{{ __('Delete') }} capítulo">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                     </svg>
@@ -1495,7 +1495,7 @@
                                     @csrf
                                     @method('PATCH')
                                     <div>
-                                        <label class="block text-[10px] uppercase font-bold text-gray-400 mb-1">Título del Capítulo</label>
+                                        <label class="block text-[10px] uppercase font-bold text-gray-400 mb-1">Título del {{ __('Chapter') }}</label>
                                         <input type="text" name="chapter_title" value="{{ $chapter['title'] }}" required class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-xs text-gray-800 dark:text-white outline-none shadow-sm">
                                     </div>
                                     <div style="height: 220px; max-height: none; overflow-y: auto;" class="resize-y min-h-[150px] overflow-y-auto custom-scrollbar border border-gray-100 dark:border-gray-800 rounded-2xl p-2 bg-white dark:bg-gray-900 shadow-sm">
@@ -1511,17 +1511,17 @@
                                         />
                                     </div>
                                     <div class="flex items-center justify-end gap-2">
-                                        <button type="button" @click.prevent="$dispatch('ai:analyze-task', { taskId: {{ $activity->id }}, teamId: {{ $team->id }}, taskTitle: '{{ addslashes($activity->title) }}', section: 'chapter-{{ $idx }}' })" class="px-4 py-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5" title="Asistencia IA para este capítulo">
+                                        <button type="button" @click.prevent="$dispatch('ai:analyze-task', { taskId: {{ $activity->id }}, teamId: {{ $team->id }}, taskTitle: '{{ addslashes($activity->title) }}', section: 'chapter-{{ $idx }}' })" class="px-4 py-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5" title="{{ __('html.ai_assistance_for_chapter') }}">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                             </svg>
                                             Consultar Ax.ia
                                         </button>
                                         <button type="button" @click="editing = false" class="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl transition-all active:scale-95">
-                                            Cancelar
+                                            {{ __("Cancel") }}
                                         </button>
                                         <button type="submit" class="bg-violet-600 hover:bg-violet-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl shadow-lg shadow-violet-500/20 transition-all active:scale-95">
-                                            Guardar Capítulo
+                                            {{ __('Save') }} {{ __('Chapter') }}
                                         </button>
                                     </div>
                                 </form>
@@ -1637,14 +1637,14 @@
     <script>
         window.deleteExistingAttachment = function(btnEl, attachmentId) {
             Swal.fire({
-                title: '¿Eliminar archivo?',
+                title: '¿{{ __('Delete') }} archivo?',
                 text: 'Esta acción borrará permanentemente el archivo del servidor.',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
                 cancelButtonColor: '#3085d6',
                 confirmButtonText: 'Sí, eliminar',
-                cancelButtonText: 'Cancelar'
+                cancelButtonText: '{{ __("Cancel") }}'
             }).then((result) => {
                 if (result.isConfirmed) {
                     fetch(`/teams/{{ $team->id }}/activities/attachments/${attachmentId}`, {
@@ -1671,7 +1671,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            // --- Confirmación Consciente para Actividades Ajenas o Externas ---
+            // --- Confirmación Consciente para {{ __("Activities") }} Ajenas o Externas ---
             const editForm = document.getElementById('edit-activity-form');
             if (editForm) {
                 const isAnotherUser = @json($isAnotherUserCreator);
@@ -1705,26 +1705,26 @@
 
                         const isDark = document.documentElement.classList.contains('dark');
                         Swal.fire({
-                            title: '⚠️ ¿Modificar actividad ajena?',
+                            title: '⚠️ {{ __('Modify someone else\'s activity?') }}',
                             html: `
                                 <div class="text-left mt-2 text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
                                     <p class="mb-3">
-                                        Esta actividad fue programada originalmente por <strong class="text-gray-900 dark:text-white font-black">${ownerName}</strong>.
+                                        ${'{{ __('This activity was originally scheduled by :owner.') }}'.replace(':owner', `<strong class="text-gray-900 dark:text-white font-black">${ownerName}</strong>`)}
                                     </p>
                                     <p class="text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 p-3 rounded-2xl border border-amber-200 dark:border-amber-800 leading-normal mb-3">
-                                        <strong>Atención:</strong> Si modificas la original, alterarás el evento o tarea que pertenece a otra persona.
+                                        <strong>{{ __('Attention:') }}</strong> {{ __('If you modify the original, you will alter the event or task that belongs to someone else.') }}
                                     </p>
                                     <p class="text-xs text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 p-3 rounded-2xl border border-emerald-200 dark:border-emerald-800 leading-normal">
-                                        <strong>Opción paralela:</strong> Puedes <strong>crear una actividad paralela</strong> para la misma fecha y hora con los datos actuales, de tu propiedad y sin modificar la original.
+                                        <strong>{{ __('Parallel option:') }}</strong> {{ __('You can create a parallel activity for the same date and time with current data, owned by you without modifying the original.') }}
                                     </p>
                                 </div>
                             `,
                             icon: 'warning',
                             showCancelButton: true,
                             showDenyButton: true,
-                            confirmButtonText: 'Modificar original',
-                            denyButtonText: 'Crear actividad paralela',
-                            cancelButtonText: 'Cancelar',
+                            confirmButtonText: '{{ __('Modify original') }}',
+                            denyButtonText: '{{ __('Create parallel activity') }}',
+                            cancelButtonText: '{{ __('Cancel') }}',
                             confirmButtonColor: '#7c3aed',
                             denyButtonColor: '#059669',
                             cancelButtonColor: '#6b7280',
@@ -1754,7 +1754,7 @@
                 1: { label: 'Urgente e Importante', description: 'Hacer de inmediato' },
                 2: { label: 'Importante pero No Urgente', description: 'Planificar/Programar' },
                 3: { label: 'Urgente pero No Importante', description: 'Delegar' },
-                4: { label: 'Ni Urgente ni Importante', description: 'Eliminar/Posponer' }
+                4: { label: 'Ni Urgente ni Importante', description: '{{ __('Delete') }}/Posponer' }
             };
             const priorityEl = document.querySelector('[name="priority"]');
             const urgencyEl = document.querySelector('[name="urgency"]');
@@ -1795,23 +1795,23 @@
             // --- Quick Create Expediente ---
             window.quickCreateExpediente = function(teamId) {
                 if (typeof Swal === 'undefined') {
-                    alert('Error: SweetAlert2 no está disponible.');
+                    alert('{{ __('swal.alert_sweetalert_not_available') }}');
                     return;
                 }
 
                 Swal.fire({
-                    title: '{{ __("Crear Nuevo Expediente") }}',
+                    title: '{{ __('Crear Nuevo Expediente') }}',
                     html: `
                         <div class="text-left space-y-4 pt-2">
                             <div>
                                 <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
-                                    {{ __("Título del Expediente") }} <span class="text-red-500">*</span>
+                                    {{ __('File Title') }} <span class="text-red-500">*</span>
                                 </label>
                                 <input id="swal-exp-title" type="text" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="{{ __("Ej. Expediente de Contratación 2026") }}">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
-                                    {{ __("Descripción (Opcional)") }}
+                                    {{ __('Description (Optional)') }}
                                 </label>
                                 <textarea id="swal-exp-desc" rows="2" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="{{ __("Resumen o notas sobre este expediente...") }}"></textarea>
                             </div>
@@ -1832,7 +1832,7 @@
                                         {{ __("Visibilidad") }}
                                     </label>
                                     <select id="swal-exp-visibility" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
-                                        <option value="public" selected>{{ __("Pública (Equipo)") }}</option>
+                                        <option value="public" selected>{{ __('Pública (Equipo)') }}</option>
                                         <option value="private">{{ __("Privada") }}</option>
                                     </select>
                                 </div>
@@ -1841,8 +1841,8 @@
                     `,
                     focusConfirm: false,
                     showCancelButton: true,
-                    confirmButtonText: '{{ __("Crear y Asignar") }}',
-                    cancelButtonText: '{{ __("Cancelar") }}',
+                    confirmButtonText: '{{ __('Crear y Asignar') }}',
+                    cancelButtonText: '{{ __('Cancel') }}',
                     customClass: {
                         popup: 'rounded-2xl dark:bg-gray-800 dark:text-white',
                         confirmButton: 'bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors',
@@ -1921,14 +1921,14 @@
                 });
             };
 
-            // --- TomSelect for Expedientes ---
+            // --- TomSelect for {{ __("Files") }} ---
             const expedSelectEl = document.getElementById('expediente_id_select');
             if (expedSelectEl) {
                 new TomSelect("#expediente_id_select", {
                     plugins: ['clear_button'],
                     create: false,
                     sortField: { field: "text", direction: "asc" },
-                    placeholder: 'Buscar expediente...',
+                    placeholder: '{{ __('Search') }} expediente...',
                     allowEmptyOption: true,
                     render: {
                         option: function(data, escape) {
@@ -1961,7 +1961,7 @@
                 new TomSelect("#parent_id_select", {
                     create: false,
                     sortField: { field: "text", direction: "asc" },
-                    placeholder: 'Buscar actividad padre...',
+                    placeholder: '{{ __('Search') }} actividad padre...',
                     dropdownParent: 'body',
                     render: {
                         option: function(data, escape) {
@@ -2012,7 +2012,7 @@
                 width: '32rem',
                 showConfirmButton: false,
                 showCancelButton: true,
-                cancelButtonText: 'Cerrar',
+                cancelButtonText: '{{ __('Close') }}',
                 didOpen: () => {
                     loadDriveFolder(folderId);
                 },
@@ -2038,7 +2038,7 @@
                     if (folderId !== 'root') {
                         const backBtn = document.createElement('button');
                         backBtn.className = 'p-2 text-blue-600 font-bold text-sm mb-2';
-                        backBtn.innerHTML = '⬅️ Volver';
+                        backBtn.innerHTML = '⬅️ {{ __('Back') }}';
                         backBtn.onclick = () => loadDriveFolder('root');
                         container.appendChild(backBtn);
                     }
@@ -2143,13 +2143,13 @@
                         </div>
                         <div class="flex items-center gap-1">
                             ${isImage ? `
-                            <button type="button" onclick="editLocalFile(${fileIndex})" class="text-violet-500 hover:text-violet-700 p-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 transition-all hover:bg-violet-50" title="Editar Imagen">
+                            <button type="button" onclick="editLocalFile(${fileIndex})" class="text-violet-500 hover:text-violet-700 p-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 transition-all hover:bg-violet-50" title="{{ __('Edit') }} Imagen">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                 </svg>
                             </button>
                             ` : ''}
-                            <button type="button" onclick="removeLocalFile(${fileIndex})" class="text-red-500 hover:text-red-700 p-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 transition-all hover:bg-red-50" title="Eliminar">
+                            <button type="button" onclick="removeLocalFile(${fileIndex})" class="text-red-500 hover:text-red-700 p-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 transition-all hover:bg-red-50" title="{{ __('Delete') }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
@@ -2214,7 +2214,7 @@
             <svg style="width:1rem;height:1rem;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
             </svg>
-            <span>Cancelar</span>
+            <span>{{ __("Cancel") }}</span>
         </a>
 
         <div style="width:1px;height:1.25rem;background:#e5e7eb;flex-shrink:0"></div>
@@ -2246,7 +2246,7 @@
             <svg style="width:1rem;height:1rem;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
             </svg>
-            <span>Guardar</span>
+            <span>{{ __('Save') }}</span>
         </button>
     </div>
 
@@ -2297,7 +2297,7 @@
                 <div class="p-8 overflow-y-auto custom-scrollbar space-y-5 flex-1">
                     <div>
                         <label class="block text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">
-                            Título del Capítulo
+                            Título del {{ __('Chapter') }}
                         </label>
                         <input type="text" name="chapter_title" required placeholder="Ej. 1. Introducción y Objetivos..." class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 text-xs text-gray-800 dark:text-white outline-none shadow-sm">
                     </div>
@@ -2320,10 +2320,10 @@
 
                 <div class="px-8 py-5 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-800 flex items-center justify-end gap-3 shrink-0">
                     <button type="button" @click="show = false" class="px-6 py-3 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-xs font-black uppercase tracking-widest hover:bg-gray-50 dark:hover:bg-gray-800 transition-all shadow-sm active:scale-95">
-                        Cancelar
+                        {{ __("Cancel") }}
                     </button>
                     <button type="submit" class="px-6 py-3 rounded-2xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-violet-500/25 active:scale-95">
-                        Guardar Capítulo
+                        {{ __('Save') }} {{ __('Chapter') }}
                     </button>
                 </div>
             </form>

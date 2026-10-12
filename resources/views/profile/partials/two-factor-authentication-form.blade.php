@@ -205,7 +205,7 @@
                     <label class="flex items-start gap-3 p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-violet-500 cursor-pointer transition-all" :class="method === 'email' ? 'border-violet-500 bg-violet-500/5' : ''">
                         <input type="radio" name="mfa_method" value="email" x-model="method" class="mt-1 rounded-full text-violet-600 focus:ring-violet-500 border-gray-300 dark:border-gray-700">
                         <div>
-                            <span class="font-bold text-sm text-gray-800 dark:text-gray-200 block">✉️ {{ __('Correo Electrónico') }}</span>
+                            <span class="font-bold text-sm text-gray-800 dark:text-gray-200 block">✉️ {{ __('Email') }}</span>
                             <span class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 block">{{ __('Recibe un código dinámico de un solo uso directamente en tu bandeja de correo en cada inicio de sesión.') }}</span>
                         </div>
                     </label>
@@ -276,7 +276,7 @@
 
         <div class="flex justify-end mt-4">
             <button type="button" @click="showQr = false" class="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-                {{ __('Cancelar') }}
+                {{ __('Cancel') }}
             </button>
         </div>
     </div>
@@ -306,7 +306,7 @@
 
             <div class="mt-6 flex justify-end gap-3">
                 <x-secondary-button x-on:click="$dispatch('close-modal', 'confirm-mfa-disable')">
-                    {{ __('Cancelar') }}
+                    {{ __('Cancel') }}
                 </x-secondary-button>
 
                 <x-danger-button @click="disableMfa()">

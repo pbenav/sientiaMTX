@@ -159,19 +159,26 @@ trait ActivityAccessors
     }
 
     /**
-     * Devuelve la etiqueta en español correspondiente al tipo de actividad.
+     * Devuelve la etiqueta correspondiente al tipo de actividad adaptada al idioma activo.
      */
     public function getTypeLabelAttribute(): string
     {
-        return match($this->type) {
-            'task'      => trans('Tarea'),
-            'document'  => trans('Documento'),
-            'note'      => trans('Nota'),
-            'link'      => trans('Enlace'),
-            'agreement' => trans('Acuerdo'),
-            'meeting'   => trans('Reunión'),
-            'reminder'  => trans('Recordatorio'),
-            default     => trans('Actividad'),
+        $type = $this->type ?? 'activity';
+        $key = 'activities.types.' . $type;
+        $label = __($key);
+        if ($label !== $key) {
+            return $label;
+        }
+
+        return match($type) {
+            'task'      => __('Task'),
+            'document'  => __('Document'),
+            'note'      => __('Note'),
+            'link'      => __('Link'),
+            'agreement' => __('Agreement'),
+            'meeting'   => __('Meeting'),
+            'reminder'  => __('Reminder'),
+            default     => __('Activity'),
         };
     }
 

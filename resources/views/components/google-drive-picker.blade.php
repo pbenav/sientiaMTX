@@ -23,7 +23,7 @@
                             <path fill="#4CAF50" d="M15 6l9 16 9-16H15z"/>
                         </svg>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-800 dark:text-white">Google Drive</h3>
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-white">{{ __('Google Drive') }}</h3>
                 </div>
                 <button @click="isOpen = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -77,7 +77,7 @@
                         <!-- Empty State -->
                         <div x-show="!loading && files.length === 0" class="flex flex-col items-center justify-center py-12 text-gray-400">
                             <svg class="w-12 h-12 mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
-                            <p class="text-xs">Carpeta vacía</p>
+                            <p class="text-xs">{{ __('Carpeta vacía') }}</p>
                         </div>
                     </div>
                 </div>

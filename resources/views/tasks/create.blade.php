@@ -19,7 +19,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                             </svg>
-                            {{ __('Pegar JSON') }}
+                            {{ __('Paste JSON') }}
                         </button>
                         <button type="button" onclick="importTask()" class="text-[10px] font-black uppercase tracking-widest text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors flex items-center gap-1.5 px-3 py-1.5 bg-violet-50 dark:bg-violet-900/30 rounded-xl border border-violet-100 dark:border-violet-500/20 shadow-sm">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -99,11 +99,11 @@
                     <!-- Primary: Expediente (Pre-eminent) -->
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">
-                            {{ __('Expediente Vinculado') }}
+                            {{ __('Linked File') }}
                         </label>
                         <select name="expediente_id" id="expediente_id_select"
                             class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white transition-all cursor-pointer">
-                            <option value="">{{ __('(Ningún expediente)') }}</option>
+                            <option value="">{{ __('(No file)') }}</option>
                             @foreach ($expedientes as $exp)
                                 <option value="{{ $exp->id }}"
                                     data-code="{{ $exp->code }}"
@@ -248,7 +248,7 @@
                             </svg>
                         </div>
                         <div class="flex flex-col">
-                            <span class="text-sm font-bold text-gray-900 dark:text-white">{{ __('Bloquear programación (Inamovible)') }}</span>
+                            <span class="text-sm font-bold text-gray-900 dark:text-white">{{ __('Lock scheduling (Fixed)') }}</span>
                             <span class="text-[11px] text-gray-500 dark:text-gray-400">{{ __('Evita que la tarea sea desplazada o redimensionada en el Gantt de forma accidental.') }}</span>
                         </div>
                     </div>
@@ -391,7 +391,7 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
-                                    {{ __('Patrón Mensual') }}
+                                    {{ __('Monthly Pattern') }}
                                 </label>
                                 <div class="flex flex-col sm:flex-row gap-4">
                                     <label class="relative flex items-center gap-3 cursor-pointer group">
@@ -400,7 +400,7 @@
                                             <div class="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-violet-500 transition-all"></div>
                                             <div class="absolute w-2 h-2 rounded-full bg-violet-500 scale-0 peer-checked:scale-100 transition-all"></div>
                                         </div>
-                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('El mismo día del mes') }}</span>
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('Same day of the month') }}</span>
                                     </label>
                                     <label class="relative flex items-center gap-3 cursor-pointer group">
                                         <div class="relative flex items-center justify-center">
@@ -408,29 +408,29 @@
                                             <div class="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-violet-500 transition-all"></div>
                                             <div class="absolute w-2 h-2 rounded-full bg-violet-500 scale-0 peer-checked:scale-100 transition-all"></div>
                                         </div>
-                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('Un día específico de la semana') }}</span>
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('A specific day of the week') }}</span>
                                     </label>
                                 </div>
 
                                 <div x-show="monthlyType === 'ordinal'" class="flex items-center gap-2 mt-3" x-transition>
-                                    <span class="text-sm text-gray-500">{{ __('El') }}</span>
+                                    <span class="text-sm text-gray-500">{{ __('The') }}</span>
                                     <select name="autoprogram_settings[monthly_ordinal]" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-3 py-1.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
-                                        <option value="first" {{ old('autoprogram_settings.monthly_ordinal') === 'first' ? 'selected' : '' }}>{{ __('Primer') }}</option>
-                                        <option value="second" {{ old('autoprogram_settings.monthly_ordinal') === 'second' ? 'selected' : '' }}>{{ __('Segundo') }}</option>
-                                        <option value="third" {{ old('autoprogram_settings.monthly_ordinal') === 'third' ? 'selected' : '' }}>{{ __('Tercer') }}</option>
-                                        <option value="fourth" {{ old('autoprogram_settings.monthly_ordinal') === 'fourth' ? 'selected' : '' }}>{{ __('Cuarto') }}</option>
-                                        <option value="last" {{ old('autoprogram_settings.monthly_ordinal') === 'last' ? 'selected' : '' }}>{{ __('Último') }}</option>
+                                        <option value="first" {{ old('autoprogram_settings.monthly_ordinal') === 'first' ? 'selected' : '' }}>{{ __('First') }}</option>
+                                        <option value="second" {{ old('autoprogram_settings.monthly_ordinal') === 'second' ? 'selected' : '' }}>{{ __('Second') }}</option>
+                                        <option value="third" {{ old('autoprogram_settings.monthly_ordinal') === 'third' ? 'selected' : '' }}>{{ __('Third') }}</option>
+                                        <option value="fourth" {{ old('autoprogram_settings.monthly_ordinal') === 'fourth' ? 'selected' : '' }}>{{ __('Fourth') }}</option>
+                                        <option value="last" {{ old('autoprogram_settings.monthly_ordinal') === 'last' ? 'selected' : '' }}>{{ __('Last') }}</option>
                                     </select>
                                     <select name="autoprogram_settings[monthly_day]" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-3 py-1.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
-                                        <option value="monday" {{ old('autoprogram_settings.monthly_day') === 'monday' ? 'selected' : '' }}>{{ __('Lunes') }}</option>
-                                        <option value="tuesday" {{ old('autoprogram_settings.monthly_day') === 'tuesday' ? 'selected' : '' }}>{{ __('Martes') }}</option>
-                                        <option value="wednesday" {{ old('autoprogram_settings.monthly_day') === 'wednesday' ? 'selected' : '' }}>{{ __('Miércoles') }}</option>
-                                        <option value="thursday" {{ old('autoprogram_settings.monthly_day') === 'thursday' ? 'selected' : '' }}>{{ __('Jueves') }}</option>
-                                        <option value="friday" {{ old('autoprogram_settings.monthly_day') === 'friday' ? 'selected' : '' }}>{{ __('Viernes') }}</option>
-                                        <option value="saturday" {{ old('autoprogram_settings.monthly_day') === 'saturday' ? 'selected' : '' }}>{{ __('Sábado') }}</option>
-                                        <option value="sunday" {{ old('autoprogram_settings.monthly_day') === 'sunday' ? 'selected' : '' }}>{{ __('Domingo') }}</option>
+                                        <option value="monday" {{ old('autoprogram_settings.monthly_day') === 'monday' ? 'selected' : '' }}>{{ __('Monday') }}</option>
+                                        <option value="tuesday" {{ old('autoprogram_settings.monthly_day') === 'tuesday' ? 'selected' : '' }}>{{ __('Tuesday') }}</option>
+                                        <option value="wednesday" {{ old('autoprogram_settings.monthly_day') === 'wednesday' ? 'selected' : '' }}>{{ __('Wednesday') }}</option>
+                                        <option value="thursday" {{ old('autoprogram_settings.monthly_day') === 'thursday' ? 'selected' : '' }}>{{ __('Thursday') }}</option>
+                                        <option value="friday" {{ old('autoprogram_settings.monthly_day') === 'friday' ? 'selected' : '' }}>{{ __('Friday') }}</option>
+                                        <option value="saturday" {{ old('autoprogram_settings.monthly_day') === 'saturday' ? 'selected' : '' }}>{{ __('Saturday') }}</option>
+                                        <option value="sunday" {{ old('autoprogram_settings.monthly_day') === 'sunday' ? 'selected' : '' }}>{{ __('Sunday') }}</option>
                                     </select>
-                                    <span class="text-sm text-gray-500">{{ __('del mes') }}</span>
+                                    <span class="text-sm text-gray-500">{{ __('of the month') }}</span>
                                 </div>
                             </div>
                             <div class="space-y-2">
@@ -523,7 +523,7 @@
                     </div>
                 </div>
 
-                <!-- Gamification Features (Resiliencia Colectiva) -->
+                <!-- Gamification Features ({{ __("metrics.collective_resilience") }}) -->
                 <div class="bg-amber-50/20 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 rounded-2xl p-6 space-y-6">
                     <div class="flex items-center gap-3 mb-2">
                         <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center text-amber-600 shadow-sm border border-amber-200/20">
@@ -538,7 +538,7 @@
                         <!-- Skill Category Selection -->
                         <div x-data="{ selectedSkills: @json(old('skills', [])) }">
                             <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
-                                Árbol de Capacidades (Selección Múltiple)
+                                Árbol de {{ __('Capacidades') }} ({{ __('Selection') }} Múltiple)
                             </label>
                             <select name="skills[]" multiple class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:border-amber-500 outline-none transition-all text-gray-900 dark:text-white h-64 resize-y">
                                 @foreach($skills as $skill)
@@ -553,7 +553,7 @@
                         <!-- Cognitive Load (Energy Drain) -->
                         <div x-data="{ load: 1 }">
                             <label class="flex items-center justify-between text-sm font-bold text-gray-700 dark:text-gray-300 mb-4">
-                                <span>Carga Cognitiva (Drenaje de Energía)</span>
+                                <span>{{ __('activities.cognitive_load') }}</span>
                                 <span :class="{
                                     'text-emerald-500': load == 1,
                                     'text-blue-500': load == 2,
@@ -565,9 +565,9 @@
                             <input type="range" name="cognitive_load" min="1" max="5" step="1" x-model="load"
                                 class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-amber-500">
                             <div class="flex justify-between text-[10px] text-gray-400 mt-2 font-black uppercase tracking-tighter">
-                                <span>Baja</span>
-                                <span>Media</span>
-                                <span>Extrema</span>
+                                <span>{{ __('Baja') }}</span>
+                                <span>{{ __('Media') }}</span>
+                                <span>{{ __('Extrema') }}</span>
                             </div>
                         </div>
 
@@ -579,8 +579,8 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
                                 </div>
                                 <div class="flex flex-col">
-                                    <span class="text-xs font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">Fuera de mi Skill Tree</span>
-                                    <span class="text-[9px] text-gray-400 uppercase font-black">+ Puntos de Resiliencia</span>
+                                    <span class="text-xs font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">{{ __('Fuera de mi Skill Tree') }}</span>
+                                    <span class="text-[9px] text-gray-400 uppercase font-black">{{ __('+ Puntos de Resiliencia') }}</span>
                                 </div>
                             </label>
 
@@ -590,8 +590,8 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
                                 </div>
                                 <div class="flex flex-col">
-                                    <span class="text-xs font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">Backstage / Preparación</span>
-                                    <span class="text-[9px] text-gray-400 uppercase font-black">Visibiliza el esfuerzo invisible</span>
+                                    <span class="text-xs font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">{{ __('Backstage / Preparación') }}</span>
+                                    <span class="text-[9px] text-gray-400 uppercase font-black">{{ __('Visibiliza el esfuerzo invisible') }}</span>
                                 </div>
                             </label>
                         </div>
@@ -1060,7 +1060,7 @@
                 width: '32rem',
                 showConfirmButton: false,
                 showCancelButton: true,
-                cancelButtonText: '{{ __("Cerrar") }}',
+                cancelButtonText: '{{ __('Close') }}',
                 didOpen: () => {
                     loadDriveFolder(folderId);
                 },
@@ -1086,7 +1086,7 @@
                     if (folderId !== 'root') {
                         const backBtn = document.createElement('button');
                         backBtn.className = 'p-2 text-blue-600 font-bold text-sm mb-2';
-                        backBtn.innerHTML = '⬅️ {{ __("Volver") }}';
+                        backBtn.innerHTML = '⬅️ {{ __('Back') }}';
                         backBtn.onclick = () => loadDriveFolder('root');
                         container.appendChild(backBtn);
                     }
@@ -1203,13 +1203,13 @@
                         </div>
                         <div class="flex items-center gap-1">
                             ${isImage ? `
-                            <button type="button" onclick="editLocalFile(${fileIndex})" class="text-violet-500 hover:text-violet-700 p-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 transition-all hover:bg-violet-50 dark:hover:bg-violet-900/30" title="Editar Imagen">
+                            <button type="button" onclick="editLocalFile(${fileIndex})" class="text-violet-500 hover:text-violet-700 p-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 transition-all hover:bg-violet-50 dark:hover:bg-violet-900/30" title="{{ __("html.edit_image") }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                 </svg>
                             </button>
                             ` : ''}
-                            <button type="button" onclick="removeLocalFile(${fileIndex})" class="text-red-500 hover:text-red-700 p-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 transition-all hover:bg-red-50 dark:hover:bg-red-900/30" title="Eliminar">
+                            <button type="button" onclick="removeLocalFile(${fileIndex})" class="text-red-500 hover:text-red-700 p-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 transition-all hover:bg-red-50 dark:hover:bg-red-900/30" title="{{ __("html.delete") }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                 </svg>

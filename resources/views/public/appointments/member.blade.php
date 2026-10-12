@@ -8,7 +8,7 @@
     <!-- Botón Volver al mapa -->
     <a href="{{ route('public.appointments.map') }}" class="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-        {{ __('Volver al Mapa') }}
+        {{ __('Back to Map') }}
     </a>
 
     <!-- Encabezado / Perfil del miembro -->
@@ -26,7 +26,7 @@
                 @if(!empty($member->working_area_name))
                     <p class="text-xs font-black text-cyan-600 dark:text-cyan-400 uppercase tracking-widest mt-1.5">{{ $member->working_area_name }}</p>
                 @endif
-                <p class="text-xs text-gray-400 dark:text-gray-500 font-semibold mt-1">{{ __('Miembro verificado de Sientia MTX') }}</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500 font-semibold mt-1">{{ __('Verified member of Sientia MTX') }}</p>
             </div>
             <div class="shrink-0 sm:ml-auto flex flex-col items-center">
                 @php
@@ -36,10 +36,10 @@
                 @endphp
                 <button type="button" onclick="openQrModal('{{ base64_encode($qrCodeSvg) }}', 'qr-cita-{{ $settings->public_slug }}.svg')"
                    class="block p-1 bg-white border border-gray-200 dark:border-gray-700 hover:border-cyan-500 rounded-xl shadow-sm transition-all hover:scale-105 group/qr"
-                   title="{{ __('Ver código QR de Cita Previa') }}">
+                   title="{{ __('html.qr_appointment_code') }}">
                     {!! preg_replace('/<\?xml.*?\?>\n?/', '', $qrCodeSmall) !!}
                 </button>
-                <span class="text-[9px] font-black uppercase text-gray-400 dark:text-gray-500 mt-1">{{ __('Escanear') }}</span>
+                <span class="text-[9px] font-black uppercase text-gray-400 dark:text-gray-500 mt-1">{{ __('Scan') }}</span>
             </div>
         </div>
 
@@ -53,8 +53,8 @@
     <!-- Lista de Servicios Disponibles -->
     <div class="space-y-6">
         <div>
-            <h2 class="text-lg font-black tracking-tight text-gray-900 dark:text-white heading-font">{{ __('Servicios Disponibles') }}</h2>
-            <p class="text-xs text-gray-400 dark:text-gray-500 font-medium mt-1">{{ __('Elige el servicio del que deseas solicitar cita previa.') }}</p>
+            <h2 class="text-lg font-black tracking-tight text-gray-900 dark:text-white heading-font">{{ __('Available Services') }}</h2>
+            <p class="text-xs text-gray-400 dark:text-gray-500 font-medium mt-1">{{ __('Choose the service for which you want to book an appointment.') }}</p>
         </div>
 
         <div class="grid grid-cols-1 gap-4">
@@ -77,7 +77,7 @@
 
                             @if($service->price !== null && $service->price_visible)
                                 <span class="text-[10px] font-black text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded-md">
-                                    {{ $service->price > 0 ? '€' . number_format($service->price, 2) : __('Gratuito') }}
+                                    {{ $service->price > 0 ? '€' . number_format($service->price, 2) : __('Free') }}
                                 </span>
                             @endif
                         </div>
@@ -92,7 +92,7 @@
                     <div class="shrink-0">
                         <a href="{{ route('public.appointments.book', $service) }}" 
                            class="flex items-center justify-center gap-2 px-5 py-3 text-xs font-black uppercase tracking-widest bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl shadow-lg shadow-cyan-500/20 active:scale-98 transition-all w-full md:w-auto">
-                            {{ __('Elegir fecha y hora') }}
+                            {{ __('Choose date and time') }}
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
                         </a>
                     </div>
@@ -100,8 +100,8 @@
             @empty
                 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-12 text-center">
                     <p class="text-3xl mb-2">📭</p>
-                    <p class="text-sm font-bold text-gray-500 dark:text-gray-400">{{ __('Sin servicios disponibles') }}</p>
-                    <p class="text-xs text-gray-450 dark:text-gray-550 mt-1">{{ __('Este miembro aún no ha activado ningún servicio.') }}</p>
+                    <p class="text-sm font-bold text-gray-500 dark:text-gray-400">{{ __('No services available') }}</p>
+                    <p class="text-xs text-gray-450 dark:text-gray-550 mt-1">{{ __('This member has not activated any services yet.') }}</p>
                 </div>
             @endforelse
         </div>

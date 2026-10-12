@@ -1,5 +1,5 @@
 <x-app-layout maxWidth="max-w-none">
-@section('title', 'Directorio de Personas')
+@section('title', __('People Directory'))
 
 <x-slot name="header">
     <div class="flex items-center justify-between gap-3 flex-wrap">
@@ -16,13 +16,13 @@
                 <svg class="h-4 w-4 text-cyan-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                 </svg>
-                <span class="truncate">Personas</span>
+                <span class="truncate">{{ __('Visitors') }}</span>
             </h1>
         </div>
     </div>
     <div class="mt-2 border-t border-gray-100 dark:border-gray-800 pt-3">
         <x-demo-hint>
-            Este es el <strong>directorio de personas (solicitantes)</strong> que han solicitado citas en alguno de los servicios de este equipo. Aquí puedes consultar y actualizar sus datos de contacto y gestionar sus registros.
+            {!! __('This is the <strong>people directory (applicants)</strong> who have booked appointments in any of this team's services. Here you can check and update their contact details and manage their records.') !!}
         </x-demo-hint>
     </div>
     <!-- Sub-Menú de Navegación -->
@@ -51,39 +51,39 @@
             <div class="flex items-center justify-between mb-3">
                 <button type="button" id="filterToggle" class="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.01a1 1 0 01-.293.707l-4.206 4.206A1 1 0 0115 12v4a1 1 0 01-.293.707l-4.206 4.206A1 1 0 0110 17v4a1 1 0 01-1 1H4a1 1 0 01-1-1v-2.01a1 1 0 01.293-.707l4.206-4.206A1 1 0 018 12V8a1 1 0 01.293-.707l4.206-4.206A1 1 0 0112 5V4a1 1 0 01-1-1z"/></svg>
-                    Filtros
+                    {{ __('Filters') }}
                     <span id="filterBadge" class="hidden bg-cyan-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">0</span>
                 </button>
-                <a href="{{ route('appointments.visitors.index', $team) }}" class="text-xs font-bold text-gray-400 hover:text-red-500 transition-colors">Limpiar todo</a>
+                <a href="{{ route('appointments.visitors.index', $team) }}" class="text-xs font-bold text-gray-400 hover:text-red-500 transition-colors">{{ __('Clear all') }}</a>
             </div>
             <div id="filterPanel" class="hidden space-y-3">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                     <div>
-                        <label class="block text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Nombre</label>
-                        <input type="text" name="filter_name" value="{{ $filterName ?? '' }}" placeholder="Nombre..." 
+                        <label class="block text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">{{ __('Name') }}</label>
+                        <input type="text" name="filter_name" value="{{ $filterName ?? '' }}" placeholder="{{ __('Name...') }}" 
                                class="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-xl text-xs font-medium focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">DNI</label>
-                        <input type="text" name="filter_dni" value="{{ $filterDni ?? '' }}" placeholder="DNI..." 
+                        <label class="block text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">{{ __('ID') }}</label>
+                        <input type="text" name="filter_dni" value="{{ $filterDni ?? '' }}" placeholder="{{ __('ID...') }}" 
                                class="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-xl text-xs font-medium focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Ubicación</label>
-                        <input type="text" name="filter_city" value="{{ $filterCity ?? '' }}" placeholder="Ciudad..." 
+                        <label class="block text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">{{ __('Location') }}</label>
+                        <input type="text" name="filter_city" value="{{ $filterCity ?? '' }}" placeholder="{{ __('City...') }}" 
                                class="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-xl text-xs font-medium focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Mín. citas</label>
+                        <label class="block text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">{{ __('Min. appointments') }}</label>
                         <input type="number" name="filter_min_appointments" value="{{ $filterMinAppointments ?? '' }}" placeholder="0..." min="0"
                                class="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-xl text-xs font-medium focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all">
                     </div>
                 </div>
                 <div class="flex justify-end gap-2">
-                    <a href="{{ route('appointments.visitors.index', $team) }}" class="px-4 py-2 text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">Cancelar</a>
+                    <a href="{{ route('appointments.visitors.index', $team) }}" class="px-4 py-2 text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">{{ __('Cancel') }}</a>
                     <form method="GET" action="{{ route('appointments.visitors.index', $team) }}" class="flex gap-2">
                         <input type="hidden" name="search" value="{{ request('search') }}">
-                        <button type="submit" class="px-4 py-2 text-xs font-black uppercase tracking-wider bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl transition-all shadow-sm">Aplicar</button>
+                        <button type="submit" class="px-4 py-2 text-xs font-black uppercase tracking-wider bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl transition-all shadow-sm">{{ __('Apply') }}</button>
                     </form>
                 </div>
             </div>
@@ -92,7 +92,7 @@
         <!-- Búsqueda -->
         <div class="mb-4 flex flex-col sm:flex-row gap-4 items-center justify-between">
             <form method="GET" action="{{ route('appointments.visitors.index', $team) }}" class="w-full md:w-1/2 xl:w-1/3 relative">
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Buscar por nombre, DNI, correo o teléfono..." 
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('Search by name, ID, email or phone...') }}" 
                        class="w-full pl-11 pr-4 py-3 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-2xl text-sm font-medium focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-sm">
                 <svg class="w-5 h-5 absolute left-4 top-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -112,8 +112,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                     </svg>
                 </div>
-                <h3 class="text-xl font-black text-gray-900 dark:text-white">Aún no hay personas registradas</h3>
-                <p class="text-gray-500 dark:text-gray-400 mt-2 max-w-md">Cuando los ciudadanos soliciten citas a través del portal público, sus datos aparecerán automáticamente en este directorio.</p>
+                <h3 class="text-xl font-black text-gray-900 dark:text-white">{{ __('No registered visitors yet') }}</h3>
+                <p class="text-gray-500 dark:text-gray-400 mt-2 max-w-md">{{ __('When citizens book appointments through the public portal, their details will automatically appear in this directory.') }}</p>
             </div>
         @else
             <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden">
@@ -124,7 +124,7 @@
                                 <th class="px-6 py-4">
                                     <a href="{{ route('appointments.visitors.index', $team) }}?{{ http_build_query(array_merge(request()->all(), ['sort_by' => 'first_name', 'sort_dir' => $sortDir === 'asc' ? 'desc' : 'asc']) + ['search' => null]) }}"
                                        class="flex items-center gap-1.5 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
-                                        Nombre / DNI
+                                        {{ __('Name / ID') }}
                                         @if($sortBy === 'first_name' || $sortBy === 'last_name')
                                             <svg class="w-3 h-3 {{ $sortDir === 'asc' ? 'rotate-0' : 'rotate-180' }}" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4l-8 8h5v8h6v-8h5z"/></svg>
                                         @else
@@ -135,7 +135,7 @@
                                 <th class="px-6 py-4">
                                     <a href="{{ route('appointments.visitors.index', $team) }}?{{ http_build_query(array_merge(request()->all(), ['sort_by' => 'email', 'sort_dir' => $sortDir === 'asc' ? 'desc' : 'asc']) + ['search' => null]) }}"
                                        class="flex items-center gap-1.5 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
-                                        Contacto
+                                        {{ __('Contact') }}
                                         @if($sortBy === 'email')
                                             <svg class="w-3 h-3 {{ $sortDir === 'asc' ? 'rotate-0' : 'rotate-180' }}" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4l-8 8h5v8h6v-8h5z"/></svg>
                                         @else
@@ -146,7 +146,7 @@
                                 <th class="px-6 py-4">
                                     <a href="{{ route('appointments.visitors.index', $team) }}?{{ http_build_query(array_merge(request()->all(), ['sort_by' => 'city', 'sort_dir' => $sortDir === 'asc' ? 'desc' : 'asc']) + ['search' => null]) }}"
                                        class="flex items-center gap-1.5 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
-                                        Ubicación
+                                        {{ __('Location') }}
                                         @if($sortBy === 'city')
                                             <svg class="w-3 h-3 {{ $sortDir === 'asc' ? 'rotate-0' : 'rotate-180' }}" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4l-8 8h5v8h6v-8h5z"/></svg>
                                         @else
@@ -157,7 +157,7 @@
                                 <th class="px-6 py-4 text-center">
                                     <a href="{{ route('appointments.visitors.index', $team) }}?{{ http_build_query(array_merge(request()->all(), ['sort_by' => 'appointments_count', 'sort_dir' => $sortDir === 'asc' ? 'desc' : 'asc']) + ['search' => null]) }}"
                                        class="flex items-center justify-center gap-1.5 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
-                                        Citas
+                                        {{ __('Appointments') }}
                                         @if($sortBy === 'appointments_count')
                                             <svg class="w-3 h-3 {{ $sortDir === 'asc' ? 'rotate-0' : 'rotate-180' }}" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4l-8 8h5v8h6v-8h5z"/></svg>
                                         @else
@@ -165,7 +165,7 @@
                                         @endif
                                     </a>
                                 </th>
-                                <th class="px-6 py-4 text-right">{{ __('Acciones') }}</th>
+                                <th class="px-6 py-4 text-right">{{ __('Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -206,21 +206,21 @@
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <span class="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold bg-cyan-50 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400">
-                                        {{ $visitor->appointments_count }} citas
+                                        {{ $visitor->appointments_count }} {{ __('appointments') }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-2">
                                         <a href="{{ route('appointments.visitors.edit', [$team, $visitor]) }}"
                                            class="p-2 text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded-xl transition-all"
-                                           title="Editar datos de persona">
+                                           title="{{ __('Edit person details') }}">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                         </a>
                                         @if(auth()->user()->is_admin)
                                         <form method="POST" action="{{ route('appointments.visitors.destroy', [$team, $visitor]) }}"
-                                              onsubmit="return confirm(function() { var m = []; m.push('¿Eliminar a esta persona?'); m.push(''); m.push('Esta acción es IRREVERSIBLE y eliminará:'); m.push(''); m.push('- Todos los datos personales (nombre, DNI, email, teléfono, dirección)'); m.push('- TODAS las citas asociadas, sin importar la fecha (pasado, presente o futuro)'); m.push('- Cualquier evidencia relacionada con este usuario'); m.push(''); m.push('No se puede deshacer.'); return m.join('\n'); }());">
+                                              onsubmit="return confirm('{{ __('Are you sure you want to delete this person? This action is IRREVERSIBLE and will delete all personal data, all associated appointments, and related records.') }}')">
                                             @csrf @method('DELETE')
-                                            <button type="submit" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all" title="Eliminar persona">
+                                            <button type="submit" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all" title="{{ __('Delete person') }}">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                             </button>
                                         </form>

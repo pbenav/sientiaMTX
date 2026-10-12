@@ -1,6 +1,6 @@
 @extends('layouts.public_appointments')
 
-@section('title', 'Reservar Cita — ' . $service->name)
+@section('title', __('Book Appointment — :name', ['name' => $service->name]))
 
 @section('content')
 <div class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8">
@@ -8,15 +8,15 @@
     <!-- Breadcrumb / Volver -->
     <a href="{{ route('public.appointments.member', $settings->public_slug) }}" class="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-        {{ __('Volver a Servicios') }}
+        {{ __('Back to Services') }}
     </a>
 
     <!-- Información del servicio -->
     <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-150 dark:border-gray-800 p-6 shadow-sm flex items-center justify-between gap-6 flex-wrap">
         <div>
-            <p class="text-[10px] font-black uppercase tracking-widest text-cyan-600 dark:text-cyan-400 mb-1">{{ __('Servicio Seleccionado') }}</p>
+            <p class="text-[10px] font-black uppercase tracking-widest text-cyan-600 dark:text-cyan-400 mb-1">{{ __('Selected Service') }}</p>
             <h1 class="text-xl font-black text-gray-900 dark:text-white heading-font tracking-tight">{{ $service->name }}</h1>
-            <p class="text-xs text-gray-400 dark:text-gray-500 font-semibold mt-0.5">{{ __('con') }} {{ $settings->display_name ?: $service->user->name }}</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500 font-semibold mt-0.5">{{ __('with') }} {{ $settings->display_name ?: $service->user->name }}</p>
         </div>
         <div class="flex items-center gap-2 shrink-0">
             <span class="text-xs font-black text-cyan-700 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/30 px-3 py-1.5 rounded-xl">
@@ -24,7 +24,7 @@
             </span>
             @if($service->price !== null && $service->price_visible)
                 <span class="text-xs font-black text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1.5 rounded-xl">
-                    {{ $service->price > 0 ? '€' . number_format($service->price, 2) : __('Gratuito') }}
+                    {{ $service->price > 0 ? '€' . number_format($service->price, 2) : __('Free') }}
                 </span>
             @endif
         </div>
@@ -34,7 +34,7 @@
         <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 rounded-2xl p-4 text-sm font-bold flex items-start gap-3">
             <svg class="w-5 h-5 shrink-0 text-red-500 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
             <div class="flex-1">
-                <p class="font-black">{{ __('Se han producido errores al procesar tu solicitud:') }}</p>
+                <p class="font-black">{{ __('Errors occurred while processing your request:') }}</p>
                 <ul class="list-disc list-inside mt-1 font-semibold text-xs text-red-700 dark:text-red-400">
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -46,7 +46,7 @@
             <div class="flex justify-center mt-4">
                 <a href="{{ route('public.appointments.edit', session('existing_appointment_localizador')) }}" class="inline-flex items-center gap-2 px-6 py-3 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors shadow-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                    Modificar Mi Cita Existente
+                    {{ __('Modify My Existing Appointment') }}
                 </a>
             </div>
         @endif
@@ -63,31 +63,31 @@
                 <div class="flex items-center gap-3">
                     <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                     <div>
-                        <h4 class="text-sm font-bold text-amber-900 dark:text-amber-100">Modo Administrador Activo</h4>
-                        <p class="text-xs text-amber-700 dark:text-amber-300">Puedes forzar la creación de citas en tramos horarios que ya están llenos <strong>únicamente para el día de hoy</strong>.</p>
+                        <h4 class="text-sm font-bold text-amber-900 dark:text-amber-100">{{ __('Admin Mode Active') }}</h4>
+                        <p class="text-xs text-amber-700 dark:text-amber-300">{{ __('You can force appointment creation in time slots that are already full') }} <strong>{{ __('only for today') }}</strong>.</p>
                     </div>
                 </div>
                 <div class="flex flex-col items-end gap-3">
                     <button type="button" id="btn-immediate-slot" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-md active:scale-95 flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                        Urgencia Inmediata
+                        {{ __('Immediate Urgency') }}
                     </button>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="override-capacity-toggle" name="override_capacity" value="1" class="sr-only peer">
                         <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 dark:peer-focus:ring-amber-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-amber-500"></div>
-                        <span class="ml-3 text-xs font-bold text-gray-900 dark:text-gray-300">Sobrescribir Aforo</span>
+                        <span class="ml-3 text-xs font-bold text-gray-900 dark:text-gray-300">{{ __('Override capacity') }}</span>
                     </label>
                 </div>
             </div>
             
             <div id="override-action-panel" class="lg:col-span-2 bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/50 rounded-2xl p-4 hidden flex-col sm:flex-row items-center justify-between gap-4 -mt-4">
-                <p class="text-xs text-amber-800 dark:text-amber-200">Tramo seleccionado: <strong id="override-selected-time" class="text-sm font-black text-amber-900 dark:text-amber-100">--:--</strong></p>
+                <p class="text-xs text-amber-800 dark:text-amber-200">{{ __('Selected slot:') }} <strong id="override-selected-time" class="text-sm font-black text-amber-900 dark:text-amber-100">--:--</strong></p>
                 <div class="flex items-center gap-2">
-                    <label for="override-extra-capacity" class="text-xs font-bold text-amber-700 dark:text-amber-300">Abrir +</label>
+                    <label for="override-extra-capacity" class="text-xs font-bold text-amber-700 dark:text-amber-300">{{ __('Open +') }}</label>
                     <input type="number" id="override-extra-capacity" min="1" max="50" value="1" class="w-16 bg-white dark:bg-gray-800 border border-amber-300 dark:border-amber-700 focus:border-amber-500 rounded-lg px-2 py-1.5 text-sm font-black text-center text-gray-900 dark:text-white outline-none">
-                    <span class="text-xs font-bold text-amber-700 dark:text-amber-300 mr-2">plazas</span>
+                    <span class="text-xs font-bold text-amber-700 dark:text-amber-300 mr-2">{{ __('spots') }}</span>
                     <button type="button" id="override-add-capacity-btn" class="px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-black rounded-lg transition-all shadow-sm">
-                        Autorizar
+                        {{ __('Authorize') }}
                     </button>
                 </div>
             </div>
@@ -96,7 +96,7 @@
             <!-- Calendario -->
             <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-150 dark:border-gray-800 shadow-sm p-6 overflow-hidden">
                 <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white heading-font">{{ __('1. Elige la fecha') }}</h3>
+                    <h3 class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white heading-font">{{ __('1. Choose date') }}</h3>
                     <div class="flex items-center gap-1">
                         <button type="button" id="prev-month" class="p-2 text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded-xl transition-all">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
@@ -124,16 +124,16 @@
 
             <!-- Horas disponibles -->
             <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-150 dark:border-gray-800 shadow-sm p-6 overflow-hidden">
-                <h3 class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white heading-font mb-4">{{ __('2. Selecciona la hora') }}</h3>
+                <h3 class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white heading-font mb-4">{{ __('2. Select time') }}</h3>
                 
                 <div id="no-date-selected" class="p-6 text-center text-gray-450 dark:text-gray-550">
                     <p class="text-3xl mb-2">📅</p>
-                    <p class="text-xs font-semibold">{{ __('Selecciona un día en el calendario de la izquierda para ver las horas disponibles.') }}</p>
+                    <p class="text-xs font-semibold">{{ __('Select a day on the calendar to the left to see available times.') }}</p>
                 </div>
 
                 <div id="slots-loading" class="hidden p-6 text-center">
                     <div class="w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                    <p class="text-xs font-semibold text-gray-400 dark:text-gray-500">{{ __('Buscando tramos libres...') }}</p>
+                    <p class="text-xs font-semibold text-gray-400 dark:text-gray-500">{{ __('Searching available slots...') }}</p>
                 </div>
 
                 <div id="slots-container" class="hidden grid grid-cols-3 sm:grid-cols-4 gap-2.5 max-h-60 overflow-y-auto pr-1">
@@ -148,8 +148,8 @@
         <!-- Fila 2: Formulario del Ciudadano (Ancho Completo con Grid Multi-columna) -->
         <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-150 dark:border-gray-800 shadow-sm p-6 space-y-6">
             <div class="border-b border-gray-100 dark:border-gray-800 pb-3">
-                <h3 class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white heading-font">{{ __('3. Tus Datos') }}</h3>
-                <p class="text-[10px] text-gray-400 mt-0.5">{{ __('Por favor, rellena tu información de contacto para confirmar la cita previa') }}</p>
+                <h3 class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white heading-font">{{ __('3. Your Details') }}</h3>
+                <p class="text-[10px] text-gray-400 mt-0.5">{{ __('Please fill in your contact information to confirm your appointment') }}</p>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
@@ -171,7 +171,7 @@
                 @endphp
                 @if(count($modalities) > 1)
                     <div class="md:col-span-12">
-                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-2.5">{{ __('Modalidad de la Cita') }} *</label>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-2.5">{{ __('Appointment Modality') }} *</label>
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                             @foreach($modalities as $mod)
                                 <label class="relative flex items-center justify-center p-4 border border-gray-200 dark:border-gray-700 rounded-2xl cursor-pointer hover:bg-cyan-50/50 dark:hover:bg-cyan-950/20 transition-all group has-[:checked]:bg-cyan-50 has-[:checked]:dark:bg-cyan-900/30 has-[:checked]:border-cyan-500 has-[:checked]:dark:border-cyan-500">
@@ -215,32 +215,32 @@
                 @endif
 
                 <div class="md:col-span-12">
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Correo Electrónico') }} *</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Email') }} *</label>
                     <input type="email" name="email_fake" tabindex="-1" autocomplete="off" style="display:none" readonly>
                     <input type="email" id="input-email" name="email" value="{{ old('email') }}" required oninput="this.value = this.value.toLowerCase()" autocomplete="new-password"
                             class="w-full lowercase bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all"
                             placeholder="nombre@ejemplo.com">
                     <p class="text-[10px] text-cyan-600 dark:text-cyan-400 mt-1 font-semibold">
-                        💡 {{ __('Si ya has reservado una cita anteriormente, introduce tu correo para recuperar tus datos automáticamente.') }}
+                        💡 {{ __('If you have previously booked an appointment, enter your email to automatically retrieve your details.') }}
                     </p>
                     <p id="hint-email" class="mt-1 text-[10px] font-semibold hidden"></p>
                     @error('email') <p class="mt-1 text-[10px] text-red-500 font-bold">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="md:col-span-6">
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Nombre') }} *</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Name') }} *</label>
                     <input type="text" id="input-first-name" name="first_name" required value="{{ old('first_name') }}"
                            class="w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
                 </div>
                 
                 <div class="md:col-span-6">
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Apellidos') }} *</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Last Name') }} *</label>
                     <input type="text" id="input-last-name" name="last_name" required value="{{ old('last_name') }}"
                            class="w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
                 </div>
 
                 <div class="md:col-span-4">
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('DNI / NIE / Pasaporte') }} *</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('ID / NIE / Passport') }} *</label>
                     <input type="text" id="input-dni" name="dni" value="{{ old('dni') }}" required autocomplete="off" oninput="this.value = this.value.toUpperCase()"
                            class="w-full uppercase bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all"
                            placeholder="12345678A, X1234567A...">
@@ -249,7 +249,7 @@
                 </div>
 
                 <div class="md:col-span-4">
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Teléfono Móvil') }}</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Mobile Phone') }}</label>
                     <input type="tel" id="input-phone" name="phone" value="{{ old('phone') }}"
                            class="w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all"
                            placeholder="+34 600 000 000">
@@ -258,26 +258,26 @@
                 </div>
 
                 <div class="md:col-span-4">
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Código Postal') }}</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Postal Code') }}</label>
                     <input type="text" id="input-postal" name="postal_code" value="{{ old('postal_code') }}"
                            class="w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
                 </div>
 
                 <div class="md:col-span-12">
                     <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">
-                        {{ __('Municipio') }}
-                        <span id="geo-loading" class="hidden ml-2 text-cyan-500 normal-case tracking-normal font-semibold">⟳ {{ __('Detectando ubicación...') }}</span>
-                        <span id="geo-detected" class="hidden ml-2 text-emerald-500 normal-case tracking-normal font-semibold">📍 {{ __('Rellenado por ubicación del servicio') }}</span>
+                        {{ __('City / Municipality') }}
+                        <span id="geo-loading" class="hidden ml-2 text-cyan-500 normal-case tracking-normal font-semibold">⟳ {{ __('Detecting location...') }}</span>
+                        <span id="geo-detected" class="hidden ml-2 text-emerald-500 normal-case tracking-normal font-semibold">📍 {{ __('Filled from service location') }}</span>
                     </label>
                     <input type="text" id="input-city" name="city" value="{{ old('city') }}"
                            class="w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all">
                 </div>
 
                 <div class="md:col-span-12">
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Observaciones') }}</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-450 dark:text-gray-500 mb-1.5">{{ __('Observations') }}</label>
                     <textarea name="observations" rows="3"
                               class="w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700/80 focus:border-cyan-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-xs font-bold outline-none transition-all resize-none"
-                              placeholder="{{ __('Indica de forma breve el motivo de tu consulta...') }}">{{ old('observations') }}</textarea>
+                              placeholder="{{ __('Briefly state the reason for your consultation...') }}">{{ old('observations') }}</textarea>
                 </div>
             </div>
         </div>
@@ -286,8 +286,8 @@
         @if(!empty($service->custom_fields))
         <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-150 dark:border-gray-800 shadow-sm p-6 space-y-6">
             <div class="border-b border-gray-100 dark:border-gray-800 pb-3">
-                <h3 class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white heading-font">{{ __('Información Adicional') }}</h3>
-                <p class="text-[10px] text-gray-400 mt-0.5">{{ __('Por favor, completa los siguientes campos requeridos por el servicio') }}</p>
+                <h3 class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white heading-font">{{ __('Additional Information') }}</h3>
+                <p class="text-[10px] text-gray-400 mt-0.5">{{ __('Please complete the following fields required by the service') }}</p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
                 @foreach($service->custom_fields as $field)
@@ -316,7 +316,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 <div class="lg:col-span-8 space-y-4">
                     <div class="border-b border-gray-100 dark:border-gray-800 pb-2 mb-2">
-                        <h3 class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white heading-font">{{ __('4. Consentimiento y GDPR') }}</h3>
+                        <h3 class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white heading-font">{{ __('4. Consent and GDPR') }}</h3>
                     </div>
                     
                     @if(isset($service->data_protection['enabled']) && $service->data_protection['enabled'])
@@ -325,10 +325,10 @@
                             $dpTemplate = str_replace(
                                 ['{responsable}', '{correo}', '{direccion}', '{url}', '{finalidad}'],
                                 [
-                                    '<strong>' . e($service->data_protection['responsible'] ?? 'No especificado') . '</strong>',
+                                    '<strong>' . e($service->data_protection['responsible'] ?? __('Not specified')) . '</strong>',
                                     '<strong>' . e($service->data_protection['dpo_email'] ?? 'No especificado') . '</strong>',
                                     '<strong>' . e($service->data_protection['address'] ?? 'No especificado') . '</strong>',
-                                    !empty($service->data_protection['url']) ? '<a href="'.e($service->data_protection['url']).'" target="_blank" class="text-cyan-600 hover:text-cyan-800 underline">Enlace a la política ampliada</a>' : '<strong>No especificado</strong>',
+                                    !empty($service->data_protection['url']) ? '<a href="'.e($service->data_protection['url']).'" target="_blank" class="text-cyan-600 hover:text-cyan-800 underline">{{ __('Link to extended policy') }}</a>' : '<strong>No especificado</strong>',
                                     '<strong>' . e($service->data_protection['purpose'] ?? 'No especificado') . '</strong>',
                                 ],
                                 e($dpTemplate)
@@ -340,7 +340,7 @@
                                 <div class="p-1.5 bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 rounded-lg shrink-0">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
                                 </div>
-                                <h4 class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest mt-0.5">Política de Protección de Datos</h4>
+                                <h4 class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest mt-0.5">{{ __('Data Protection Policy') }}</h4>
                             </div>
                             <div class="text-[10px] text-gray-600 dark:text-gray-400 leading-relaxed font-medium">
                                 {!! nl2br($dpTemplate) !!}
@@ -352,21 +352,21 @@
                         <label class="flex items-start gap-3 cursor-pointer group">
                             <input type="checkbox" name="consent_data" value="1" required class="mt-1 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500">
                             <span class="text-[11px] font-bold text-gray-600 dark:text-gray-400 leading-tight">
-                                {{ __('Acepto el tratamiento de mis datos personales únicamente con la finalidad de gestionar la reserva de cita previa conforme al RGPD.') }} *
+                                {{ __('I accept the processing of my personal data solely for the purpose of managing the appointment booking in accordance with GDPR.') }} *
                             </span>
                         </label>
 
                         <label class="flex items-start gap-3 cursor-pointer group">
                             <input type="checkbox" name="consent_legal" value="1" required class="mt-1 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500">
                             <span class="text-[11px] font-bold text-gray-600 dark:text-gray-400 leading-tight">
-                                {{ __('He leído y acepto el aviso legal y las condiciones de uso de este portal de citas públicas.') }} *
+                                {{ __('I have read and accept the legal notice and terms of use of this public appointment portal.') }} *
                             </span>
                         </label>
 
                         <label class="flex items-start gap-3 cursor-pointer group">
                             <input type="checkbox" name="consent_email" value="1" checked class="mt-1 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500">
                             <span class="text-[11px] font-bold text-gray-600 dark:text-gray-400 leading-tight">
-                                {{ __('Deseo recibir una confirmación de cita en mi dirección de correo electrónico con los detalles y el localizador único.') }}
+                                {{ __('I wish to receive an appointment confirmation at my email address with details and the unique booking code.') }}
                             </span>
                         </label>
                     </div>
@@ -375,7 +375,7 @@
                 <div class="lg:col-span-4 flex justify-center items-center">
                     <button type="submit" id="submit-btn" disabled
                             class="w-full py-4 text-xs font-black uppercase tracking-widest text-white bg-gray-300 dark:bg-gray-800 cursor-not-allowed rounded-2xl shadow-lg shadow-gray-400/10 transition-all select-none">
-                        {{ __('Confirmar Reserva') }}
+                        {{ __('Confirm Booking') }}
                     </button>
                 </div>
             </div>
@@ -443,7 +443,7 @@
             const container = document.getElementById('calendar-days');
             container.innerHTML = '';
 
-            const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            const monthNames = ["{{ __('January') }}", "{{ __('February') }}", "{{ __('March') }}", "{{ __('April') }}", "{{ __('May') }}", "{{ __('June') }}", "{{ __('July') }}", "{{ __('August') }}", "{{ __('September') }}", "{{ __('October') }}", "{{ __('November') }}", "{{ __('December') }}"];
             document.getElementById('calendar-month-year').textContent = `${monthNames[month]} ${year}`;
 
             const firstDayIndex = new Date(year, month, 1).getDay(); // 0: Dom, 1: Lun...
@@ -558,7 +558,7 @@
 
                     if (slots.length === 0) {
                         noDateSelected.classList.remove('hidden');
-                        noDateSelected.querySelector('p:last-child').textContent = 'No hay tramos horarios libres para esta fecha.';
+                        noDateSelected.querySelector('p:last-child').textContent = '{{ __('No available time slots for this date.') }}';
                         return;
                     }
 
@@ -578,12 +578,12 @@
 
                         if (slot.full && isOverrideActive) {
                             btn.classList.add('border-amber-400', 'dark:border-amber-600', 'text-amber-700', 'dark:text-amber-400', 'bg-amber-50/30', 'dark:bg-amber-900/10');
-                            btn.title = "Tramo lleno (Forzado por Administrador)";
-                            btn.innerHTML = `<span class="flex items-center justify-center gap-1">${slot.time} <svg class="w-3 h-3 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg></span><span class="text-[9px] font-normal opacity-75">Forzado</span>`;
+                            btn.title = "{{ __('Slot full (forced by Administrator)') }}";
+                            btn.innerHTML = `<span class="flex items-center justify-center gap-1">${slot.time} <svg class="w-3 h-3 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg></span><span class="text-[9px] font-normal opacity-75">{{ __('forced') }}</span>`;
                         } else if (isEffectivelyFull) {
-                            btn.innerHTML = `<span>${slot.time}</span><span class="text-[9px] font-normal text-amber-600 dark:text-amber-500 opacity-80">Lleno</span>`;
+                            btn.innerHTML = `<span>${slot.time}</span><span class="text-[9px] font-normal text-amber-600 dark:text-amber-500 opacity-80">{{ __('full') }}</span>`;
                         } else {
-                            const availableText = (slot.available === 1) ? '1 libre' : (slot.available ? slot.available + ' libres' : '');
+                            const availableText = (slot.available === 1) ? '1 ' + '{{ __('free') }}' : (slot.available ? slot.available + ' ' + '{{ __('free') }}' : '');
                             btn.innerHTML = `<span>${slot.time}</span><span class="text-[9px] font-normal opacity-60">${availableText}</span>`;
                         }
 
@@ -650,7 +650,7 @@
         if (immediateSlotBtn) {
             immediateSlotBtn.addEventListener('click', function() {
                 immediateSlotBtn.disabled = true;
-                immediateSlotBtn.innerHTML = 'Buscando...';
+                immediateSlotBtn.innerHTML = '{{ __('Searching...') }}';
 
                 let formData = new FormData();
                 formData.append('_token', '{{ csrf_token() }}');
@@ -698,8 +698,8 @@
                         if (typeof Swal !== 'undefined') {
                             Swal.fire({
                                 icon: 'success',
-                                title: 'Plaza urgente habilitada',
-                                text: `Se ha abierto y seleccionado un hueco para el ${data.date} a las ${data.time}.`,
+                                title: '{{ __('Urgent spot enabled') }}',
+                                text: '{{ __('An urgent spot has been opened and selected.') }}',
                                 toast: true,
                                 position: 'top-end',
                                 showConfirmButton: false,
@@ -714,7 +714,7 @@
                                 text: data.message || 'No se ha podido asignar una plaza urgente.'
                             });
                         } else {
-                            alert(data.message || 'No se ha podido asignar.');
+                            alert(data.message || '{{ __('swal.alert_could_not_assign') }}');
                         }
                     }
                 })
@@ -767,8 +767,8 @@
                         if (typeof Swal !== 'undefined') {
                             Swal.fire({
                                 icon: 'success',
-                                title: 'Plazas autorizadas',
-                                text: `Se han abierto ${extra} plazas extra para las ${time}.`,
+                                title: '{{ __('Spots authorized') }}',
+                                text: '{{ __('Extra spots authorized for this time.') }}',
                                 toast: true,
                                 position: 'top-end',
                                 showConfirmButton: false,
@@ -835,21 +835,21 @@
 
                 if (isPassport(v) || v.length < 6) {
                     // Parece pasaporte o demasiado corto → no validamos dígito de control
-                    setHint(dniHint, dniInput, '🛂 Detectado como pasaporte u otro documento', false);
+                    setHint(dniHint, dniInput, '{{ __('🛂 Detected as passport or other document') }}', false);
                     return;
                 }
 
                 const upper = v.toUpperCase();
                 if (/^[XYZ]/i.test(upper)) {
                     validateNie(upper)
-                        ? setHint(dniHint, dniInput, '✓ NIE válido', false)
-                        : setHint(dniHint, dniInput, '✗ NIE no válido — revisa el dígito de control', true);
+                        ? setHint(dniHint, dniInput, '{{ __('✓ Valid NIE') }}', false)
+                        : setHint(dniHint, dniInput, '{{ __('✗ Invalid NIE — check check digit') }}', true);
                 } else if (/^\d/.test(upper)) {
                     validateDni(upper)
-                        ? setHint(dniHint, dniInput, '✓ DNI válido', false)
-                        : setHint(dniHint, dniInput, '✗ DNI no válido — revisa el número o la letra', true);
+                        ? setHint(dniHint, dniInput, '{{ __('✓ Valid DNI') }}', false)
+                        : setHint(dniHint, dniInput, '{{ __('✗ Invalid DNI — check number or letter') }}', true);
                 } else {
-                    setHint(dniHint, dniInput, '🛂 Detectado como pasaporte u otro documento', false);
+                    setHint(dniHint, dniInput, '{{ __('🛂 Detected as passport or other document') }}', false);
                 }
             });
         }
@@ -863,7 +863,7 @@
                 if (!v) { clearHint(emailHint, emailInput); return; }
                 const valid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
                 if (valid) {
-                    setHint(emailHint, emailInput, '✓ Correo válido', false);
+                    setHint(emailHint, emailInput, '{{ __('✓ Valid email') }}', false);
                     
                     // Buscar si ya existe el visitante
                     fetch('/citas/visitor-by-email', {
@@ -877,7 +877,7 @@
                     .then(res => res.json())
                     .then(data => {
                         if (data.found) {
-                            setHint(emailHint, emailInput, '✓ Datos de usuario localizados y autocompletados', false);
+                            setHint(emailHint, emailInput, '{{ __('✓ User data found and autofilled') }}', false);
                             
                             const firstNameEl = document.getElementById('input-first-name');
                             const lastNameEl  = document.getElementById('input-last-name');
@@ -913,7 +913,7 @@
                         }
                     });
                 } else {
-                    setHint(emailHint, emailInput, '✗ Formato de correo incorrecto', true);
+                    setHint(emailHint, emailInput, '{{ __('✗ Incorrect email format') }}', true);
                 }
             });
             emailInput.addEventListener('input', function () {
@@ -945,8 +945,8 @@
                 if (!v) { clearHint(phoneHint, phoneInput); return; }
                 const valid = /^(\+?[\d\s\-\.\(\)]{6,20})$/.test(v);
                 valid
-                    ? setHint(phoneHint, phoneInput, '✓ Teléfono válido', false)
-                    : setHint(phoneHint, phoneInput, '✗ Formato de teléfono incorrecto', true);
+                    ? setHint(phoneHint, phoneInput, '{{ __('✓ Valid phone') }}', false)
+                    : setHint(phoneHint, phoneInput, '{{ __('✗ Incorrect phone format') }}', true);
             });
             phoneInput.addEventListener('input', function () {
                 if (!this.value.trim()) clearHint(phoneHint, phoneInput);
@@ -965,7 +965,7 @@
                 const currentValue = emailInput.value.trim();
                 if (!currentValue) {
                     e.preventDefault();
-                    emailInput.setCustomValidity('El correo electrónico es obligatorio');
+                    emailInput.setCustomValidity('{{ __('Email is required') }}');
                     emailInput.reportValidity();
                     emailInput.setCustomValidity('');
                 }

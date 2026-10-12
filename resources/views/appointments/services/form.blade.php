@@ -1,7 +1,7 @@
 @php $isEdit = isset($service); $action = $isEdit ? route('appointments.services.update', [$team, $service]) : route('appointments.services.store', $team); @endphp
 
 <x-app-layout maxWidth="max-w-none">
-@section('title', $isEdit ? 'Editar Servicio — '.$service->name : 'Nuevo Servicio de Cita')
+@section('title', $isEdit ? __('Edit Service — :name', ['name' => $service->name]) : __('New Appointment Service'))
 
 <x-slot name="header">
     <div class="flex items-start gap-4 min-w-0 flex-1">
@@ -20,7 +20,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                     @endif
                 </svg>
-                {{ $isEdit ? 'Editar: '.$service->name : 'Nuevo Servicio' }}
+                {{ $isEdit ? __('Edit: :name', ['name' => $service->name]) : __('New Service') }}
             </h1>
         </div>
     </div>
@@ -35,7 +35,7 @@
 
             <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
                 <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
-                    <p class="text-xs font-black uppercase tracking-widest text-gray-400">Información del Servicio</p>
+                    <p class="text-xs font-black uppercase tracking-widest text-gray-400">{{ __('Service Information') }}</p>
                 </div>
                 <div class="p-6 space-y-5">
 
@@ -43,24 +43,24 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {{-- Equipo --}}
                         <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Equipo Asociado</label>
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">{{ __('Associated Team') }}</label>
                             <input type="text" disabled readonly value="{{ $team->name }}"
                                    class="w-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-500 dark:text-gray-400 outline-none cursor-not-allowed">
                         </div>
 
                         {{-- Nombre --}}
                         <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="name">Nombre del Servicio *</label>
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="name">{{ __('Service Name *') }}</label>
                             <input type="text" id="name" name="name" value="{{ old('name', $service->name ?? '') }}" required
                                    class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all"
-                                   placeholder="ej. Consulta General, Asesoramiento Técnico...">
+                                   placeholder="{{ __('e.g. General Consultation, Technical Advisory...') }}">
                             @error('name') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
                     </div>
 
                         {{-- Modalidades --}}
                         <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Modalidades soportadas *</label>
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">{{ __('Supported modalities *') }}</label>
                             @php
                                 $selectedModalities = old('modality', $service->modality ?? ['presencial']);
                                 if (!is_array($selectedModalities)) $selectedModalities = [$selectedModalities];
@@ -71,7 +71,7 @@
                                         <input type="checkbox" name="modality[]" value="{{ $key }}"
                                                {{ in_array($key, $selectedModalities) ? 'checked' : '' }}
                                                class="w-5 h-5 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 transition-colors">
-                                        <span class="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">{{ $label }}</span>
+                                        <span class="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">{{ __($label) }}</span>
                                     </label>
                                 @endforeach
                             </div>
@@ -81,14 +81,14 @@
                     {{-- Descripción Markdown --}}
                     <div>
                         <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="description">
-                            Descripción <span class="text-[9px] font-bold text-cyan-500 normal-case tracking-normal ml-1">Markdown</span>
+                            {{ __('Description') }} <span class="text-[9px] font-bold text-cyan-500 normal-case tracking-normal ml-1">Markdown</span>
                         </label>
                         <x-markdown-editor
                             name="description"
                             id="description"
                             :value="old('description', $service->description ?? '')"
                             rows="5"
-                            placeholder="Describe el servicio. Puedes usar **negrita**, *cursiva*, listas, etc."
+                            placeholder="{{ __('Describe the service. You can use **bold**, *italics*, lists, etc.') }}"
                             :upload-url="route('teams.forum.upload_image', $team)"
                             :mentions-url="route('teams.mentions', $team)"
                         />
@@ -98,7 +98,7 @@
                     {{-- Duración y tramo --}}
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="duration_minutes">Duración de la cita (min) *</label>
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="duration_minutes">{{ __('Appointment duration (min) *') }}</label>
                             <input type="number" id="duration_minutes" name="duration_minutes" min="5" max="480" step="5"
                                    value="{{ old('duration_minutes', $service->duration_minutes ?? 30) }}" required
                                    class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all">
@@ -106,20 +106,20 @@
                         </div>
                         <div>
                             <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="slot_duration_minutes">
-                                Tramo mínimo (min) <span class="text-[9px] normal-case tracking-normal text-gray-400">opcional</span>
+                                {{ __('Minimum slot (min)') }} <span class="text-[9px] normal-case tracking-normal text-gray-400">{{ __('optional') }}</span>
                             </label>
                             <input type="number" id="slot_duration_minutes" name="slot_duration_minutes" min="5" max="120" step="5"
                                    value="{{ old('slot_duration_minutes', $service->slot_duration_minutes ?? '') }}"
-                                   placeholder="Hereda config."
+                                   placeholder="{{ __('Inherits config') }}"
                                    class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all">
                         </div>
                         <div>
                             <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="max_per_slot">
-                                Máx. por tramo <span class="text-[9px] normal-case tracking-normal text-gray-400">opcional</span>
+                                {{ __('Max per slot') }} <span class="text-[9px] normal-case tracking-normal text-gray-400">{{ __('optional') }}</span>
                             </label>
                             <input type="number" id="max_per_slot" name="max_per_slot" min="1" max="100"
                                    value="{{ old('max_per_slot', $service->max_per_slot ?? '') }}"
-                                   placeholder="Hereda config."
+                                   placeholder="{{ __('Inherits config') }}"
                                    class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all">
                         </div>
                     </div>
@@ -127,12 +127,12 @@
                     {{-- Precio --}}
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
                         <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="price">Precio (€)</label>
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2" for="price">{{ __('Price (€)') }}</label>
                             <div class="relative">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-black text-sm">€</span>
                                 <input type="number" id="price" name="price" min="0" step="0.01"
                                        value="{{ old('price', $service->price ?? '') }}"
-                                       placeholder="0 = gratuito"
+                                       placeholder="{{ __('0 = free') }}"
                                        class="w-full pl-8 pr-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl py-3 text-sm text-gray-900 dark:text-white outline-none transition-all">
                             </div>
                         </div>
@@ -144,7 +144,7 @@
                                            class="sr-only peer">
                                     <div class="w-10 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-cyan-500"></div>
                                 </div>
-                                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Mostrar precio en portal público</span>
+                                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ __('Show price on public portal') }}</span>
                             </label>
                             <label class="flex items-center gap-3 cursor-pointer group">
                                 <div class="relative">
@@ -153,7 +153,7 @@
                                            class="sr-only peer">
                                     <div class="w-10 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-cyan-500"></div>
                                 </div>
-                                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Servicio activo y visible</span>
+                                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ __('Active and visible service') }}</span>
                             </label>
                         </div>
 
@@ -166,7 +166,7 @@
                                            class="sr-only peer">
                                     <div class="w-10 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-500"></div>
                                 </div>
-                                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Exportar automáticamente a Google Calendar</span>
+                                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ __('Automatically export to Google Calendar') }}</span>
                             </label>
                             <label class="flex items-center gap-3 cursor-pointer group">
                                 <div class="relative">
@@ -175,7 +175,7 @@
                                            class="sr-only peer">
                                     <div class="w-10 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-500"></div>
                                 </div>
-                                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Exportar automáticamente a Google Tasks</span>
+                                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ __('Automatically export to Google Tasks') }}</span>
                             </label>
                         </div>
                     </div>
@@ -200,18 +200,18 @@
                  }">
                 <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                        <p class="text-xs font-black uppercase tracking-widest text-gray-400">📝 Campos Personalizados de Información</p>
-                        <p class="text-[10px] text-gray-400 mt-1">Configura los campos que los clientes o miembros deberán rellenar al crear la cita.</p>
+                        <p class="text-xs font-black uppercase tracking-widest text-gray-400">📝 {{ __('Custom Information Fields') }}</p>
+                        <p class="text-[10px] text-gray-400 mt-1">{{ __('Configure fields that clients or members must fill in when booking an appointment.') }}</p>
                     </div>
                     <button type="button" @click="addField()"
                             class="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400 hover:text-cyan-500 bg-cyan-50 dark:bg-cyan-500/10 hover:bg-cyan-100/50 px-3.5 py-2 rounded-xl transition-all active:scale-95 border border-cyan-150 dark:border-cyan-900/30">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                        Añadir Campo
+                        {{ __('Add Field') }}
                     </button>
                 </div>
                 <div class="p-6">
                     <div x-show="fields.length === 0" class="text-center py-6">
-                        <p class="text-sm text-gray-500 dark:text-gray-400">No hay campos personalizados configurados.</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('No custom fields configured.') }}</p>
                     </div>
 
                     <div class="space-y-3">
@@ -221,19 +221,19 @@
                                 <input type="hidden" :name="'custom_fields['+index+'][id]'" :value="field.id">
 
                                 <div class="w-full sm:flex-1">
-                                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-1">Nombre del Campo *</label>
-                                    <input type="text" :name="'custom_fields['+index+'][name]'" x-model="field.name" required placeholder="Ej: Código de paciente"
+                                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-1">{{ __('Field Name *') }}</label>
+                                    <input type="text" :name="'custom_fields['+index+'][name]'" x-model="field.name" required placeholder="{{ __('e.g. Patient Code') }}"
                                            class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all">
                                 </div>
 
                                 <div class="w-full sm:w-48">
-                                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-1">Tipo *</label>
+                                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-1">{{ __('Type *') }}</label>
                                     <select :name="'custom_fields['+index+'][type]'" x-model="field.type" required
                                             class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all">
-                                        <option value="text">Texto corto</option>
-                                        <option value="textarea">Texto largo</option>
-                                        <option value="number">Número</option>
-                                        <option value="date">Fecha</option>
+                                        <option value="text">{{ __('Short text') }}</option>
+                                        <option value="textarea">{{ __('Long text') }}</option>
+                                        <option value="number">{{ __('Number') }}</option>
+                                        <option value="date">{{ __('Date') }}</option>
                                     </select>
                                 </div>
 
@@ -242,12 +242,12 @@
                                         <input type="hidden" :name="'custom_fields['+index+'][is_required]'" value="0">
                                         <input type="checkbox" :name="'custom_fields['+index+'][is_required]'" value="1" x-model="field.is_required"
                                                class="w-4 h-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500 dark:border-gray-600 dark:bg-gray-700 transition-colors">
-                                        <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Obligatorio</span>
+                                        <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ __('Required') }}</span>
                                     </label>
 
                                     <button type="button" @click="removeField(index)"
                                             class="p-2 text-red-500 hover:text-red-600 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/25 rounded-xl transition-all active:scale-90"
-                                            title="Eliminar campo">
+                                            title="{{ __('Delete field') }}">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                     </button>
                                 </div>
@@ -262,8 +262,8 @@
             <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden" x-data="{ gdprEnabled: {{ old('data_protection.enabled', $service->data_protection['enabled'] ?? false) ? 'true' : 'false' }} }">
                 <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                        <p class="text-xs font-black uppercase tracking-widest text-gray-400">🛡️ Protección de Datos (RGPD)</p>
-                        <p class="text-[10px] text-gray-400 mt-1">Añade el texto legal para los usuarios que soliciten cita.</p>
+                        <p class="text-xs font-black uppercase tracking-widest text-gray-400">🛡️ {{ __('Data Protection (GDPR)') }}</p>
+                        <p class="text-[10px] text-gray-400 mt-1">{{ __('Add legal disclaimer text for users requesting an appointment.') }}</p>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="hidden" name="data_protection[enabled]" value="0">
@@ -275,42 +275,42 @@
                 <div x-show="gdprEnabled" x-collapse class="p-6 space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">Responsable</label>
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">{{ __('Controller') }}</label>
                             <input type="text" name="data_protection[responsible]" value="{{ old('data_protection.responsible', $service->data_protection['responsible'] ?? '') }}"
                                    class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all"
-                                   placeholder="Ej: Consorcio Puntos Vuela">
+                                   placeholder="{{ __('e.g. Entity Name') }}">
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">Correo DPD / Contacto</label>
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">{{ __('DPO / Contact Email') }}</label>
                             <input type="email" name="data_protection[dpo_email]" value="{{ old('data_protection.dpo_email', $service->data_protection['dpo_email'] ?? '') }}"
                                    class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all"
-                                   placeholder="Ej: dpo@empresa.com">
+                                   placeholder="{{ __('e.g. dpo@company.com') }}">
                         </div>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">Dirección del Responsable</label>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">{{ __('Controller Address') }}</label>
                         <input type="text" name="data_protection[address]" value="{{ old('data_protection.address', $service->data_protection['address'] ?? '') }}"
                                class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all"
-                               placeholder="Ej: Avda del Conocimiento nº 41...">
+                               placeholder="{{ __('e.g. 123 Main St...') }}">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">URL Política Ampliada</label>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">{{ __('Extended Policy URL') }}</label>
                         <input type="url" name="data_protection[url]" value="{{ old('data_protection.url', $service->data_protection['url'] ?? '') }}"
                                class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all"
                                placeholder="https://...">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">Finalidad del Tratamiento</label>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">{{ __('Purpose of Processing') }}</label>
                         <textarea name="data_protection[purpose]" rows="2"
                                   class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all"
-                                  placeholder="Para gestionar la cita previa solicitada...">{{ old('data_protection.purpose', $service->data_protection['purpose'] ?? '') }}</textarea>
+                                  placeholder="{{ __('To manage the requested appointment...') }}">{{ old('data_protection.purpose', $service->data_protection['purpose'] ?? '') }}</textarea>
                     </div>
                     <div class="md:col-span-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-                        <label class="block text-[10px] font-black uppercase tracking-widest text-cyan-600 mb-2 ml-1">Plantilla de Texto Legal</label>
-                        <p class="text-[10px] text-gray-500 mb-3 ml-1">Puedes usar las etiquetas: <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-cyan-500">{responsable}</code>, <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-cyan-500">{correo}</code>, <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-cyan-500">{direccion}</code>, <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-cyan-500">{url}</code>, <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-cyan-500">{finalidad}</code></p>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-cyan-600 mb-2 ml-1">{{ __('Legal Text Template') }}</label>
+                        <p class="text-[10px] text-gray-500 mb-3 ml-1">{{ __('You can use placeholders:') }} <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-cyan-500">{responsable}</code>, <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-cyan-500">{correo}</code>, <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-cyan-500">{direccion}</code>, <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-cyan-500">{url}</code>, <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-cyan-500">{finalidad}</code></p>
                         <textarea name="data_protection[template]" rows="6"
                                   class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all"
-                                  placeholder="POLÍTICA DE PROTECCIÓN DE DATOS... El responsable es {responsable}...">{{ old('data_protection.template', $service->data_protection['template'] ?? "POLÍTICA DE PROTECCIÓN DE DATOS\n\nInformación básica sobre protección de datos\n\nLa identidad del responsable es {responsable} con domicilio en {direccion}. Tratamos sus datos con la finalidad de {finalidad}. Pueden ejercer sus derechos de acceso, rectificación, supresión, oposición y limitación al tratamiento de los datos que tengamos suyos mediante correo electrónico a la dirección {correo}.\nPueden consultar la información adicional y detallada sobre Protección de Datos en {url}.") }}</textarea>
+                                  placeholder="{{ __('DATA PROTECTION POLICY... The controller is {responsable}...') }}">{{ old('data_protection.template', $service->data_protection['template'] ?? "POLÍTICA DE PROTECCIÓN DE DATOS\n\nInformación básica sobre protección de datos\n\nLa identidad del responsable es {responsable} con domicilio en {direccion}. Tratamos sus datos con la finalidad de {finalidad}. Pueden ejercer sus derechos de acceso, rectificación, supresión, oposición y limitación al tratamiento de los datos que tengamos suyos mediante correo electrónico a la dirección {correo}.\nPueden consultar la información adicional y detallada sobre Protección de Datos en {url}.") }}</textarea>
                     </div>
                 </div>
             </div>
@@ -318,13 +318,13 @@
             {{-- Horario y Disponibilidad Semanal --}}
             @php
                 $days = [
-                    1 => 'Lunes',
-                    2 => 'Martes',
-                    3 => 'Miércoles',
-                    4 => 'Jueves',
-                    5 => 'Viernes',
-                    6 => 'Sábado',
-                    0 => 'Domingo',
+                    1 => __('Monday'),
+                    2 => __('Tuesday'),
+                    3 => __('Wednesday'),
+                    4 => __('Thursday'),
+                    5 => __('Friday'),
+                    6 => __('Saturday'),
+                    0 => __('Sunday'),
                 ];
                 // Si es edición, obtenemos todos los schedules agrupados por day_of_week
                 $schedulesMap = $isEdit ? $service->schedules->groupBy('day_of_week') : collect();
@@ -383,11 +383,11 @@
                     }
                  }">
                 <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <p class="text-xs font-black uppercase tracking-widest text-gray-400">📅 Horario y Disponibilidad Semanal</p>
+                    <p class="text-xs font-black uppercase tracking-widest text-gray-400">📅 {{ __('Weekly Schedule and Availability') }}</p>
                     <button type="button" @click="copiarLunes()"
                             class="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400 hover:text-cyan-500 bg-cyan-50 dark:bg-cyan-500/10 hover:bg-cyan-100/50 px-3.5 py-2 rounded-xl transition-all active:scale-95 border border-cyan-150 dark:border-cyan-900/30">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/></svg>
-                        Copiar Lunes al resto
+                        {{ __('Copy Monday to all') }}
                     </button>
                 </div>
                 <div class="p-6 space-y-4">
@@ -407,11 +407,11 @@
                                     <button type="button" @click="addTramo({{ $num }})" x-show="schedules[{{ $num }}].active"
                                             class="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400 hover:text-cyan-500 bg-cyan-50 dark:bg-cyan-500/10 px-2.5 py-1.5 rounded-lg transition-all active:scale-95">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                                        Añadir Tramo
+                                        {{ __('Add Slot') }}
                                     </button>
 
                                     <div class="text-xs text-gray-400 italic" x-show="!schedules[{{ $num }}].active" x-transition>
-                                        No disponible
+                                        {{ __('Not available') }}
                                     </div>
                                 </div>
 
@@ -421,18 +421,18 @@
                                         <template x-for="(tramo, index) in schedules[{{ $num }}].tramos" :key="index">
                                             <div class="flex items-center gap-3 bg-gray-50/50 dark:bg-gray-800/35 p-3 rounded-2xl border border-gray-150 dark:border-gray-800/80 shadow-sm shrink-0">
                                                 <div class="flex items-center gap-2">
-                                                    <span class="text-[10px] text-gray-400 font-black uppercase tracking-wider">De:</span>
+                                                    <span class="text-[10px] text-gray-400 font-black uppercase tracking-wider">{{ __('From:') }}</span>
                                                     <input type="time" :name="`schedules[{{ $num }}][tramos][${index}][start_time]`" x-model="tramo.start_time"
                                                            class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 rounded-xl px-2.5 py-1.5 text-xs text-gray-900 dark:text-white outline-none transition-all font-bold">
                                                 </div>
                                                 <div class="flex items-center gap-2">
-                                                    <span class="text-[10px] text-gray-400 font-black uppercase tracking-wider">A:</span>
+                                                    <span class="text-[10px] text-gray-400 font-black uppercase tracking-wider">{{ __('To:') }}</span>
                                                     <input type="time" :name="`schedules[{{ $num }}][tramos][${index}][end_time]`" x-model="tramo.end_time"
                                                            class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 rounded-xl px-2.5 py-1.5 text-xs text-gray-900 dark:text-white outline-none transition-all font-bold">
                                                 </div>
                                                 <button type="button" @click="removeTramo({{ $num }}, index)"
                                                         class="p-1.5 text-red-500 hover:text-red-600 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/25 rounded-lg transition-all active:scale-90"
-                                                        title="Eliminar tramo">
+                                                        title="{{ __('Delete slot') }}">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                                 </button>
                                             </div>
@@ -449,11 +449,11 @@
             <div class="flex items-center gap-3 justify-end">
                 <a href="{{ route('appointments.services.index', $team) }}"
                    class="px-5 py-2.5 text-xs font-black uppercase tracking-widest text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition-all">
-                    Cancelar
+                    {{ __('Cancel') }}
                 </a>
                 <button type="submit"
                         class="px-7 py-2.5 text-xs font-black uppercase tracking-widest bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl shadow-lg shadow-cyan-500/20 transition-all active:scale-95">
-                    {{ $isEdit ? 'Guardar Cambios' : 'Crear Servicio' }}
+                    {{ $isEdit ? __('Save Changes') : __('Create Service') }}
                 </button>
             </div>
         </form>
@@ -483,14 +483,14 @@
         <svg style="width:1rem;height:1rem;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
         </svg>
-        <span>Volver</span>
+        <span>{{ __('Back') }}</span>
     </a>
 
     <div style="width:1px;height:1.25rem;background:#e5e7eb;flex-shrink:0"></div>
 
     {{-- Título truncado --}}
     <span style="font-size:0.75rem;font-weight:900;color:#1f2937;max-width:200px;overflow:hidden;text-overflow:ellipsis;" class="dark:text-gray-300">
-        {{ $isEdit ? 'Editar: ' . $service->name : 'Nuevo Servicio' }}
+        {{ $isEdit ? __('Edit: :name', ['name' => $service->name]) : __('New Service') }}
     </span>
 
     <div style="width:1px;height:1.25rem;background:#e5e7eb;flex-shrink:0"></div>
@@ -504,7 +504,7 @@
         <svg style="width:1rem;height:1rem;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
         </svg>
-        <span>{{ $isEdit ? 'Guardar Cambios' : 'Crear Servicio' }}</span>
+        <span>{{ $isEdit ? __('Save Changes') : __('Create Service') }}</span>
     </button>
 </div>
 

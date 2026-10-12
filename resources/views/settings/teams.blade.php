@@ -1,5 +1,5 @@
 <x-app-layout>
-    @section('title', 'Gestión Global de Equipos')
+    @section('title', __('teams.team_title'))
 
     <x-slot name="header">
         <div class="flex items-center justify-between">
@@ -10,10 +10,10 @@
                     </svg>
                 </div>
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">Gestión de Equipos</h1>
-                    <x-demo-hint>
-                        Permite la administración integral de todos los espacios de trabajo de la instancia. Desde este panel se pueden gestionar acciones masivas (como activar Citas Previas o integraciones de WhatsApp para múltiples equipos a la vez) y supervisar las métricas de carga y miembros.
-                    </x-demo-hint>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">{{ __('teams.team') }}</h1>
+                <x-demo-hint>
+                    {{ __('teams.team_management_desc') }}
+                </x-demo-hint>
                 </div>
             </div>
             <div>
@@ -21,7 +21,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
-                    Nuevo Equipo
+                    {{ __('teams.new_team') }}
                 </a>
             </div>
         </div>
@@ -49,12 +49,12 @@
                 <button @click="tab = 'list'; saveTab()" 
                     :class="tab === 'list' ? 'bg-white dark:bg-gray-900 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-800' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
                     class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
-                    Directorio de Equipos
+                    {{ __('Teams Directory') }}
                 </button>
                 <button @click="tab = 'authorizations'; saveTab()" 
                     :class="tab === 'authorizations' ? 'bg-white dark:bg-gray-900 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-100 dark:border-gray-800' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
                     class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
-                    Autorizaciones y Módulos
+                    {{ __('Authorizations & Modules') }}
                 </button>
                     </div>
                 </div>
@@ -72,7 +72,7 @@
                             </div>
                             <input type="text" name="search" value="{{ request('search') }}" 
                                 class="block w-full pl-9 pr-3 py-2 text-sm border border-gray-100 dark:border-gray-800 rounded-xl bg-gray-50/50 dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all"
-                                placeholder="Buscar por nombre o descripción del equipo...">
+                                placeholder="{{ __('teams.search_placeholder') }}">
                         </div>
                         
                         <select name="per_page" onchange="this.form.submit()"
@@ -85,11 +85,11 @@
 
                         <div class="flex items-center gap-2">
                             <button type="submit" class="px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-violet-500/20">
-                                Filtrar
+                                {{ __('Filter') }}
                             </button>
                             @if(request()->anyFilled(['search', 'per_page']))
                                 <a href="{{ route('settings.teams') }}" class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-red-500 transition-colors uppercase tracking-widest">
-                                    Limpiar
+                                    {{ __('Clear') }}
                                 </a>
                             @endif
                         </div>
@@ -102,8 +102,8 @@
                             <thead>
                                 <tr class="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
                                     @foreach([
-                                        'name' => 'Equipo',
-                                        'created_at' => 'Creado'
+                                        'name' => __('teams.team'),
+                                        'created_at' => __('auth.created_at')
                                     ] as $field => $label)
                                         <th class="px-6 py-4">
                                             <a href="{{ request()->fullUrlWithQuery(['sort' => $field, 'direction' => $sort === $field && $direction === 'asc' ? 'desc' : 'asc']) }}" 
@@ -120,11 +120,11 @@
                                             </a>
                                         </th>
                                     @endforeach
-                                    <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Creador</th>
+                                    <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">{{ __('Creator') }}</th>
                                     <th class="px-6 py-4">
                                         <a href="{{ request()->fullUrlWithQuery(['sort' => 'members_count', 'direction' => $sort === 'members_count' && $direction === 'asc' ? 'desc' : 'asc']) }}" 
                                         class="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest leading-none {{ $sort === 'members_count' ? 'text-violet-600 dark:text-violet-400' : 'text-gray-500 dark:text-gray-400' }} hover:text-violet-500 transition-colors group">
-                                            Miembros
+                                            {{ __('Members') }}
                                             <div class="flex flex-col {{ $sort === 'members_count' ? 'opacity-100' : 'opacity-0 group-hover:opacity-50' }} transition-opacity">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2 {{ $sort === 'members_count' && $direction === 'asc' ? 'text-violet-600' : 'text-gray-300' }}" viewBox="0 0 20 20" fill="currentColor">
                                                     <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
@@ -138,7 +138,7 @@
                                     <th class="px-6 py-4">
                                         <a href="{{ request()->fullUrlWithQuery(['sort' => 'tasks_count', 'direction' => $sort === 'tasks_count' && $direction === 'asc' ? 'desc' : 'asc']) }}" 
                                         class="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest leading-none {{ $sort === 'tasks_count' ? 'text-violet-600 dark:text-violet-400' : 'text-gray-500 dark:text-gray-400' }} hover:text-violet-500 transition-colors group">
-                                            Tareas
+                                            {{ __('Tasks') }}
                                             <div class="flex flex-col {{ $sort === 'tasks_count' ? 'opacity-100' : 'opacity-0 group-hover:opacity-50' }} transition-opacity">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2 {{ $sort === 'tasks_count' && $direction === 'asc' ? 'text-violet-600' : 'text-gray-300' }}" viewBox="0 0 20 20" fill="currentColor">
                                                     <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
@@ -149,7 +149,7 @@
                                             </div>
                                         </a>
                                     </th>
-                                    <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-right">Acciones</th>
+                                    <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-right">{{ __('Actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -174,16 +174,16 @@
                                             {{ $team->created_at->format('d/m/Y H:i') }}
                                         </td>
                                         <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                            {{ $team->creator->name ?? 'Sistema' }}
+                                            {{ $team->creator->name ?? __('System') }}
                                         </td>
                                         <td class="px-6 py-4">
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                                                {{ $team->members_count }} miembros
+                                                {{ $team->members_count }} {{ __('members') }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-4">
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400 border border-violet-200 dark:border-violet-800">
-                                                {{ $team->tasks_count }} tareas
+                                                {{ $team->tasks_count }} {{ __('tasks') }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 text-right whitespace-nowrap">
@@ -230,7 +230,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                             </svg>
                         </span>
-                        <h2 class="text-xs font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest">Acciones Masivas Globales</h2>
+                        <h2 class="text-xs font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest">{{ __('teams.global_bulk_actions') }}</h2>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -239,7 +239,7 @@
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2">
                                     <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                                    <span class="text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">WhatsApp Premium</span>
+                                    <span class="text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">{{ __('WhatsApp Premium') }}</span>
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-2 mt-auto">
@@ -248,7 +248,7 @@
                                     <input type="hidden" name="setting" value="has_whatsapp">
                                     <input type="hidden" name="value" value="1">
                                     <button type="submit" class="w-full px-2 py-2.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/30 border border-emerald-150 dark:border-emerald-800/80 rounded-xl text-[9px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 transition-all shadow-sm">
-                                        Habilitar Todos
+                                        {{ __('teams.enable_all') }}
                                     </button>
                                 </form>
                                 <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
@@ -256,7 +256,7 @@
                                     <input type="hidden" name="setting" value="has_whatsapp">
                                     <input type="hidden" name="value" value="0">
                                     <button type="submit" class="w-full px-2 py-2.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[9px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all shadow-sm">
-                                        Deshabilitar
+                                        {{ __('teams.disable') }}
                                     </button>
                                 </form>
                             </div>
@@ -267,7 +267,7 @@
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2">
                                     <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-                                    <span class="text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">Encuestas</span>
+                                    <span class="text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">{{ __('teams.surveys') }}</span>
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-2 mt-auto">
@@ -276,7 +276,7 @@
                                     <input type="hidden" name="setting" value="surveys_enabled">
                                     <input type="hidden" name="value" value="1">
                                     <button type="submit" class="w-full px-2 py-2.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/30 border border-blue-150 dark:border-blue-800/80 rounded-xl text-[9px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 transition-all shadow-sm">
-                                        Habilitar Todos
+                                        {{ __('teams.enable_all') }}
                                     </button>
                                 </form>
                                 <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
@@ -284,7 +284,7 @@
                                     <input type="hidden" name="setting" value="surveys_enabled">
                                     <input type="hidden" name="value" value="0">
                                     <button type="submit" class="w-full px-2 py-2.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[9px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all shadow-sm">
-                                        Deshabilitar
+                                        {{ __('teams.disable') }}
                                     </button>
                                 </form>
                             </div>
@@ -295,7 +295,7 @@
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2">
                                     <span class="w-2 h-2 rounded-full bg-violet-500"></span>
-                                    <span class="text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">Citas Previas</span>
+                                    <span class="text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">{{ __('teams.appointments') }}</span>
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-2 mt-auto">
@@ -304,7 +304,7 @@
                                     <input type="hidden" name="setting" value="has_appointments">
                                     <input type="hidden" name="value" value="1">
                                     <button type="submit" class="w-full px-2 py-2.5 bg-violet-50 hover:bg-violet-100 dark:bg-violet-950/30 border border-violet-150 dark:border-violet-800/80 rounded-xl text-[9px] font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 transition-all shadow-sm">
-                                        Habilitar Todos
+                                        {{ __('teams.enable_all') }}
                                     </button>
                                 </form>
                                 <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
@@ -312,7 +312,7 @@
                                     <input type="hidden" name="setting" value="has_appointments">
                                     <input type="hidden" name="value" value="0">
                                     <button type="submit" class="w-full px-2 py-2.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[9px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all shadow-sm">
-                                        Deshabilitar
+                                        {{ __('teams.disable') }}
                                     </button>
                                 </form>
                             </div>
@@ -323,7 +323,7 @@
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2">
                                     <span class="w-2 h-2 rounded-full bg-pink-500"></span>
-                                    <span class="text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">Micrositios</span>
+                                    <span class="text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">{{ __('teams.microsites') }}</span>
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-2 mt-auto">
@@ -332,7 +332,7 @@
                                     <input type="hidden" name="setting" value="microsites_enabled">
                                     <input type="hidden" name="value" value="1">
                                     <button type="submit" class="w-full px-2 py-2.5 bg-pink-50 hover:bg-pink-100 dark:bg-pink-950/30 border border-pink-150 dark:border-pink-800/80 rounded-xl text-[9px] font-black uppercase tracking-wider text-pink-600 dark:text-pink-400 transition-all shadow-sm">
-                                        Habilitar Todos
+                                        {{ __('teams.enable_all') }}
                                     </button>
                                 </form>
                                 <form method="POST" action="{{ route('settings.teams.bulk-settings') }}" class="w-full">
@@ -340,7 +340,7 @@
                                     <input type="hidden" name="setting" value="microsites_enabled">
                                     <input type="hidden" name="value" value="0">
                                     <button type="submit" class="w-full px-2 py-2.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[9px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all shadow-sm">
-                                        Deshabilitar
+                                        {{ __('teams.disable') }}
                                     </button>
                                 </form>
                             </div>
@@ -351,17 +351,17 @@
                 <!-- Toggles individuales por equipo -->
                 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl overflow-hidden shadow-sm mt-8">
                     <div class="p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-transparent">
-                        <h3 class="text-sm font-black text-gray-800 dark:text-gray-200">Autorizaciones Individuales</h3>
+                        <h3 class="text-sm font-black text-gray-800 dark:text-gray-200">{{ __('Individual Authorizations') }}</h3>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-gray-50/50 dark:bg-gray-800/20 border-b border-gray-200 dark:border-gray-800">
-                                    <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Equipo</th>
-                                    <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">WhatsApp</th>
-                                    <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">Encuestas</th>
-                                    <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">Cita Previa</th>
-                                    <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">Micrositios</th>
+                                    <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">{{ __('Team') }}</th>
+                                    <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">{{ __('WhatsApp') }}</th>
+                                    <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">{{ __('Surveys') }}</th>
+                                    <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">{{ __('Appointments') }}</th>
+                                    <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">{{ __('Microsites') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -380,7 +380,7 @@
                                                 @csrf
                                                 @method('PATCH')
                                                 <input type="hidden" name="setting" value="has_whatsapp">
-                                                <label class="relative inline-flex items-center cursor-pointer" title="Habilitar/Deshabilitar WhatsApp">
+                                                <label class="relative inline-flex items-center cursor-pointer" title="{{ __('Toggle :module', ['module' => 'WhatsApp']) }}">
                                                     <input type="checkbox" onchange="this.form.submit()" class="sr-only peer" {{ ($team->settings['has_whatsapp'] ?? false) ? 'checked' : '' }}>
                                                     <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-500"></div>
                                                 </label>
@@ -391,7 +391,7 @@
                                                 @csrf
                                                 @method('PATCH')
                                                 <input type="hidden" name="setting" value="surveys_enabled">
-                                                <label class="relative inline-flex items-center cursor-pointer" title="Habilitar/Deshabilitar Encuestas">
+                                                <label class="relative inline-flex items-center cursor-pointer" title="{{ __('Toggle :module', ['module' => __('Surveys')]) }}">
                                                     <input type="checkbox" onchange="this.form.submit()" class="sr-only peer" {{ ($team->settings['surveys_enabled'] ?? false) ? 'checked' : '' }}>
                                                     <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-500"></div>
                                                 </label>
@@ -402,7 +402,7 @@
                                                 @csrf
                                                 @method('PATCH')
                                                 <input type="hidden" name="setting" value="has_appointments">
-                                                <label class="relative inline-flex items-center cursor-pointer" title="Habilitar/Deshabilitar Citas Previas">
+                                                <label class="relative inline-flex items-center cursor-pointer" title="{{ __('Toggle :module', ['module' => __('Appointments')]) }}">
                                                     <input type="checkbox" onchange="this.form.submit()" class="sr-only peer" {{ ($team->settings['has_appointments'] ?? false) ? 'checked' : '' }}>
                                                     <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-violet-500"></div>
                                                 </label>
@@ -413,7 +413,7 @@
                                                 @csrf
                                                 @method('PATCH')
                                                 <input type="hidden" name="setting" value="microsites_enabled">
-                                                <label class="relative inline-flex items-center cursor-pointer" title="Habilitar/Deshabilitar Micrositios">
+                                                <label class="relative inline-flex items-center cursor-pointer" title="{{ __('Toggle :module', ['module' => __('Microsites')]) }}">
                                                     <input type="checkbox" onchange="this.form.submit()" class="sr-only peer" {{ ($team->settings['microsites_enabled'] ?? false) ? 'checked' : '' }}>
                                                     <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-pink-500"></div>
                                                 </label>
@@ -439,14 +439,14 @@
     <script>
         function confirmDelete(teamId, teamName) {
             Swal.fire({
-                title: '¿Eliminar equipo?',
-                text: "Estás a punto de eliminar el equipo '" + teamName + "'. Esta acción no se puede deshacer y se borrarán todas sus tareas y datos asociados.",
+                title: '{{ __('teams.delete_team_confirm') }}',
+                text: "{{ __('teams.delete_team_message', ['team' => '{team}']) }}".replace('{team}', teamName),
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
                 cancelButtonColor: '#6b7280',
-                confirmButtonText: 'Sí, eliminar equipo',
-                cancelButtonText: 'Cancelar',
+                confirmButtonText: '{{ __('teams.confirm_delete') }}',
+                cancelButtonText: '{{ __('teams.cancel') }}',
                 background: document.documentElement.classList.contains('dark') ? '#111827' : '#ffffff',
                 color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#111827',
             }).then((result) => {

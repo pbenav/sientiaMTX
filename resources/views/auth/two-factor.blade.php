@@ -19,7 +19,7 @@
 
         <!-- Verification Code -->
         <div>
-            <x-input-label for="code" :value="__('Código de Verificación')" />
+            <x-input-label for="code" :value="__('Verification Code')" />
             <x-text-input id="code" class="block mt-1 w-full text-center tracking-widest text-lg font-mono" 
                 type="text" 
                 name="code" 

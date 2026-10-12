@@ -1,6 +1,6 @@
 @extends('layouts.public_microsites')
 
-@section('title', 'Directorio de Micrositios')
+@section('title', __('Microsites Directory'))
 
 @section('styles')
 <style>@media print{/* -- Print Mode Code Block Fix -- */pre,code,pre *,code *,.prose pre,.prose code{background-color:transparent!important;color:#000!important}div[class*=bg-gray-8],div[class*=bg-gray-9],div[class*=bg-slate-8],div[class*=bg-slate-9],div[style*=background],.prose div,.markdown-body div,.bg-gray-800,.bg-gray-900,.dark\\:bg-gray-800,.dark\\:bg-gray-900{background-color:transparent!important}pre,.prose pre{border:1px solid #cbd5e1!important;border-radius:0.25rem!important;white-space:pre-wrap!important;word-break:break-all!important;padding:0.5rem!important}code,.prose code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace!important}}#map {
@@ -22,14 +22,14 @@
     <!-- Sidebar de Micrositios -->
     <div :class="viewMode === 'list' ? 'flex' : 'hidden lg:flex'" class="lg:col-span-1 min-h-0 bg-white dark:bg-gray-900 border-r border-gray-150 dark:border-gray-800 flex-col h-full z-10 shadow-lg">
         <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
-            <h2 class="text-lg font-black tracking-tight text-gray-900 dark:text-white heading-font">{{ __('Directorio Público') }}</h2>
-            <p class="text-xs text-gray-400 dark:text-gray-500 font-medium mt-1">{{ __('Explora las páginas web y recursos publicados por nuestros equipos.') }}</p>
+            <h2 class="text-lg font-black tracking-tight text-gray-900 dark:text-white heading-font">{{ __('Public Directory') }}</h2>
+            <p class="text-xs text-gray-400 dark:text-gray-500 font-medium mt-1">{{ __('Explore the web pages and resources published by our teams.') }}</p>
             
             <form action="{{ route('public.microsites.directory') }}" method="GET" class="relative mt-4">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 </div>
-                <input type="text" name="q" id="search-input" placeholder="{{ __('Buscar micrositio o población...') }}" value="{{ request('q') }}"
+                <input type="text" name="q" id="search-input" placeholder="{{ __('Search microsite or location...') }}" value="{{ request('q') }}"
                        class="w-full pl-9 pr-4 py-2.5 bg-gray-100/80 dark:bg-gray-800/80 border border-transparent focus:border-pink-500 focus:bg-white dark:focus:bg-gray-950 focus:ring-2 focus:ring-pink-500/20 rounded-xl text-xs font-semibold text-gray-900 dark:text-white outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500 shadow-sm">
             </form>
         </div>
@@ -58,7 +58,7 @@
                             <div class="flex items-center justify-between gap-2 mt-2">
                                 <span class="flex items-center gap-1 text-[9px] text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wider">
                                     <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                    {{ number_format($m->views) }} visitas
+                                    {{ number_format($m->views) }} {{ __('visits') }}
                                 </span>
                                 <div class="flex items-center gap-1.5">
                                     @php
@@ -68,11 +68,11 @@
                                     @endphp
                                     <button type="button" onclick="event.stopPropagation(); openQrModal('{{ base64_encode($qrCodeSvg) }}', 'qr-micrositio-{{ $m->slug }}.svg')"
                                        class="p-0.5 bg-white border border-gray-200 dark:border-gray-700 hover:border-pink-500 rounded-lg shadow-sm transition-all hover:scale-110"
-                                       title="{{ __('Ver código QR') }}">
+                                       title="{{ __('html.qr_code') }}">
                                         {!! preg_replace('/<\?xml.*?\?>\n?/', '', $qrCodeSmall) !!}
                                     </button>
                                 @if($m->latitude && $m->longitude)
-                                        <button type="button" class="locate-map-btn p-1 text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 rounded-lg transition-colors" title="Ver en el mapa" data-lat="{{ $m->latitude }}" data-lng="{{ $m->longitude }}" data-slug="{{ $m->slug }}">
+                                        <button type="button" class="locate-map-btn p-1 text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 rounded-lg transition-colors" title="{{ __('View on map') }}" data-lat="{{ $m->latitude }}" data-lng="{{ $m->longitude }}" data-slug="{{ $m->slug }}">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
                                         </button>
                                 @endif
@@ -85,8 +85,8 @@
             @empty
                 <div class="p-8 text-center">
                     <p class="text-3xl mb-2">🌐</p>
-                    <p class="text-sm font-bold text-gray-500 dark:text-gray-400">{{ __('Sin micrositios') }}</p>
-                    <p class="text-xs text-gray-450 dark:text-gray-550 mt-1">{{ __('No hay micrositios públicos disponibles actualmente.') }}</p>
+                    <p class="text-sm font-bold text-gray-500 dark:text-gray-400">{{ __('No microsites') }}</p>
+                    <p class="text-xs text-gray-450 dark:text-gray-550 mt-1">{{ __('No public microsites currently available.') }}</p>
                 </div>
             @endforelse
             
@@ -109,11 +109,11 @@
                 class="flex items-center gap-2 px-5 py-3 bg-pink-600 dark:bg-pink-500 hover:bg-pink-500 dark:hover:bg-pink-400 text-white text-xs font-black uppercase tracking-wider rounded-full shadow-2xl shadow-pink-500/30 transition-all active:scale-95 select-none">
             <span x-show="viewMode === 'list'" class="flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-                {{ __('Ver Mapa') }}
+                {{ __('View Map') }}
             </span>
             <span x-show="viewMode === 'map'" class="flex items-center gap-2" x-cloak>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                {{ __('Ver Lista') }}
+                {{ __('View List') }}
             </span>
         </button>
     </div>
@@ -178,7 +178,7 @@ if (isDark) { document.querySelector('.leaflet-layer').style.filter = 'invert(10
                         <p class="text-[10px] font-bold text-pink-600 dark:text-pink-400 uppercase mt-0.5 tracking-wider">${m.team.name}</p>
                         ${m.city ? `<p class="text-[11px] text-gray-500 dark:text-gray-400 mt-2 font-medium">${m.city}</p>` : ''}
                         <a href="/p/${m.slug}" target="_blank" class="block text-center mt-3 px-4 py-2 bg-pink-600 hover:bg-pink-500 text-white !text-white text-[10px] font-black uppercase tracking-widest rounded-lg shadow-sm transition-all hover:scale-102 select-none">
-                            {{ __('Ver Micrositio') }}
+                            {{ __('View Microsite') }}
                         </a>
                     </div>
                 `;

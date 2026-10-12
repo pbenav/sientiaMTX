@@ -12,7 +12,7 @@
                 @if(!$isGlobal)
                     <a href="{{ route('teams.index') }}"
                         class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0"
-                        title="{{ __('navigation.back') ?? 'Volver' }}">
+                        title="{{ __('navigation.back') ?? __('Back') }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor" stroke-width="3">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -27,10 +27,10 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                         </svg>
-                        {{ $isGlobal ? __('Ajustar Encuesta Global') : __('Ajustar Encuesta') }}
+                        {{ $isGlobal ? __('Edit Global Survey') : __('Edit Survey') }}
                     </h1>
                     <p class="text-gray-500 dark:text-gray-400 font-medium text-sm">
-                        {{ __('Modifica la estructura o los ajustes de tu encuesta. Ten en cuenta que cambiar preguntas existentes puede afectar a la interpretación de los votos actuales.') }}
+                        {{ __('Modify the structure or settings of your survey. Please note that changing existing questions may affect the interpretation of current votes.') }}
                     </p>
                 </div>
             </div>
@@ -58,18 +58,18 @@
                         <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-xl shadow-indigo-500/5 border border-gray-100 dark:border-gray-800">
                             <div class="space-y-6">
                                 <div>
-                                    <label for="title" class="block text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-3 ml-1">{{ __('Título de la Encuesta') }}</label>
+                                    <label for="title" class="block text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-3 ml-1">{{ __('Survey Title') }}</label>
                                     <input type="text" name="title" id="title" value="{{ old('title', $survey->title) }}" required
                                            class="w-full bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-indigo-500 rounded-3xl p-4 text-base font-bold text-gray-900 dark:text-white transition-all placeholder-gray-400"
-                                           placeholder="{{ __('Ej: Feedback Trimestral del Equipo') }}">
+                                           placeholder="{{ __('e.g., Quarterly Team Feedback') }}">
                                     @error('title') <p class="mt-2 text-sm text-red-500 font-bold ml-2">{{ $message }}</p> @enderror
                                 </div>
 
                                 <div>
-                                    <label for="description" class="block text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-3 ml-1">{{ __('Contexto / Descripción') }}</label>
+                                    <label for="description" class="block text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-3 ml-1">{{ __('Context / Description') }}</label>
                                     <textarea name="description" id="description" rows="2"
                                               class="w-full bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-indigo-500 rounded-3xl p-4 text-sm text-gray-700 dark:text-gray-300 transition-all placeholder-gray-400 font-medium"
-                                              placeholder="{{ __('Explica brevemente el objetivo de esta consulta...') }}">{{ old('description', $survey->description) }}</textarea>
+                                              placeholder="{{ __('Briefly explain the purpose of this survey...') }}">{{ old('description', $survey->description) }}</textarea>
                                 </div>
                             </div>
                         </div>
@@ -78,8 +78,8 @@
                         <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-xl shadow-indigo-500/5 border border-gray-100 dark:border-gray-800" x-data="{ gdprEnabled: {{ old('data_protection.enabled', $survey->data_protection['enabled'] ?? false) ? 'true' : 'false' }} }">
                             <div class="flex items-center justify-between mb-6">
                                 <div>
-                                    <h3 class="text-xs font-black uppercase tracking-widest text-indigo-600 ml-1">{{ __('Protección de Datos (RGPD)') }}</h3>
-                                    <p class="text-[10px] text-gray-500 mt-1 ml-1">{{ __('Añade el texto legal al final de la encuesta.') }}</p>
+                                    <h3 class="text-xs font-black uppercase tracking-widest text-indigo-600 ml-1">{{ __('Data Protection (GDPR)') }}</h3>
+                                    <p class="text-[10px] text-gray-500 mt-1 ml-1">{{ __('Add legal text at the end of the survey.') }}</p>
                                 </div>
                                 <label class="relative inline-flex items-center cursor-pointer">
                                     <input type="hidden" name="data_protection[enabled]" value="0">
@@ -91,64 +91,64 @@
                             <div x-show="gdprEnabled" x-collapse class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800 mt-2">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">{{ __('Responsable') }}</label>
+                                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">{{ __('Data Controller') }}</label>
                                         <input type="text" name="data_protection[responsible]" value="{{ old('data_protection.responsible', $survey->data_protection['responsible'] ?? '') }}"
                                                class="w-full bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 text-xs font-bold text-gray-900 dark:text-white transition-all placeholder-gray-400"
-                                               placeholder="Ej: Consorcio Puntos Vuela">
+                                               placeholder="{{ __('e.g., Vuela Points Consortium') }}">
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">{{ __('Correo DPD / Contacto') }}</label>
+                                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">{{ __('DPO Email / Contact') }}</label>
                                         <input type="email" name="data_protection[dpo_email]" value="{{ old('data_protection.dpo_email', $survey->data_protection['dpo_email'] ?? '') }}"
                                                class="w-full bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 text-xs font-bold text-gray-900 dark:text-white transition-all placeholder-gray-400"
-                                               placeholder="Ej: dpo@empresa.com">
+                                               placeholder="{{ __('e.g., dpo@company.com') }}">
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">{{ __('Dirección del Responsable') }}</label>
+                                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">{{ __('Controller Address') }}</label>
                                     <input type="text" name="data_protection[address]" value="{{ old('data_protection.address', $survey->data_protection['address'] ?? '') }}"
                                            class="w-full bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 text-xs font-bold text-gray-900 dark:text-white transition-all placeholder-gray-400"
-                                           placeholder="Ej: Avda del Conocimiento nº 41...">
+                                           placeholder="{{ __('e.g., 41 Knowledge Ave...') }}">
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">{{ __('URL Política Ampliada') }}</label>
+                                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">{{ __('Extended Privacy Policy URL') }}</label>
                                     <input type="url" name="data_protection[url]" value="{{ old('data_protection.url', $survey->data_protection['url'] ?? '') }}"
                                            class="w-full bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 text-xs font-bold text-gray-900 dark:text-white transition-all placeholder-gray-400"
                                            placeholder="https://...">
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">{{ __('Finalidad del Formulario') }}</label>
+                                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">{{ __('Form Purpose') }}</label>
                                     <textarea name="data_protection[purpose]" rows="2"
                                               class="w-full bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 text-xs font-medium text-gray-700 dark:text-gray-300 transition-all placeholder-gray-400"
-                                              placeholder="Este formulario es sólo y exclusivamente con el fin de la recogida de datos para...">{{ old('data_protection.purpose', $survey->data_protection['purpose'] ?? '') }}</textarea>
+                                              placeholder="{{ __('This form is solely and exclusively for the purpose of collecting data for...') }}">{{ old('data_protection.purpose', $survey->data_protection['purpose'] ?? '') }}</textarea>
                                 </div>
                                 <div class="md:col-span-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-                                    <label class="block text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-2 ml-1">{{ __('Plantilla de Texto Legal') }}</label>
-                                    <p class="text-[10px] text-gray-500 mb-3 ml-1">Puedes usar las etiquetas: <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-indigo-500">{responsable}</code>, <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-indigo-500">{correo}</code>, <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-indigo-500">{direccion}</code>, <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-indigo-500">{url}</code>, <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-indigo-500">{finalidad}</code></p>
+                                    <label class="block text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-2 ml-1">{{ __('Legal Text Template') }}</label>
+                                    <p class="text-[10px] text-gray-500 mb-3 ml-1">{{ __('You can use the tags:') }} <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-indigo-500">{responsable}</code>, <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-indigo-500">{correo}</code>, <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-indigo-500">{direccion}</code>, <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-indigo-500">{url}</code>, <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-indigo-500">{finalidad}</code></p>
                                     <textarea name="data_protection[template]" rows="6"
                                               class="w-full bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 text-xs font-medium text-gray-700 dark:text-gray-300 transition-all placeholder-gray-400"
-                                              placeholder="POLÍTICA DE PROTECCIÓN DE DATOS... El responsable es {responsable}...">{{ old('data_protection.template', $survey->data_protection['template'] ?? "POLÍTICA DE PROTECCIÓN DE DATOS\n\nInformación básica sobre protección de datos\n\nLa identidad del responsable es {responsable} con domicilio en {direccion}. Tratamos sus datos con la finalidad de {finalidad}. Pueden ejercer sus derechos de acceso, rectificación, supresión, oposición y limitación al tratamiento de los datos que tengamos suyos mediante correo electrónico a la dirección {correo}.\nPueden consultar la información adicional y detallada sobre Protección de Datos en {url}.") }}</textarea>
+                                              placeholder="{{ __('DATA PROTECTION POLICY... The controller is {responsable}...') }}">{{ old('data_protection.template', $survey->data_protection['template'] ?? "POLÍTICA DE PROTECCIÓN DE DATOS\n\nInformación básica sobre protección de datos\n\nLa identidad del responsable es {responsable} con domicilio en {direccion}. Tratamos sus datos con la finalidad de {finalidad}. Pueden ejercer sus derechos de acceso, rectificación, supresión, oposición y limitación al tratamiento de los datos que tengamos suyos mediante correo electrónico a la dirección {correo}.\nPueden consultar la información adicional y detallada sobre Protección de Datos en {url}.") }}</textarea>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Questions Builder Header -->
                         <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-                            <h2 class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">{{ __('Constructor de Preguntas') }}</h2>
+                            <h2 class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">{{ __('Question Builder') }}</h2>
                             <div class="flex items-center gap-2">
                                 <button type="button" @click="previewSurvey()"
                                         class="inline-flex items-center px-4 py-2 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-100 transition-all gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                    {{ __('Previsualizar') }}
+                                    {{ __('Preview') }}
                                 </button>
                                 <button type="button" @click="selectImportSource()"
                                         class="inline-flex items-center px-4 py-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-100 transition-all gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a2 2 0 002 2h12a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                                    {{ __('Añadir desde JSON') }}
+                                    {{ __('Import from JSON') }}
                                 </button>
                                 <button type="button" @click="downloadExampleJSON()"
                                         class="inline-flex items-center px-3 py-2 text-[9px] font-bold text-gray-400 hover:text-indigo-500 transition-colors gap-1.5 group">
                                     <svg class="w-3.5 h-3.5 opacity-50 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                    {{ __('Descargar Ejemplo') }}
+                                    {{ __('Download Example') }}
                                 </button>
                                 <input type="file" x-ref="jsonInput" class="hidden" accept=".json" @change="importJSON($event)">
                             </div>
@@ -177,20 +177,20 @@
                                                 <div class="flex-grow space-y-4">
                                                      <input type="text" :name="`questions[${qIndex}][title]`" x-model="question.title" required
                                                             class="w-full bg-transparent border-b-2 border-gray-100 dark:border-gray-800 focus:border-indigo-500 px-0 py-2 text-lg font-black text-gray-900 dark:text-white placeholder-gray-300 transition-all"
-                                                            placeholder="{{ __('Escribe tu pregunta aquí...') }}">
+                                                            placeholder="{{ __('Write your question here...') }}">
 
                                                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                          <div>
-                                                             <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">{{ __('Descripción (Opcional)') }}</label>
+                                                             <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">{{ __('Description (Optional)') }}</label>
                                                              <textarea :name="`questions[${qIndex}][description]`" x-model="question.description" rows="1"
                                                                        class="w-full bg-gray-50 dark:bg-gray-800/30 border-2 border-transparent focus:border-indigo-500/30 rounded-xl p-3 text-xs font-medium text-gray-700 dark:text-gray-300 transition-all"
-                                                                       placeholder="{{ __('Añade contexto adicional...') }}"></textarea>
+                                                                       placeholder="{{ __('Add additional context...') }}"></textarea>
                                                          </div>
                                                          <div>
-                                                             <label class="block text-[10px] font-black uppercase tracking-widest text-indigo-600/50 mb-2 ml-1">{{ __('Instrucciones (Internas/Guía)') }}</label>
+                                                             <label class="block text-[10px] font-black uppercase tracking-widest text-indigo-600/50 mb-2 ml-1">{{ __('Instructions (Internal/Guide)') }}</label>
                                                              <textarea :name="`questions[${qIndex}][instructions]`" x-model="question.instructions" rows="1"
                                                                        class="w-full bg-gray-50 dark:bg-gray-800/30 border-2 border-transparent focus:border-indigo-500/30 rounded-xl p-3 text-xs font-medium text-gray-700 dark:text-gray-300 transition-all"
-                                                                       placeholder="{{ __('Instrucciones sobre cómo responder...') }}"></textarea>
+                                                                       placeholder="{{ __('Instructions on how to respond...') }}"></textarea>
                                                          </div>
                                                      </div>
                                                  </div>
@@ -198,13 +198,13 @@
 
                                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <div>
-                                                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">{{ __('Tipo de Respuesta') }}</label>
+                                                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">{{ __('Response Type') }}</label>
                                                     <select :name="`questions[${qIndex}][type]`" x-model="question.type"
                                                             class="w-full bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-indigo-500 rounded-2xl p-3 text-sm font-bold text-gray-700 dark:text-gray-300 transition-all">
-                                                        <option value="single_choice">{{ __('Opción Única') }}</option>
-                                                        <option value="multiple_choice">{{ __('Opción Múltiple') }}</option>
-                                                        <option value="rating">{{ __('Valoración (1-5 estrellas)') }}</option>
-                                                        <option value="text">{{ __('Respuesta Libre (Texto)') }}</option>
+                                                        <option value="single_choice">{{ __('Single Choice') }}</option>
+                                                        <option value="multiple_choice">{{ __('Multiple Choice') }}</option>
+                                                        <option value="rating">{{ __('Rating (1-5 stars)') }}</option>
+                                                        <option value="text">{{ __('Free Text') }}</option>
                                                     </select>
                                                 </div>
                                                 <div class="flex items-center pl-2 pt-6">
@@ -212,7 +212,7 @@
                                                         <input type="hidden" :name="`questions[${qIndex}][is_required]`" :value="question.is_required ? 1 : 0">
                                                         <input type="checkbox" x-model="question.is_required" class="sr-only peer">
                                                         <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
-                                                        <span class="ml-3 text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ __('Obligatoria') }}</span>
+                                                        <span class="ml-3 text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ __('Required') }}</span>
                                                     </label>
                                                 </div>
                                             </div>
@@ -224,7 +224,7 @@
                                                  x-transition:enter-end="opacity-100 translate-y-0"
                                                  class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
 
-                                                <label class="block text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-2 ml-1">{{ __('Opciones de Respuesta') }}</label>
+                                                <label class="block text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-2 ml-1">{{ __('Response Options') }}</label>
 
                                                 <div class="space-y-3">
                                                     <template x-for="(option, oIndex) in question.options" :key="oIndex">
@@ -233,7 +233,7 @@
                                                             <input type="hidden" :name="`questions[${qIndex}][options][${oIndex}][id]`" :value="option.db_id">
                                                             <input type="text" :name="`questions[${qIndex}][options][${oIndex}][label]`" x-model="option.label"
                                                                    class="flex-grow bg-gray-50 dark:bg-gray-800/30 border-2 border-transparent focus:border-indigo-500/30 focus:bg-white dark:focus:bg-gray-800 rounded-xl px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 transition-all"
-                                                                   placeholder="{{ __('Escribe una opción...') }}">
+                                                                   placeholder="{{ __('Write an option...') }}">
                                                             <button type="button" @click="removeOption(qIndex, oIndex)"
                                                                     class="p-2 text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover/opt:opacity-100"
                                                                     x-show="question.options.length > 2">
@@ -246,7 +246,7 @@
                                                 <button type="button" @click="addOption(qIndex)"
                                                         class="inline-flex items-center px-4 py-2 text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-xl transition-all gap-2">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
-                                                    {{ __('Añadir Opción') }}
+                                                    {{ __('Add Option') }}
                                                 </button>
                                             </div>
 
@@ -257,13 +257,13 @@
                                                         <svg class="w-8 h-8 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                                                     </template>
                                                 </div>
-                                                <p class="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-500">{{ __('Escala de valoración automática de 1 a 5') }}</p>
+                                                <p class="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-500">{{ __('Automatic rating scale from 1 to 5') }}</p>
                                             </div>
 
                                             <!-- Text Preview -->
                                             <div x-show="question.type === 'text'" class="p-6 bg-emerald-50 dark:bg-emerald-500/5 rounded-3xl border border-emerald-100 dark:border-emerald-900/20">
                                                 <div class="w-full h-12 border-2 border-dashed border-emerald-200 dark:border-emerald-800 rounded-xl"></div>
-                                                <p class="mt-3 text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-500 text-center">{{ __('Caja de texto para respuestas abiertas') }}</p>
+                                                <p class="mt-3 text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-500 text-center">{{ __('Text box for open-ended responses') }}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -276,7 +276,7 @@
                                 <div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-lg">
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"/></svg>
                                 </div>
-                                <span class="font-black uppercase tracking-widest text-sm">{{ __('Añadir Nueva Pregunta') }}</span>
+                                <span class="font-black uppercase tracking-widest text-sm">{{ __('Add New Question') }}</span>
                             </button>
                         </div>
                     </div>
@@ -286,12 +286,12 @@
                         <div class="sticky top-8 space-y-6">
                             <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-xl shadow-indigo-500/5 border border-gray-100 dark:border-gray-800">
                                 <h3 class="text-xs font-black uppercase tracking-widest text-indigo-600 mb-8 border-b border-gray-100 dark:border-gray-800 pb-4">
-                                    {{ __('Configuración Global') }}
+                                    {{ __('Global Settings') }}
                                 </h3>
 
                                 <div class="space-y-6">
                                     <div>
-                                        <label for="expires_at" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">{{ __('Fecha de Expiración') }}</label>
+                                        <label for="expires_at" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">{{ __('Expiration Date') }}</label>
                                         <input type="datetime-local" name="expires_at" id="expires_at" value="{{ $survey->expires_at ? $survey->expires_at->format('Y-m-d\TH:i') : '' }}"
                                                class="w-full bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-indigo-500 rounded-2xl p-3 text-sm font-bold text-gray-700 dark:text-gray-300 transition-all">
                                     </div>
@@ -303,7 +303,7 @@
                                                 <input type="checkbox" name="show_results_before_voting" value="1" {{ old('show_results_before_voting', $survey->show_results_before_voting) ? 'checked' : '' }} class="sr-only peer">
                                                 <div class="w-10 h-5 bg-gray-200 dark:bg-gray-700 rounded-full peer-checked:bg-indigo-600 transition-colors after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-5"></div>
                                             </div>
-                                            <span class="ml-3 text-xs font-bold text-gray-600 dark:text-gray-400 group-hover:text-indigo-600 transition-colors">{{ __('Resultados públicos antes de votar') }}</span>
+                                            <span class="ml-3 text-xs font-bold text-gray-600 dark:text-gray-400 group-hover:text-indigo-600 transition-colors">{{ __('Public results before voting') }}</span>
                                         </label>
 
                                         <label class="flex items-center group cursor-pointer">
@@ -312,7 +312,7 @@
                                                 <input type="checkbox" name="is_public" value="1" {{ old('is_public', $survey->is_public) ? 'checked' : '' }} class="sr-only peer">
                                                 <div class="w-10 h-5 bg-gray-200 dark:bg-gray-700 rounded-full peer-checked:bg-fuchsia-600 transition-colors after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-5"></div>
                                             </div>
-                                            <span class="ml-3 text-xs font-bold text-gray-600 dark:text-gray-400 group-hover:text-fuchsia-600 transition-colors">{{ __('Encuesta pública (Enlace externo)') }}</span>
+                                            <span class="ml-3 text-xs font-bold text-gray-600 dark:text-gray-400 group-hover:text-fuchsia-600 transition-colors">{{ __('Public survey (External link)') }}</span>
                                         </label>
 
                                         <label class="flex items-center group cursor-pointer">
@@ -321,7 +321,7 @@
                                                 <input type="checkbox" name="allow_multiple_votes" value="1" {{ old('allow_multiple_votes', $survey->allow_multiple_votes) ? 'checked' : '' }} class="sr-only peer">
                                                 <div class="w-10 h-5 bg-gray-200 dark:bg-gray-700 rounded-full peer-checked:bg-emerald-600 transition-colors after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-5"></div>
                                             </div>
-                                            <span class="ml-3 text-xs font-bold text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 transition-colors">{{ __('Permitir múltiples votos por usuario') }}</span>
+                                            <span class="ml-3 text-xs font-bold text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 transition-colors">{{ __('Allow multiple votes per user') }}</span>
                                         </label>
 
                                         <label class="flex items-center group cursor-pointer">
@@ -330,7 +330,7 @@
                                                 <input type="checkbox" name="is_active" value="1" {{ old('is_active', $survey->is_active) ? 'checked' : '' }} class="sr-only peer">
                                                 <div class="w-10 h-5 bg-gray-200 dark:bg-gray-700 rounded-full peer-checked:bg-indigo-600 transition-colors after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-5"></div>
                                             </div>
-                                            <span class="ml-3 text-xs font-bold text-gray-600 dark:text-gray-400 group-hover:text-indigo-600 transition-colors">{{ __('Encuesta Activa') }}</span>
+                                            <span class="ml-3 text-xs font-bold text-gray-600 dark:text-gray-400 group-hover:text-indigo-600 transition-colors">{{ __('Active Survey') }}</span>
                                         </label>
                                     </div>
                                 </div>
@@ -340,7 +340,7 @@
                                     class="w-full group relative inline-flex items-center justify-center px-8 py-5 font-black text-white tracking-widest uppercase transition-all duration-500 ease-in-out transform bg-indigo-600 rounded-[2rem] hover:scale-105 active:scale-95 shadow-[0_20px_50px_rgba(79,70,229,0.3)] hover:shadow-[0_20px_50px_rgba(79,70,229,0.5)] overflow-hidden">
                                 <div class="absolute inset-0 w-full h-full bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-700"></div>
                                 <span class="relative flex items-center gap-3">
-                                    {{ __('Guardar Cambios') }}
+                                    {{ __('Save Changes') }}
                                     <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
                                 </span>
                             </button>
@@ -362,7 +362,7 @@
          class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-4 z-[800] flex items-center gap-2 px-4 py-2.5 bg-white/93 dark:bg-gray-900/93 backdrop-blur-xl border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl opacity-0 pointer-events-none transition-all duration-300 whitespace-nowrap cursor-move"
          :class="isDragging ? 'scale-105 shadow-[0_20px_50px_rgba(0,0,0,0.2)]' : ''">
 
-        {{-- Volver --}}
+        {{-- {{ __('Back') }} --}}
         <a href="{{ $isGlobal ? route('global-surveys.index') : route('teams.surveys.index', $contextTeam) }}"
            style="display:flex;align-items:center;gap:0.375rem;font-size:0.75rem;font-weight:700;color:#6b7280;padding:0.375rem 0.75rem;border-radius:0.625rem;text-decoration:none;transition:all 0.15s ease;"
            onmouseover="this.style.color='#0891b2';this.style.background='#ecfeff'"
@@ -370,7 +370,7 @@
             <svg style="width:1rem;height:1rem;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
             </svg>
-            <span>Volver</span>
+            <span>{{ __('Back') }}</span>
         </a>
 
         <div style="width:1px;height:1.25rem;background:#e5e7eb;flex-shrink:0"></div>
@@ -391,7 +391,7 @@
             <svg style="width:1rem;height:1rem;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
             </svg>
-            <span>Guardar Cambios</span>
+            <span>{{ __('Save Changes') }}</span>
         </button>
     </div>
 
@@ -416,7 +416,7 @@
                                     Swal.fire('Error', data.message, 'error');
                                 }
                             } catch (err) {
-                                Swal.fire('Error', 'No se pudo conectar con Google Drive', 'error');
+                                Swal.fire('Error', 'No se pudo conectar con {{ __('Google Drive') }}', 'error');
                             }
                         }
                     });
@@ -452,7 +452,7 @@
                 selectImportSource() {
                     const isDark = document.documentElement.classList.contains('dark');
                     Swal.fire({
-                        title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">{{ __("Origen de Importación") }}</span>',
+                        title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">{{ __("Import Source") }}</span>',
                         background: isDark ? '#0f172a' : '#ffffff',
                         color: isDark ? '#f3f4f6' : '#1f2937',
                         showConfirmButton: false,
@@ -462,20 +462,20 @@
                         },
                         html: `
                             <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-6 text-center px-4">
-                                {{ __("¿Desde dónde quieres cargar las preguntas de tu encuesta?") }}
+                                {{ __("Where do you want to load the survey questions from?") }}
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-2">
                                 <button type="button" id="import-btn-file" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30 hover:border-indigo-600 transition-all text-center group">
                                     <div class="w-12 h-12 rounded-2xl bg-white dark:bg-gray-800 flex items-center justify-center text-gray-600 group-hover:scale-110 transition-transform shadow-sm">
                                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a2 2 0 002 2h12a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
                                     </div>
-                                    <div class="font-black text-[9px] uppercase tracking-widest text-gray-700 dark:text-gray-300">{{ __("Archivo Local") }}</div>
+                                    <div class="font-black text-[9px] uppercase tracking-widest text-gray-700 dark:text-gray-300">{{ __("Local File") }}</div>
                                 </button>
                                 <button type="button" id="import-btn-clipboard" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30 hover:border-indigo-600 transition-all text-center group">
                                     <div class="w-12 h-12 rounded-2xl bg-white dark:bg-gray-800 flex items-center justify-center text-gray-600 group-hover:scale-110 transition-transform shadow-sm">
                                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                                     </div>
-                                    <div class="font-black text-[9px] uppercase tracking-widest text-gray-700 dark:text-gray-300">{{ __("Portapapeles") }}</div>
+                                    <div class="font-black text-[9px] uppercase tracking-widest text-gray-700 dark:text-gray-300">{{ __("Clipboard") }}</div>
                                 </button>
                                 <button type="button" id="import-btn-drive" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30 hover:border-indigo-600 transition-all text-center group">
                                     <div class="w-12 h-12 rounded-2xl bg-white dark:bg-gray-800 flex items-center justify-center text-gray-600 group-hover:scale-110 transition-transform shadow-sm">
@@ -485,7 +485,7 @@
                                             <path d="M15 6l9 16 9-16H15z" fill="#4CAF50"/>
                                         </svg>
                                     </div>
-                                    <div class="font-black text-[9px] uppercase tracking-widest text-gray-700 dark:text-gray-300">Google Drive</div>
+                                    <div class="font-black text-[9px] uppercase tracking-widest text-gray-700 dark:text-gray-300">{{ __('Google Drive') }}</div>
                                 </button>
                             </div>
                         `,
@@ -494,16 +494,16 @@
                             el.querySelector('#import-btn-clipboard').onclick = async () => {
                                 Swal.close();
                                 Swal.fire({
-                                    title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">{{ __("Pegar JSON") }}</span>',
+                                    title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">{{ __('Paste JSON') }}</span>',
                                     html: `
                                         <div class="text-left mt-4">
-                                            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2 ml-1">{{ __("Pega aquí el contenido de tu JSON") }}</label>
+                                            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2 ml-1">{{ __("Paste your JSON content here") }}</label>
                                             <textarea id="clipboard-json-input" class="w-full h-64 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-xs font-mono text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500/20 outline-none resize-none custom-scrollbar" placeholder='[{"title": "..."}]'></textarea>
                                         </div>
                                     `,
                                     showCancelButton: true,
-                                    confirmButtonText: '{{ __("Validar e Importar") }}',
-                                    cancelButtonText: '{{ __("Cancelar") }}',
+                                    confirmButtonText: '{{ __("Validate & Import") }}',
+                                    cancelButtonText: '{{ __('Cancel') }}',
                                     confirmButtonColor: '#4f46e5',
                                     background: isDark ? '#0f172a' : '#ffffff',
                                     color: isDark ? '#f3f4f6' : '#1f2937',
@@ -523,7 +523,7 @@
                                     preConfirm: () => {
                                         const val = document.getElementById('clipboard-json-input').value;
                                         if (!val) {
-                                            Swal.showValidationMessage('{{ __("Por favor, pega el JSON antes de continuar") }}');
+                                            Swal.showValidationMessage('{{ __("Please paste JSON before continuing") }}');
                                         }
                                         return val;
                                     }
@@ -548,34 +548,34 @@
                 downloadExampleJSON() {
                     const example = [
                         {
-                            "title": "{{ __('Nivel de satisfacción') }}",
-                            "description": "{{ __('Indica cómo te sientes con el proyecto') }}",
+                            "title": "{{ __('Satisfaction level') }}",
+                            "description": "{{ __('Indicate how you feel about the project') }}",
                             "type": "rating",
                             "is_required": true
                         },
                         {
-                            "title": "{{ __('¿De qué departamento eres?') }}",
+                            "title": "{{ __('Which department are you in?') }}",
                             "type": "single_choice",
                             "options": [
-                                "{{ __('Desarrollo') }}",
-                                "{{ __('Diseño') }}",
+                                "{{ __('Development') }}",
+                                "{{ __('Design') }}",
                                 "{{ __('Marketing') }}",
-                                "{{ __('Ventas') }}"
+                                "{{ __('Sales') }}"
                             ],
                             "is_required": true
                         },
                         {
-                            "title": "{{ __('¿Qué mejorarías?') }}",
+                            "title": "{{ __('What would you improve?') }}",
                             "type": "multiple_choice",
                             "options": [
-                                "{{ __('Comunicación') }}",
-                                "{{ __('Herramientas') }}",
-                                "{{ __('Plazos') }}",
-                                "{{ __('Nada, todo genial') }}"
+                                "{{ __('Communication') }}",
+                                "{{ __('Tools') }}",
+                                "{{ __('Deadlines') }}",
+                                "{{ __('Nothing, everything is great') }}"
                             ]
                         },
                         {
-                            "title": "{{ __('Sugerencias adicionales') }}",
+                            "title": "{{ __('Additional suggestions') }}",
                             "type": "text",
                             "is_required": false
                         }
@@ -638,16 +638,16 @@
                             // Generate Preview HTML
                             let previewHtml = `
                                 <div class="text-left mt-4 mb-6">
-                                    <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">{{ __("Vista Previa de Preguntas") }}</div>
+                                    <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">{{ __('Question Preview') }}</div>
                                     <div class="space-y-2 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
                             `;
 
                             validated.forEach((q, index) => {
                                 const typeNames = {
-                                    'single_choice': 'Única',
-                                    'multiple_choice': 'Múltiple',
-                                    'rating': 'Valoración',
-                                    'text': 'Libre'
+                                    'single_choice': '{{ __('Single Choice') }}',
+                                    'multiple_choice': '{{ __('Multiple Choice') }}',
+                                    'rating': '{{ __('Rating') }}',
+                                    'text': '{{ __('Free Text') }}'
                                 };
                                 previewHtml += `
                                     <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-800 flex items-center justify-between gap-3">
@@ -663,17 +663,17 @@
                             previewHtml += `</div></div>`;
 
                             Swal.fire({
-                                title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">{{ __("¿Importar preguntas?") }}</span>',
+                                title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">{{ __("Import questions?") }}</span>',
                                 html: `
                                     <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 px-4">
-                                        {{ __("Hemos detectado :count preguntas en el archivo. Esto reemplazará las preguntas actuales.", ["count" => ""]) }}`.replace('""', validated.length) + validated.length + `
+                                        {{ __("We detected :count questions in the file. This will replace the current questions.", ["count" => ""]) }}`.replace('""', validated.length) + validated.length + `
                                     </div>
                                     ${previewHtml}
                                 `,
                                 icon: 'info',
                                 showCancelButton: true,
-                                confirmButtonText: '{{ __("Sí, importar todo") }}',
-                                cancelButtonText: '{{ __("Revisar JSON") }}',
+                                confirmButtonText: '{{ __("Yes, import all") }}',
+                                cancelButtonText: '{{ __("Review JSON") }}',
                                 confirmButtonColor: '#4f46e5',
                                 background: isDark ? '#0f172a' : '#ffffff',
                                 color: isDark ? '#f3f4f6' : '#1f2937',
@@ -686,8 +686,8 @@
                                 if (result.isConfirmed) {
                                     this.questions = validated;
                                     Swal.fire({
-                                        title: '{{ __("¡Hecho!") }}',
-                                        text: '{{ __("Se han importado :count preguntas.", ["count" => ""]) }}'.replace('""', validated.length) + validated.length,
+                                        title: '{{ __("Done!") }}',
+                                        text: '{{ __("Imported :count questions.", ["count" => ""]) }}'.replace('""', validated.length) + validated.length,
                                         icon: 'success',
                                         toast: true,
                                         position: 'top-end',
@@ -700,12 +700,12 @@
                             throw new Error('El formato no es un array');
                         }
                     } catch (err) {
-                        Swal.fire('Error', '{{ __("Error al procesar el JSON. Asegúrate de que el formato es correcto.") }}', 'error');
+                        Swal.fire('Error', '{{ __("Error processing JSON. Please ensure the format is valid.") }}', 'error');
                     }
                 },
                 previewSurvey() {
                     const isDark = document.documentElement.classList.contains('dark');
-                    const title = document.getElementById('title').value || '{{ __("Sin título") }}';
+                    const title = document.getElementById('title').value || '{{ __("Untitled") }}';
                     const description = document.getElementById('description').value || '';
 
                     let questionsHtml = '';
@@ -735,7 +735,7 @@
                         } else if (q.type === 'text') {
                             optionsHtml = `
                                 <div class="mt-3 w-full h-24 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 rounded-xl p-3 text-[10px] text-gray-400 font-medium italic">
-                                    {{ __("Escribe aquí tu respuesta...") }}
+                                    {{ __("Write your answer here...") }}
                                 </div>
                             `;
                         }
@@ -746,7 +746,7 @@
                                     <div class="shrink-0 w-6 h-6 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-[10px] font-black">${index + 1}</div>
                                     <div class="min-w-0 flex-grow">
                                         <div class="text-sm font-black text-gray-900 dark:text-white leading-tight">
-                                            ${q.title || '{{ __("Pregunta sin título") }}'}
+                                            ${q.title || '{{ __("Untitled Question") }}'}
                                             ${q.is_required ? '<span class="text-red-500 ml-1">*</span>' : ''}
                                         </div>
                                         ${q.description ? `<div class="text-[10px] text-gray-500 dark:text-gray-400 mt-1 font-medium">${q.description}</div>` : ''}
@@ -758,7 +758,7 @@
                     });
 
                     Swal.fire({
-                        title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">{{ __("Vista Previa de la Encuesta") }}</span>',
+                        title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">{{ __("Survey Preview") }}</span>',
                         width: '800px',
                         html: `
                             <div class="text-left mt-6 px-2">
@@ -772,9 +772,9 @@
                                 </div>
                                 <div class="mt-10 pt-6 border-t border-gray-100 dark:border-gray-800 text-center">
                                     <button class="px-8 py-4 bg-indigo-600 text-white rounded-[1.5rem] font-black uppercase text-[10px] tracking-widest shadow-lg shadow-indigo-500/20 opacity-50 cursor-not-allowed">
-                                        {{ __("Enviar Respuestas") }}
+                                        {{ __('Submit Responses') }}
                                     </button>
-                                    <p class="mt-3 text-[9px] text-gray-400 font-bold italic uppercase tracking-tighter">{{ __("Esto es solo una vista previa del diseño") }}</p>
+                                    <p class="mt-3 text-[9px] text-gray-400 font-bold italic uppercase tracking-tighter">{{ __("This is only a design preview") }}</p>
                                 </div>
                             </div>
                         `,

@@ -17,7 +17,7 @@
                         </a> / {{ __('Create User') }}
                     </h1>
                     <x-demo-hint>
-                        Formulario de registro manual de usuarios. Los nuevos usuarios creados aquí no pertenecerán a ningún equipo hasta que sean asignados o acepten una invitación.
+                        {{ __('Manual user registration form. New users created here will not belong to any team until assigned or until they accept an invitation.') }}
                     </x-demo-hint>
                 </div>
             </div>

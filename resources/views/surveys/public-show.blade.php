@@ -32,13 +32,13 @@
                 </div>
                 <div>
                     <span class="block text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">SIENTIA MTX</span>
-                    <span class="block text-[9px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest">{{ __('Canal de Participación Ciudadana') }}</span>
+                    <span class="block text-[9px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest">{{ __('Citizen Participation Channel') }}</span>
                 </div>
             </div>
             @if(auth()->check())
                 <a href="{{ $survey->team_id ? route('teams.surveys.index', $survey->team_id) : route('global-surveys.index') }}" class="flex items-center gap-1.5 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-xs font-black uppercase tracking-widest text-gray-700 dark:text-gray-300 rounded-xl transition-all">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                    <span>{{ __('Volver al Gestor') }}</span>
+                    <span>{{ __('Back to Manager') }}</span>
                 </a>
             @endif
         </div>
@@ -49,17 +49,17 @@
             
             <!-- Columna Principal (70%): Encuesta y Resultados -->
             <div class="lg:col-span-8 space-y-8">
-                <!-- Título y Descripción de la Encuesta -->
+                <!-- Título y {{ __('Description') }} de la Encuesta -->
                 <div class="bg-white dark:bg-gray-900 rounded-[2rem] shadow-xl border border-gray-100 dark:border-gray-800 p-6 sm:p-8 flex flex-col relative overflow-hidden">
                     <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-violet-500/10 to-transparent pointer-events-none rounded-full"></div>
                     <div class="flex flex-wrap items-center gap-4 mb-4">
                         <span class="inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full {{ $survey->is_closed ? 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 animate-pulse' }}">
                             <span class="w-1.5 h-1.5 rounded-full {{ $survey->is_closed ? 'bg-red-500' : 'bg-emerald-500' }}"></span>
-                            {{ $survey->is_closed ? __('Finalizada') : __('Activa') }}
+                            {{ $survey->is_closed ? __('Closed') : __('Active') }}
                         </span>
                         @if($survey->expires_at)
                             <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                                {{ $survey->is_expired ? __('Expiró') : __('Finaliza') }} {{ $survey->expires_at->diffForHumans() }}
+                                {{ $survey->is_expired ? __('Expired') : __('Ends') }} {{ $survey->expires_at->diffForHumans() }}
                             </span>
                         @endif
                     </div>
@@ -90,7 +90,7 @@
                 @if($showResults)
                     <div class="bg-white dark:bg-gray-900 rounded-[2rem] shadow-xl p-6 sm:p-8 border border-gray-100 dark:border-gray-800">
                         <h2 class="text-lg sm:text-xl font-black text-gray-900 dark:text-white tracking-tight uppercase mb-6 border-b border-gray-100 dark:border-gray-850 pb-4">
-                            {{ __('Resultados y Participación') }}
+                            {{ __('Results and Participation') }}
                         </h2>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -148,7 +148,7 @@
                                                     </div>
                                                 @endif
                                             @empty
-                                                <div class="text-center py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">{{ __('Sin comentarios todavía') }}</div>
+                                                <div class="text-center py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">{{ __('No comments yet') }}</div>
                                             @endforelse
                                         </div>
                                     @endif
@@ -228,7 +228,7 @@
                                                 <div class="bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 border-2 border-transparent focus-within:border-indigo-500/50 transition-all duration-300">
                                                     <textarea name="answers[{{ $question->id }}]" rows="3" x-model="answers['{{ $question->id }}']"
                                                               class="w-full bg-transparent border-none focus:ring-0 text-base text-gray-900 dark:text-white placeholder-gray-400 font-medium resize-none"
-                                                              placeholder="{{ __('Escribe aquí tus ideas o comentarios...') }}"
+                                                              placeholder="{{ __('Write your thoughts or comments here...') }}"
                                                               {{ $question->is_required ? 'required' : '' }}></textarea>
                                                 </div>
                                             @endif
@@ -243,11 +243,11 @@
                                     $dpTemplate = str_replace(
                                         ['{responsable}', '{correo}', '{direccion}', '{url}', '{finalidad}'],
                                         [
-                                            '<strong>' . e($survey->data_protection['responsible'] ?? 'No especificado') . '</strong>',
-                                            '<strong>' . e($survey->data_protection['dpo_email'] ?? 'No especificado') . '</strong>',
-                                            '<strong>' . e($survey->data_protection['address'] ?? 'No especificado') . '</strong>',
-                                            !empty($survey->data_protection['url']) ? '<a href="'.e($survey->data_protection['url']).'" target="_blank" class="text-indigo-600 hover:text-indigo-800 underline">Enlace a la política ampliada</a>' : '<strong>No especificado</strong>',
-                                            '<strong>' . e($survey->data_protection['purpose'] ?? 'No especificado') . '</strong>',
+                                            '<strong>' . e($survey->data_protection['responsible'] ?? "{{ __('Not specified') }}") . '</strong>',
+                                            '<strong>' . e($survey->data_protection['dpo_email'] ?? "{{ __('Not specified') }}") . '</strong>',
+                                            '<strong>' . e($survey->data_protection['address'] ?? "{{ __('Not specified') }}") . '</strong>',
+                                            !empty($survey->data_protection['url']) ? '<a href="'.e($survey->data_protection['url']).'" target="_blank" class="text-indigo-600 hover:text-indigo-800 underline">{{ __('Link to extended privacy policy') }}</a>' : '<strong>No especificado</strong>',
+                                            '<strong>' . e($survey->data_protection['purpose'] ?? "{{ __('Not specified') }}") . '</strong>',
                                         ],
                                         e($dpTemplate)
                                     );
@@ -260,7 +260,7 @@
                                             <div class="p-1.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg shrink-0">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
                                             </div>
-                                            <h4 class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest mt-0.5">Protección de Datos</h4>
+                                            <h4 class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest mt-0.5">{{ __('Data Protection') }}</h4>
                                         </div>
                                         <div class="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed font-medium">
                                             {!! nl2br($dpTemplate) !!}
@@ -276,7 +276,7 @@
                                         class="group relative inline-flex items-center justify-center px-10 py-4 font-bold text-white tracking-wider uppercase transition-all duration-500 ease-in-out transform bg-indigo-600 rounded-2xl hover:scale-105 active:scale-95 shadow-[0_20px_50px_rgba(79,70,229,0.3)] hover:shadow-[0_20px_50px_rgba(79,70,229,0.5)] overflow-hidden">
                                     <div class="absolute inset-0 w-full h-full bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-700"></div>
                                     <span class="relative flex items-center gap-2 text-lg">
-                                        {{ __('Enviar Respuestas') }}
+                                        {{ __('Submit Responses') }}
                                         <svg class="w-5 h-5 transition-transform duration-500 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
                                     </span>
                                 </button>
@@ -296,20 +296,20 @@
                             <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.5H4.5V21M3 21h18M12 6.75a.75.75 0 11-.75.75.75.75 0 01.75-.75z"/></svg>
                         </div>
                         <div>
-                            <h3 class="text-sm font-black text-violet-600 dark:text-violet-400 uppercase tracking-widest">{{ __('Canal Ciudadano') }}</h3>
-                            <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('Consulta Pública y Transparencia') }}</p>
+                            <h3 class="text-sm font-black text-violet-600 dark:text-violet-400 uppercase tracking-widest">{{ __('Citizen Channel') }}</h3>
+                            <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('Public Consultation & Transparency') }}</p>
                         </div>
                     </div>
 
                     <!-- Organismo Promotor -->
                     <div class="space-y-4">
-                        <h4 class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('Entidad Promotora') }}</h4>
+                        <h4 class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('Promoting Entity') }}</h4>
                         <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100/50 dark:border-gray-800">
                             <img src="{{ $survey->creator->profile_photo_url }}" class="w-12 h-12 rounded-full border border-white dark:border-gray-800 shadow-md">
                             <div class="min-w-0 flex-1">
                                 <span class="block text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight truncate">{{ $survey->creator->name }}</span>
                                 <span class="inline-flex items-center gap-1.5 text-[9px] font-black text-violet-600 dark:text-violet-400 uppercase tracking-widest mt-1 bg-violet-50 dark:bg-violet-500/10 px-2 py-0.5 rounded-full">
-                                    {{ $survey->creator->working_area_name ?: __('Ayuntamiento General') }}
+                                    {{ $survey->creator->working_area_name ?: __('General City Council') }}
                                 </span>
                             </div>
                         </div>
@@ -317,7 +317,7 @@
 
                     <!-- Mapa Interactivo / Localización -->
                     <div class="space-y-4">
-                        <h4 class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('Ubicación del Centro') }}</h4>
+                        <h4 class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('Center Location') }}</h4>
                         <div class="relative w-full h-[220px] rounded-[1.5rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-inner">
                             <div id="promoter-map" class="w-full h-full"></div>
                             <div class="absolute bottom-3 left-3 right-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm p-3 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 z-[1000] flex items-center gap-2.5">
@@ -325,12 +325,12 @@
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
                                 </div>
                                 <div class="min-w-0 flex-1">
-                                    <span class="block text-[10px] font-black text-gray-900 dark:text-white uppercase tracking-tight truncate">{{ $survey->creator->working_area_name ?: __('Ayuntamiento General') }}</span>
+                                    <span class="block text-[10px] font-black text-gray-900 dark:text-white uppercase tracking-tight truncate">{{ $survey->creator->working_area_name ?: __('General City Council') }}</span>
                                     <span class="block text-[9px] font-bold text-gray-400 truncate">
                                         @if($survey->creator->location_lat && $survey->creator->location_lng)
                                             Lat: {{ number_format($survey->creator->location_lat, 4) }}, Lng: {{ number_format($survey->creator->location_lng, 4) }}
                                         @else
-                                            {{ __('Ubicación Centralizada') }}
+                                            {{ __('Centralized Location') }}
                                         @endif
                                     </span>
                                 </div>
@@ -344,9 +344,9 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
                         </div>
                         <div class="flex-1">
-                            <span class="block text-xs font-black text-emerald-800 dark:text-emerald-400 uppercase tracking-widest mb-1">{{ __('Garantía de Confidencialidad') }}</span>
+                            <span class="block text-xs font-black text-emerald-800 dark:text-emerald-400 uppercase tracking-widest mb-1">{{ __('Confidentiality Guarantee') }}</span>
                             <p class="text-[10px] text-emerald-700/80 dark:text-emerald-400/80 font-bold leading-normal">
-                                {{ __('Tus respuestas son totalmente anónimas y se procesan de acuerdo con el RGPD para la mejora continua de la gestión ciudadana.') }}
+                                {{ __('Your responses are completely anonymous and processed under GDPR for the continuous improvement of civic management.') }}
                             </p>
                         </div>
                     </div>
@@ -356,7 +356,7 @@
         </div>
 
         <div class="text-center mt-12 pb-8">
-            <p class="text-xs text-gray-400 font-bold uppercase tracking-widest">Desarrollado con <span class="text-indigo-600 dark:text-indigo-400 font-black">sientiaMTX</span></p>
+            <p class="text-xs text-gray-400 font-bold uppercase tracking-widest">{{ __('Powered by') }} <span class="text-indigo-600 dark:text-indigo-400 font-black">sientiaMTX</span></p>
         </div>
     </div>
 

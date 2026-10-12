@@ -108,7 +108,13 @@ class BuildKanbanDataAction
         ->when($filters['type'], fn($q, $type) => $this->filterByType($q, $type))
         ->when($filters['urgency'] ?? null, fn($q, $u) => $q->byUrgency($u))
         ->when($filters['assignment_mode'] ?? null, fn($q, $m) => $q->byAssignmentMode($m))
-        ->when($filters['blocked'] ?? null, fn($q) => $q->blocked())
+        ->when(isset($filters['blocked']) && $filters['blocked'] !== '' && $filters['blocked'] !== null, function ($q) use ($filters) {
+            if ($filters['blocked'] == '1') {
+                $q->blocked();
+            } elseif ($filters['blocked'] == '0') {
+                $q->whereJsonDoesntContain('status->value', 'blocked');
+            }
+        })
         ->orderBy('kanban_order', 'asc')
         ->orderByRaw(TaskPriority::orderQuery())
         ->orderBy('progress_percentage', 'desc');

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <!-- Metadatos de Nombre de Sitio para Google (SEO / Open Graph) -->
+    <!-- Metadatos de {{ __("Name") }} de Sitio para Google (SEO / Open Graph) -->
     <meta property="og:site_name" content="Sientia Open Labs">
 
     <title>{{ config('app.name', 'Laravel') }}</title>

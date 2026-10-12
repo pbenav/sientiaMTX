@@ -8,7 +8,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                         </svg>
-                        Heredar Especialidades Globales
+                        {{ __('Inherit Global Specialties') }}
                    </button>
                </form>
             </div>
@@ -18,11 +18,11 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-gray-50/50 dark:bg-gray-800/30 border-b border-gray-100/80 dark:border-gray-800/80">
-                        <th class="px-6 py-4.5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Habilidad / Especialidad</th>
-                        <th class="px-6 py-4.5 text-[10px] font-black text-gray-400 uppercase tracking-widest hidden md:table-cell">Ámbito</th>
-                        <th class="px-6 py-4.5 text-[10px] font-black text-gray-400 uppercase tracking-widest hidden md:table-cell">Descripción</th>
-                        <th class="px-6 py-4.5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Tareas</th>
-                        <th class="px-6 py-4.5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Acciones</th>
+                        <th class="px-6 py-4.5 text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ __('Skill / Specialty') }}</th>
+                        <th class="px-6 py-4.5 text-[10px] font-black text-gray-400 uppercase tracking-widest hidden md:table-cell">{{ __('Scope') }}</th>
+                        <th class="px-6 py-4.5 text-[10px] font-black text-gray-400 uppercase tracking-widest hidden md:table-cell">{{ __('Description') }}</th>
+                        <th class="px-6 py-4.5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">{{ __('Tasks') }}</th>
+                        <th class="px-6 py-4.5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50/50 dark:divide-gray-800/40">
@@ -56,7 +56,7 @@
                                     </span>
                                 @else
                                     <span class="inline-flex items-center px-2.5 py-1 rounded-xl text-[10px] font-extrabold bg-violet-500/10 text-violet-700 dark:text-violet-400 border border-violet-500/20 shadow-sm">
-                                        Global
+                                        {{ __('Global') }}
                                     </span>
                                 @endif
                             </td>
@@ -81,16 +81,16 @@
                                 <div class="flex items-center justify-end gap-1.5 text-xs">
                                     <button onclick="editSkill({{ json_encode($skill) }})" 
                                             class="p-2 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-xl transition-all duration-300 cursor-pointer"
-                                            title="Editar Habilidad">
+                                            title="{{ __("html.edit_skill") }}">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
                                     </button>
                                     
-                                    <form action="{{ isset($team) ? route('teams.skills.destroy', [$team, $skill, 'tab' => 'skills']) : route('settings.skills.destroy', $skill) }}" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar esta habilidad?')">
+                                    <form action="{{ isset($team) ? route('teams.skills.destroy', [$team, $skill, 'tab' => 'skills']) : route('settings.skills.destroy', $skill) }}" method="POST" onsubmit="return confirm('{{ __('swal.confirm_delete_skill') }}')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="p-2 text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-all duration-300 cursor-pointer {{ $skill->tasks_count > 0 ? 'opacity-20 cursor-not-allowed' : '' }}" {{ $skill->tasks_count > 0 ? 'disabled' : '' }} title="Eliminar Habilidad">
+                                        <button type="submit" class="p-2 text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-all duration-300 cursor-pointer {{ $skill->tasks_count > 0 ? 'opacity-20 cursor-not-allowed' : '' }}" {{ $skill->tasks_count > 0 ? 'disabled' : '' }} title="{{ __('Delete Skill') }}">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
@@ -106,7 +106,7 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-300 dark:text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                     </svg>
-                                    No hay habilidades configuradas todavía.
+                                    {{ __('No skills configured yet.') }}
                                 </div>
                             </td>
                         </tr>
@@ -125,7 +125,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
                     </svg>
                  </div>
-                 <span>Nueva Habilidad</span>
+                 <span>{{ __('skills.new_skill') }}</span>
             </h2>
 
             <form id="skill-form" action="{{ isset($team) ? route('teams.skills.store', [$team, 'tab' => 'skills']) : route('settings.skills.store') }}" method="POST" class="space-y-5">
@@ -134,9 +134,9 @@
                 
                 @if(!isset($team))
                 <div class="space-y-1.5">
-                    <x-input-label for="team_id" value="Equipo / Ámbito" class="font-extrabold uppercase tracking-widest text-[9px] text-gray-400" />
+                    <x-input-label for="team_id" :value="__('Team / Scope')" class="font-extrabold uppercase tracking-widest text-[9px] text-gray-400" />
                     <select id="team_id" name="team_id" class="mt-1 block w-full bg-gray-50/50 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-700/60 rounded-xl px-4 py-2.5 text-xs text-gray-900 dark:text-white focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 transition-all outline-none cursor-pointer font-bold">
-                        <option value="">Global (Todos los equipos)</option>
+                        <option value="">{{ __('Global (All teams)') }}</option>
                         @foreach($teams as $t)
                             <option value="{{ $t->id }}">{{ $t->name }}</option>
                         @endforeach
@@ -147,29 +147,29 @@
                 @endif
 
                 <div class="space-y-1.5">
-                    <x-input-label for="skill_name" value="Nombre" class="font-extrabold uppercase tracking-widest text-[9px] text-gray-400" />
-                    <x-text-input id="skill_name" name="name" type="text" class="mt-1 block w-full text-xs bg-gray-50/50 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-700/60 rounded-xl px-4 py-2.5 font-bold focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 transition-all outline-none" required placeholder="Ej: Dinamización" />
+                    <x-input-label for="skill_name" :value="__('Name')" class="font-extrabold uppercase tracking-widest text-[9px] text-gray-400" />
+                    <x-text-input id="skill_name" name="name" type="text" class="mt-1 block w-full text-xs bg-gray-50/50 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-700/60 rounded-xl px-4 py-2.5 font-bold focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 transition-all outline-none" required :placeholder="__('e.g., Facilitation')" />
                 </div>
 
                 <div class="space-y-1.5">
-                    <x-input-label for="skill_description" value="Descripción" class="font-extrabold uppercase tracking-widest text-[9px] text-gray-400" />
-                    <textarea id="skill_description" name="description" rows="3" class="mt-1 block w-full bg-gray-50/50 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-700/60 rounded-xl px-4 py-3 text-xs text-gray-900 dark:text-white focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 transition-all outline-none font-medium italic placeholder:not-italic" placeholder="¿En qué consiste esta especialidad?"></textarea>
+                    <x-input-label for="skill_description" :value="__('Description')" class="font-extrabold uppercase tracking-widest text-[9px] text-gray-400" />
+                    <textarea id="skill_description" name="description" rows="3" class="mt-1 block w-full bg-gray-50/50 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-700/60 rounded-xl px-4 py-3 text-xs text-gray-900 dark:text-white focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 transition-all outline-none font-medium italic placeholder:not-italic" placeholder="{{ __('What does this specialty consist of?') }}"></textarea>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-1.5">
-                        <x-input-label for="skill_icon" value="Icono (Emoji)" class="font-extrabold uppercase tracking-widest text-[9px] text-gray-400" />
+                        <x-input-label for="skill_icon" :value="__('Icon (Emoji)')" class="font-extrabold uppercase tracking-widest text-[9px] text-gray-400" />
                         <x-text-input id="skill_icon" name="icon" type="text" class="mt-1 block w-full text-center text-xl bg-gray-50/50 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-700/60 rounded-xl py-1.5 font-bold focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 transition-all outline-none" placeholder="💠" maxlength="4" />
                     </div>
                     <div class="space-y-1.5">
-                        <x-input-label for="skill_color" value="Color" class="font-extrabold uppercase tracking-widest text-[9px] text-gray-400" />
+                        <x-input-label for="skill_color" :value="__('Color')" class="font-extrabold uppercase tracking-widest text-[9px] text-gray-400" />
                         <x-text-input id="skill_color" name="color" type="color" class="mt-1 block w-full h-11 p-1 cursor-pointer bg-gray-50/50 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-700/60 rounded-xl focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 transition-all" value="#7c3aed" />
                     </div>
                 </div>
 
                 {{-- Emoji Selector Palette (Gemas Compactas) --}}
                 <div class="space-y-2 pt-1">
-                    <span class="text-[9px] font-extrabold text-gray-400 uppercase tracking-widest block">Seleccionar Emoji Rápido</span>
+                    <span class="text-[9px] font-extrabold text-gray-400 uppercase tracking-widest block">{{ __('skills.select_emoji_quick') }}</span>
                     <div class="gap-1 p-1.5 bg-gray-50/80 dark:bg-gray-800/40 rounded-2xl border border-gray-200/60 dark:border-gray-700/60 max-h-[140px] overflow-y-auto no-scrollbar shadow-inner"
                          style="display: grid; grid-template-columns: repeat(10, minmax(0, 1fr));">
                         @php
@@ -192,10 +192,10 @@
 
                 <div class="pt-4 flex items-center justify-between gap-4">
                     <button type="button" id="cancel-btn" onclick="resetForm()" class="hidden text-[10px] font-black text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors uppercase tracking-widest py-3">
-                        Cancelar
+                        {{ __('Cancel') }}
                     </button>
                     <button type="submit" class="flex-1 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-black py-3 px-6 rounded-2xl shadow-lg shadow-violet-500/20 dark:shadow-none hover:shadow-violet-500/30 transition-all active:scale-[0.98] uppercase text-[10px] tracking-widest cursor-pointer">
-                        Guardar Habilidad
+                        {{ __('Save Skill') }}
                     </button>
                 </div>
             </form>
@@ -228,7 +228,7 @@
         // Update URL and Method
         form.action = `${getBaseRoute()}/${skill.id}`;
         methodInput.value = 'PATCH';
-        title.innerHTML = '<div class="w-9 h-9 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center shadow-sm"><svg xmlns="http://www.w3.org/2000/svg" class="h-5.5 w-5.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></div> Editar Habilidad';
+        title.innerHTML = '<div class="w-9 h-9 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center shadow-sm"><svg xmlns="http://www.w3.org/2000/svg" class="h-5.5 w-5.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></div> ' + '{{ __("Edit Skill") }}';
         cancelBtn.classList.remove('hidden');
         
         // Fill fields
@@ -253,7 +253,7 @@
         
         form.action = getBaseRoute();
         methodInput.value = 'POST';
-        title.innerHTML = '<div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-sm"><svg xmlns="http://www.w3.org/2000/svg" class="h-5.5 w-5.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg></div> Nueva Habilidad';
+        title.innerHTML = '<div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-sm"><svg xmlns="http://www.w3.org/2000/svg" class="h-5.5 w-5.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg></div> ' + '{{ __("skills.new_skill") }}';
         cancelBtn.classList.add('hidden');
         
         form.reset();

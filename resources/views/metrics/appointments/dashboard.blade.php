@@ -285,7 +285,7 @@
                 <thead>
                     <tr class="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">
                         <th class="px-6 py-3 text-left font-semibold">{{ __('Servicio') }}</th>
-                        <th class="px-6 py-3 text-right font-semibold">{{ __('Citas') }}</th>
+                        <th class="px-6 py-3 text-right font-semibold">{{ __('Appointments') }}</th>
                         <th class="px-6 py-3 text-right font-semibold">{{ __('Completado') }}</th>
                         <th class="px-6 py-3 text-right font-semibold">{{ __('Tasa de Finalización') }}</th>
                         <th class="px-6 py-3 text-right font-semibold">{{ __('Ingresos') }}</th>
@@ -474,7 +474,7 @@ document.addEventListener('DOMContentLoaded', function() {
         chart: { type: 'donut', height: 280, fontFamily: 'Inter, sans-serif' },
         series: stateData.map(d => d.count ?? 0),
         labels: stateData.map(d => {
-            const map = { confirmed: '{{ __('Confirmado') }}', cancelled: '{{ __('Cancelado') }}', 'no_show': '{{ __('No Presentado') }}', completed: '{{ __('Completado') }}', pending: '{{ __('Pendiente') }}', scheduled: '{{ __('Programado') }}' };
+            const map = { confirmed: '{{ __('Confirmado') }}', cancelled: 'Cancelado', 'no_show': 'No Presentado', completed: 'Completado', pending: 'Pendiente', scheduled: '{{ __('Programado') }}' };
             return map[d.status] || d.status || '—';
         }),
         colors: ['#10b981', '#f59e0b', '#f43f5e', '#3b82f6', '#8b5cf6', '#06b6d4'],
@@ -504,7 +504,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const peakHoursData = {!! json_encode($peakHours ?? []) !!};
     const phChart = new ApexCharts(document.getElementById("peakHoursChart"), {
         chart: { type: 'area', height: 280, toolbar: { show: false }, fontFamily: 'Inter, sans-serif' },
-        series: [{ name: '{{ __('Citas') }}', data: peakHoursData.map(d => d.count ?? 0) }],
+        series: [{ name: '{{ __('Appointments') }}', data: peakHoursData.map(d => d.count ?? 0) }],
         xaxis: { categories: peakHoursData.map(d => d.label || (d.hour !== undefined ? d.hour + ':00' : '')) },
         stroke: { curve: 'smooth', width: 2 },
         fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.3, stops: [0, 90, 100] } },
@@ -519,7 +519,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const peakDaysData = {!! json_encode($peakDays ?? []) !!};
     const pdChart = new ApexCharts(document.getElementById("peakDaysChart"), {
         chart: { type: 'bar', height: 280, toolbar: { show: false }, fontFamily: 'Inter, sans-serif' },
-        series: [{ name: '{{ __('Citas') }}', data: peakDaysData.map(d => d.count ?? 0) }],
+        series: [{ name: '{{ __('Appointments') }}', data: peakDaysData.map(d => d.count ?? 0) }],
         plotOptions: { bar: { borderRadius: 6, columnWidth: '55%' } },
         colors: ['#6366f1'],
         xaxis: { categories: peakDaysData.map(d => d.name || d.day_name || d.day_of_week || '') },

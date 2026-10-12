@@ -5,7 +5,7 @@
             <div class="flex items-center gap-2 min-w-0">
                 <a href="{{ route('teams.dashboard', $team) }}"
                     class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0"
-                    title="{{ __('navigation.back') ?? 'Volver' }}">
+                    title="{{ __('navigation.back') ?? __('Back') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -57,11 +57,11 @@
 
                 <div class="flex items-center gap-2 w-full sm:w-auto">
                     <select name="sort" onchange="this.form.submit()" class="flex-1 sm:flex-none bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold py-2.5 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all cursor-pointer text-gray-700 dark:text-gray-300">
-                        <option value="updated_at_desc" {{ ($filters['sort'] ?? '') === 'updated_at_desc' ? 'selected' : '' }}>Nuevos</option>
-                        <option value="updated_at_asc" {{ ($filters['sort'] ?? '') === 'updated_at_asc' ? 'selected' : '' }}>Antiguos</option>
-                        <option value="messages_desc" {{ ($filters['sort'] ?? '') === 'messages_desc' ? 'selected' : '' }}>Con más respuestas</option>
-                        <option value="views_desc" {{ ($filters['sort'] ?? '') === 'views_desc' ? 'selected' : '' }}>Más vistos</option>
-                        <option value="title_asc" {{ ($filters['sort'] ?? '') === 'title_asc' ? 'selected' : '' }}>Alfabético</option>
+                        <option value="updated_at_desc" {{ ($filters['sort'] ?? '') === 'updated_at_desc' ? 'selected' : '' }}>{{ __('Newest') }}</option>
+                        <option value="updated_at_asc" {{ ($filters['sort'] ?? '') === 'updated_at_asc' ? 'selected' : '' }}>{{ __('Oldest') }}</option>
+                        <option value="messages_desc" {{ ($filters['sort'] ?? '') === 'messages_desc' ? 'selected' : '' }}>{{ __('Most replies') }}</option>
+                        <option value="views_desc" {{ ($filters['sort'] ?? '') === 'views_desc' ? 'selected' : '' }}>{{ __('Most viewed') }}</option>
+                        <option value="title_asc" {{ ($filters['sort'] ?? '') === 'title_asc' ? 'selected' : '' }}>{{ __('Alphabetical') }}</option>
                     </select>
 
                     <select name="limit" onchange="this.form.submit()" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold py-2.5 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all cursor-pointer text-gray-700 dark:text-gray-300">
@@ -85,13 +85,13 @@
 
                     <div class="absolute inset-y-0 right-2 flex items-center gap-1">
                         @if(!empty($filters['search']))
-                            <a href="{{ route('teams.forum.index', [$team, 'reset_filters' => 1]) }}" class="p-1.5 text-gray-400 hover:text-red-500 transition-colors" title="{{ __('forum.clear_search') ?? 'Limpiar búsqueda' }}">
+                            <a href="{{ route('teams.forum.index', [$team, 'reset_filters' => 1]) }}" class="p-1.5 text-gray-400 hover:text-red-500 transition-colors" title="{{ __('forum.clear_search') ?? __('html.clear_search') }}">
                                 <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </a>
                         @endif
-                        <button type="submit" class="p-1.5 text-gray-400 hover:text-violet-600 transition-colors" title="Buscar">
+                        <button type="submit" class="p-1.5 text-gray-400 hover:text-violet-600 transition-colors" title="{{ __('Search') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                             </svg>
@@ -167,7 +167,7 @@
                 @if($filters['search'])
                     <a href="{{ route('teams.forum.index', [$team, 'reset_filters' => 1]) }}"
                         class="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold py-2.5 px-6 rounded-xl transition-all border border-gray-200 dark:border-gray-700">
-                        {{ __('forum.clear_search') ?? 'Limpiar búsqueda' }}
+                        {{ __('forum.clear_search') ?? __('html.clear_search') }}
                     </a>
                 @else
                     <button x-data="{}" x-on:click.prevent="$dispatch('open-modal', 'create-thread-modal')"
@@ -254,7 +254,7 @@
                                     {{ $thread->created_at->format('d M y, H:i') }}
                                 </span>
 
-                                <span class="flex items-center gap-1.5" title="Vistas">
+                                <span class="flex items-center gap-1.5" title="{{ __("html.views") }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -344,14 +344,14 @@
 
             <div class="space-y-4">
                 <div>
-                    <x-input-label for="title" :value="__('forum.title_label') ?? 'Título'" />
+                    <x-input-label for="title" :value="__('forum.title_label')" />
                     <x-text-input id="title" name="title" type="text" class="mt-1 block w-full"
-                        placeholder="Ej: Dudas sobre la arquitectura del nuevo módulo" required autofocus />
+                        placeholder="{{ __('e.g. Questions about new module architecture') }}" required autofocus />
                     <x-input-error class="mt-2" :messages="$errors->get('title')" />
                 </div>
 
                 <div>
-                    <x-input-label for="task_query" :value="__('forum.related_task') ?? 'Tarea relacionada (Opcional)'" />
+                    <x-input-label for="task_query" :value="__('forum.related_task')" />
                     <div class="relative z-[999999] overflow-visible">
                         <input id="task_query" name="activity_query" type="text" autocomplete="off"
                             x-model="taskQuery"
@@ -392,12 +392,12 @@
                 </div>
 
                 <div>
-                    <x-input-label for="content" :value="__('forum.initial_message') ?? 'Mensaje inicial'" />
+                    <x-input-label for="content" :value="__('forum.initial_message')" />
                     <x-markdown-editor
                         name="content"
                         id="content"
                         rows="12"
-                        placeholder="Escribe aquí el contexto de la conversación... (Soporta Markdown)"
+                        placeholder="{{ __('Write conversation context here... (Markdown supported)') }}"
                         required
                         :upload-url="route('teams.forum.upload_image', $team)"
                         :mentions-url="route('teams.mentions', $team)"
@@ -459,7 +459,7 @@
 
             <div class="mt-8 flex justify-end gap-3">
                 <x-secondary-button x-on:click="$dispatch('close')">
-                    {{ __('forum.cancel') ?? 'Cancelar' }}
+                    {{ __('forum.cancel') ?? __('Cancel') }}
                 </x-secondary-button>
 
                 <x-primary-button>
@@ -558,9 +558,9 @@
                             console.error('Error uploading image', error);
                             textarea.value = textarea.value.replace(placeholder, '');
                             if (typeof Swal !== 'undefined') {
-                                Swal.fire({ icon: 'error', title: 'Error', text: 'Hubo un error al subir la imagen.', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                                Swal.fire({ icon: 'error', title: 'Error', text: '{{ __('swal.alert_upload_image_error') }}', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
                             } else {
-                                alert('Hubo un error al subir la imagen.');
+                                alert('{{ __('swal.alert_upload_image_error') }}');
                             }
                         });
                     }
@@ -741,7 +741,7 @@
              class="dark:[background:rgba(17,24,39,0.92)] dark:[border-color:rgba(55,65,81,0.8)]">
 
              <!-- Drag Handle -->
-             <div class="cursor-grab text-gray-300 hover:text-gray-500 dark:text-gray-700 dark:hover:text-gray-500 transition-colors px-1 select-none flex items-center justify-center" title="Arrastrar">
+             <div class="cursor-grab text-gray-300 hover:text-gray-500 dark:text-gray-700 dark:hover:text-gray-500 transition-colors px-1 select-none flex items-center justify-center" title="{{ __("html.drag") }}">
                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
                      <circle cx="9" cy="5" r="1.5" />
                      <circle cx="15" cy="5" r="1.5" />
@@ -758,7 +758,7 @@
                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                  </svg>
-                 <span>Equipo</span>
+                 <span>{{ __('Team') }}</span>
              </a>
 
              <!-- Divider -->
@@ -786,7 +786,7 @@
                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
                  </svg>
-                 <span>Inicio</span>
+                 <span>{{ __('Home') }}</span>
              </button>
         </div>
 @endpush

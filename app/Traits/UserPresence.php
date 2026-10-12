@@ -95,7 +95,7 @@ trait UserPresence
         if ($isWorking && $this->last_login_at) {
             return [
                 'status' => 'working',
-                'label' => __('En labor'),
+                'label' => __('Working'),
                 'color' => 'rose-500',
                 'animate' => 'animate-pulse',
                 'dot_class' => 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.6)]'
@@ -105,7 +105,7 @@ trait UserPresence
         if ($isOnline) {
             return [
                 'status' => 'online',
-                'label' => __('Activo'),
+                'label' => __('Active'),
                 'color' => 'emerald-500',
                 'animate' => 'animate-ping',
                 'dot_class' => 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]'
@@ -115,7 +115,7 @@ trait UserPresence
         if ($isSleeping) {
             return [
                 'status' => 'sleeping',
-                'label' => __('Dormido'),
+                'label' => __('Away'),
                 'color' => 'amber-500',
                 'animate' => 'animate-pulse',
                 'dot_class' => 'bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]'
@@ -124,7 +124,7 @@ trait UserPresence
 
         return [
             'status' => 'offline',
-            'label' => __('Desconectado'),
+            'label' => __('Offline'),
             'color' => 'gray-400',
             'animate' => '',
             'dot_class' => 'bg-gray-300 dark:bg-gray-700'

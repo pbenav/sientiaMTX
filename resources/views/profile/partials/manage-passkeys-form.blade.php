@@ -65,7 +65,7 @@
                         </div>
                     </div>
                     
-                    <form method="POST" action="{{ route('passkey.destroy', $pk) }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta llave? Perderás la capacidad de acceder con este dispositivo.')">
+                    <form method="POST" action="{{ route('passkey.destroy', $pk) }}" onsubmit="return confirm('{{ __('swal.confirm_delete_passkey') }}')">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="p-2 text-gray-400 hover:text-red-600 dark:text-gray-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all" title="Eliminar Llave">

@@ -61,11 +61,11 @@
 
                         <div class="ml-4 flex items-center">
                             @if (!$session->is_current_device)
-                                <form method="POST" action="{{ route('profile.sessions.logout', $session->id) }}" onsubmit="return confirm('¿Estás seguro de que deseas cerrar esta sesión de forma remota?')">
+                                <form method="POST" action="{{ route('profile.sessions.logout', $session->id) }}" onsubmit="return confirm('{{ __('swal.confirm_logout_session') }}')">
                                     @csrf
                                     @method('DELETE')
                                     <input type="hidden" name="tab" value="security">
-                                    <button type="submit" class="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/30 transition-all group" title="Cerrar sesión remotamente">
+                                    <button type="submit" class="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/30 transition-all group" title="{{ __('html.remote_logout') }}">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                                         </svg>

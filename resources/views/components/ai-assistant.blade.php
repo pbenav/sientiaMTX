@@ -58,7 +58,7 @@
             <div class="flex items-center space-x-1">
                 <button @click="clearHistory()" 
                         class="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 text-indigo-200 hover:text-white rounded-lg transition-colors"
-                        title="Limpiar historial">
+                        title="{{ __('Clear') }} historial">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
@@ -67,11 +67,11 @@
                 <!-- Undo Button -->
                 <button x-show="canUndo" @click="undoLastAction()" 
                         class="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded-lg transition-all text-xs font-medium border border-amber-200/50 dark:border-amber-800/50 animate-pulse"
-                        title="Deshacer último cambio">
+                        title="{{ __("Deshacer") }} último cambio">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
                     </svg>
-                    <span>Deshacer</span>
+                    <span>{{ __("Deshacer") }}</span>
                 </button>
                 <button @click="soundEnabled = !soundEnabled; localStorage.setItem('ai_sound_enabled', soundEnabled ? '1' : '0')" 
                         class="p-2 hover:bg-white/10 rounded-full transition-colors" 
@@ -150,7 +150,7 @@
                         </span>
                     </div>
                     <div class="flex flex-wrap justify-center gap-x-3 gap-y-1 text-[8px] font-bold text-gray-500 uppercase tracking-tighter opacity-80 text-center">
-                        <span class="flex items-center gap-1 shrink-0">📍 <span x-text="teamId ? 'Equipo ' + teamId : 'Global'"></span></span>
+                        <span class="flex items-center gap-1 shrink-0">📍 <span x-text="teamId ? '{{ __('Team') }} ' + teamId : 'Global'"></span></span>
                         <span class="flex items-center gap-1 shrink-0">🤖 <span x-text="currentModel" class="max-w-[120px] truncate"></span></span>
                         <span class="flex items-center gap-1 shrink-0">⚡ <span x-text="currentModel.includes('flash') ? 'Turbo' : 'Ultra'"></span></span>
                     </div>
@@ -175,7 +175,7 @@
                                     <template x-if="!msg.file_type || !msg.file_type.startsWith('audio/')">
                                         <a :href="msg.file_url" target="_blank" class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-2">
                                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                            <span x-text="msg.file_name || 'Ver archivo'"></span>
+                                            <span x-text="msg.file_name || '{{ __('View') }} archivo'"></span>
                                         </a>
                                     </template>
                                 </div>
@@ -199,7 +199,7 @@
                                             <div class="flex flex-col gap-2">
                                                 <div class="flex items-center gap-2 text-[10px] opacity-70">
                                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
-                                                    <span x-text="msg.file_name || 'Audio grabado'"></span>
+                                                    <span x-text="msg.file_name || '{{ __('Audio grabado') }}'"></span>
                                                 </div>
                                                 <audio controls class="w-full h-8 rounded-lg" :src="msg.file_url"></audio>
                                             </div>
@@ -224,17 +224,17 @@
                                     <div class="absolute -bottom-10 left-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button @click="resendUserMessage(index)" 
                                                 class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-indigo-500 dark:text-indigo-400" 
-                                                title="Repetir envío">
+                                                title="{{ __('html.repeat_send') }}">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                                         </button>
                                         <button @click="editUserMessage(index)" 
                                                 class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-amber-500 dark:text-amber-400" 
-                                                title="Editar mensaje">
+                                                title="{{ __('Edit') }} mensaje">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                                         </button>
                                         <button @click="deleteUserMessage(index)" 
                                                 class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-red-500 dark:text-red-400" 
-                                                title="Eliminar mensaje">
+                                                title="{{ __('Delete') }} mensaje">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                         </button>
                                     </div>
@@ -251,7 +251,7 @@
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
                                             </button>
                                             @if(auth()->user()->google_token)
-                                            <button @click="saveToDrive(msg.content)" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-blue-500" title="Guardar en Google Drive">
+                                            <button @click="saveToDrive(msg.content)" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-blue-500" title="{{ __('Save') }} en {{ __('Google Drive') }}">
                                                 <svg class="w-3.5 h-3.5" viewBox="0 0 48 48">
                                                     <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/>
                                                     <path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/>
@@ -365,7 +365,7 @@
             style="touch-action: none;"
         >
             <div class="relative flex items-center justify-center">
-                <!-- Icono Cerrar (cuando está abierto) -->
+                <!-- Icono {{ __('Close') }} (cuando está abierto) -->
                 <svg x-show="open" x-cloak class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
@@ -392,7 +392,7 @@
                 @click="window.dispatchEvent(new CustomEvent('quicknote-toggle-all', { bubbles: true }))"
                 class="w-10 h-10 transition-all rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 ring-2 ring-white dark:ring-gray-950 backdrop-blur-md quick-notes-trigger pointer-events-auto"
                 :class="quickNotesVisible ? 'bg-amber-500 text-white' : 'bg-gray-800/80 text-white hover:bg-gray-700'"
-                :title="quickNotesVisible ? 'Ocultar todas las notas' : 'Ver todas las notas'">
+                :title="quickNotesVisible ? 'Ocultar todas las notas' : '{{ __('View') }} todas las notas'">
                 <svg x-show="quickNotesVisible" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -406,7 +406,7 @@
             <button type="button"
                 @click="window.dispatchEvent(new CustomEvent('quicknote-create', { bubbles: true }))"
                 class="w-10 h-10 bg-amber-400 hover:bg-amber-500 text-amber-900 rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 active:scale-95 ring-2 ring-white dark:ring-gray-950 pointer-events-auto"
-                title="Nueva Nota Rápida (Post-it)">
+                title="{{ __('html.new_quick_note') }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
                 </svg>
@@ -695,7 +695,7 @@
                     confirmButtonColor: '#ef4444',
                     cancelButtonColor: '#94a3b8',
                     confirmButtonText: 'Sí, borrar todo',
-                    cancelButtonText: 'Cancelar',
+                    cancelButtonText: '{{ __("Cancel") }}',
                     customClass: {
                         popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
                         title: 'text-red-600 dark:text-red-400 font-black uppercase tracking-tighter pt-8 text-lg',
@@ -894,9 +894,9 @@
                 } catch (err) {
                     console.error('Error al acceder al micrófono:', err);
                     if (typeof Swal !== 'undefined') {
-                        Swal.fire({ icon: 'error', title: 'Micrófono bloqueado', text: 'No se pudo acceder al micrófono. Por favor, revisa los permisos en tu navegador.', toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
+                        Swal.fire({ icon: 'error', title: 'Micrófono bloqueado', text: '{{ __('swal.alert_mic_access_denied') }}', toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 });
                     } else {
-                        alert('No se pudo acceder al micrófono. Por favor, revisa los permisos.');
+                        alert('{{ __('swal.alert_mic_access_denied') }}');
                     }
                 }
             },
@@ -1033,14 +1033,14 @@
                 if (!msg || msg.role !== 'user') return;
 
                 const result = await Swal.fire({
-                    title: '¿Eliminar mensaje?',
+                    title: '¿{{ __('Delete') }} mensaje?',
                     text: 'Se eliminará este mensaje y la respuesta de la IA asociada.',
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#ef4444',
                     cancelButtonColor: '#94a3b8',
-                    confirmButtonText: 'Eliminar',
-                    cancelButtonText: 'Cancelar',
+                    confirmButtonText: '{{ __('Delete') }}',
+                    cancelButtonText: '{{ __("Cancel") }}',
                     customClass: {
                         popup: 'rounded-[2.5rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white',
                         confirmButton: 'rounded-2xl px-6 py-3 shadow-lg shadow-red-500/30 uppercase tracking-widest font-black text-[10px]',
@@ -1439,7 +1439,7 @@
                                     <button onclick="window.dispatchEvent(new CustomEvent('ai:inject-survey', { detail: { json: ${JSON.stringify(JSON.stringify(data.survey_data)).replace(/"/g, '&quot;')} } }))" 
                                             class="px-6 py-2.5 bg-fuchsia-600 hover:bg-fuchsia-700 text-white text-[10px] font-bold uppercase tracking-widest rounded-2xl transition-all shadow-lg active:scale-95 flex items-center gap-3">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                                        <span>Inyectar Encuesta</span>
+                                        <span>{{ __('Inyectar Encuesta') }}</span>
                                     </button>
                                 </div>
                             </div>
@@ -1491,11 +1491,11 @@
                                 </div>
 
                                 <div class="mt-4 flex items-center justify-end gap-3 pt-4 border-t border-emerald-100/50 dark:border-slate-800">
-                                    <span class="text-[9px] font-bold text-emerald-500/80 mr-auto uppercase tracking-tighter italic">Crear o inyectar micrositio</span>
+                                    <span class="text-[9px] font-bold text-emerald-500/80 mr-auto uppercase tracking-tighter italic">{{ __('Create') }} o inyectar micrositio</span>
                                     <button onclick="window.dispatchEvent(new CustomEvent('ai:inject-microsite', { detail: { html: ${JSON.stringify(htmlCode).replace(/"/g, '&quot;')}, css: ${JSON.stringify(cssCode).replace(/"/g, '&quot;')} } }))" 
                                             class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold uppercase tracking-widest rounded-2xl transition-all shadow-lg active:scale-95 flex items-center gap-3">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                                        <span>Crear Nuevo Sitio</span>
+                                        <span>{{ __('Create') }} {{ __('New') }} Sitio</span>
                                     </button>
                                 </div>
                             </div>
@@ -1525,11 +1525,11 @@
                                     <pre class="bg-gray-900/95 text-blue-400 p-4 rounded-2xl text-[10px] overflow-x-auto shadow-inner border border-gray-800 font-mono max-h-48 overflow-y-auto"><code>${JSON.stringify(data.tasks, null, 2).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
                                 </div>
                                 <div class="mt-4 flex items-center justify-end gap-3 pt-4 border-t border-blue-100/50 dark:border-slate-800">
-                                    <span class="text-[9px] font-bold text-blue-500/80 mr-auto uppercase tracking-tighter italic">Crear en lote</span>
+                                    <span class="text-[9px] font-bold text-blue-500/80 mr-auto uppercase tracking-tighter italic">{{ __('Create') }} en lote</span>
                                     <button onclick="window.dispatchEvent(new CustomEvent('ai:inject-bulk-tasks', { detail: { json: ${JSON.stringify(JSON.stringify(data.tasks)).replace(/"/g, '&quot;')} } }))" 
                                             class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold uppercase tracking-widest rounded-2xl transition-all shadow-lg active:scale-95 flex items-center gap-3">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
-                                        <span>Crear ${tasksCount} Tareas</span>
+                                        <span>{{ __('Create') }} ${tasksCount} Tareas</span>
                                     </button>
                                 </div>
                             </div>
@@ -1562,7 +1562,7 @@
                         if (data.results && (data.results.tasks?.length || data.results.threads?.length || data.results.message_matches?.length)) {
                             if (data.results.tasks?.length) {
                                 html += `<div class="space-y-2">
-                                    <div class="text-[9px] font-black uppercase tracking-tighter text-slate-400 mb-1">Tareas Encontradas</div>
+                                    <div class="text-[9px] font-black uppercase tracking-tighter text-slate-400 mb-1">{{ __('Tareas Encontradas') }}</div>
                                     <div class="grid grid-cols-1 gap-2">`;
                                 data.results.tasks.forEach(t => {
                                     html += `
@@ -1639,7 +1639,7 @@
                             <div class="flex items-center justify-between mb-4">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg></div>
-                                    <span class="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-300">Smart Payload</span>
+                                    <span class="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-300">{{ __('Smart Payload') }}</span>
                                 </div>
                             </div>
                             <div class="prose prose-sm dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 text-[13px] leading-relaxed font-medium">${typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(marked.parse(payloadContent)) : marked.parse(payloadContent).replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').replace(/on[a-z]+=/gi, '')}</div>
@@ -1683,7 +1683,7 @@
                         if (obj.title || obj.name) {
                             const desc = (obj.description || obj.content || '').substring(0, 150);
                             return `<div class="flex flex-col gap-1">
-                                <span class="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-tighter">Entidad Detectada</span>
+                                <span class="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-tighter">{{ __('Entidad Detectada') }}</span>
                                 <h4 class="text-base font-bold m-0 p-0 text-gray-900 dark:text-white leading-tight">${obj.title || obj.name}</h4>
                                 <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">${highlightPatterns(typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(marked.parse(desc)) : marked.parse(desc).replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').replace(/on[a-z]+=/gi, ''))}...</div>
                             </div>`;
@@ -1855,7 +1855,7 @@
                 const match = content.match(/\[PAYLOAD\]([\s\S]*?)\[\/PAYLOAD\]/);
                 let rawPayload = (isDirect && !match) ? content : (match ? match[1].trim() : content.replace(/\[PAYLOAD\]|\[\/PAYLOAD\]/g, '').trim());
 
-                // Limpiar posibles bloques de código Markdown de la respuesta
+                // {{ __('Clear') }} posibles bloques de código Markdown de la respuesta
                 rawPayload = rawPayload.replace(/^```[\w]*\n/, '').replace(/\n```$/, '').trim();
 
                 let payloadData = {};
@@ -2076,13 +2076,13 @@
             <div class="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
             </div>
-            <div class="font-black text-[10px] uppercase tracking-tighter text-gray-900 dark:text-white">Nueva Actividad</div>
+            <div class="font-black text-[10px] uppercase tracking-tighter text-gray-900 dark:text-white">{{ __('Nueva Actividad') }}</div>
             </button>
             <button type="button" onclick="window._aiSelect1('current-task')" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-violet-100 dark:border-violet-900/30 bg-white dark:bg-slate-900 hover:border-violet-600 transition-all text-center group">
             <div class="w-12 h-12 rounded-2xl bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center text-violet-600 group-hover:scale-110 transition-transform">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
             </div>
-            <div class="font-black text-[10px] uppercase tracking-tighter text-gray-900 dark:text-white">Actividad Actual</div>
+            <div class="font-black text-[10px] uppercase tracking-tighter text-gray-900 dark:text-white">{{ __('Actividad Actual') }}</div>
             </button>
             <button type="button" onclick="window._aiSelect1('quick-note')" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-amber-100 dark:border-amber-900/30 bg-white dark:bg-slate-900 hover:border-amber-600 transition-all text-center group">
             <div class="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
@@ -2094,13 +2094,13 @@
             <div class="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
             </div>
-            <div class="font-black text-[10px] uppercase tracking-tighter text-gray-900 dark:text-white">Editor Activo</div>
+            <div class="font-black text-[10px] uppercase tracking-tighter text-gray-900 dark:text-white">{{ __('Editor Activo') }}</div>
             </button>
             <button type="button" onclick="window._aiSelect1('new-survey')" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-blue-100 dark:border-blue-900/30 bg-white dark:bg-slate-900 hover:border-blue-600 transition-all text-center group">
             <div class="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             </div>
-            <div class="font-black text-[10px] uppercase tracking-tighter text-gray-900 dark:text-white">Nueva Encuesta</div>
+            <div class="font-black text-[10px] uppercase tracking-tighter text-gray-900 dark:text-white">{{ __('Nueva Encuesta') }}</div>
             </button>
             <button type="button" onclick="window._aiSelect1('microsite')" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-pink-100 dark:border-pink-900/30 bg-white dark:bg-slate-900 hover:border-pink-600 transition-all text-center group">
             <div class="w-12 h-12 rounded-2xl bg-pink-100 dark:bg-pink-900/50 flex items-center justify-center text-pink-600 group-hover:scale-110 transition-transform">
@@ -2233,13 +2233,13 @@
             <div class="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center text-violet-600 group-hover:scale-110 transition-transform">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
             </div>
-            <div class="font-black text-[11px] uppercase tracking-tight text-gray-900 dark:text-white">Desarrollo / Nota de Equipo</div>
+            <div class="font-black text-[11px] uppercase tracking-tight text-gray-900 dark:text-white">Desarrollo / Nota de {{ __('Team') }}</div>
             </button>
             <button type="button" onclick="window._aiSelect2('private_note')" class="flex items-center gap-4 p-4 rounded-[1.8rem] border-2 border-slate-100 bg-white dark:bg-slate-900 hover:border-slate-600 transition-all text-left group">
             <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 group-hover:scale-110 transition-transform">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
             </div>
-            <div class="font-black text-[11px] uppercase tracking-tight text-gray-900 dark:text-white">Nota Privada</div>
+            <div class="font-black text-[11px] uppercase tracking-tight text-gray-900 dark:text-white">{{ __('Nota Privada') }}</div>
             </button>
             <button type="button" onclick="window._aiSelect2('chapter')" class="flex items-center gap-4 p-4 rounded-[1.8rem] border-2 border-orange-100 dark:border-orange-900/30 bg-white dark:bg-slate-900 hover:border-orange-600 transition-all text-left group">
             <div class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600 group-hover:scale-110 transition-transform">
@@ -2308,7 +2308,7 @@
                 const cssLines = (detail.css || '').split('\n').length;
 
                 Swal.fire({
-                    title: 'Crear Nuevo Micrositio',
+                    title: '{{ __('Create') }} {{ __('New') }} Micrositio',
                     html: `
                         <div style="text-align:left; font-size:13px; line-height:1.7;">
                             <p style="margin-bottom:12px;">No estás en el editor de un micrositio. ¿Quieres crear uno nuevo con este contenido?</p>
@@ -2328,8 +2328,8 @@
                     `,
                     icon: 'question',
                     showCancelButton: true,
-                    confirmButtonText: '🚀 Crear Micrositio',
-                    cancelButtonText: 'Cancelar',
+                    confirmButtonText: '🚀 {{ __('Create') }} Micrositio',
+                    cancelButtonText: '{{ __("Cancel") }}',
                     confirmButtonColor: '#059669',
                     showLoaderOnConfirm: true,
                     preConfirm: async () => {
@@ -2373,7 +2373,7 @@
                             `,
                             showCancelButton: true,
                             confirmButtonText: '✏️ Ir al Editor',
-                            cancelButtonText: 'Cerrar',
+                            cancelButtonText: '{{ __('Close') }}',
                             confirmButtonColor: '#059669',
                         }).then((editResult) => {
                             if (editResult.isConfirmed && data.edit_url) {

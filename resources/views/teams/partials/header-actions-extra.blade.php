@@ -15,7 +15,7 @@
             <div class="lg:hidden relative" x-data="{ open: false }">
                 <button @click="open = !open" @click.outside="open = false"
                     class="p-2 text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-500/10 rounded-lg transition-all shadow-sm"
-                    title="{{ __('Ajustes de sistema') }}">
+                    title="{{ __('System Settings') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                     </svg>
@@ -44,7 +44,7 @@
             <div class="relative items-center" x-data="{ open: false }">
                  <button @click="open = !open" @click.outside="open = false"
                          class="relative p-1.5 text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-150 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
-                         title="{{ __('Chat Interno') }}">
+                         title="{{ __('Internal Chat') }}">
                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                          <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                      </svg>
@@ -89,7 +89,7 @@
                       <template x-if="$store.chatStore.totalCount > 0">
                           <div class="p-2 border-t border-gray-50 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
                               <button @click="open = false; $dispatch('open-last-chat')" class="w-full py-2 text-[11px] font-black text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 text-center transition-colors uppercase tracking-wider">
-                                  Ver último chat
+                                  {{ __('View') }} último chat
                               </button>
                           </div>
                       </template>
@@ -97,7 +97,7 @@
             </div>
 
             <!-- Notifications Bell -->
-            <a href="{{ route('notifications.index') }}" class="relative p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-150 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-500/10" title="{{ __('Notificaciones') }}">
+            <a href="{{ route('notifications.index') }}" class="relative p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-150 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-500/10" title="{{ __('Notifications') }}">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>

@@ -21,4 +21,6 @@ return [
     'delete_account_confirm_title' => 'Are you sure you want to delete your account?',
     'delete_account_confirm_text' => 'Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.',
     'cancel' => 'Cancel',
+    'welcome_messages' => 'Welcome Messages',
+    'welcome_messages_desc' => 'Receive a cheerful and inspiring greeting every time you log in.',
 ];

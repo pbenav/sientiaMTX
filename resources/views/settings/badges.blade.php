@@ -1,5 +1,5 @@
 <x-app-layout>
-    @section('title', 'Gestión de Medallas (Gamificación)')
+    @section('title', __('Badge Management (Gamification)'))
 
     <x-slot name="header">
         <div class="flex items-center justify-between">
@@ -11,10 +11,10 @@
                 </div>
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">
-                        Catálogo de Medallas
+                        {{ __('Badge Catalog') }}
                     </h1>
                     <x-demo-hint>
-                        Gestiona las medallas que los usuarios pueden desbloquear en la plataforma.
+                        {{ __('Manage badges that users can unlock on the platform.') }}
                     </x-demo-hint>
                 </div>
             </div>
@@ -23,7 +23,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
                 </svg>
-                Nueva Medalla
+                {{ __('New Badge') }}
             </button>
         </div>
     </x-slot>
@@ -38,36 +38,35 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    ¿Cómo funciona el motor de medallas?
+                    {{ __('How does the badge engine work?') }}
                 </h3>
                 <p class="text-sm text-blue-700 dark:text-blue-400 mb-4">
-                    El sistema de gamificación evalúa automáticamente a los usuarios basándose en el <strong>Tipo de Regla (Criteria Type)</strong> y el <strong>Umbral (Threshold)</strong>. 
-                    Si deseas crear una regla personalizada que no esté en la lista soportada, necesitarás añadir el código correspondiente en <code>BadgeService.php</code>.
+                    {{ __('The gamification system automatically evaluates users based on Rule Type (Criteria Type) and Threshold. If you want to create a custom rule not in the supported list, you will need to add the corresponding code in') }} <code>BadgeService.php</code>.
                 </p>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
                     <div class="bg-white dark:bg-gray-800 p-3 rounded-xl border border-blue-100 dark:border-blue-800/50">
                         <span class="font-mono font-bold text-violet-600 dark:text-violet-400 block mb-1">login_count</span>
-                        Se evalúa cada vez que un usuario inicia sesión.
+                        {{ __('Evaluated each time a user logs in.') }}
                     </div>
                     <div class="bg-white dark:bg-gray-800 p-3 rounded-xl border border-blue-100 dark:border-blue-800/50">
                         <span class="font-mono font-bold text-violet-600 dark:text-violet-400 block mb-1">streak_days</span>
-                        Días consecutivos conectándose y realizando acciones.
+                        {{ __('Consecutive days connecting and taking actions.') }}
                     </div>
                     <div class="bg-white dark:bg-gray-800 p-3 rounded-xl border border-blue-100 dark:border-blue-800/50">
                         <span class="font-mono font-bold text-violet-600 dark:text-violet-400 block mb-1">completed_tasks</span>
-                        Número total de tareas o actividades completadas.
+                        {{ __('Total number of completed tasks or activities.') }}
                     </div>
                     <div class="bg-white dark:bg-gray-800 p-3 rounded-xl border border-blue-100 dark:border-blue-800/50">
                         <span class="font-mono font-bold text-violet-600 dark:text-violet-400 block mb-1">received_kudos</span>
-                        Cantidad de "Kudos" o reconocimientos recibidos de compañeros.
+                        {{ __('Number of "Kudos" or recognitions received from peers.') }}
                     </div>
                     <div class="bg-white dark:bg-gray-800 p-3 rounded-xl border border-blue-100 dark:border-blue-800/50">
                         <span class="font-mono font-bold text-violet-600 dark:text-violet-400 block mb-1">user_level</span>
-                        Nivel del usuario alcanzado mediante puntos de experiencia (XP).
+                        {{ __('User level reached through experience points (XP).') }}
                     </div>
                     <div class="bg-white dark:bg-gray-800 p-3 rounded-xl border border-blue-100 dark:border-blue-800/50">
                         <span class="font-mono font-bold text-violet-600 dark:text-violet-400 block mb-1">badges_count</span>
-                        Cantidad de medallas distintas que ya posee el usuario.
+                        {{ __('Number of distinct badges the user already owns.') }}
                     </div>
                 </div>
             </div>
@@ -77,11 +76,11 @@
                     <table class="w-full text-left text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
                         <thead class="bg-gray-50 dark:bg-gray-800/50 text-xs uppercase font-black tracking-widest text-gray-700 dark:text-gray-300">
                             <tr>
-                                <th scope="col" class="px-6 py-4">Medalla</th>
-                                <th scope="col" class="px-6 py-4">Descripción</th>
-                                <th scope="col" class="px-6 py-4">Regla (Criteria)</th>
-                                <th scope="col" class="px-6 py-4">Umbral</th>
-                                <th scope="col" class="px-6 py-4 text-right">Acciones</th>
+                                <th scope="col" class="px-6 py-4">{{ __('Badge') }}</th>
+                                <th scope="col" class="px-6 py-4">{{ __('Description') }}</th>
+                                <th scope="col" class="px-6 py-4">{{ __('Rule (Criteria)') }}</th>
+                                <th scope="col" class="px-6 py-4">{{ __('Threshold') }}</th>
+                                <th scope="col" class="px-6 py-4 text-right">{{ __('Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -113,19 +112,19 @@
                                     <td class="px-6 py-4 text-right">
                                         <div class="flex items-center justify-end gap-2">
                                             <button type="button" 
-                                                    x-data=""
-                                                    @click="$dispatch('open-modal', 'edit-badge-{{ $badge->id }}')"
-                                                    class="p-2 text-gray-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-500/10 rounded-xl transition-all"
-                                                    title="Editar">
+                                                     x-data=""
+                                                     @click="$dispatch('open-modal', 'edit-badge-{{ $badge->id }}')"
+                                                     class="p-2 text-gray-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-500/10 rounded-xl transition-all"
+                                                     title="{{ __('Edit') }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                 </svg>
                                             </button>
                                             <button type="button" 
-                                                    x-data=""
-                                                    @click="$dispatch('open-modal', 'delete-badge-{{ $badge->id }}')"
-                                                    class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all"
-                                                    title="Eliminar">
+                                                     x-data=""
+                                                     @click="$dispatch('open-modal', 'delete-badge-{{ $badge->id }}')"
+                                                     class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all"
+                                                     title="{{ __('Delete') }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                 </svg>
@@ -137,39 +136,39 @@
                                             <form method="POST" action="{{ route('settings.badges.update', $badge) }}" class="p-6 text-left">
                                                 @csrf
                                                 @method('PATCH')
-                                                <h2 class="text-xl font-black text-gray-900 dark:text-white mb-6">Editar Medalla</h2>
+                                                <h2 class="text-xl font-black text-gray-900 dark:text-white mb-6">{{ __('Edit Badge') }}</h2>
                                                 
                                                 <div class="space-y-4">
                                                     <div>
-                                                        <x-input-label for="name" value="Nombre de la medalla" />
+                                                        <x-input-label for="name" :value="__('Badge Name')" />
                                                         <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="$badge->name" required />
                                                     </div>
                                                     
                                                     <div>
-                                                        <x-input-label for="icon" value="Icono (Emoji)" />
+                                                        <x-input-label for="icon" :value="__('Icon (Emoji)')" />
                                                         <x-text-input id="icon" name="icon" type="text" class="mt-1 block w-full text-2xl" :value="$badge->icon" required />
                                                     </div>
                                                     
                                                     <div>
-                                                        <x-input-label for="description" value="Descripción" />
+                                                        <x-input-label for="description" :value="__('Description')" />
                                                         <textarea id="description" name="description" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-violet-500 dark:focus:border-violet-600 focus:ring-violet-500 dark:focus:ring-violet-600 rounded-xl shadow-sm" rows="3">{{ $badge->description }}</textarea>
                                                     </div>
 
                                                     <div class="grid grid-cols-2 gap-4">
                                                         <div>
-                                                            <x-input-label for="criteria_type" value="Regla (Criteria Type)" />
+                                                            <x-input-label for="criteria_type" :value="__('Rule (Criteria Type)')" />
                                                             <x-text-input id="criteria_type" name="criteria_type" type="text" class="mt-1 block w-full font-mono text-sm" :value="$badge->criteria_type" required />
                                                         </div>
                                                         <div>
-                                                            <x-input-label for="criteria_threshold" value="Umbral" />
+                                                            <x-input-label for="criteria_threshold" :value="__('Threshold')" />
                                                             <x-text-input id="criteria_threshold" name="criteria_threshold" type="number" min="1" class="mt-1 block w-full font-mono text-sm" :value="$badge->criteria_threshold" required />
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 <div class="mt-6 flex justify-end gap-3">
-                                                    <button type="button" x-on:click="$dispatch('close')" class="btn-secondary">Cancelar</button>
-                                                    <button type="submit" class="btn-primary">Guardar Cambios</button>
+                                                    <button type="button" x-on:click="$dispatch('close')" class="btn-secondary">{{ __("Cancel") }}</button>
+                                                    <button type="submit" class="btn-primary">{{ __('Save Changes') }}</button>
                                                 </div>
                                             </form>
                                         </x-modal>
@@ -182,12 +181,12 @@
                                                 <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
                                                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                                                 </div>
-                                                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">¿Eliminar medalla?</h2>
-                                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Los usuarios que ya la posean podrían perderla o causar inconsistencias en sus perfiles. Esta acción no se puede deshacer.</p>
+                                                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">{{ __('Delete badge?') }}</h2>
+                                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">{{ __('Users who already own it may lose it or cause inconsistencies in their profiles. This action cannot be undone.') }}</p>
                                                 
                                                 <div class="flex justify-center gap-3">
-                                                    <button type="button" x-on:click="$dispatch('close')" class="btn-secondary">Cancelar</button>
-                                                    <button type="submit" class="btn-danger">Sí, eliminar</button>
+                                                    <button type="button" x-on:click="$dispatch('close')" class="btn-secondary">{{ __("Cancel") }}</button>
+                                                    <button type="submit" class="btn-danger">{{ __('Yes, delete') }}</button>
                                                 </div>
                                             </form>
                                         </x-modal>
@@ -196,7 +195,7 @@
                             @empty
                                 <tr>
                                     <td colspan="5" class="px-6 py-12 text-center text-gray-500">
-                                        No hay medallas configuradas.
+                                        {{ __('No badges configured.') }}
                                     </td>
                                 </tr>
                             @endforelse
@@ -211,39 +210,39 @@
     <x-modal name="create-badge" maxWidth="lg">
         <form method="POST" action="{{ route('settings.badges.store') }}" class="p-6">
             @csrf
-            <h2 class="text-xl font-black text-gray-900 dark:text-white mb-6">Crear Nueva Medalla</h2>
+            <h2 class="text-xl font-black text-gray-900 dark:text-white mb-6">{{ __('Create New Badge') }}</h2>
             
             <div class="space-y-4">
                 <div>
-                    <x-input-label for="name" value="Nombre de la medalla" />
+                    <x-input-label for="name" :value="__('Badge Name')" />
                     <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" required />
                 </div>
                 
                 <div>
-                    <x-input-label for="icon" value="Icono (Emoji)" />
+                    <x-input-label for="icon" :value="__('Icon (Emoji)')" />
                     <x-text-input id="icon" name="icon" type="text" class="mt-1 block w-full text-2xl" placeholder="🏅" required />
                 </div>
                 
                 <div>
-                    <x-input-label for="description" value="Descripción" />
+                    <x-input-label for="description" :value="__('Description')" />
                     <textarea id="description" name="description" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-violet-500 dark:focus:border-violet-600 focus:ring-violet-500 dark:focus:ring-violet-600 rounded-xl shadow-sm" rows="3"></textarea>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <x-input-label for="criteria_type" value="Regla (Criteria Type)" />
-                        <x-text-input id="criteria_type" name="criteria_type" type="text" class="mt-1 block w-full font-mono text-sm" placeholder="ej. completed_tasks" required />
+                        <x-input-label for="criteria_type" :value="__('Rule (Criteria Type)')" />
+                        <x-text-input id="criteria_type" name="criteria_type" type="text" class="mt-1 block w-full font-mono text-sm" :placeholder="__('e.g., completed_tasks')" required />
                     </div>
                     <div>
-                        <x-input-label for="criteria_threshold" value="Umbral" />
+                        <x-input-label for="criteria_threshold" :value="__('Threshold')" />
                         <x-text-input id="criteria_threshold" name="criteria_threshold" type="number" min="1" value="1" class="mt-1 block w-full font-mono text-sm" required />
                     </div>
                 </div>
             </div>
 
             <div class="mt-6 flex justify-end gap-3">
-                <button type="button" x-on:click="$dispatch('close')" class="btn-secondary">Cancelar</button>
-                <button type="submit" class="btn-primary">Crear Medalla</button>
+                <button type="button" x-on:click="$dispatch('close')" class="btn-secondary">{{ __("Cancel") }}</button>
+                <button type="submit" class="btn-primary">{{ __('Create Badge') }}</button>
             </div>
         </form>
     </x-modal>

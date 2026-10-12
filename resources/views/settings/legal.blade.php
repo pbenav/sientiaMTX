@@ -7,9 +7,9 @@
                 </svg>
             </div>
             <div>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">Configuración Legal</h1>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">{{ __('Legal Settings') }}</h1>
                 <x-demo-hint>
-                    Define y actualiza de manera centralizada los Textos Legales: Términos de Servicio, Política de Privacidad y Cookies. La plataforma forzará automáticamente a los usuarios a aceptar los nuevos términos cuando se detecten cambios sustanciales.
+                    {{ __('Centrally define and update Legal Texts: Terms of Service, Privacy Policy, and Cookies. The platform will automatically force users to re-accept new terms when substantial changes are detected.') }}
                 </x-demo-hint>
             </div>
         </div>
@@ -78,7 +78,7 @@
                                         onclick="loadLegalDefault(this, 'privacy', 'legal_privacy')"
                                         class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-violet-300 dark:border-violet-700 text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-800/40 transition-colors">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                                        Cargar contenido por defecto
+                                        {{ __('Load default content') }}
                                     </button>
                                 </div>
                                 <input id="legal_privacy" type="hidden" name="legal_privacy" value="{{ old('legal_privacy', $privacy) }}">
@@ -96,7 +96,7 @@
                                         onclick="loadLegalDefault(this, 'terms', 'legal_terms')"
                                         class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-violet-300 dark:border-violet-700 text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-800/40 transition-colors">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                                        Cargar contenido por defecto
+                                        {{ __('Load default content') }}
                                     </button>
                                 </div>
                                 <input id="legal_terms" type="hidden" name="legal_terms" value="{{ old('legal_terms', $terms) }}">
@@ -114,7 +114,7 @@
                                         onclick="loadLegalDefault(this, 'cookies', 'legal_cookies')"
                                         class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-violet-300 dark:border-violet-700 text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-800/40 transition-colors">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                                        Cargar contenido por defecto
+                                        {{ __('Load default content') }}
                                     </button>
                                 </div>
                                 <input id="legal_cookies" type="hidden" name="legal_cookies" value="{{ old('legal_cookies', $cookies) }}">
@@ -178,12 +178,12 @@ async function loadLegalDefault(btn, type, inputId) {
     const hasContent = hiddenInput.value && hiddenInput.value.trim().length > 10;
     if (hasContent) {
         const result = await Swal.fire({
-            title: '¿Reemplazar contenido?',
-            text: 'El editor ya tiene contenido. ¿Deseas reemplazarlo con la plantilla por defecto? Puedes editarla antes de guardar.',
+            title: '{{ __("Replace content?") }}',
+            text: '{{ __("The editor already has content. Do you want to replace it with the default template? You can edit it before saving.") }}',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Sí, cargar plantilla',
-            cancelButtonText: 'Cancelar',
+            confirmButtonText: '{{ __("Yes, load template") }}',
+            cancelButtonText: '{{ __("Cancel") }}',
             confirmButtonColor: '#7c3aed',
         });
         if (!result.isConfirmed) return;
@@ -192,7 +192,7 @@ async function loadLegalDefault(btn, type, inputId) {
     // Loading state
     const originalHTML = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = '<svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg> Cargando...';
+    btn.innerHTML = '<svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg> ' + '{{ __("Loading...") }}';
 
     try {
         const response = await fetch(`/legal/default/${type}`, {
@@ -209,7 +209,7 @@ async function loadLegalDefault(btn, type, inputId) {
         hiddenInput.value = html;
 
         // Success feedback
-        btn.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> ¡Cargado!';
+        btn.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> ' + '{{ __("Loaded!") }}';
         btn.classList.add('bg-green-50', 'border-green-400', 'text-green-700');
         btn.classList.remove('text-violet-700', 'border-violet-300', 'bg-violet-50');
         setTimeout(() => {
@@ -223,8 +223,8 @@ async function loadLegalDefault(btn, type, inputId) {
         btn.innerHTML = originalHTML;
         btn.disabled = false;
         Swal.fire({
-            title: 'Error al cargar',
-            text: 'No se pudo obtener la plantilla por defecto: ' + err.message,
+            title: '{{ __("Error loading") }}',
+            text: '{{ __("Could not retrieve default template:") }} ' + err.message,
             icon: 'error',
             confirmButtonColor: '#7c3aed',
         });

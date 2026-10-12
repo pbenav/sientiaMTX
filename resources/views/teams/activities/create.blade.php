@@ -1,12 +1,12 @@
 <x-app-layout>
-    @section('title', 'Crear ' . ucfirst($type) . ' — ' . $team->name)
+    @section('title', __('Create') . ' ' . ucfirst($type) . ' — ' . $team->name)
 
     <x-slot name="header">
         <div class="flex items-center justify-between gap-3 flex-wrap">
             <div class="flex items-center gap-2 min-w-0">
                 <a href="{{ route('teams.activities.index', $team) }}"
                     class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0"
-                    title="{{ __('navigation.back') ?? 'Volver' }}">
+                    title="{{ __('navigation.back') ?? __('Back') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -15,15 +15,15 @@
                 @include('teams.partials.breadcrumb')
                 <span class="text-gray-300 dark:text-gray-700 mx-1">/</span>
                 <h1 class="text-base font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-1.5">
-                    <span class="truncate">Crear nueva actividad:
+                    <span class="truncate">{{ __('Create') }} {{ __('new activity') }}:
                         @switch($type)
-                            @case('task') 📋 Tarea @break
-                            @case('document') 📄 Documento @break
-                            @case('note') 📝 Nota @break
-                            @case('link') 🔗 Enlace @break
-                            @case('agreement') ⚖️ Acuerdo @break
-                            @case('meeting') 🎥 Reunión @break
-                            @case('reminder') 🔔 Recordatorio @break
+                            @case('task') 📋 {{ __('activities.types.task') }} @break
+                            @case('document') 📄 {{ __('activities.types.document') }} @break
+                            @case('note') 📝 {{ __('activities.types.note') }} @break
+                            @case('link') 🔗 {{ __('activities.types.link') }} @break
+                            @case('agreement') ⚖️ {{ __('activities.types.agreement') }} @break
+                            @case('meeting') 🎥 {{ __('activities.types.meeting') }} @break
+                            @case('reminder') 🔔 {{ __('activities.types.reminder') }} @break
                             @default {{ ucfirst($type) }}
                         @endswitch
                     </span>
@@ -36,7 +36,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
-                        {{ __('Pegar JSON') }}
+                        {{ __('Paste JSON') }}
                     </button>
                     <button type="button" onclick="importTask()" class="text-[10px] font-black uppercase tracking-widest text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors flex items-center gap-1.5 px-3 py-1.5 bg-violet-50 dark:bg-violet-900/30 rounded-xl border border-violet-100 dark:border-violet-500/20 shadow-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -67,15 +67,15 @@
 }">
                     <!-- Tabs Nav -->
                     <div class="flex gap-4 border-b border-gray-200 dark:border-gray-800 pb-2 mb-6 overflow-x-auto">
-                        <button type="button" @click="setActiveTab('general')" :class="activeTab === 'general' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">General</button>
-                        <button type="button" @click="activeTab = 'planning'" :class="activeTab === 'planning' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">Planificación y Estado</button>
-                        <button type="button" @click="activeTab = 'team'" :class="activeTab === 'team' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">Equipo y Ejecución</button>
-                        <button type="button" @click="activeTab = 'context'" :class="activeTab === 'context' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">Contexto y Vinculaciones</button>
+                        <button type="button" @click="setActiveTab('general')" :class="activeTab === 'general' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">{{ __('general') }}</button>
+                        <button type="button" @click="activeTab = 'planning'" :class="activeTab === 'planning' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">{{ __('planificaci_n_y_estado') }}</button>
+                        <button type="button" @click="activeTab = 'team'" :class="activeTab === 'team' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">{{ __('equipo_y_ejecuci_n') }}</button>
+                        <button type="button" @click="activeTab = 'context'" :class="activeTab === 'context' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">{{ __('contexto_y_vinculaciones') }}</button>
                     </div>
 
 
 
-                    <!-- TAB: General -->
+                    <!-- TAB: {{ __('general') }} -->
                     <div x-show="activeTab === 'general'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;" class="space-y-6">
 <!-- Title -->
                 <div>
@@ -105,27 +105,27 @@
                     <!-- DOCUMENTO ESPECÍFICO -->
                     <div class="bg-gray-50/50 dark:bg-gray-800/20 border border-gray-150 dark:border-gray-800 rounded-3xl p-6 mb-6">
                         <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-6">
-                            Esta actividad creará un documento estructurado. Puedes empezar creando el primer capítulo aquí mismo. Los miembros del equipo también podrán editarlo simultáneamente usando el sistema colaborativo de OnlyOffice.
+                            {{ __('This activity will create a structured document. You can start by creating the first chapter right here. Team members will also be able to edit it simultaneously using the OnlyOffice collaborative system.') }}
                         </p>
 
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Título del Primer Capítulo</label>
-                                <input type="text" name="metadata[chapter_title]" value="{{ old('metadata.chapter_title') }}" placeholder="Ej. Introducción" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all">
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">{{ __('First Chapter Title') }}</label>
+                                <input type="text" name="metadata[chapter_title]" value="{{ old('metadata.chapter_title') }}" placeholder="{{ __('e.g. Introduction') }}" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all">
                             </div>
                             <div>
                                 <x-markdown-editor
                                     name="metadata[chapter_content]"
                                     id="chapter_content"
                                     :value="old('metadata.chapter_content')"
-                                    :label="__('Contenido del Primer Capítulo')"
+                                    :label="__('First Chapter Content')"
                                     rows="8"
                                     :upload-url="route('teams.forum.upload_image', $team)"
                                     :mentions-url="route('teams.mentions', $team)"
                                 />
                             </div>
                             <div class="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Versión Inicial</label>
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">{{ __('Initial Version') }}</label>
                                 <input type="text" name="metadata[version]" value="{{ old('metadata.version', '1.0.0') }}" class="w-1/3 min-w-[150px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white outline-none transition-all font-mono">
                             </div>
                         </div>
@@ -170,16 +170,16 @@
                     <div class="bg-gray-50/50 dark:bg-gray-800/20 border border-gray-150 dark:border-gray-800 rounded-3xl p-6 mb-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Modalidad</label>
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">{{ __('Modality') }}</label>
                                 <select name="metadata[modality]" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none cursor-pointer">
-                                    <option value="remote" {{ old('metadata.modality') == 'remote' ? 'selected' : '' }}>💻 En remoto / Online</option>
-                                    <option value="presential" {{ old('metadata.modality', 'presential') == 'presential' ? 'selected' : '' }}>🏢 Presencial</option>
-                                    <option value="hybrid" {{ old('metadata.modality') == 'hybrid' ? 'selected' : '' }}>🤝 Híbrido</option>
+                                    <option value="remote" {{ old('metadata.modality') == 'remote' ? 'selected' : '' }}>💻 {{ __('Remote / Online') }}</option>
+                                    <option value="presential" {{ old('metadata.modality', 'presential') == 'presential' ? 'selected' : '' }}>🏢 {{ __('In-person') }}</option>
+                                    <option value="hybrid" {{ old('metadata.modality') == 'hybrid' ? 'selected' : '' }}>🤝 {{ __('Hybrid') }}</option>
                                 </select>
                             </div>
 
                             <div>
-                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Duración (Minutos)</label>
+                                <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">{{ __('Duration (Minutes)') }}</label>
                                 <input type="number" name="metadata[duration_minutes]" value="{{ old('metadata.duration_minutes', 60) }}" min="1" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none">
                             </div>
 
@@ -408,7 +408,7 @@
                             </svg>
                         </div>
                         <div class="flex flex-col">
-                            <span class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white">{{ __('Prioridad Automática') }}</span>
+                            <span class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white">{{ __('Automatic Priority') }}</span>
                             <span class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                                 @if($type === 'meeting')
                                     {{ __('La prioridad aumentará automáticamente conforme se acerque la fecha de la reunión.') }}
@@ -451,10 +451,10 @@
                         <input type="datetime-local" name="scheduled_date" x-model="startDate"
                             class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 outline-none transition-all">
                         <div class="flex flex-wrap gap-1.5 mt-2.5 font-sans">
-                            <button type="button" @click="addDaysStart(0)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-800/50 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors shadow-sm">Ahora</button>
+                            <button type="button" @click="addDaysStart(0)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-800/50 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors shadow-sm">{{ __('ahora') }}</button>
                             <button type="button" @click="addDaysStart(1)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Día</button>
                             <button type="button" @click="addDaysStart(7)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Sem</button>
-                            <button type="button" @click="addDaysStart(15)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+15 Días</button>
+                            <button type="button" @click="addDaysStart(15)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">{{ __('_15_d_as') }}</button>
                             <button type="button" @click="addDaysStart(30)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Mes</button>
                         </div>
                     </div>
@@ -464,10 +464,10 @@
                         <input type="datetime-local" name="due_date" x-model="endDate"
                             class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 outline-none transition-all">
                         <div class="flex flex-wrap gap-1.5 mt-2.5 font-sans">
-                            <button type="button" @click="addDaysEnd(0)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-800/50 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors shadow-sm">Ahora</button>
+                            <button type="button" @click="addDaysEnd(0)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-800/50 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors shadow-sm">{{ __('ahora') }}</button>
                             <button type="button" @click="addDaysEnd(1)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Día</button>
                             <button type="button" @click="addDaysEnd(7)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Sem</button>
-                            <button type="button" @click="addDaysEnd(15)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+15 Días</button>
+                            <button type="button" @click="addDaysEnd(15)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">{{ __('_15_d_as') }}</button>
                             <button type="button" @click="addDaysEnd(30)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Mes</button>
                         </div>
                     </div>
@@ -483,7 +483,7 @@
                             </svg>
                         </div>
                         <div>
-                            <h3 class="text-xs font-black uppercase tracking-widest text-pink-700 dark:text-pink-400">Configuración de Notificación</h3>
+                            <h3 class="text-xs font-black uppercase tracking-widest text-pink-700 dark:text-pink-400">{{ __('Settings') }} de Notificación</h3>
                             <p class="text-[10px] text-gray-500 dark:text-gray-400">Elige los canales y cuándo se enviará la notificación.</p>
                         </div>
                     </div>
@@ -545,7 +545,7 @@
                             </svg>
                         </div>
                         <div class="flex flex-col">
-                            <span class="text-sm font-bold text-gray-900 dark:text-white">{{ __('Bloquear programación (Inamovible)') }}</span>
+                            <span class="text-sm font-bold text-gray-900 dark:text-white">{{ __('Lock scheduling (Fixed)') }}</span>
                             <span class="text-[11px] text-gray-500 dark:text-gray-400">{{ __('Evita que la tarea sea desplazada o redimensionada en el Gantt de forma accidental.') }}</span>
                         </div>
                     </div>
@@ -639,7 +639,7 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
-                                    {{ __('Patrón Mensual') }}
+                                    {{ __('Monthly Pattern') }}
                                 </label>
                                 <div class="flex flex-col sm:flex-row gap-4">
                                     <label class="relative flex items-center gap-3 cursor-pointer group">
@@ -648,7 +648,7 @@
                                             <div class="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-violet-500 transition-all"></div>
                                             <div class="absolute w-2 h-2 rounded-full bg-violet-500 scale-0 peer-checked:scale-100 transition-all"></div>
                                         </div>
-                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('El mismo día del mes') }}</span>
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('Same day of the month') }}</span>
                                     </label>
                                     <label class="relative flex items-center gap-3 cursor-pointer group">
                                         <div class="relative flex items-center justify-center">
@@ -656,29 +656,29 @@
                                             <div class="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-violet-500 transition-all"></div>
                                             <div class="absolute w-2 h-2 rounded-full bg-violet-500 scale-0 peer-checked:scale-100 transition-all"></div>
                                         </div>
-                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('Un día específico de la semana') }}</span>
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{{ __('A specific day of the week') }}</span>
                                     </label>
                                 </div>
 
                                 <div x-show="monthlyType === 'ordinal'" class="flex items-center gap-2 mt-3" x-transition>
-                                    <span class="text-sm text-gray-500">{{ __('El') }}</span>
+                                    <span class="text-sm text-gray-500">{{ __('The') }}</span>
                                     <select name="autoprogram_settings[monthly_ordinal]" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-3 py-1.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
-                                        <option value="first" {{ old('autoprogram_settings.monthly_ordinal') === 'first' ? 'selected' : '' }}>{{ __('Primer') }}</option>
-                                        <option value="second" {{ old('autoprogram_settings.monthly_ordinal') === 'second' ? 'selected' : '' }}>{{ __('Segundo') }}</option>
-                                        <option value="third" {{ old('autoprogram_settings.monthly_ordinal') === 'third' ? 'selected' : '' }}>{{ __('Tercer') }}</option>
-                                        <option value="fourth" {{ old('autoprogram_settings.monthly_ordinal') === 'fourth' ? 'selected' : '' }}>{{ __('Cuarto') }}</option>
-                                        <option value="last" {{ old('autoprogram_settings.monthly_ordinal') === 'last' ? 'selected' : '' }}>{{ __('Último') }}</option>
+                                        <option value="first" {{ old('autoprogram_settings.monthly_ordinal') === 'first' ? 'selected' : '' }}>{{ __('First') }}</option>
+                                        <option value="second" {{ old('autoprogram_settings.monthly_ordinal') === 'second' ? 'selected' : '' }}>{{ __('Second') }}</option>
+                                        <option value="third" {{ old('autoprogram_settings.monthly_ordinal') === 'third' ? 'selected' : '' }}>{{ __('Third') }}</option>
+                                        <option value="fourth" {{ old('autoprogram_settings.monthly_ordinal') === 'fourth' ? 'selected' : '' }}>{{ __('Fourth') }}</option>
+                                        <option value="last" {{ old('autoprogram_settings.monthly_ordinal') === 'last' ? 'selected' : '' }}>{{ __('Last') }}</option>
                                     </select>
                                     <select name="autoprogram_settings[monthly_day]" class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-3 py-1.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
-                                        <option value="monday" {{ old('autoprogram_settings.monthly_day') === 'monday' ? 'selected' : '' }}>{{ __('Lunes') }}</option>
-                                        <option value="tuesday" {{ old('autoprogram_settings.monthly_day') === 'tuesday' ? 'selected' : '' }}>{{ __('Martes') }}</option>
-                                        <option value="wednesday" {{ old('autoprogram_settings.monthly_day') === 'wednesday' ? 'selected' : '' }}>{{ __('Miércoles') }}</option>
-                                        <option value="thursday" {{ old('autoprogram_settings.monthly_day') === 'thursday' ? 'selected' : '' }}>{{ __('Jueves') }}</option>
-                                        <option value="friday" {{ old('autoprogram_settings.monthly_day') === 'friday' ? 'selected' : '' }}>{{ __('Viernes') }}</option>
-                                        <option value="saturday" {{ old('autoprogram_settings.monthly_day') === 'saturday' ? 'selected' : '' }}>{{ __('Sábado') }}</option>
-                                        <option value="sunday" {{ old('autoprogram_settings.monthly_day') === 'sunday' ? 'selected' : '' }}>{{ __('Domingo') }}</option>
+                                        <option value="monday" {{ old('autoprogram_settings.monthly_day') === 'monday' ? 'selected' : '' }}>{{ __('Monday') }}</option>
+                                        <option value="tuesday" {{ old('autoprogram_settings.monthly_day') === 'tuesday' ? 'selected' : '' }}>{{ __('Tuesday') }}</option>
+                                        <option value="wednesday" {{ old('autoprogram_settings.monthly_day') === 'wednesday' ? 'selected' : '' }}>{{ __('Wednesday') }}</option>
+                                        <option value="thursday" {{ old('autoprogram_settings.monthly_day') === 'thursday' ? 'selected' : '' }}>{{ __('Thursday') }}</option>
+                                        <option value="friday" {{ old('autoprogram_settings.monthly_day') === 'friday' ? 'selected' : '' }}>{{ __('Friday') }}</option>
+                                        <option value="saturday" {{ old('autoprogram_settings.monthly_day') === 'saturday' ? 'selected' : '' }}>{{ __('Saturday') }}</option>
+                                        <option value="sunday" {{ old('autoprogram_settings.monthly_day') === 'sunday' ? 'selected' : '' }}>{{ __('Sunday') }}</option>
                                     </select>
-                                    <span class="text-sm text-gray-500">{{ __('del mes') }}</span>
+                                    <span class="text-sm text-gray-500">{{ __('of the month') }}</span>
                                 </div>
                             </div>
                             <div class="space-y-2">
@@ -903,7 +903,7 @@
                     @endif
                 </div>
 
-                <!-- Gamification Features (Resiliencia Colectiva) -->
+                <!-- Gamification Features ({{ __('resiliencia') }} Colectiva) -->
                 <div class="bg-amber-50/20 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 rounded-2xl p-6 space-y-6">
                     <div class="flex items-center gap-3 mb-2">
                         <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center text-amber-600 shadow-sm border border-amber-200/20">
@@ -933,7 +933,7 @@
                         <!-- Cognitive Load (Energy Drain) -->
                         <div x-data="{ load: 1 }">
                             <label class="flex items-center justify-between text-sm font-bold text-gray-700 dark:text-gray-300 mb-4">
-                                <span>Carga Cognitiva (Drenaje de Energía)</span>
+                                <span>{{ __('activities.cognitive_load') }}</span>
                                 <span :class="{
                                     'text-emerald-500': load == 1,
                                     'text-blue-500': load == 2,
@@ -948,7 +948,7 @@
                             <div class="flex justify-between text-[10px] text-gray-400 mt-2 font-black uppercase tracking-tighter">
                                 <span>Baja</span>
                                 <span>Media</span>
-                                <span>Extrema</span>
+                                <span>{{ __('Extrema') }}</span>
                             </div>
                         </div>
 
@@ -961,7 +961,7 @@
                                 </div>
                                 <div class="flex flex-col">
                                     <span class="text-xs font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">Fuera de mi Skill Tree</span>
-                                    <span class="text-[9px] text-gray-400 uppercase font-black">+ Puntos de Resiliencia</span>
+                                    <span class="text-[9px] text-gray-400 uppercase font-black">+ Puntos de {{ __('resiliencia') }}</span>
                                 </div>
                             </label>
 
@@ -996,7 +996,7 @@
                     <!-- TAB: Context -->
                     </div>
                     <div x-show="activeTab === 'context'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;" class="space-y-6">
-<!-- Contexto y Vinculaciones Card -->
+<!-- {{ __('contexto_y_vinculaciones') }} Card -->
                 <div class="bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 mb-8 space-y-6 transition-all shadow-sm">
                     <div class="flex items-center gap-3 mb-1">
                         <div class="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0 shadow-sm border border-violet-200 dark:border-violet-500/10">
@@ -1005,7 +1005,7 @@
                             </svg>
                         </div>
                         <div>
-                            <h3 class="text-xs font-black uppercase tracking-widest text-violet-700 dark:text-violet-400">{{ __('Contexto y Vinculaciones') }}</h3>
+                            <h3 class="text-xs font-black uppercase tracking-widest text-violet-700 dark:text-violet-400">{{ __('contexto_y_vinculaciones') }}</h3>
                             <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ __('Asocia esta tarea a un expediente, dependencias o servicios.') }}</p>
                         </div>
                     </div>
@@ -1014,7 +1014,7 @@
                     <div>
                         <div class="flex items-center justify-between mb-2">
                             <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400">
-                                {{ __('Expediente Vinculado') }}
+                                {{ __('Linked File') }}
                             </label>
                             <button type="button" onclick="quickCreateExpediente({{ $team->id }})" class="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1025,7 +1025,7 @@
                         </div>
                         <select name="expediente_id" id="expediente_id_select"
                             class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white transition-all cursor-pointer">
-                            <option value="">{{ __('(Ningún expediente)') }}</option>
+                            <option value="">{{ __('(No file)') }}</option>
                             @foreach ($expedientes as $exp)
                                 <option value="{{ $exp->id }}"
                                     data-code="{{ $exp->code }}"
@@ -1326,23 +1326,23 @@
             // --- Quick Create Expediente ---
             window.quickCreateExpediente = function(teamId) {
                 if (typeof Swal === 'undefined') {
-                    alert('Error: SweetAlert2 no está disponible.');
+                    alert('{{ __('swal.alert_sweetalert_not_available') }}');
                     return;
                 }
 
                 Swal.fire({
-                    title: '{{ __("Crear Nuevo Expediente") }}',
+                    title: '{{ __('Crear Nuevo Expediente') }}',
                     html: `
                         <div class="text-left space-y-4 pt-2">
                             <div>
                                 <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
-                                    {{ __("Título del Expediente") }} <span class="text-red-500">*</span>
+                                    {{ __('File Title') }} <span class="text-red-500">*</span>
                                 </label>
                                 <input id="swal-exp-title" type="text" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="{{ __("Ej. Expediente de Contratación 2026") }}">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
-                                    {{ __("Descripción (Opcional)") }}
+                                    {{ __('Description (Optional)') }}
                                 </label>
                                 <textarea id="swal-exp-desc" rows="2" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="{{ __("Resumen o notas sobre este expediente...") }}"></textarea>
                             </div>
@@ -1363,7 +1363,7 @@
                                         {{ __("Visibilidad") }}
                                     </label>
                                     <select id="swal-exp-visibility" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
-                                        <option value="public" selected>{{ __("Pública (Equipo)") }}</option>
+                                        <option value="public" selected>{{ __('Pública (Equipo)') }}</option>
                                         <option value="private">{{ __("Privada") }}</option>
                                     </select>
                                 </div>
@@ -1372,8 +1372,8 @@
                     `,
                     focusConfirm: false,
                     showCancelButton: true,
-                    confirmButtonText: '{{ __("Crear y Asignar") }}',
-                    cancelButtonText: '{{ __("Cancelar") }}',
+                    confirmButtonText: '{{ __('Crear y Asignar') }}',
+                    cancelButtonText: '{{ __('Cancel') }}',
                     customClass: {
                         popup: 'rounded-2xl dark:bg-gray-800 dark:text-white',
                         confirmButton: 'bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors',
@@ -1452,14 +1452,14 @@
                 });
             };
 
-            // --- TomSelect for Expedientes ---
+            // --- TomSelect for {{ __("Files") }} ---
             const expedSelectEl = document.getElementById('expediente_id_select');
             if (expedSelectEl) {
                 new TomSelect("#expediente_id_select", {
                     plugins: ['clear_button'],
                     create: false,
                     sortField: { field: "text", direction: "asc" },
-                    placeholder: 'Buscar expediente...',
+                    placeholder: '{{ __('Search') }} expediente...',
                     allowEmptyOption: true,
                     render: {
                         option: function(data, escape) {
@@ -1543,7 +1543,7 @@
                 width: '32rem',
                 showConfirmButton: false,
                 showCancelButton: true,
-                cancelButtonText: '{{ __("Cerrar") }}',
+                cancelButtonText: '{{ __('Close') }}',
                 didOpen: () => {
                     loadDriveFolder(folderId);
                 },
@@ -1569,7 +1569,7 @@
                     if (folderId !== 'root') {
                         const backBtn = document.createElement('button');
                         backBtn.className = 'p-2 text-blue-600 font-bold text-sm mb-2';
-                        backBtn.innerHTML = '⬅️ {{ __("Volver") }}';
+                        backBtn.innerHTML = '⬅️ {{ __('Back') }}';
                         backBtn.onclick = () => loadDriveFolder('root');
                         container.appendChild(backBtn);
                     }
@@ -1686,13 +1686,13 @@
                         </div>
                         <div class="flex items-center gap-1">
                             ${isImage ? `
-                            <button type="button" onclick="editLocalFile(${fileIndex})" class="text-violet-500 hover:text-violet-700 p-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 transition-all hover:bg-violet-50 dark:hover:bg-violet-900/30" title="Editar Imagen">
+                            <button type="button" onclick="editLocalFile(${fileIndex})" class="text-violet-500 hover:text-violet-700 p-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 transition-all hover:bg-violet-50 dark:hover:bg-violet-900/30" title="{{ __('Edit') }} Imagen">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                 </svg>
                             </button>
                             ` : ''}
-                            <button type="button" onclick="removeLocalFile(${fileIndex})" class="text-red-500 hover:text-red-700 p-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 transition-all hover:bg-red-50 dark:hover:bg-red-900/30" title="Eliminar">
+                            <button type="button" onclick="removeLocalFile(${fileIndex})" class="text-red-500 hover:text-red-700 p-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 transition-all hover:bg-red-50 dark:hover:bg-red-900/30" title="{{ __('Delete') }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
@@ -1763,7 +1763,7 @@
      class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-4 z-[800] flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl opacity-0 pointer-events-none transition-all duration-300 whitespace-nowrap cursor-move"
      :class="isDragging ? 'scale-105 shadow-[0_20px_50px_rgba(0,0,0,0.2)]' : ''">
 
-    {{-- Volver --}}
+    {{-- {{ __('Back') }} --}}
     <a href="{{ $backUrl ?? route('teams.activities.index', $team) }}"
        style="display:flex;align-items:center;gap:0.375rem;font-size:0.75rem;font-weight:700;color:#6b7280;padding:0.375rem 0.75rem;border-radius:0.625rem;text-decoration:none;transition:all 0.15s ease;"
        onmouseover="this.style.color='#7c3aed';this.style.background='#f5f3ff'"
@@ -1771,7 +1771,7 @@
         <svg style="width:1rem;height:1rem;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
         </svg>
-        <span>{{ __('tasks.back') ?? 'Volver' }}</span>
+        <span>{{ __('tasks.back') ?? __('Back') }}</span>
     </a>
 
     <div style="width:1px;height:1.25rem;background:#e5e7eb;flex-shrink:0"></div>
@@ -1783,7 +1783,7 @@
 
     <div style="width:1px;height:1.25rem;background:#e5e7eb;flex-shrink:0"></div>
 
-    {{-- Guardar --}}
+    {{-- {{ __('Save') }} --}}
     <button type="button"
             onclick="document.getElementById('create-task-form').submit()"
        style="display:flex;align-items:center;gap:0.375rem;font-size:0.75rem;font-weight:700;color:#fff;background:#7c3aed;padding:0.375rem 0.75rem;border-radius:0.625rem;text-decoration:none;transition:background 0.15s ease;border:none;cursor:pointer;"
@@ -1792,7 +1792,7 @@
         <svg style="width:1rem;height:1rem;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
         </svg>
-        <span>{{ __('tasks.save') ?? 'Guardar' }}</span>
+        <span>{{ __('tasks.save') ?? __('Save') }}</span>
     </button>
 </div>
 

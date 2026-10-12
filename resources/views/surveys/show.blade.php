@@ -13,7 +13,7 @@
             <div class="flex items-start gap-4 min-w-0 flex-1">
                 <a href="{{ route($routePrefix . 'index', $contextTeam ? [$contextTeam] : []) }}"
                     class="print-hide mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0"
-                    title="{{ __('navigation.back') ?? 'Volver' }}">
+                    title="{{ __('navigation.back') ?? __('Back') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -36,11 +36,11 @@
 
             <div class="flex items-center gap-3 shrink-0">
                 @if($survey->is_public && $survey->uuid)
-                    <button type="button" @click='navigator.clipboard.writeText("{{ route("public.surveys.show", $survey->uuid) }}"); Swal.fire({title:"Enlace Copiado", text:"El enlace público de la encuesta ha sido copiado al portapapeles", icon:"success", toast:true, position:"top-end", showConfirmButton:false, timer:3000})'
+                    <button type="button" @click='navigator.clipboard.writeText("{{ route("public.surveys.show", $survey->uuid) }}"); Swal.fire({title:"{{ __('Link Copied') }}", text:"{{ __('The public survey link has been copied to your clipboard.') }}", icon:"success", toast:true, position:"top-end", showConfirmButton:false, timer:3000})'
                             class="flex items-center gap-2 px-4 py-2.5 bg-fuchsia-50 dark:bg-fuchsia-900/20 text-fuchsia-600 dark:text-fuchsia-400 font-bold rounded-2xl hover:bg-fuchsia-100 dark:hover:bg-fuchsia-900/40 transition-colors border border-fuchsia-100 dark:border-fuchsia-800/50 shadow-sm"
-                            title="{{ __('Copiar Enlace Público') }}">
+                            title="{{ __('html.copy_public_link') }}">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-                        <span class="text-sm hidden sm:inline">{{ __('Enlace Público') }}</span>
+                        <span class="text-sm hidden sm:inline">{{ __('Public Link') }}</span>
                     </button>
                 @endif
 
@@ -54,7 +54,7 @@
                         @can('update', $survey)
                         <a href="{{ route($routePrefix . 'edit', $contextTeam ? [$contextTeam, $survey] : [$survey]) }}" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                             <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                            {{ __('Editar Encuesta') }}
+                            {{ __('Edit Survey') }}
                         </a>
 
                         @if(!$survey->is_closed)
@@ -62,7 +62,7 @@
                                 @csrf @method('POST')
                                 <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                                     <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                    {{ __('Cerrar Encuesta') }}
+                                    {{ __('Close Survey') }}
                                 </button>
                             </form>
                         @else
@@ -70,7 +70,7 @@
                                 @csrf @method('POST')
                                 <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                                     <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                    {{ __('Reactivar Encuesta') }}
+                                    {{ __('Reactivate Survey') }}
                                 </button>
                             </form>
                         @endif
@@ -81,7 +81,7 @@
                                 @csrf
                                 <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
-                                    {{ __('Promocionar a Global') }}
+                                    {{ __('Promote to Global') }}
                                 </button>
                             </form>
                         @endif
@@ -89,7 +89,7 @@
                         @if($isGlobal && auth()->user()->teams()->exists())
                             <div x-data="{ showCloning: false }" class="px-4 py-3 border-t border-gray-100 dark:border-gray-800">
                                 <button @click="showCloning = !showCloning" class="w-full flex items-center justify-between text-sm font-bold text-indigo-600 hover:text-indigo-700 transition-colors">
-                                    <span>{{ __('Clonar a un Equipo') }}</span>
+                                    <span>{{ __('Clone to a Team') }}</span>
                                     <svg class="w-4 h-4" :class="{'rotate-180': showCloning}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                                 </button>
                                 <div x-show="showCloning" class="mt-2 space-y-1">
@@ -110,7 +110,7 @@
 
                         <button onclick="promptSurveyPrint()" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                             <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                            {{ __('Imprimir Informe') }}
+                            {{ __('Print Report') }}
                         </button>
 
                         @can('delete', $survey)
@@ -118,14 +118,14 @@
                         <a href="{{ route($contextTeam ? 'teams.surveys.export-json' : 'global-surveys.export-json', $contextTeam ? [$contextTeam, $survey] : [$survey]) }}"
                            class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                             <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                            {{ __('Exportar JSON') }}
+                            {{ __('Export JSON') }}
                         </a>
 
-                        <form action="{{ route($routePrefix . 'destroy', $contextTeam ? [$contextTeam, $survey] : [$survey]) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta encuesta?')">
+                        <form action="{{ route($routePrefix . 'destroy', $contextTeam ? [$contextTeam, $survey] : [$survey]) }}" method="POST" onsubmit="return confirm('{{ __('swal.confirm_delete_survey') }}')">
                             @csrf @method('DELETE')
                             <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                {{ __('Eliminar Encuesta') }}
+                                {{ __('Delete Survey') }}
                             </button>
                         </form>
                         @endcan
@@ -155,7 +155,7 @@
                                 <span class="w-2.5 h-2.5 block rounded-full {{ $survey->is_closed ? 'bg-red-500' : 'bg-emerald-500 animate-pulse' }}"></span>
                             </div>
                             <span class="text-[11px] sm:text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">
-                                {{ $survey->is_closed ? __('Finalizada') : __('Activa') }}
+                                {{ $survey->is_closed ? __('Closed') : __('Active') }}
                             </span>
                         </div>
 
@@ -163,7 +163,7 @@
 
                         <div class="flex items-center gap-2">
                             <img src="{{ $survey->creator->profile_photo_url }}" class="w-6 h-6 rounded-full border border-white dark:border-gray-800 shadow-sm">
-                            <span class="text-[11px] sm:text-xs font-black uppercase tracking-widest text-gray-400">{{ __('Por') }}</span>
+                            <span class="text-[11px] sm:text-xs font-black uppercase tracking-widest text-gray-400">{{ __('By') }}</span>
                             <span class="text-[11px] sm:text-xs font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">{{ $survey->creator->name }}</span>
                         </div>
                     </div>
@@ -171,7 +171,7 @@
                     @if($survey->expires_at)
                         <div class="flex items-center gap-2 text-[11px] sm:text-xs font-black uppercase tracking-widest text-gray-400">
                             <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            {{ $survey->is_expired ? __('Expiró') : __('Finaliza') }} {{ $survey->expires_at->diffForHumans() }}
+                            {{ $survey->is_expired ? __('Expired') : __('Ends') }} {{ $survey->expires_at->diffForHumans() }}
                         </div>
                     @endif
                 </div>
@@ -191,13 +191,13 @@
                             <div class="flex items-center justify-between mb-8">
                                 <div class="flex flex-col">
                                     <h2 class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white tracking-tight uppercase">
-                                        {{ __('Resumen de Resultados') }}
+                                        {{ __('Results Summary') }}
                                     </h2>
-                                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">{{ __('Métricas clave y participación en tiempo real') }}</p>
+                                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">{{ __('Key metrics and real-time turnout') }}</p>
                                 </div>
                                 <button onclick="promptSurveyPrint()" class="print-hide flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-indigo-500/20 active:scale-95">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                                    {{ __('Imprimir Reporte') }}
+                                    {{ __('Print Report') }}
                                 </button>
                             </div>
                             <!-- Top KPI Cards -->
@@ -205,11 +205,11 @@
                                 <!-- Total Votes KPI -->
                                 <div class="bg-white dark:bg-gray-800/60 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-between group hover:border-indigo-500/50 transition-all duration-300">
                                     <div class="min-w-0">
-                                        <p class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{{ __('Participación') }}</p>
+                                        <p class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{{ __('Turnout') }}</p>
                                         <h4 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white">{{ $totalVotes }}</h4>
                                         <p class="text-[9px] font-bold text-emerald-500 mt-1 flex items-center gap-1">
                                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
-                                            {{ __('Votantes únicos') }}
+                                            {{ __('Unique voters') }}
                                         </p>
                                     </div>
                                     <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
@@ -220,12 +220,12 @@
                                 <!-- Status KPI -->
                                 <div class="bg-white dark:bg-gray-800/60 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-between group hover:border-indigo-500/50 transition-all duration-300">
                                     <div class="min-w-0">
-                                        <p class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{{ __('Estado') }}</p>
+                                        <p class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{{ __('Status') }}</p>
                                         <h4 class="text-lg sm:text-xl font-black {{ $survey->is_closed ? 'text-red-500' : 'text-emerald-500' }} uppercase tracking-tight">
-                                            {{ $survey->is_closed ? __('Cerrada') : __('Abierta') }}
+                                            {{ $survey->is_closed ? __('Closed') : __('Open') }}
                                         </h4>
                                         <p class="text-[9px] font-bold text-gray-400 mt-1">
-                                            {{ $survey->is_closed ? __('Finalizado el plazo') : __('Recibiendo respuestas') }}
+                                            {{ $survey->is_closed ? __('Deadline passed') : __('Receiving responses') }}
                                         </p>
                                     </div>
                                     <div class="w-12 h-12 rounded-2xl {{ $survey->is_closed ? 'bg-red-50 dark:bg-red-500/10 text-red-500' : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500' }} flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -236,10 +236,10 @@
                                 <!-- Questions KPI -->
                                 <div class="bg-white dark:bg-gray-800/60 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-between group hover:border-indigo-500/50 transition-all duration-300">
                                     <div class="min-w-0">
-                                        <p class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{{ __('Estructura') }}</p>
+                                        <p class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{{ __('Structure') }}</p>
                                         <h4 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white">{{ $survey->questions->count() }}</h4>
                                         <p class="text-[9px] font-bold text-indigo-500 mt-1">
-                                            {{ __('Preguntas totales') }}
+                                            {{ __('Total questions') }}
                                         </p>
                                     </div>
                                     <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
@@ -250,23 +250,23 @@
                                 <!-- Visibility KPI -->
                                 <div x-data="{ copied: false }"
                                      @if($survey->is_public && $survey->uuid)
-                                        @click='navigator.clipboard.writeText("{{ route("public.surveys.show", $survey->uuid) }}"); copied = true; setTimeout(() => copied = false, 3000); Swal.fire({title:"Enlace Copiado", text:"El enlace público de la encuesta ha sido copiado al portapapeles", icon:"success", toast:true, position:"top-end", showConfirmButton:false, timer:3000})'
+                                        @click='navigator.clipboard.writeText("{{ route("public.surveys.show", $survey->uuid) }}"); copied = true; setTimeout(() => copied = false, 3000); Swal.fire({title:"{{ __('Link Copied') }}", text:"{{ __('The public survey link has been copied to your clipboard.') }}", icon:"success", toast:true, position:"top-end", showConfirmButton:false, timer:3000})'
                                         class="cursor-pointer bg-white dark:bg-gray-800/60 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-between group hover:border-violet-500/50 hover:bg-violet-50/50 dark:hover:bg-violet-900/10 transition-all duration-300"
-                                        title="{{ __('Copiar Enlace Público') }}"
+                                        title="{{ __('html.copy_public_link') }}"
                                      @else
                                         class="bg-white dark:bg-gray-800/60 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-between group hover:border-indigo-500/50 transition-all duration-300"
                                      @endif>
                                     <div class="min-w-0">
-                                        <p class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{{ __('Ámbito') }}</p>
+                                        <p class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{{ __('Scope') }}</p>
                                         <h4 class="text-sm sm:text-base font-black text-gray-900 dark:text-white uppercase tracking-tight truncate">
-                                            {{ $isGlobal ? __('Global') : ($contextTeam->name ?? __('Equipo')) }}
+                                            {{ $isGlobal ? __('Global') : ($contextTeam->name ?? __('Team')) }}
                                         </h4>
                                         <p class="text-[9px] font-bold text-violet-500 mt-1 transition-colors duration-300 group-hover:text-violet-600">
                                             @if($survey->is_public && $survey->uuid)
-                                                <span x-show="!copied">{{ __('Acceso Público (Clic para copiar enlace)') }}</span>
-                                                <span x-show="copied" x-cloak class="text-emerald-500">{{ __('¡Enlace Copiado!') }}</span>
+                                                <span x-show="!copied">{{ __('Public Access (Click to copy link)') }}</span>
+                                                <span x-show="copied" x-cloak class="text-emerald-500">{{ __('Link Copied!') }}</span>
                                             @else
-                                                {{ $isGlobal ? __('Toda la plataforma') : __('Acceso restringido al equipo') }}
+                                                {{ $isGlobal ? __('Entire platform') : __('Team restricted access') }}
                                             @endif
                                         </p>
                                     </div>
@@ -287,7 +287,7 @@
                                             <div class="min-w-0">
                                                 <h3 class="text-xs sm:text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight" title="{{ $question->title }}">{{ $question->title }}</h3>
                                                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                                                    {{ $question->type !== 'text' ? $question->votes()->count() . ' ' . __('Respuestas') : __('Pregunta abierta') }}
+                                                    {{ $question->type !== 'text' ? $question->votes()->count() . ' ' . __('Responses') : __('Open-ended question') }}
                                                 </p>
                                             </div>
                                             <div class="shrink-0 text-indigo-400 opacity-0 group-hover/card:opacity-100 transition-opacity">
@@ -351,7 +351,7 @@
                                                                     <div class="w-3.5 h-3.5 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center shrink-0">
                                                                         <svg class="w-2.5 h-2.5 text-gray-400" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                                                                     </div>
-                                                                    <span class="text-[8px] font-bold text-gray-400 uppercase tracking-widest">{{ __('Anónimo') }}</span>
+                                                                    <span class="text-[8px] font-bold text-gray-400 uppercase tracking-widest">{{ __('Anonymous') }}</span>
                                                                 @endif
                                                             </div>
                                                         </div>
@@ -402,7 +402,7 @@
                                                                                 <div class="w-5 h-5 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center shrink-0">
                                                                                     <svg class="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                                                                                 </div>
-                                                                                <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest">{{ __('Anónimo') }}</span>
+                                                                                <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest">{{ __('Anonymous') }}</span>
                                                                             @endif
                                                                         </div>
                                                                     </div>
@@ -464,7 +464,7 @@
                                 <button @click="showForm = !showForm"
                                         class="px-8 py-4 bg-white dark:bg-gray-900 border-2 border-indigo-100 dark:border-indigo-800 rounded-2xl text-sm font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all shadow-sm flex items-center gap-3">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                    <span x-text="showForm ? '{{ __('Ocultar mis respuestas') }}' : '{{ __('Cambiar mis respuestas') }}'"></span>
+                                    <span x-text="showForm ? '{{ __('Hide my responses') }}' : '{{ __('Change my responses') }}'"></span>
                                 </button>
                             </div>
                         @endif
@@ -554,15 +554,15 @@
                                                         </div>
                                                         <input type="hidden" name="answers[{{ $question->id }}]" :value="answers['{{ $question->id }}']">
                                                         <div class="mt-4 text-xs font-black uppercase tracking-[0.2em] text-gray-400">
-                                                            <span x-show="!answers['{{ $question->id }}']">{{ __('Haz clic para valorar') }}</span>
-                                                            <span x-show="answers['{{ $question->id }}']" x-text="answers['{{ $question->id }}'] + ' / 5 Estrellas'"></span>
+                                                            <span x-show="!answers['{{ $question->id }}']">{{ __('Click to rate') }}</span>
+                                                            <span x-show="answers['{{ $question->id }}']" x-text="answers['{{ $question->id }}'] + ' / 5 {{ __('Stars') }}'"></span>
                                                         </div>
                                                     </div>
                                                 @elseif($question->type === 'text')
                                                     <div class="bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 border-2 border-transparent focus-within:border-indigo-500/50 transition-all duration-300">
                                                         <textarea name="answers[{{ $question->id }}]" rows="3" x-model="answers['{{ $question->id }}']"
                                                                   class="w-full bg-transparent border-none focus:ring-0 text-base text-gray-900 dark:text-white placeholder-gray-400 font-medium resize-none"
-                                                                  placeholder="{{ __('Escribe aquí tus ideas o comentarios...') }}"></textarea>
+                                                                  placeholder="{{ __('Write your thoughts or comments here...') }}"></textarea>
                                                     </div>
                                                 @endif
                                             </div>
@@ -575,7 +575,7 @@
                                             class="group relative inline-flex items-center justify-center px-10 py-4 font-bold text-white tracking-wider uppercase transition-all duration-500 ease-in-out transform bg-indigo-600 rounded-2xl hover:scale-105 active:scale-95 shadow-[0_20px_50px_rgba(79,70,229,0.3)] hover:shadow-[0_20px_50px_rgba(79,70,229,0.5)] overflow-hidden">
                                         <div class="absolute inset-0 w-full h-full bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-700"></div>
                                         <span class="relative flex items-center gap-2 text-lg">
-                                            {{ $hasVoted ? __('Actualizar mis respuestas') : __('Enviar Encuesta') }}
+                                            {{ $hasVoted ? __('Update my responses') : __('Submit Survey') }}
                                             <svg class="w-5 h-5 transition-transform duration-500 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
                                         </span>
                                     </button>
@@ -597,20 +597,20 @@
                                 <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.5H4.5V21M3 21h18M12 6.75a.75.75 0 11-.75.75.75.75 0 01.75-.75z"/></svg>
                             </div>
                             <div>
-                                <h3 class="text-sm font-black text-violet-600 dark:text-violet-400 uppercase tracking-widest">{{ __('Canal Ciudadano') }}</h3>
-                                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('Consulta Pública y Transparencia') }}</p>
+                                <h3 class="text-sm font-black text-violet-600 dark:text-violet-400 uppercase tracking-widest">{{ __('Citizen Channel') }}</h3>
+                                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('Public Consultation & Transparency') }}</p>
                             </div>
                         </div>
 
                         <!-- Organismo Promotor -->
                         <div class="space-y-4">
-                            <h4 class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('Entidad Promotora') }}</h4>
+                            <h4 class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('Promoting Entity') }}</h4>
                             <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100/50 dark:border-gray-800">
                                 <img src="{{ $survey->creator->profile_photo_url }}" class="w-12 h-12 rounded-full border border-white dark:border-gray-800 shadow-md">
                                 <div class="min-w-0 flex-1">
                                     <span class="block text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight truncate">{{ $survey->creator->name }}</span>
                                     <span class="inline-flex items-center gap-1.5 text-[9px] font-black text-violet-600 dark:text-violet-400 uppercase tracking-widest mt-1 bg-violet-50 dark:bg-violet-500/10 px-2 py-0.5 rounded-full">
-                                        {{ $survey->creator->working_area_name ?: __('Ayuntamiento General') }}
+                                        {{ $survey->creator->working_area_name ?: __('General City Council') }}
                                     </span>
                                 </div>
                             </div>
@@ -618,7 +618,7 @@
 
                         <!-- Mapa Interactivo / Localización -->
                         <div class="space-y-4">
-                            <h4 class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('Ubicación del Centro') }}</h4>
+                            <h4 class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">{{ __('Center Location') }}</h4>
                             <div class="relative w-full h-[220px] rounded-[1.5rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-inner">
                                 <div id="promoter-map" class="w-full h-full"></div>
                                 <div class="absolute bottom-3 left-3 right-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm p-3 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 z-[1000] flex items-center gap-2.5">
@@ -626,12 +626,12 @@
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
                                     </div>
                                     <div class="min-w-0 flex-1">
-                                        <span class="block text-[10px] font-black text-gray-900 dark:text-white uppercase tracking-tight truncate">{{ $survey->creator->working_area_name ?: __('Ayuntamiento General') }}</span>
+                                        <span class="block text-[10px] font-black text-gray-900 dark:text-white uppercase tracking-tight truncate">{{ $survey->creator->working_area_name ?: __('General City Council') }}</span>
                                         <span class="block text-[9px] font-bold text-gray-400 truncate">
                                             @if($survey->creator->location_lat && $survey->creator->location_lng)
                                                 Lat: {{ number_format($survey->creator->location_lat, 4) }}, Lng: {{ number_format($survey->creator->location_lng, 4) }}
                                             @else
-                                                {{ __('Ubicación Centralizada') }}
+                                                {{ __('Centralized Location') }}
                                             @endif
                                         </span>
                                     </div>
@@ -645,9 +645,9 @@
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
                             </div>
                             <div class="flex-1">
-                                <span class="block text-xs font-black text-emerald-800 dark:text-emerald-400 uppercase tracking-widest mb-1">{{ __('Garantía de Confidencialidad') }}</span>
+                                <span class="block text-xs font-black text-emerald-800 dark:text-emerald-400 uppercase tracking-widest mb-1">{{ __('Confidentiality Guarantee') }}</span>
                                 <p class="text-[10px] text-emerald-700/80 dark:text-emerald-400/80 font-bold leading-normal">
-                                    {{ __('Tus respuestas son totalmente anónimas y se procesan de acuerdo con el RGPD para la mejora continua de la gestión ciudadana.') }}
+                                    {{ __('Your responses are completely anonymous and processed under GDPR for the continuous improvement of civic management.') }}
                                 </p>
                             </div>
                         </div>
@@ -926,7 +926,7 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
             </svg>
-            <span>{{ __('Volver') }}</span>
+            <span>{{ __('Back') }}</span>
         </a>
 
         <div class="w-px h-5 bg-gray-100 dark:bg-gray-800"></div>
@@ -938,7 +938,7 @@
         <div class="w-px h-5 bg-gray-100 dark:bg-gray-800"></div>
 
         <div class="flex items-center gap-1">
-            <button onclick="promptSurveyPrint()" class="p-2 text-gray-400 hover:text-indigo-600 transition-colors rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-500/10" title="{{ __('Imprimir Informe') }}">
+            <button onclick="promptSurveyPrint()" class="p-2 text-gray-400 hover:text-indigo-600 transition-colors rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-500/10" title="{{ __('Print Report') }}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
             </button>
 
@@ -946,7 +946,7 @@
             <a href="{{ route($routePrefix . 'edit', $contextTeam ? [$contextTeam, $survey] : [$survey]) }}"
                class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 transition-all">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                <span>{{ __('Editar') }}</span>
+                <span>{{ __('Edit') }}</span>
             </a>
             @endcan
         </div>
@@ -1014,7 +1014,7 @@
         function promptSurveyPrint() {
             const isDark = document.documentElement.classList.contains('dark');
             Swal.fire({
-                title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Opciones de Impresión</span>',
+                title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">{{ __('docs.print_options') }}</span>',
                 background: isDark ? '#0f172a' : '#ffffff',
                 color: isDark ? '#f3f4f6' : '#1f2937',
                 showConfirmButton: false,
@@ -1024,22 +1024,22 @@
                 },
                 html: `
                     <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-6 text-center px-4">
-                        ¿Deseas incluir las cabeceras corporativas y la marca de agua de SientiaMTX?
+                        {{ __("docs.watermark_question") }}
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-2">
                         <button type="button" id="print-btn-with" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-indigo-100 dark:border-indigo-950 bg-indigo-50/50 dark:bg-indigo-950/30 hover:border-indigo-600 transition-all text-center group">
                             <div class="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform shadow-sm">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                             </div>
-                            <div class="font-black text-[10px] uppercase tracking-widest text-indigo-700 dark:text-indigo-300">Con Cabeceras</div>
-                            <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Reporte oficial</div>
+                            <div class="font-black text-[10px] uppercase tracking-widest text-indigo-700 dark:text-indigo-300">{{ __('With Headers') }}</div>
+                            <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">{{ __('Official report') }}</div>
                         </button>
                         <button type="button" id="print-btn-without" class="flex flex-col items-center gap-3 p-5 rounded-[2rem] border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-slate-900 hover:border-gray-600 transition-all text-center group">
                             <div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 group-hover:scale-110 transition-transform shadow-sm">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
                             </div>
-                            <div class="font-black text-[10px] uppercase tracking-widest text-gray-700 dark:text-gray-300">Sin Cabeceras</div>
-                            <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Contenido limpio</div>
+                            <div class="font-black text-[10px] uppercase tracking-widest text-gray-700 dark:text-gray-300">{{ __('Without Headers') }}</div>
+                            <div class="text-[9px] font-bold text-gray-400 uppercase tracking-tight">{{ __('Clean content') }}</div>
                         </button>
                     </div>
                 `,
@@ -1072,11 +1072,11 @@
                         <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #e5e7eb; padding-bottom: 12px; margin-bottom: 24px;">
                             <div>
                                 <h1 style="font-size: 24pt; font-weight: 900; color: #111827; margin: 0; letter-spacing: -0.02em;">sientia<em style="color:#7c3aed; font-style:normal;">MTX</em></h1>
-                                <div style="font-size: 10pt; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px;">Reporte de Encuesta</div>
+                                <div style="font-size: 10pt; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px;">{{ __('Survey Report') }}</div>
                             </div>
                             <div style="text-align: right; font-size: 9pt; color: #9ca3af;">
                                 <div>{{ $survey->title }}</div>
-                                <div>Generado el ${new Date().toLocaleDateString()}</div>
+                                <div>{{ __('Generated on') }} ${new Date().toLocaleDateString()}</div>
                             </div>
                         </div>
                     `;

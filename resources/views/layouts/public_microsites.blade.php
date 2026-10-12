@@ -14,7 +14,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'Micrositios') — Sientia MTX</title>
+    <title>@yield('title', __('Microsites')) — Sientia MTX</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -67,7 +67,7 @@
                 </div>
                 <div>
                     <span class="font-black text-gray-900 dark:text-white heading-font text-base tracking-tight select-none">Sientia<span class="text-pink-500">Sites</span></span>
-                    <span class="block text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest leading-none">{{ __('Portal Ciudadano') }}</span>
+                    <span class="block text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest leading-none">{{ __('Citizen Portal') }}</span>
                 </div>
             </a>
             
@@ -102,13 +102,13 @@
     <!-- Footer -->
     <footer class="bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-850 py-6 shrink-0 mt-auto">
         <div class="w-full mx-auto px-5 lg:px-8 text-center text-xs text-gray-400 dark:text-gray-500 font-medium">
-            <p>© {{ date('Y') }} Sientia MTX. {{ __('Conectando ciudadanos y miembros en tiempo real.') }}</p>
+            <p>© {{ date('Y') }} Sientia MTX. {{ __('Connecting citizens and members in real time.') }}</p>
             <p class="mt-1.5 flex items-center justify-center gap-3">
-                <a href="#" class="hover:underline">{{ __('Privacidad') }}</a>
+                <a href="#" class="hover:underline">{{ __('Privacy') }}</a>
                 <span>·</span>
-                <a href="#" class="hover:underline">{{ __('Términos de servicio') }}</a>
+                <a href="#" class="hover:underline">{{ __('Terms of Service') }}</a>
                 <span>·</span>
-                <a href="#" class="hover:underline">{{ __('Soporte') }}</a>
+                <a href="#" class="hover:underline">{{ __('Support') }}</a>
             </p>
         </div>
     </footer>

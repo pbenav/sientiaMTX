@@ -5,12 +5,11 @@
     @endphp
 
     <x-slot name="header">
-    <x-slot name="header">
         <div class="flex items-center justify-between gap-3 flex-wrap">
             <div class="flex items-center gap-2 min-w-0">
                 <a href="{{ $team ? route('teams.dashboard', $team) : route('teams.index') }}"
                     class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0"
-                    title="{{ __('navigation.back') ?? 'Volver' }}">
+                    title="{{ __('navigation.back') ?? __('Back') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -24,13 +23,13 @@
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
                         </svg>
-                        <span class="truncate">{{ __('Canal Ciudadano') }}</span>
+                        <span class="truncate">{{ __('Global Surveys') }}</span>
                     @else
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                         </svg>
-                        <span class="truncate">{{ __('Encuestas') }}</span>
+                        <span class="truncate">{{ __('Surveys') }}</span>
                     @endif
                 </h1>
             </div>
@@ -45,7 +44,7 @@
         <!-- View Switcher Sub-Header -->
         <div class="mt-2">
             <x-demo-hint>
-                El módulo de encuestas facilita la toma de decisiones democráticas. Permite crear votaciones anónimas o públicas, definir restricciones temporales y visualizar resultados en tiempo real. Soporta importación/exportación de formatos y analíticas detalladas.
+                {{ __('The surveys module facilitates democratic decision-making. It allows creating anonymous or public votes, defining time restrictions, and viewing results in real time. It supports format import/export and detailed analytics.') }}
             </x-demo-hint>
         </div>
 
@@ -62,9 +61,7 @@
         }
     }">
 
-
-
-        <!-- Pestaña: Encuestas Colectivas -->
+        <!-- Surveys Tab -->
         <div x-show="currentTab === 'surveys'" class="space-y-4">
             <!-- Action Buttons for Surveys -->
             <div class="flex flex-wrap items-center gap-3 pt-2">
@@ -77,7 +74,7 @@
                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                             </svg>
-                            <span>{{ __('Nueva Encuesta') }}</span>
+                            <span>{{ __('New Survey') }}</span>
                         </a>
 
                         <div x-data="{ uploading: false }">
@@ -96,7 +93,7 @@
                                             d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                                     </svg>
                                     <span
-                                        x-text="uploading ? '{{ __('Importando...') }}' : '{{ __('Importar JSON') }}'"></span>
+                                        x-text="uploading ? '{{ __('Importing...') }}' : '{{ __('Import JSON') }}'"></span>
                                 </button>
                             </form>
                         </div>
@@ -117,14 +114,14 @@
                             </svg>
                         </div>
                         <input type="text" x-model="search"
-                            placeholder="{{ __('Buscar por título o descripción...') }}" enterkeyhint="search"
+                            :placeholder="__('Search by title or description...')" enterkeyhint="search"
                             :class="search !== '' ?
                                 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20' :
                                 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'"
                             class="w-full pl-10 pr-12 py-2.5 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 dark:text-white transition-all shadow-sm">
                         <button x-show="search !== ''" @click="search = ''"
                             class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-red-500 transition-colors"
-                            title="{{ __('Limpiar Filtros') }}" x-cloak>
+                            title="{{ __('Clear Filters') }}" x-cloak>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -156,17 +153,17 @@
                         </svg>
                     </div>
                     <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                        {{ __('No hay encuestas activas') }}</h3>
+                        {{ __('No active surveys') }}</h3>
                     <p class="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">
                         {{ $isGlobal
-                            ? __('Pronto habrá nuevas consultas para toda la comunidad.')
-                            : __('Sé el primero en proponer algo al equipo creando una encuesta ahora mismo.') }}
+                            ? __('New consultations for the entire community will be available soon.')
+                            : __('Be the first to propose something to the team by creating a survey right now.') }}
                     </p>
                     @can('create', App\Models\Survey::class)
                         @if (!$isGlobal || auth()->user()->is_admin)
                             <a href="{{ route($routePrefix . 'create', $team ? [$team] : []) }}"
                                 class="text-indigo-600 dark:text-indigo-400 font-bold hover:underline">
-                                {{ __('Crear mi primera encuesta') }} &rarr;
+                                {{ __('Create my first survey') }} &rarr;
                             </a>
                         @endif
                     @endcan
@@ -188,35 +185,35 @@
                                     <span
                                         class="text-[10px] font-black uppercase tracking-widest bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300 px-2 py-1 rounded-md">
                                         {{ $survey->questions->count() }}
-                                        {{ trans_choice('Pregunta|Preguntas', $survey->questions->count()) }}
+                                        {{ trans_choice('question|questions', $survey->questions->count()) }}
                                     </span>
                                     @if ($survey->is_closed)
                                         <span
                                             class="text-[10px] font-black uppercase tracking-widest bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 px-2 py-1 rounded-md">
-                                            {{ __('Cerrada') }}
+                                            {{ __('Closed') }}
                                         </span>
                                     @elseif($survey->is_expired)
                                         <span
                                             class="text-[10px] font-black uppercase tracking-widest bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-2 py-1 rounded-md">
-                                            {{ __('Expirada') }}
+                                            {{ __('Expired') }}
                                         </span>
                                     @else
                                         <span
                                             class="text-[10px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 px-2 py-1 rounded-md">
-                                            {{ __('Activa') }}
+                                            {{ __('Active') }}
                                         </span>
                                     @endif
 
                                     @if ($survey->is_public)
                                         <span
                                             class="text-[10px] font-black uppercase tracking-widest bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/40 dark:text-fuchsia-300 px-2 py-1 rounded-md"
-                                            title="Pública (Enlace Externo)">
+                                            title="{{ __("html.public_external_link") }}">
                                             <svg class="w-3 h-3 inline-block -mt-0.5 mr-0.5" fill="none"
                                                 stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                                             </svg>
-                                            {{ __('Pública') }}
+                                            {{ __('Public') }}
                                         </span>
                                     @endif
                                 </div>
@@ -226,9 +223,9 @@
                                     @if ($survey->is_public && $survey->uuid)
                                         <object>
                                             <button type="button"
-                                                @click='event.preventDefault(); event.stopPropagation(); navigator.clipboard.writeText("{{ route('public.surveys.show', $survey->uuid) }}"); Swal.fire({title:"Enlace Copiado", text:"El enlace público ha sido copiado", icon:"success", toast:true, position:"top-end", showConfirmButton:false, timer:3000});'
+                                                @click='event.preventDefault(); event.stopPropagation(); navigator.clipboard.writeText("{{ route('public.surveys.show', $survey->uuid) }}"); Swal.fire({title:"{{ __('Link Copied') }}", text:"{{ __('Public link has been copied') }}", icon:"success", toast:true, position:"top-end", showConfirmButton:false, timer:3000});'
                                                 class="p-1 text-gray-400 hover:text-fuchsia-600 dark:hover:text-fuchsia-400 transition-colors"
-                                                title="Copiar Enlace Público">
+                                                title="{{ __("html.copy_public_link") }}">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor"
                                                     viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -242,7 +239,7 @@
                                         <object>
                                             <a href="{{ route($routePrefix . 'edit', $team ? [$team, $survey] : [$survey]) }}"
                                                 class="p-1 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
-                                                onclick="event.stopPropagation()" title="Editar Encuesta">
+                                                onclick="event.stopPropagation()" title="{{ __("Edit Survey") }}">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor"
                                                     viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -253,9 +250,9 @@
                                     @endcan
                                     @can('delete', $survey)
                                         <object>
-                                            <form action="{{ route($routePrefix . 'destroy', $team ? [$team, $survey] : [$survey]) }}" method="POST" class="inline-block m-0 p-0" onsubmit="event.stopPropagation(); return confirm('{{ __('¿Estás seguro de que quieres eliminar esta encuesta?') }}')">
+                                            <form action="{{ route($routePrefix . 'destroy', $team ? [$team, $survey] : [$survey]) }}" method="POST" class="inline-block m-0 p-0" onsubmit="event.stopPropagation(); return confirm('{{ __('swal.confirm_delete_survey') }}')">
                                                 @csrf @method('DELETE')
-                                                <button type="submit" class="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors" onclick="event.stopPropagation()" title="Eliminar Encuesta">
+                                                <button type="submit" class="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors" onclick="event.stopPropagation()" title="{{ __("Delete Survey") }}">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                     </svg>
@@ -274,24 +271,24 @@
 
                             <!-- Description short snippet -->
                             <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-4 flex-grow">
-                                {{ Str::limit($survey->description, 120) ?? 'Sin descripción.' }}
+                                {{ Str::limit($survey->description, 120) ?? __('No description.') }}
                             </p>
 
                             <!-- Footer Metadata -->
                             <div
                                 class="mt-auto pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-[11px] font-medium text-gray-400 dark:text-gray-550">
                                 <div class="flex items-center gap-4">
-                                    <div class="flex items-center gap-1.5" title="Votos recibidos">
+                                    <div class="flex items-center gap-1.5" title="{{ __("html.received_votes") }}">
                                         <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                         </svg>
                                         <span>{{ $survey->unique_voters_count }}
-                                            {{ trans_choice('Votante|Votantes', $survey->unique_voters_count) }}</span>
+                                            {{ trans_choice('voter|voters', $survey->unique_voters_count) }}</span>
                                     </div>
                                     @if ($survey->expires_at)
-                                        <div class="flex items-center gap-1" title="Fecha de expiración">
+                                        <div class="flex items-center gap-1" title="{{ __("html.expiration_date") }}">
                                             <svg class="w-3.5 h-3.5 text-gray-400" fill="none"
                                                 stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -327,15 +324,15 @@
                                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">{{ __('No hay resultados') }}
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">{{ __('No results found') }}
                     </h3>
                     <p class="text-gray-500 dark:text-gray-400 max-w-sm mx-auto font-medium">
-                        {{ __('No hemos encontrado ninguna encuesta que coincida con') }} "<span x-text="search"
-                            class="text-indigo-600 font-bold"></span>". {{ __('Prueba con otros términos.') }}
+                        {{ __('No surveys found matching') }} "<span x-text="search"
+                            class="text-indigo-600 font-bold"></span>". {{ __('Try other terms.') }}
                     </p>
                     <button @click="search = ''"
                         class="mt-6 text-sm font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-700 transition-colors">
-                        {{ __('Limpiar búsqueda') }}
+                        {{ __('Clear search') }}
                     </button>
                 </div>
 

@@ -222,7 +222,7 @@
                     
                     const btn = document.createElement('button');
                     btn.className = 'absolute top-2 right-2 p-1.5 bg-white/90 dark:bg-gray-800/90 text-gray-700 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 opacity-0 group-hover/inline-img:opacity-100 transition-opacity z-10';
-                    btn.title = 'Editar Imagen en línea';
+                    btn.title = '{{ __('Edit') }} Imagen en línea';
                     btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>`;
                     
                     btn.onclick = (e) => {
@@ -265,7 +265,7 @@
                                             showConfirmButton: false
                                         });
                                     } else {
-                                        throw new Error(data.message || 'Error al guardar la imagen');
+                                        throw new Error(data.message || '{{ __("Error al guardar") }} la imagen');
                                     }
                                 })
                                 .catch(error => {

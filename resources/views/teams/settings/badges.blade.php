@@ -6,7 +6,7 @@
             <div class="flex items-start gap-4 min-w-0 flex-1">
                 <a href="{{ route('teams.index') }}"
                     class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0"
-                    title="{{ __('navigation.back') ?? 'Volver' }}">
+                    title="{{ __('navigation.back') ?? __('Back') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -24,7 +24,7 @@
 
         <div class="mt-2">
             <x-demo-hint>
-                El panel de Medallas del equipo permite activar, desactivar o personalizar los reconocimientos e insignias gamificadas que pueden obtener los miembros por su rendimiento, resiliencia y esfuerzo colaborativo.
+                {{ __('The team Badges panel allows activating, deactivating, or customizing gamified recognitions and badges that members can earn for their performance, resilience, and collaborative effort.') }}
             </x-demo-hint>
         </div>
         
@@ -40,10 +40,9 @@
                     @csrf
                     
                     <div class="mb-6 border-b border-gray-100 dark:border-gray-800 pb-4">
-                        <h2 class="text-xl font-black text-gray-900 dark:text-white mb-2">Medallas Habilitadas</h2>
+                        <h2 class="text-xl font-black text-gray-900 dark:text-white mb-2">{{ __('Enabled Badges') }}</h2>
                         <p class="text-sm text-gray-500 dark:text-gray-400">
-                            Selecciona qué medallas quieres que estén activas para los miembros de este equipo. 
-                            Las medallas desmarcadas no podrán ser conseguidas ni se mostrarán como objetivo en el panel de gamificación.
+                            {{ __('Select which badges you want to be active for members of this team. Unchecked badges cannot be earned or shown as goals in the gamification panel.') }}
                         </p>
                     </div>
 
@@ -78,7 +77,7 @@
 
                     <div class="mt-8 flex justify-end">
                         <button type="submit" class="btn-primary">
-                            Guardar Configuración de Medallas
+                            {{ __('Save') }} {{ __('Settings') }} de Medallas
                         </button>
                     </div>
                 </form>

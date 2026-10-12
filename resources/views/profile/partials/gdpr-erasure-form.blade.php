@@ -50,7 +50,7 @@
 
             <div class="mt-6 flex justify-end">
                 <x-secondary-button x-on:click="$dispatch('close')">
-                    {{ __('Cancelar') }}
+                    {{ __('Cancel') }}
                 </x-secondary-button>
 
                 <x-danger-button class="ms-3">

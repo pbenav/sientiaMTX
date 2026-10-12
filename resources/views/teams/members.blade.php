@@ -6,7 +6,7 @@
             <div class="flex items-center gap-2 min-w-0">
                 <a href="{{ route('teams.index') }}"
                     class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0"
-                    title="{{ __('navigation.back') ?? 'Volver' }}">
+                    title="{{ __('navigation.back') ?? __('Back') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -28,7 +28,7 @@
 
         <div class="mt-2">
             <x-demo-hint>
-                La gestión de miembros y grupos permite administrar los roles, permisos y agrupaciones del equipo. Puedes invitar usuarios, asignar habilidades con niveles de "expertise", visualizar la conexión en tiempo real y habilitar el acceso al portal de Cita Previa para usuarios externos.
+                {{ __('Managing members and groups allows administering team roles, permissions, and group clustering. You can invite users, assign skills with expertise levels, view real-time connectivity, and enable Appointment Portal access for external users.') }}
             </x-demo-hint>
         </div>
 
@@ -73,40 +73,40 @@
                     
                     @can('manageMembers', $team)
                         <div class="flex items-center gap-2">
-                            <!-- Encuestas Bulk Actions -->
+                            <!-- {{ __("Surveys") }} Bulk Actions -->
                             @if($team->settings['surveys_enabled'] ?? false)
                             <form method="POST" action="{{ route('teams.updateAllMembersSurveys', $team) }}">
                                 @csrf @method('PATCH')
                                 <input type="hidden" name="allow" value="1">
-                                <button type="submit" class="px-3 py-1.5 bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-950/30 dark:hover:bg-cyan-900/40 border border-cyan-150 dark:border-cyan-800/80 rounded-xl text-[10px] font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400 transition-all select-none" title="Habilitar Encuestas a todos">
-                                    + Encuestas
+                                <button type="submit" class="px-3 py-1.5 bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-950/30 dark:hover:bg-cyan-900/40 border border-cyan-150 dark:border-cyan-800/80 rounded-xl text-[10px] font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400 transition-all select-none" title="{{ __('Enable Surveys for all') }}">
+                                    + {{ __("Surveys") }}
                                 </button>
                             </form>
                             @endif
-                            <!-- Citas Bulk Actions -->
+                            <!-- {{ __("Appointments") }} Bulk Actions -->
                             @if($team->settings['has_appointments'] ?? false)
                             <form method="POST" action="{{ route('teams.updateAllMembersAppointments', $team) }}">
                                 @csrf @method('PATCH')
                                 <input type="hidden" name="allow" value="1">
-                                <button type="submit" class="px-3 py-1.5 bg-violet-50 hover:bg-violet-100 dark:bg-violet-950/30 dark:hover:bg-violet-900/40 border border-violet-150 dark:border-violet-800/80 rounded-xl text-[10px] font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 transition-all select-none" title="Habilitar Cita Previa a todos">
-                                    + Citas
+                                <button type="submit" class="px-3 py-1.5 bg-violet-50 hover:bg-violet-100 dark:bg-violet-950/30 dark:hover:bg-violet-900/40 border border-violet-150 dark:border-violet-800/80 rounded-xl text-[10px] font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 transition-all select-none" title="{{ __("html.enable_appointment_for_all") }}">
+                                    + {{ __("Appointments") }}
                                 </button>
                             </form>
                             @endif
-                            <!-- Micrositios Bulk Actions -->
+                            <!-- {{ __("Microsites") }} Bulk Actions -->
                             @if($team->settings['microsites_enabled'] ?? false)
                             <form method="POST" action="{{ route('teams.updateAllMembersMicrosites', $team) }}">
                                 @csrf @method('PATCH')
                                 <input type="hidden" name="allow" value="1">
-                                <button type="submit" class="px-3 py-1.5 bg-pink-50 hover:bg-pink-100 dark:bg-pink-950/30 dark:hover:bg-pink-900/40 border border-pink-150 dark:border-pink-800/80 rounded-xl text-[10px] font-black uppercase tracking-wider text-pink-600 dark:text-pink-400 transition-all select-none" title="Habilitar Micrositios a todos">
-                                    + Micrositios
+                                <button type="submit" class="px-3 py-1.5 bg-pink-50 hover:bg-pink-100 dark:bg-pink-950/30 dark:hover:bg-pink-900/40 border border-pink-150 dark:border-pink-800/80 rounded-xl text-[10px] font-black uppercase tracking-wider text-pink-600 dark:text-pink-400 transition-all select-none" title="{{ __('Enable Microsites for all') }}">
+                                    + {{ __("Microsites") }}
                                 </button>
                             </form>
                             @endif
                             <form method="POST" action="{{ route('teams.revokeAllMembersPermissions', $team) }}" class="ml-2">
                                 @csrf @method('PATCH')
-                                <button type="submit" class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all select-none" title="Deshabilitar todos los módulos a todos">
-                                    Revocar Todos
+                                <button type="submit" class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700/85 rounded-xl text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 transition-all select-none" title="{{ __('teams.revoke_all_modules') }}">
+                                    {{ __('Revoke All') }}
                                 </button>
                             </form>
                         </div>
@@ -124,7 +124,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                             <input type="text" name="search" value="{{ request('search') }}" 
-                                placeholder="{{ __('Buscar por nombre o email...') }}"
+                                placeholder="{{ __('Search by name or email...') }}"
                                 enterkeyhint="search"
                                 class="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all shadow-sm">
                         </div>
@@ -133,7 +133,7 @@
                         <div class="w-full sm:w-48">
                             <select name="role_id" 
                                 class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs text-gray-600 dark:text-gray-300 px-4 py-2.5 rounded-xl focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 outline-none cursor-pointer transition-all shadow-sm">
-                                <option value="">{{ __('Todos los roles') }}</option>
+                                <option value="">{{ __('All Roles') }}</option>
                                 @foreach ($roles as $role)
                                     <option value="{{ $role->id }}" {{ request('role_id') == $role->id ? 'selected' : '' }}>
                                         {{ __('teams.' . $role->name) }}
@@ -148,11 +148,11 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 4.5h18m-18 5h18M3 14.5h18M3 19.5h18" />
                                 </svg>
-                                <span>{{ __('Filtrar') }}</span>
+                                <span>{{ __('Filter') }}</span>
                             </button>
 
                             @if(request()->anyFilled(['search', 'role_id']))
-                                <a href="{{ route('teams.members', $team) }}?tab=members" class="p-2.5 text-gray-400 hover:text-red-500 transition-colors" title="{{ __('Limpiar filtros') }}">
+                                <a href="{{ route('teams.members', $team) }}?tab=members" class="p-2.5 text-gray-400 hover:text-red-500 transition-colors" title="{{ __('Clear filters') }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                                     </svg>
@@ -182,7 +182,7 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
-                                    {{ __('Miembro desde') }}: 
+                                    {{ __('Member since') }}: 
                                     <span class="font-bold">{{ $member->pivot->joined_at ? \Carbon\Carbon::parse($member->pivot->joined_at)->format('d/m/Y') : $member->created_at->format('d/m/Y') }}</span>
                                 </p>
                             </div>
@@ -229,7 +229,7 @@
                                     </div>
 
                                     @if($member->last_ip)
-                                        <div class="flex items-center gap-1.5 text-[10px] text-gray-400 dark:text-gray-500" title="Última IP detectada">
+                                        <div class="flex items-center gap-1.5 text-[10px] text-gray-400 dark:text-gray-500" title="{{ __("html.last_ip_detected") }}">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                                             </svg>
@@ -238,7 +238,7 @@
                                     @endif
 
                                     @if($member->last_activity_at)
-                                        <div class="flex items-center gap-1.5 text-[10px] text-gray-400 dark:text-gray-500" title="Última actividad">
+                                        <div class="flex items-center gap-1.5 text-[10px] text-gray-400 dark:text-gray-500" title="{{ __("html.last_activity") }}">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
@@ -264,7 +264,7 @@
                                                     {{ __('teams.' . $roleName) }}
                                                 </span>
                                                 @if($member->isOnline())
-                                                    <span class="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-widest rounded-lg border border-emerald-100 dark:border-emerald-900/50">Online</span>
+                                                    <span class="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-widest rounded-lg border border-emerald-100 dark:border-emerald-900/50">{{ __('Online') }}</span>
                                                 @endif
                                             </div>
                                         </div>
@@ -272,35 +272,35 @@
 
                                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
                                         <div class="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50 text-center">
-                                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Tareas</p>
+                                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{{ __('Tasks') }}</p>
                                             <p class="text-2xl font-black text-gray-900 dark:text-white heading">{{ $member->created_tasks_count }}</p>
-                                            <p class="text-[9px] text-gray-500 mt-1 italic">{{ $member->assigned_tasks_count }} completadas</p>
+                                            <p class="text-[9px] text-gray-500 mt-1 italic">{{ __(':count completed', ['count' => $member->assigned_tasks_count]) }}</p>
                                         </div>
                                         <div class="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50 text-center">
-                                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Foro</p>
+                                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{{ __('Forum') }}</p>
                                             <p class="text-2xl font-black text-gray-900 dark:text-white heading">{{ $member->forum_threads_count + $member->forum_messages_count }}</p>
-                                            <p class="text-[9px] text-gray-500 mt-1 italic">{{ $member->forum_threads_count }} hilos / {{ $member->forum_messages_count }} msgs</p>
+                                            <p class="text-[9px] text-gray-500 mt-1 italic">{{ __(':threads threads / :messages msgs', ['threads' => $member->forum_threads_count, 'messages' => $member->forum_messages_count]) }}</p>
                                         </div>
                                         <div class="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50 text-center">
-                                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Aportes</p>
+                                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{{ __('Contributions') }}</p>
                                             <p class="text-2xl font-black text-gray-900 dark:text-white heading">{{ $member->attachments_count }}</p>
-                                            <p class="text-[9px] text-gray-500 mt-1 italic">Archivos subidos</p>
+                                            <p class="text-[9px] text-gray-500 mt-1 italic">{{ __('Uploaded files') }}</p>
                                         </div>
                                         <div class="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50 text-center">
-                                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Kudos</p>
+                                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{{ __('Kudos') }}</p>
                                             <p class="text-2xl font-black text-violet-600 dark:text-violet-400 heading">{{ $member->received_kudos_count }}</p>
-                                            <p class="text-[9px] text-gray-500 mt-1 italic">Recibidos</p>
+                                            <p class="text-[9px] text-gray-500 mt-1 italic">{{ __('Received') }}</p>
                                         </div>
                                     </div>
 
                                     <div class="space-y-6">
                                          <div class="flex items-center justify-between p-4 bg-violet-600 rounded-2xl text-white shadow-lg shadow-violet-500/25">
                                             <div>
-                                                <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Experiencia Total</p>
+                                                <p class="text-[10px] font-black uppercase tracking-widest opacity-80">{{ __('Total Experience') }}</p>
                                                 <p class="text-2xl font-black heading">{{ number_format($member->experience_points) }} XP</p>
                                             </div>
                                             <div class="text-right">
-                                                <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Resiliencia</p>
+                                                <p class="text-[10px] font-black uppercase tracking-widest opacity-80">{{ __('Resilience') }}</p>
                                                 <p class="text-2xl font-black heading">{{ number_format($member->resilience_points) }} RP</p>
                                             </div>
                                          </div>
@@ -311,7 +311,7 @@
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                                 </svg>
-                                                Habilidades en este Equipo
+                                                {{ __('Skills in this Team') }}
                                             </h3>
                                             <div class="flex flex-wrap gap-2">
                                                 @foreach($member->skills as $skill)
@@ -326,7 +326,7 @@
                                     </div>
 
                                     <div class="mt-8 flex justify-end">
-                                        <x-secondary-button x-on:click="$dispatch('close')">Cerrar Perfil</x-secondary-button>
+                                        <x-secondary-button x-on:click="$dispatch('close')">{{ __('Close Profile') }}</x-secondary-button>
                                     </div>
                                 </div>
                             </x-modal>
@@ -336,55 +336,55 @@
                                 <div class="flex items-center gap-2 shrink-0">
                                     @if($team->settings['surveys_enabled'] ?? false)
                                     <form method="POST" action="{{ route('teams.updateMemberSurveys', [$team, $member]) }}" class="shrink-0">
-                                        @csrf @method('PATCH')
-                                        <label class="relative inline-flex items-center cursor-pointer" title="Permitir gestionar Encuestas">
-                                            <input type="hidden" name="allow_surveys" value="0">
-                                            <input type="checkbox" name="allow_surveys" value="1" onchange="this.form.submit()" class="sr-only peer" {{ ($member->pivot->allow_surveys ?? false) ? 'checked' : '' }}>
-                                            <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-cyan-500"></div>
-                                            <span class="ms-1.5 text-[9px] font-black uppercase text-gray-400 dark:text-gray-500 tracking-tight select-none">Encuestas</span>
-                                        </label>
-                                    </form>
-                                    @endif
+                                         @csrf @method('PATCH')
+                                         <label class="relative inline-flex items-center cursor-pointer" title="{{ __('Allow managing Surveys') }}">
+                                             <input type="hidden" name="allow_surveys" value="0">
+                                             <input type="checkbox" name="allow_surveys" value="1" onchange="this.form.submit()" class="sr-only peer" {{ ($member->pivot->allow_surveys ?? false) ? 'checked' : '' }}>
+                                             <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-cyan-500"></div>
+                                             <span class="ms-1.5 text-[9px] font-black uppercase text-gray-400 dark:text-gray-500 tracking-tight select-none">{{ __("Surveys") }}</span>
+                                         </label>
+                                     </form>
+                                     @endif
 
-                                    @if($team->settings['has_appointments'] ?? false)
-                                    <form method="POST" action="{{ route('teams.updateMemberAppointments', [$team, $member]) }}" class="shrink-0">
-                                        @csrf @method('PATCH')
-                                        <label class="relative inline-flex items-center cursor-pointer" title="Permitir portal de Cita Previa a este miembro">
-                                            <input type="hidden" name="allow_appointments" value="0">
-                                            <input type="checkbox" name="allow_appointments" value="1" onchange="this.form.submit()" class="sr-only peer" {{ ($member->pivot->allow_appointments ?? false) ? 'checked' : '' }}>
-                                            <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-violet-500"></div>
-                                            <span class="ms-1.5 text-[9px] font-black uppercase text-gray-400 dark:text-gray-500 tracking-tight select-none">Cita Previa</span>
-                                        </label>
-                                    </form>
-                                    @endif
-                                    
-                                    @if($team->settings['microsites_enabled'] ?? false)
-                                    <form method="POST" action="{{ route('teams.updateMemberMicrosites', [$team, $member]) }}" class="shrink-0">
-                                        @csrf @method('PATCH')
-                                        <label class="relative inline-flex items-center cursor-pointer" title="Permitir crear páginas web (Micrositios)">
-                                            <input type="hidden" name="allow_microsites" value="0">
-                                            <input type="checkbox" name="allow_microsites" value="1" onchange="this.form.submit()" class="sr-only peer" {{ ($member->pivot->allow_microsites ?? false) ? 'checked' : '' }}>
-                                            <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-pink-500"></div>
-                                            <span class="ms-1.5 text-[9px] font-black uppercase text-gray-400 dark:text-gray-500 tracking-tight select-none">Micrositios</span>
-                                        </label>
-                                    </form>
-                                    @endif
-                                </div>
-                            @else
-                                <div class="flex items-center gap-1 shrink-0">
-                                    @if(($team->settings['surveys_enabled'] ?? false) && ($member->pivot->allow_surveys ?? false))
-                                        <span class="px-2.5 py-1 bg-cyan-50 dark:bg-cyan-950/40 text-cyan-600 dark:text-cyan-400 text-[9px] font-black uppercase tracking-wider rounded-lg border border-cyan-150 dark:border-cyan-800/80 shadow-sm shrink-0 select-none">
-                                            Encuestas
-                                        </span>
-                                    @endif
-                                    @if(($team->settings['has_appointments'] ?? false) && ($member->pivot->allow_appointments ?? false))
-                                        <span class="px-2.5 py-1 bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400 text-[9px] font-black uppercase tracking-wider rounded-lg border border-violet-150 dark:border-violet-800/80 shadow-sm shrink-0 select-none">
-                                            Cita Previa
-                                        </span>
-                                    @endif
+                                     @if($team->settings['has_appointments'] ?? false)
+                                     <form method="POST" action="{{ route('teams.updateMemberAppointments', [$team, $member]) }}" class="shrink-0">
+                                         @csrf @method('PATCH')
+                                         <label class="relative inline-flex items-center cursor-pointer" title="{{ __('Allow Appointment Portal to this member') }}">
+                                             <input type="hidden" name="allow_appointments" value="0">
+                                             <input type="checkbox" name="allow_appointments" value="1" onchange="this.form.submit()" class="sr-only peer" {{ ($member->pivot->allow_appointments ?? false) ? 'checked' : '' }}>
+                                             <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-violet-500"></div>
+                                             <span class="ms-1.5 text-[9px] font-black uppercase text-gray-400 dark:text-gray-500 tracking-tight select-none">{{ __('Appointments') }}</span>
+                                         </label>
+                                     </form>
+                                     @endif
+                                     
+                                     @if($team->settings['microsites_enabled'] ?? false)
+                                     <form method="POST" action="{{ route('teams.updateMemberMicrosites', [$team, $member]) }}" class="shrink-0">
+                                         @csrf @method('PATCH')
+                                         <label class="relative inline-flex items-center cursor-pointer" title="{{ __('html.allow_microsites') }}">
+                                             <input type="hidden" name="allow_microsites" value="0">
+                                             <input type="checkbox" name="allow_microsites" value="1" onchange="this.form.submit()" class="sr-only peer" {{ ($member->pivot->allow_microsites ?? false) ? 'checked' : '' }}>
+                                             <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-pink-500"></div>
+                                             <span class="ms-1.5 text-[9px] font-black uppercase text-gray-400 dark:text-gray-500 tracking-tight select-none">{{ __("Microsites") }}</span>
+                                         </label>
+                                     </form>
+                                     @endif
+                                 </div>
+                             @else
+                                 <div class="flex items-center gap-1 shrink-0">
+                                     @if(($team->settings['surveys_enabled'] ?? false) && ($member->pivot->allow_surveys ?? false))
+                                         <span class="px-2.5 py-1 bg-cyan-50 dark:bg-cyan-950/40 text-cyan-600 dark:text-cyan-400 text-[9px] font-black uppercase tracking-wider rounded-lg border border-cyan-150 dark:border-cyan-800/80 shadow-sm shrink-0 select-none">
+                                             {{ __("Surveys") }}
+                                         </span>
+                                     @endif
+                                     @if(($team->settings['has_appointments'] ?? false) && ($member->pivot->allow_appointments ?? false))
+                                         <span class="px-2.5 py-1 bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400 text-[9px] font-black uppercase tracking-wider rounded-lg border border-violet-150 dark:border-violet-800/80 shadow-sm shrink-0 select-none">
+                                             {{ __('Appointments') }}
+                                         </span>
+                                     @endif
                                     @if(($team->settings['microsites_enabled'] ?? false) && ($member->pivot->allow_microsites ?? false))
                                         <span class="px-2.5 py-1 bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 text-[9px] font-black uppercase tracking-wider rounded-lg border border-pink-150 dark:border-pink-800/80 shadow-sm shrink-0 select-none">
-                                            Micrositios
+                                            {{ __("Microsites") }}
                                         </span>
                                     @endif
                                 </div>
@@ -588,20 +588,20 @@
                                 </svg>
                             </div>
                             <h3 class="font-bold text-xs uppercase tracking-widest text-gray-400 dark:text-gray-500 heading">
-                                Invitación Masiva</h3>
+                                {{ __('Bulk Invitation') }}</h3>
                         </div>
                         
                         <form method="POST" action="{{ route('teams.addMembersBulk', $team) }}" class="space-y-5">
                             @csrf
                             <div>
-                                <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">Lista de Emails</label>
+                                <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">{{ __('teams.email_list') }}</label>
                                 <textarea name="emails_block" required rows="6"
                                     class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-3 text-xs text-gray-900 dark:text-white outline-none transition-all placeholder-gray-400 font-mono"
-                                    placeholder="Pega aquí los emails separados por comas, espacios o saltos de línea..."></textarea>
-                                <p class="mt-2 text-[9px] text-gray-400 italic">El sistema extraerá automáticamente los correos válidos del texto.</p>
+                                    placeholder="{{ __('Paste emails separated by commas, spaces or newlines here...') }}"></textarea>
+                                <p class="mt-2 text-[9px] text-gray-400 italic">{{ __('The system will automatically extract valid emails from the text.') }}</p>
                             </div>
                             <div>
-                                <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">Rol para todos</label>
+                                <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">{{ __('teams.role_for_all') }}</label>
                                 <select name="role_id" required
                                     class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
                                     @foreach ($roles as $role)
@@ -614,7 +614,7 @@
                             </div>
                             <button type="submit"
                                 class="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-violet-600 dark:hover:bg-violet-500 hover:text-white text-sm font-bold uppercase tracking-widest py-3 rounded-xl transition-all shadow-lg hover:shadow-violet-500/25">
-                                Procesar Lista
+                                {{ __('Process List') }}
                             </button>
                         </form>
                     </div>
@@ -638,7 +638,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
                                 <input type="text" name="search_group" value="{{ request('search_group') }}" 
-                                    placeholder="{{ __('Buscar grupo...') }}"
+                                    placeholder="{{ __('Search group...') }}"
                                     enterkeyhint="search"
                                     class="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all shadow-sm">
                             </div>
@@ -649,11 +649,11 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 4.5h18m-18 5h18M3 14.5h18M3 19.5h18" />
                                     </svg>
-                                    <span>{{ __('Filtrar') }}</span>
+                                    <span>{{ __('Filter') }}</span>
                                 </button>
 
                                 @if(request()->filled('search_group'))
-                                    <a href="{{ route('teams.members', $team) }}?tab=groups" class="p-2.5 text-gray-400 hover:text-red-500 transition-colors" title="{{ __('Limpiar filtros') }}">
+                                    <a href="{{ route('teams.members', $team) }}?tab=groups" class="p-2.5 text-gray-400 hover:text-red-500 transition-colors" title="{{ __('Clear filters') }}">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                                         </svg>

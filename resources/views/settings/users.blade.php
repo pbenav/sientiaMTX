@@ -12,7 +12,7 @@
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900 dark:text-white heading">{{ __('navigation.users') }}</h1>
                     <x-demo-hint>
-                        Este panel centraliza la gestión de todas las cuentas de usuario de la plataforma. Como SuperAdmin, puedes modificar sus niveles de acceso globales, auditar su nivel de actividad o forzar medidas de seguridad en el sistema.
+                        {{ __('This dashboard centralizes the management of all user accounts on the platform. As SuperAdmin, you can modify global access levels, audit activity, or enforce security measures across the system.') }}
                     </x-demo-hint>
                 </div>
             </div>
@@ -21,7 +21,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
-                    {{ __('Enviar Correo / Invitar') }}
+                    {{ __('Send Email / Invite') }}
                 </a>
                 <a href="{{ route('settings.users.create') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-violet-500/20">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -44,36 +44,36 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                         <input type="text" name="search" value="{{ $search }}"
-                               placeholder="{{ __('Buscar por nombre o email…') }}"
+                               placeholder="{{ __('Search by name or email…') }}"
                                enterkeyhint="search"
                                class="w-full pl-9 pr-4 py-2 text-sm bg-gray-50/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none text-gray-900 dark:text-white placeholder-gray-400">
                     </div>
                     <select name="role"
                             class="text-sm bg-gray-50/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-xl px-3 pr-12 py-2 focus:ring-2 focus:ring-violet-500 outline-none text-gray-700 dark:text-gray-300">
-                        <option value="" {{ $role === '' ? 'selected' : '' }}>{{ __('Todos los Roles') }}</option>
-                        <option value="admin" {{ $role === 'admin' ? 'selected' : '' }}>{{ __('Administrador') }}</option>
-                        <option value="user" {{ $role === 'user' ? 'selected' : '' }}>{{ __('Usuario') }}</option>
+                        <option value="" {{ $role === '' ? 'selected' : '' }}>{{ __('All Roles') }}</option>
+                        <option value="admin" {{ $role === 'admin' ? 'selected' : '' }}>{{ __('Administrator') }}</option>
+                        <option value="user" {{ $role === 'user' ? 'selected' : '' }}>{{ __('User') }}</option>
                     </select>
 
                     <select name="premium"
                             class="text-sm bg-gray-50/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-xl px-3 pr-12 py-2 focus:ring-2 focus:ring-violet-500 outline-none text-gray-700 dark:text-gray-300">
-                        <option value="" {{ $premium === '' ? 'selected' : '' }}>{{ __('Todos los Planes') }}</option>
+                        <option value="" {{ $premium === '' ? 'selected' : '' }}>{{ __('All Plans') }}</option>
                         <option value="1" {{ $premium === '1' ? 'selected' : '' }}>{{ __('Premium (WhatsApp)') }}</option>
-                        <option value="0" {{ $premium === '0' ? 'selected' : '' }}>{{ __('Estándar') }}</option>
+                        <option value="0" {{ $premium === '0' ? 'selected' : '' }}>{{ __('Standard') }}</option>
                     </select>
 
                     <select name="approved"
                             class="text-sm bg-gray-50/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-xl px-3 pr-12 py-2 focus:ring-2 focus:ring-violet-500 outline-none text-gray-700 dark:text-gray-300">
-                        <option value="" {{ request('approved') === null || request('approved') === '' ? 'selected' : '' }}>{{ __('Todos los Estados') }}</option>
-                        <option value="1" {{ request('approved') === '1' ? 'selected' : '' }}>{{ __('Aprobados') }}</option>
-                        <option value="0" {{ request('approved') === '0' ? 'selected' : '' }}>{{ __('Pendientes (Waitlist)') }}</option>
+                        <option value="" {{ request('approved') === null || request('approved') === '' ? 'selected' : '' }}>{{ __('All Statuses') }}</option>
+                        <option value="1" {{ request('approved') === '1' ? 'selected' : '' }}>{{ __('Approved') }}</option>
+                        <option value="0" {{ request('approved') === '0' ? 'selected' : '' }}>{{ __('Pending (Waitlist)') }}</option>
                     </select>
 
                     <select name="status"
                             class="text-sm bg-gray-50/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-xl px-3 pr-12 py-2 focus:ring-2 focus:ring-violet-500 outline-none text-gray-700 dark:text-gray-300">
-                        <option value="" {{ $status === '' ? 'selected' : '' }}>{{ __('Cualquier Presencia') }}</option>
-                        <option value="online" {{ $status === 'online' ? 'selected' : '' }}>{{ __('En Línea') }}</option>
-                        <option value="offline" {{ $status === 'offline' ? 'selected' : '' }}>{{ __('Fuera de Línea') }}</option>
+                        <option value="" {{ $status === '' ? 'selected' : '' }}>{{ __('Any Presence') }}</option>
+                        <option value="online" {{ $status === 'online' ? 'selected' : '' }}>{{ __('Online') }}</option>
+                        <option value="offline" {{ $status === 'offline' ? 'selected' : '' }}>{{ __('Offline') }}</option>
                     </select>
 
                     <select name="per_page" onchange="this.form.submit()"
@@ -86,11 +86,11 @@
 
                     <div class="flex items-center gap-2">
                         <button type="submit" class="px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-violet-500/20">
-                            {{ __('Filtrar') }}
+                            {{ __('Filter') }}
                         </button>
                 @if (request()->anyFilled(['search', 'role', 'premium', 'approved', 'status']))
                     <a href="{{ route('settings.users') }}" class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-red-500 transition-colors uppercase tracking-widest">
-                        {{ __('Limpiar') }}
+                        {{ __('Clear') }}
                     </a>
                 @endif
                     </div>
@@ -122,7 +122,7 @@
                                         </a>
                                     </th>
                                 @endforeach
-                                <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">{{ __('Sesión & IP') }}</th>
+                                <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">{{ __('Session & IP') }}</th>
                                 <th class="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 text-right">{{ __('Actions') }}</th>
                             </tr>
                         </thead>
@@ -144,7 +144,7 @@
                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                                         </svg>
-                                                        {{ trans_choice('{1} :count Invitación disponible|[2,*] :count Invitaciones disponibles', $user->invitations_left, ['count' => $user->invitations_left]) }}
+                                                        {{ trans_choice('{1} :count invitation available|[2,*] :count invitations available', $user->invitations_left, ['count' => $user->invitations_left]) }}
                                                     </span>
                                                 @endif
                                             </div>
@@ -157,7 +157,7 @@
                                         <div class="flex flex-wrap items-center gap-1.5">
                                         @if (!$user->is_approved)
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50 animate-pulse">
-                                                {{ __('Pendiente') }}
+                                                {{ __('Pending') }}
                                             </span>
                                         @endif
 
@@ -196,21 +196,21 @@
                                                       <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                                                     </div>
                                                     <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">{{ __('Online') }}</span>
-                                                    <span class="text-[10px] font-mono bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-gray-500 dark:text-gray-400" title="{{ $uniqueIps ?: 'Sin IP detectada' }}">{{ $user->last_ip ?: 'N/A' }}</span>
+                                                    <span class="text-[10px] font-mono bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-gray-500 dark:text-gray-400" title="{{ $uniqueIps ?: __('No IP detected') }}">{{ $user->last_ip ?: 'N/A' }}</span>
                                                 @else
                                                     <span class="h-2.5 w-2.5 rounded-full bg-gray-300 dark:bg-gray-600"></span>
                                                     <span class="text-xs text-gray-400">{{ __('Offline') }}</span>
                                                     @if($user->last_ip)
-                                                        <span class="text-[10px] font-mono bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-gray-500/70 dark:text-gray-500/70" title="Última conocida">{{ $user->last_ip }}</span>
+                                                        <span class="text-[10px] font-mono bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-gray-500/70 dark:text-gray-500/70" title="{{ __('html.last_known') }}">{{ $user->last_ip }}</span>
                                                     @endif
                                                 @endif
                                             </div>
                                             @if($latestSession)
                                                 <span class="text-[10px] text-gray-500 dark:text-gray-400 pl-4" title="{{ \Carbon\Carbon::createFromTimestamp($latestSession->last_activity)->format('d/m/Y H:i:s') }}">
-                                                    Últ. vez: {{ \Carbon\Carbon::createFromTimestamp($latestSession->last_activity)->diffForHumans() }}
+                                                    {{ __('Last seen:') }} {{ \Carbon\Carbon::createFromTimestamp($latestSession->last_activity)->diffForHumans() }}
                                                 </span>
                                             @else
-                                                <span class="text-[10px] text-gray-400/50 pl-4 italic">Nunca ha entrado</span>
+                                                <span class="text-[10px] text-gray-400/50 pl-4 italic">{{ __('users.never_logged_in') }}</span>
                                             @endif
                                         </div>
                                     </td>
@@ -220,7 +220,7 @@
                                         @if($user->sessions->count() > 0 && $user->id !== auth()->id())
                                             <form action="{{ route('settings.users.force-logout', $user) }}" method="POST" class="inline" id="force-logout-{{ $user->id }}">
                                                 @csrf
-                                                <button type="button" onclick="confirmForceLogout({{ $user->id }}, '{{ addslashes($user->name) }}')" class="group relative flex items-center justify-center p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all active:scale-90" title="Forzar Cierre de Sesión">
+                                                <button type="button" onclick="confirmForceLogout({{ $user->id }}, '{{ addslashes($user->name) }}')" class="group relative flex items-center justify-center p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all active:scale-90" title="{{ __('Force Logout') }}">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                                                     </svg>
@@ -232,7 +232,7 @@
                                             <form action="{{ route('settings.users.approve', $user) }}" method="POST">
                                                 @csrf
                                                 <button type="submit" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 dark:bg-emerald-950/30 dark:hover:bg-emerald-900/30 dark:text-emerald-400 transition-colors active:scale-95">
-                                                    {{ __('Aprobar') }}
+                                                    {{ __('Approve') }}
                                                 </button>
                                             </form>
                                         @endif
@@ -247,7 +247,7 @@
                                                 </button>
                                             </form>
                                         @else
-                                            <span class="text-xs text-gray-400 font-bold italic">{{ __('Tú') }}</span>
+                                            <span class="text-xs text-gray-400 font-bold italic">{{ __('You') }}</span>
                                         @endif
                                         </div>
                                     </td>
@@ -269,13 +269,13 @@
     <script>
         function confirmForceLogout(userId, userName) {
             Swal.fire({
-                title: 'Forzar Cierre de Sesión',
-                text: '¿Cerrar todas las sesiones de ' + userName + '?',
+                title: '{{ __("Force Logout") }}',
+                text: "{{ __('Log out all sessions for :user?', ['user' => '{user}']) }}".replace('{user}', userName),
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
                 cancelButtonColor: '#6b7280',
-                confirmButtonText: 'Sí, cerrar sesiones',
+                confirmButtonText: '{{ __("Yes, log out sessions") }}',
                 cancelButtonText: '{{ __('teams.confirm_cancel') }}',
                 background: document.documentElement.classList.contains('dark') ? '#111827' : '#ffffff',
                 color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#111827',

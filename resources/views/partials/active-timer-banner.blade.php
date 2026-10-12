@@ -87,14 +87,14 @@
             @if($activeTeamId)
                 <a href="{{ route('teams.activities.show', [$activeTeamId, $activeActivity->id]) }}"
                    class="text-xs font-bold bg-white/10 hover:bg-white/20 text-white px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 active:scale-95 border border-white/15">
-                    <span>Ver Actividad</span>
+                    <span>{{ __('View') }} Actividad</span>
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
                 </a>
             @endif
             
             <button type="button" @click="stopTimer()" :disabled="loading" class="text-xs font-black bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 shadow-lg active:scale-95 border border-rose-400/40 cursor-pointer disabled:opacity-50">
                 <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
-                <span x-text="loading ? 'Deteniendo...' : 'Parar Contador'">Parar Contador</span>
+                <span x-text="loading ? 'Deteniendo...' : '{{ __('Parar Contador') }}'">{{ __('Parar Contador') }}</span>
             </button>
         </div>
     </div>

@@ -33,7 +33,7 @@
             <div class="flex items-center gap-2 min-w-0">
                 <a href="{{ $backUrl ?? route('teams.dashboard', $team) }}"
                     class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0"
-                    title="{{ __('navigation.back') ?? 'Volver' }}">
+                    title="{{ __('navigation.back') ?? __('Back') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -45,7 +45,7 @@
                     {{ __('activities.detail') }}
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200 dark:border-blue-700/50 shadow-sm flex items-center gap-1 shrink-0 ml-1">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                        {{ $activity->type_label ?? __('Actividad') }}
+                        {{ $activity->type_label ?? __('Activity') }}
                     </span>
                 </h1>
             </div>
@@ -73,7 +73,7 @@
                     </svg>
                 </div>
                 <div>
-                    <h3 class="text-lg font-black text-red-800 dark:text-red-300">Esta actividad está en la papelera</h3>
+                    <h3 class="text-lg font-black text-red-800 dark:text-red-300">{{ __('Esta actividad está en la papelera') }}</h3>
                     <p class="text-sm text-red-700 dark:text-red-400 mt-1">La actividad ha sido eliminada y ya no aparece en el listado ni en los cuadrantes de trabajo. Solo es visible mediante su enlace directo. Puedes vaciar la papelera desde el listado general de actividades para eliminarla permanentemente.</p>
                 </div>
             </div>
@@ -145,14 +145,14 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                         </svg>
-                        <span>{{ __('Acciones') }}</span>
+                        <span>{{ __('Actions') }}</span>
                     </button>
                 </x-slot>
 
                 <x-slot name="content">
                     <div class="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-gray-400 border-b border-gray-50 dark:border-gray-700/50 mb-1">
                         Workspace & Portabilidad
-                                      <!-- Imprimir Ficha -->
+                                      <!-- {{ __('Imprimir') }} Ficha -->
                     <button type="button" onclick="printFullTask()" class="w-full flex items-center gap-4 py-4 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
                         <div class="shrink-0 p-2 bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 rounded-xl group-hover:scale-110 transition-transform shadow-sm">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -160,13 +160,13 @@
                             </svg>
                         </div>
                         <div class="flex flex-col">
-                            <span class="font-bold text-gray-900 dark:text-white text-sm">Imprimir Ficha Técnica</span>
+                            <span class="font-bold text-gray-900 dark:text-white text-sm">{{ __('Imprimir') }} Ficha Técnica</span>
                             <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Informe completo y detallado de la actividad</span>
                         </div>
                     </button>
 
                     @if ($activity->type === 'document')
-                    <!-- Imprimir Libro -->
+                    <!-- {{ __('Imprimir') }} Libro -->
                     <button type="button" onclick="printDocumentBook()" class="w-full flex items-center gap-4 py-4 px-5 text-start hover:bg-gray-50 dark:hover:bg-white/5 transition duration-150 ease-in-out group">
                         <div class="shrink-0 p-2 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-xl group-hover:scale-110 transition-transform shadow-sm">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -174,13 +174,13 @@
                             </svg>
                         </div>
                         <div class="flex flex-col">
-                            <span class="font-bold text-gray-900 dark:text-white text-sm">Imprimir como libro...</span>
-                            <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Generar libro digital con todos los capítulos</span>
+                            <span class="font-bold text-gray-900 dark:text-white text-sm">{{ __('Print as book...') }}</span>
+                            <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">{{ __('Generate digital book with all chapters') }}</span>
                         </div>
                     </button>
                     @endif
 
-                    <!-- Reproducir en Equipo -->
+                    <!-- Reproducir en {{ __('Team') }} -->
                     @php
                         $otherTeams = auth()->user()->teams()->where('teams.id', '!=', $team->id)->get();
                     @endphp
@@ -192,7 +192,7 @@
                                 </svg>
                             </div>
                             <div class="flex flex-col">
-                                <span class="font-bold text-gray-900 dark:text-white text-sm">Reproducir en Equipo</span>
+                                <span class="font-bold text-gray-900 dark:text-white text-sm">Reproducir en {{ __('Team') }}</span>
                                 <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Clonar actividad en otro espacio de trabajo</span>
                             </div>
                         </button>
@@ -250,7 +250,7 @@
                             </div>
                             <div class="flex flex-col">
                                 <span class="font-bold text-gray-900 dark:text-white text-sm">Cargar Archivo (.json)</span>
-                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Crear actividad desde un archivo local</span>
+                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">{{ __('Create') }} actividad desde un archivo local</span>
                             </div>
                         </button>
 
@@ -263,7 +263,7 @@
                             </div>
                             <div class="flex flex-col">
                                 <span class="font-bold text-gray-900 dark:text-white text-sm">Pegar JSON</span>
-                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">Crear actividad desde el portapapeles</span>
+                                <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">{{ __('Create') }} actividad desde el portapapeles</span>
                             </div>
                         </button>
                     </div>      </div>
@@ -339,14 +339,14 @@
                                     <div class="flex flex-col">
                                         <span class="font-bold text-gray-900 dark:text-white text-sm">
                                             @if($activity->google_calendar_event_id)
-                                                {{ $isExternalGoogleEvent ? 'Desvincular de MTX (Evento Externo)' : 'Eliminar de Google Calendar' }}
+                                                {{ $isExternalGoogleEvent ? 'Desvincular de MTX (Evento Externo)' : __('Eliminar de Google Calendar') }}
                                             @else
                                                 Calendario de Google
                                             @endif
                                         </span>
                                         <span class="text-[10px] text-gray-500 font-medium tracking-normal mt-0.5">
                                             @if($activity->google_calendar_event_id)
-                                                {{ $isExternalGoogleEvent ? 'Retirar vínculo local sin alterar el evento original' : 'Eliminar cita del calendario remoto' }}
+                                                {{ $isExternalGoogleEvent ? 'Retirar vínculo local sin alterar el evento original' : __('Eliminar cita del calendario remoto') }}
                                             @else
                                                 Publicar / Sincronizar evento con Google Calendar
                                             @endif
@@ -416,7 +416,7 @@
                         confirmButtonColor: '#7c3aed',
                         cancelButtonColor: '#6b7280',
                         confirmButtonText: 'Sí, restaurar',
-                        cancelButtonText: 'Cancelar',
+                        cancelButtonText: '{{ __("Cancel") }}',
                         background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff',
                         color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#1e293b',
                         customClass: {
@@ -440,7 +440,7 @@
                         confirmButtonColor: '#7c3aed',
                         cancelButtonColor: '#6b7280',
                         confirmButtonText: 'Sí, clonar',
-                        cancelButtonText: 'Cancelar',
+                        cancelButtonText: '{{ __("Cancel") }}',
                         background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff',
                         color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#1e293b',
                         customClass: {
@@ -466,7 +466,7 @@
                         title: '¿A qué equipo la enviamos?',
                         html: `
                             <div class="text-left mt-4 border-t border-gray-100 dark:border-gray-800 pt-6">
-                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2 ml-1">Selecciona el equipo de destino</label>
+                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2 ml-1">{{ __('Selecciona el equipo de destino') }}</label>
                                 <select id="target-team-select" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500/20 outline-none">
                                     ${options}
                                 </select>
@@ -475,7 +475,7 @@
                         `,
                         showCancelButton: true,
                         confirmButtonText: 'Reproducir 🚀',
-                        cancelButtonText: 'Cancelar',
+                        cancelButtonText: '{{ __("Cancel") }}',
                         confirmButtonColor: '#7c3aed',
                         background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff',
                         color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#1e293b',
@@ -528,7 +528,7 @@
                                 ⚠️ Esta acción moverá todos los <strong>comentarios, registros de tiempo, archivos y subtareas</strong> a la actividad que elijas a continuación. Esta actividad actual (#{{ $activity->id }}) será <strong>eliminada permanentemente</strong> tras completarse.
                             </div>
                             <div class="text-left">
-                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2 ml-1">Actividad Destino (Buscador Autocompletable)</label>
+                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2 ml-1">{{ __('Actividad Destino (Buscador Autocompletable)') }}</label>
                                 <div class="w-full relative min-h-[48px]">
                                     <select id="merge-target-select" class="w-full"></select>
                                 </div>
@@ -537,7 +537,7 @@
                         `,
                         showCancelButton: true,
                         confirmButtonText: '🔥 Fusionar y Borrar',
-                        cancelButtonText: 'Cancelar',
+                        cancelButtonText: '{{ __("Cancel") }}',
                         confirmButtonColor: '#e11d48',
                         background: isDark ? '#0f172a' : '#ffffff',
                         color: isDark ? '#f1f5f9' : '#1e293b',
@@ -625,7 +625,7 @@
                     const isDark = document.documentElement.classList.contains('dark');
                     let withHeaders = true, dialogClosed = false;
                     await Swal.fire({
-                        title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">Imprimir Ficha T\u00e9cnica</span>',
+                        title: '<span class="text-xs font-black uppercase tracking-widest text-indigo-600">{{ __('Imprimir') }} Ficha T\u00e9cnica</span>',
                         background: isDark ? '#0f172a' : '#ffffff',
                         color:      isDark ? '#f3f4f6' : '#1f2937',
                         showConfirmButton: false, showCloseButton: true,
@@ -723,33 +723,33 @@
                         '  <header class="header">' +
                         '    <div class="logo-text">sientia<span class="dot">.</span><span class="suffix">MTX</span></div>' +
                         '    <div class="document-info">' +
-                        '      <div class="doc-type">Ficha T\u00e9cnica &bull; ' + teamName + '</div>' +
+                        '      <div class="doc-type">' + '{{ __('Technical Sheet') }}' + ' &bull; ' + teamName + '</div>' +
                         '      <div class="activity-uuid">ID: ' + String(taskUuid).toUpperCase() + '</div>' +
                         '    </div>' +
                         '  </header>' +
                         '  <h1 class="main-title">' + taskTitle + '</h1>' +
                         '  <div class="meta-strip">' +
-                        '    <div class="meta-strip-item"><span class="meta-strip-label">Estado</span><span class="meta-strip-value" style="color:#ef4444">' + status + '</span></div>' +
-                        '    <div class="meta-strip-item"><span class="meta-strip-label">Progreso</span><span class="meta-strip-value">' + progress + '%</span></div>' +
-                        '    <div class="meta-strip-item"><span class="meta-strip-label">Prioridad</span><span class="meta-strip-value">' + priorityLabel + '</span></div>' +
-                        '    <div class="meta-strip-item"><span class="meta-strip-label">Urgencia</span><span class="meta-strip-value">' + urgencyLabel + '</span></div>' +
-                        '    <div class="meta-strip-item" style="flex:1.2"><span class="meta-strip-label">Inicio</span><span class="meta-strip-value">' + scheduled + '</span></div>' +
-                        '    <div class="meta-strip-item" style="flex:1.2"><span class="meta-strip-label">L\u00edmite</span><span class="meta-strip-value" style="color:#ef4444">' + due + '</span></div>' +
+                        '    <div class="meta-strip-item"><span class="meta-strip-label">{{ __('Status') }}</span><span class="meta-strip-value" style="color:#ef4444">' + status + '</span></div>' +
+                        '    <div class="meta-strip-item"><span class="meta-strip-label">{{ __('Progress') }}</span><span class="meta-strip-value">' + progress + '%</span></div>' +
+                        '    <div class="meta-strip-item"><span class="meta-strip-label">{{ __('Priority') }}</span><span class="meta-strip-value">' + priorityLabel + '</span></div>' +
+                        '    <div class="meta-strip-item"><span class="meta-strip-label">{{ __('Urgency') }}</span><span class="meta-strip-value">' + urgencyLabel + '</span></div>' +
+                        '    <div class="meta-strip-item" style="flex:1.2"><span class="meta-strip-label">{{ __('Start') }}</span><span class="meta-strip-value">' + scheduled + '</span></div>' +
+                        '    <div class="meta-strip-item" style="flex:1.2"><span class="meta-strip-label">{{ __('Deadline') }}</span><span class="meta-strip-value" style="color:#ef4444">' + due + '</span></div>' +
                         '  </div>' +
                         '  <div class="content-layout">' +
                         '    <aside class="sidebar-content"><div class="sidebar-box">' +
-                        '      <div class="sidebar-item"><span class="sidebar-label">Propietario</span><div class="sidebar-value">' + creator + '</div></div>' +
-                        '      <div class="sidebar-item"><span class="sidebar-label">Asignados</span><div class="pill-list">' + (members.length ? members.map(m => '<span class="pill">' + m + '</span>').join('') : '<span class="pill">Sin asignar</span>') + '</div></div>' +
-                        '      <div class="sidebar-item" style="border-top:1px dashed #f1f5f9;padding-top:6px;margin-top:6px"><span class="sidebar-label">Capacidades</span><div class="pill-list">' + (skills.length ? skills.map(s => '<span class="pill" style="color:#ef4444;border-color:#fee2e2">' + s + '</span>').join('') : '<span class="pill">&#8212;</span>') + '</div></div>' +
+                        '      <div class="sidebar-item"><span class="sidebar-label">{{ __('Owner') }}</span><div class="sidebar-value">' + creator + '</div></div>' +
+                        '      <div class="sidebar-item"><span class="sidebar-label">{{ __('Assigned') }}</span><div class="pill-list">' + (members.length ? members.map(m => '<span class="pill">' + m + '</span>').join('') : '<span class="pill">{{ __('Unassigned') }}</span>') + '</div></div>' +
+                        '      <div class="sidebar-item" style="border-top:1px dashed #f1f5f9;padding-top:6px;margin-top:6px"><span class="sidebar-label">{{ __('Skills') }}</span><div class="pill-list">' + (skills.length ? skills.map(s => '<span class="pill" style="color:#ef4444;border-color:#fee2e2">' + s + '</span>').join('') : '<span class="pill">&#8212;</span>') + '</div></div>' +
                         '    </div></aside>' +
                         '    <div class="main-content">' +
-                        '      <div class="section"><div class="section-title">Descripci\u00f3n</div><div class="section-body">' + description + '</div></div>' +
-                        '      <div class="section"><div class="section-title">Observaciones</div><div class="section-body">' + observations + '</div></div>' +
+                        '      <div class="section"><div class="section-title">{{ __('Description') }}</div><div class="section-body">' + description + '</div></div>' +
+                        '      <div class="section"><div class="section-title">{{ __('Observations') }}</div><div class="section-body">' + observations + '</div></div>' +
                         '    </div>' +
                         '  </div>' +
                         '  <div class="validation-area">' +
-                        '    <div class="signature-box"><div class="signature-label">Firma Responsable</div></div>' +
-                        '    <div class="signature-box"><div class="signature-label">Validaci\u00f3n Sistema</div><div style="font-size:5px;color:#cbd5e1;margin-top:1px;font-family:monospace">TSR: ' + new Date().getTime() + '</div></div>' +
+                        '    <div class="signature-box"><div class="signature-label">{{ __('Responsible Signature') }}</div></div>' +
+                        '    <div class="signature-box"><div class="signature-label">{{ __('System Validation') }}</div><div style="font-size:5px;color:#cbd5e1;margin-top:1px;font-family:monospace">TSR: ' + new Date().getTime() + '</div></div>' +
                         '  </div>' +
                         '  <footer class="footer"><span>Sientia MTX Ecosystem</span><span>' + new Date().toLocaleString('es-ES') + '</span></footer>' +
                         '</div>' +
@@ -874,7 +874,7 @@
                         Esta actividad fue convertida a una nueva actividad unificada. Se ha cerrado y archivado en este formato antiguo para preservar el rastro de auditoría.
                     </p>
                     <a href="{{ route('teams.activities.show', [$team, $activity->convertedToActivity]) }}" class="inline-flex items-center gap-1 text-[11px] font-bold text-violet-600 dark:text-violet-400 hover:underline mt-2">
-                        👉 Ver la nueva actividad resultante ({{ $activity->convertedToActivity->type_label ?? $activity->convertedToActivity->type }})
+                        👉 {{ __('View') }} la nueva actividad resultante ({{ $activity->convertedToActivity->type_label ?? $activity->convertedToActivity->type }})
                     </a>
                 </div>
             </div>
@@ -936,13 +936,13 @@
                     {{ $activity->title }}
                     
                     @if($activity->google_task_id)
-                        <span class="ml-2 px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200/50 dark:border-blue-700/50 shadow-sm inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider align-middle" title="Sincronizada con Google Tasks">
+                        <span class="ml-2 px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200/50 dark:border-blue-700/50 shadow-sm inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider align-middle" title="{{ __("html.synced_google_tasks") }}">
                             <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
                             Google Tasks
                         </span>
                     @endif
                     @if($activity->google_calendar_event_id)
-                        <span class="ml-2 px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-700/50 shadow-sm inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider align-middle" title="Sincronizada con Google Calendar">
+                        <span class="ml-2 px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-700/50 shadow-sm inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider align-middle" title="{{ __("html.synced_google_calendar") }}">
                             <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                             Google Calendar
                         </span>
@@ -979,7 +979,7 @@
      class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-4 z-[800] flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl opacity-0 pointer-events-none transition-all duration-300 whitespace-nowrap cursor-move"
      :class="isDragging ? 'scale-105 shadow-[0_20px_50px_rgba(0,0,0,0.2)]' : ''">
 
-    {{-- Volver --}}
+    {{-- {{ __('Back') }} --}}
     <a href="{{ $backUrl ?? route('teams.activities.index', $team) }}"
        style="display:flex;align-items:center;gap:0.375rem;font-size:0.75rem;font-weight:700;color:#6b7280;padding:0.375rem 0.75rem;border-radius:0.625rem;text-decoration:none;transition:all 0.15s ease;"
        onmouseover="this.style.color='#7c3aed';this.style.background='#f5f3ff'"
@@ -987,7 +987,7 @@
         <svg style="width:1rem;height:1rem;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
         </svg>
-        <span>{{ __('navigation.back') ?? 'Volver' }}</span>
+        <span>{{ __('navigation.back') ?? __('Back') }}</span>
     </a>
 
     <div style="width:1px;height:1.25rem;background:#e5e7eb;flex-shrink:0"></div>
@@ -1181,10 +1181,10 @@
 
                 <div class="px-8 py-5 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20 flex items-center justify-between gap-3 shrink-0">
                     <button type="button" @click="show = false" class="px-6 py-2.5 text-xs font-bold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm active:scale-95">
-                        Cancelar
+                        {{ __("Cancel") }}
                     </button>
                     <button type="submit" class="px-6 py-2.5 text-xs font-bold text-white bg-violet-600 hover:bg-violet-500 rounded-xl shadow-lg shadow-violet-500/25 transition-all active:scale-95 flex items-center gap-2">
-                        <span>Proceder a la Conversión</span>
+                        <span>{{ __('activities.proceed_to_conversion') }}</span>
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                         </svg>

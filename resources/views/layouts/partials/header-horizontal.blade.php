@@ -34,11 +34,11 @@
                             <!-- Favorite Team Desktop -->
                             <a href="{{ route('teams.dashboard', auth()->user()->favoriteTeam) }}"
                                 class="flex flex-col items-center justify-center gap-0.5 px-2.5 min-h-[3rem] text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 transition-all rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/20 relative group"
-                                title="Escritorio de {{ auth()->user()->favoriteTeam->name }}">
+                                title="{{ __("html.work_desktop_of") }} {{ auth()->user()->favoriteTeam->name }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 fill-amber-400/20" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
                                 </svg>
-                                <span class="hidden lg:block text-[10px] leading-none mt-0.5 text-center">Escritorio</span>
+                                <span class="hidden lg:block text-[10px] leading-none mt-0.5 text-center">{{ __('escritorio') }}</span>
                             </a>
                         @endif
 
@@ -51,7 +51,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
-                            <span class="hidden lg:block text-[10px] leading-none mt-0.5 text-center">{{ __('navigation.my_teams') ?? 'Mis Equipos' }}</span>
+                            <span class="hidden lg:block text-[10px] leading-none mt-0.5 text-center">{{ __('navigation.my_teams') ?? __('Mis equipos') }}</span>
                             @php $teamCount = auth()->user()->teams()->count(); @endphp
                             @if($teamCount > 0)
                                 <span class="absolute top-0.5 right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-violet-600 text-[8px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-gray-950">
@@ -63,13 +63,13 @@
                         <!-- Canal Ciudadano -->
                         <a href="{{ route('global-surveys.index') }}"
                             class="flex flex-col items-center justify-center gap-0.5 px-2.5 min-h-[3rem] text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-500/10 {{ request()->routeIs('global-surveys.*') ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : '' }}"
-                            title="{{ __('Encuestas Globales') }}">
+                            title="{{ __('Global Surveys') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
                             </svg>
-                            <span class="hidden lg:block text-[10px] leading-none mt-0.5 text-center">Portal Ciudadano</span>
+                            <span class="hidden lg:block text-[10px] leading-none mt-0.5 text-center">{{ __('layout.portal_citizen') }}</span>
                         </a>
 
                         <!-- Disk Usage -->
@@ -81,18 +81,18 @@
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
                             </svg>
-                            <span class="hidden lg:block text-[10px] leading-none mt-0.5 text-center">Archivos</span>
+                            <span class="hidden lg:block text-[10px] leading-none mt-0.5 text-center">{{ __('archivos') }}</span>
                         </a>
 
                         <a href="{{ route('docs') }}"
                             class="flex flex-col items-center justify-center gap-0.5 px-2.5 min-h-[3rem] text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 {{ request()->is('docs*') ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white' : '' }}"
-                            title="{{ __('Documentación') }}">
+                            title="{{ __('html.documentation') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18 18.247 18.477 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                             </svg>
-                            <span class="hidden lg:block text-[10px] leading-none mt-0.5 text-center">Docs</span>
+                            <span class="hidden lg:block text-[10px] leading-none mt-0.5 text-center">{{ __('docs') }}</span>
                         </a>
 
                         @can('admin')
@@ -153,7 +153,7 @@
                              @if(auth()->user()->favoriteTeam)
                               <a href="{{ route('teams.dashboard', auth()->user()->favoriteTeam) }}" class="flex items-center gap-3 px-4 py-3 text-sm text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 hover:text-amber-700 dark:hover:text-amber-300 transition-colors border-b border-gray-100 dark:border-gray-800">
                                   <svg class="h-5 w-5 text-amber-500 fill-amber-500/20" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" /></svg>
-                                  <span class="font-bold">Escritorio Favorito</span>
+                                  <span class="font-bold">{{ __('layout.favorite_desktop') }}</span>
                               </a>
                              @endif
                              <a href="{{ route('teams.index') }}" class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-violet-50 dark:hover:bg-violet-500/10 hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
@@ -162,7 +162,7 @@
                              </a>
                              <a href="{{ route('global-surveys.index') }}" class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                                  <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
-                                 <span class="font-bold">Encuestas Globales</span>
+                                 <span class="font-bold">{{ __('layout.global_surveys') }}</span>
                              </a>
                              <a href="{{ route('media.index') }}" class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                                  <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>
@@ -184,7 +184,7 @@
                                  </a>
                              @endcan
 
-                             {{-- System Preferences for Tablet/Medium screens --}}
+                             {{-- {{ __('system') }} Preferences for Tablet/Medium screens --}}
                              <div class="px-4 py-2 mt-1 text-[10px] font-black uppercase tracking-widest text-gray-400 bg-gray-50 dark:bg-gray-800/80 border-y border-gray-100 dark:border-gray-700">{{ __('Preferencias') }}</div>
                              <div class="flex flex-wrap items-center justify-between gap-2 px-4 py-3 bg-white dark:bg-gray-900">
                                  @auth @include('layouts.partials.workday-timer') @endauth
@@ -214,7 +214,7 @@
                         <div class="relative inline-flex items-center sm:hidden">
                              <button @click="$dispatch('open-last-chat')"
                                      class="relative p-2 text-gray-400"
-                                     title="{{ __('Chat Interno') }}">
+                                     title="{{ __('Internal Chat') }}">
                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                      <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                                  </svg>
@@ -253,7 +253,7 @@
                         <div class="hidden sm:inline-flex relative items-center">
                              <button @click="$dispatch('open-last-chat')"
                                      class="relative p-2 text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-150 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
-                                     title="{{ __('Chat Interno') }}">
+                                     title="{{ __('Internal Chat') }}">
                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                      <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                                  </svg>
@@ -271,7 +271,7 @@
                         <!-- Notifications Bell: hidden on mobile (in mobile block above) -->
                         <a href="{{ route('notifications.index') }}"
                            class="hidden sm:inline-flex relative p-2 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-150 rounded-xl hover:bg-violet-50 dark:hover:bg-violet-500/10"
-                           title="{{ __('Notificaciones') }}"
+                           title="{{ __('Notifications') }}"
                            x-data
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -332,7 +332,7 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                     </svg>
-                                    {{ __('Cuadros de Mando') }}
+                                    {{ __('Dashboards') }}
                                 </a>
                                 <div class="border-t border-gray-100 dark:border-gray-800 my-1"></div>
                                 @endif
@@ -493,7 +493,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 fill-amber-500/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
                     </svg>
-                    Escritorio Favorito
+                    {{ __('escritorio') }} Favorito
                 </a>
                 @endif
 
@@ -511,7 +511,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
                     </svg>
-                    Encuestas Globales
+                    {{ __('Global Surveys') }}
                 </a>
                 <a href="{{ route('notifications.index') }}" @click="open = false"
                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
@@ -546,7 +546,7 @@
                     <p class="px-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Vistas del Equipo</p>
                     @php
                         $drawerViews = [
-                            ['name' => 'Escritorio', 'route' => route('teams.time-reports', $drawerTeamId), 'active' => request()->routeIs('teams.time-reports')],
+                            ['name' => __('Escritorio'), 'route' => route('teams.time-reports', $drawerTeamId), 'active' => request()->routeIs('teams.time-reports')],
                             ['name' => __('forum.title') ?? 'Foro', 'route' => route('teams.forum.index', $drawerTeamId), 'active' => request()->routeIs('teams.forum.*')],
                             ['divider' => true],
                             ['name' => 'Expedientes', 'route' => route('teams.expedientes.index', $drawerTeamId), 'active' => request()->routeIs('teams.expedientes.*')],
@@ -629,7 +629,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
-                    {{ __('Cuadros de Mando') }}
+                    {{ __('Dashboards') }}
                 </a>
                 @endif
                 <form method="POST" action="{{ route('profile.toggle-privacy-mode') }}">

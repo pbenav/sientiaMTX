@@ -89,7 +89,7 @@
                             <x-dropdown align="left" width="48">
                                 <x-slot name="trigger">
                                     <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150 {{ (request()->routeIs('appointments.*') || request()->routeIs('teams.microsites.*')) ? 'text-gray-900 border-b-2 border-violet-400 rounded-none' : '' }}">
-                                        <div>{{ __('Ciudadanía') }}</div>
+                                        <div>{{ __('navigation.citizenship') }}</div>
 
                                         <div class="ms-1">
                                             <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -103,7 +103,7 @@
                                     <x-dropdown-link :href="route('global-surveys.index')" :active="request()->routeIs('global-surveys.*')">
                                         <div class="flex items-center gap-2">
                                             <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
-                                            Encuestas Globales
+                                            {{ __('navigation.global_surveys') }}
                                         </div>
                                     </x-dropdown-link>
 
@@ -111,7 +111,7 @@
                                         <x-dropdown-link :href="route('appointments.index', $navTeam)" :active="request()->routeIs('appointments.*')">
                                             <div class="flex items-center gap-2">
                                                 <span class="w-2 h-2 rounded-full bg-violet-500"></span>
-                                                Citas Previas
+                                                {{ __('navigation.prev_appointments') }}
                                             </div>
                                         </x-dropdown-link>
                                     @endif
@@ -120,7 +120,7 @@
                                         <x-dropdown-link :href="route('teams.microsites.index', $navTeamMicro)" :active="request()->routeIs('teams.microsites.*')">
                                             <div class="flex items-center gap-2">
                                                 <span class="w-2 h-2 rounded-full bg-pink-500"></span>
-                                                Micrositios
+                                                {{ __('navigation.microsites') }}
                                             </div>
                                         </x-dropdown-link>
                                     @endif
@@ -183,22 +183,22 @@
                                             {{ __('Expedientes') }}
                                         </x-dropdown-link>
                                         <x-dropdown-link :href="route('teams.activities.index', $currentTeamId)" :active="request()->routeIs('teams.activities.*') || request()->routeIs('teams.tasks.*')">
-                                            Actividades
+                                            {{ __('navigation.task_list') }}
                                         </x-dropdown-link>
                                         @if (auth()->user()->hasSurveysEnabledForTeam($currentTeamId))
                                             <div class="border-t border-gray-100 dark:border-gray-800"></div>
                                             <x-dropdown-link :href="route('teams.surveys.index', $currentTeamId)">
-                                                Encuestas del Equipo
+                                                {{ __('navigation.team_surveys') }}
                                             </x-dropdown-link>
                                         @endif
                                         @if(auth()->user()->hasAppointmentsEnabledForTeam($currentTeamId))
                                             <x-dropdown-link :href="route('appointments.index', $currentTeamId)">
-                                                Citas Previas
+                                                {{ __('navigation.prev_appointments') }}
                                             </x-dropdown-link>
                                         @endif
                                         @if(auth()->user()->hasMicrositesEnabledForTeam($currentTeamId))
                                             <x-dropdown-link :href="route('teams.microsites.index', $currentTeamId)">
-                                                Micrositios
+                                                {{ __('navigation.microsites') }}
                                             </x-dropdown-link>
                                         @endif
                                     </x-slot>
@@ -284,7 +284,7 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                     </svg>
-                                    {{ __('Cuadros de Mando') }}
+                                    {{ __('Dashboards') }}
                                 </div>
                             </x-dropdown-link>
 
@@ -303,7 +303,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     </svg>
-                                    {{ __('Configuración Global') }}
+                                    {{ __('Global Settings') }}
                                 </div>
                             </x-dropdown-link>
                         @endif
@@ -374,13 +374,13 @@
                         @endphp
                         
                         <div class="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider mt-2 border-t border-gray-100">
-                            Ciudadanía
+                            {{ __('navigation.citizenship') }}
                         </div>
                         
                         <x-responsive-nav-link :href="route('global-surveys.index')" :active="request()->routeIs('global-surveys.*')" class="pl-8">
                             <div class="flex items-center gap-2">
                                 <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
-                                Encuestas Globales
+                                {{ __('navigation.global_surveys') }}
                             </div>
                         </x-responsive-nav-link>
                         
@@ -388,7 +388,7 @@
                             <x-responsive-nav-link :href="route('appointments.index', $navTeam)" :active="request()->routeIs('appointments.*')" class="pl-8">
                                 <div class="flex items-center gap-2">
                                     <span class="w-1.5 h-1.5 rounded-full bg-violet-500"></span>
-                                    Citas Previas
+                                    {{ __('navigation.prev_appointments') }}
                                 </div>
                             </x-responsive-nav-link>
                         @endif
@@ -397,7 +397,7 @@
                             <x-responsive-nav-link :href="route('teams.microsites.index', $navTeamMicro)" :active="request()->routeIs('teams.microsites.*')" class="pl-8">
                                 <div class="flex items-center gap-2">
                                     <span class="w-1.5 h-1.5 rounded-full bg-pink-500"></span>
-                                    Micrositios
+                                    {{ __('navigation.microsites') }}
                                 </div>
                             </x-responsive-nav-link>
                         @endif
@@ -442,7 +442,7 @@
                             {{ __('Expedientes') }}
                         </x-responsive-nav-link>
                         <x-responsive-nav-link :href="route('teams.activities.index', $currentTeamId)" :active="request()->routeIs('teams.activities.*') || request()->routeIs('teams.tasks.*')" class="text-sm">
-                            Actividades
+                            {{ __('navigation.task_list') }}
                         </x-responsive-nav-link>
                         <x-responsive-nav-link :href="route('teams.dashboard', $currentTeamId)" :active="request()->routeIs('teams.dashboard')" class="text-sm">
                             {{ __('teams.eisenhower_matrix') ?? 'Eisenhower' }}
@@ -456,18 +456,18 @@
                         @if (auth()->user()->hasSurveysEnabledForTeam($currentTeamId))
                             <div class="border-t border-violet-200 dark:border-violet-800/50 my-1 mx-4"></div>
                             <x-responsive-nav-link :href="route('teams.surveys.index', $currentTeamId)" :active="request()->routeIs('teams.surveys.*')" class="text-sm">
-                                Encuestas del Equipo
+                                {{ __('navigation.team_surveys') }}
                             </x-responsive-nav-link>
                         @endif
-                        @if(auth()->user()->hasAppointmentsEnabledForTeam($currentTeamId))
-                            <x-responsive-nav-link :href="route('appointments.index', $currentTeamId)" :active="request()->routeIs('appointments.*')" class="text-sm">
-                                Citas Previas
-                            </x-responsive-nav-link>
-                        @endif
-                        @if(auth()->user()->hasMicrositesEnabledForTeam($currentTeamId))
-                            <x-responsive-nav-link :href="route('teams.microsites.index', $currentTeamId)" :active="request()->routeIs('teams.microsites.*')" class="text-sm">
-                                Micrositios
-                            </x-responsive-nav-link>
+                         @if(auth()->user()->hasAppointmentsEnabledForTeam($currentTeamId))
+                             <x-responsive-nav-link :href="route('appointments.index', $currentTeamId)" :active="request()->routeIs('appointments.*')" class="text-sm">
+                                 {{ __('navigation.prev_appointments') }}
+                             </x-responsive-nav-link>
+                         @endif
+                         @if(auth()->user()->hasMicrositesEnabledForTeam($currentTeamId))
+                             <x-responsive-nav-link :href="route('teams.microsites.index', $currentTeamId)" :active="request()->routeIs('teams.microsites.*')" class="text-sm">
+                                 {{ __('navigation.microsites') }}
+                             </x-responsive-nav-link>
                         @endif
                     </div>
 
@@ -525,7 +525,7 @@
 
             <div class="mt-3 space-y-1">
                 <x-responsive-nav-link :href="route('notifications.index')" :active="request()->routeIs('notifications.index')">
-                    {{ __('Notificaciones') }}
+                    {{ __('Notifications') }}
                     @if(Auth::user()->unreadNotifications->count() > 0)
                         <span class="ms-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">
                             {{ Auth::user()->unreadNotifications->count() }}
@@ -550,7 +550,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                             </svg>
-                            {{ __('Cuadros de Mando') }}
+                            {{ __('Dashboards') }}
                         </div>
                     </x-responsive-nav-link>
 
@@ -560,7 +560,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
-                            {{ __('Configuración Global') }}
+                            {{ __('Global Settings') }}
                         </div>
                     </x-responsive-nav-link>
                 @endif

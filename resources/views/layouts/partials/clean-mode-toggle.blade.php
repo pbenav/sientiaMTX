@@ -1,7 +1,7 @@
 <button @click="toggleCleanMode()"
     type="button"
     class="flex items-center justify-center text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white border border-gray-200 dark:border-gray-700 hover:border-violet-300 dark:hover:border-violet-700 w-9 h-9 rounded-lg transition-all shadow-sm bg-white dark:bg-gray-800"
-    title="Modo Limpio (Ocultar elementos flotantes)">
+    title="{{ __("html.clean_mode") }}">
     
     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-300" 
          :class="cleanMode ? 'text-violet-600 dark:text-violet-400 scale-110 rotate-12' : ''" 

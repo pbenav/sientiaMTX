@@ -31,17 +31,17 @@
 
             // Additional activity details
             $timezone = auth()->user()->timezone ?? 'Europe/Madrid';
-            $loginTime = $member->last_login_at ? $member->last_login_at->timezone($timezone)->format('H:i') : 'Desconocido';
+            $loginTime = $member->last_login_at ? $member->last_login_at->timezone($timezone)->format('H:i') : __('Unknown');
             $lastActivity = $member->last_login_at ? $member->last_activity_at : null;
             $activityDiff = $lastActivity ? $lastActivity->diffForHumans(null, true) : 'N/A';
             
             if ($status['status'] !== 'offline') {
-                $statusLabel .= ' hace ' . $activityDiff;
+                $statusLabel .= ' ' . __('ago') . ' ' . $activityDiff;
             }
-            $statusLabel .= ' • Logado: ' . $loginTime;
+            $statusLabel .= ' • ' . __('Logged in:') . ' ' . $loginTime;
 
             if (!$hasLocation && ($status['status'] === 'working' || $status['status'] === 'online')) {
-                $statusLabel = 'Sin GPS • ' . $statusLabel;
+                $statusLabel = __('No GPS') . ' • ' . $statusLabel;
             }
 
             // Custom gradient for avatar border
@@ -86,7 +86,7 @@
             </div>
             <div class="min-w-0">
                 <p class="text-[11px] font-black {{ ($status['status'] !== 'offline') ? 'text-gray-900 dark:text-white' : 'text-gray-400' }} uppercase tracking-tight">
-                    {{ app(\App\Services\DemoModeService::class)->isActive() ? app(\App\Services\DemoModeService::class)->mask($member->getRawOriginal('name') ?? $member->name, 'name') : $member->name }} @if($isSelf) <span class="text-indigo-500 dark:text-indigo-400 lowercase italic">(tú)</span> @endif
+                    {{ app(\App\Services\DemoModeService::class)->isActive() ? app(\App\Services\DemoModeService::class)->mask($member->getRawOriginal('name') ?? $member->name, 'name') : $member->name }} @if($isSelf) <span class="text-indigo-500 dark:text-indigo-400 lowercase italic">({{ __('You') }})</span> @endif
                 </p>
                 <p class="text-[9px] {{ $textClass }} tracking-tight">{{ $statusLabel }}</p>
                 @if(auth()->user()->is_admin && $member->last_ip)

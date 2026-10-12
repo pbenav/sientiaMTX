@@ -94,7 +94,7 @@
         {{-- Fila única compacta: breadcrumb + título + acciones --}}
         <div class="flex items-center justify-between gap-3 flex-wrap">
             <div class="flex items-center gap-2 min-w-0">
-                <a href="{{ route('teams.dashboard', $team) }}" class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0" title="Volver">
+                <a href="{{ route('teams.dashboard', $team) }}" class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0" title="{{ __('Back') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
@@ -120,7 +120,7 @@
 
         <div class="mt-2">
             <x-demo-hint>
-                El Diagrama de Gantt ofrece un cronograma visual del trabajo planificado. Las actividades con fecha límite muestran barras continuas, mientras que las tareas abiertas sin fecha fija se representan con un borde discontinuo y degradado difuminado que puedes estirar directamente para asignarles un plazo en tiempo real.
+                {{ __('The Gantt chart provides a visual timeline of scheduled work. Activities with a deadline display solid bars, while open tasks without a fixed date are shown with a dashed border and blurred gradient that you can stretch directly to assign a timeframe in real time.') }}
             </x-demo-hint>
         </div>
 
@@ -144,7 +144,7 @@
                     
                     <div class="absolute inset-y-0 right-2 flex items-center gap-1">
                         @if(!empty($filters['search']))
-                            <a href="{{ route('teams.gantt', [$team, 'reset_filters' => 1]) }}" class="p-1.5 text-gray-400 hover:text-red-500 transition-colors" title="{{ __('tasks.clear_search') ?? 'Limpiar búsqueda' }}">
+                            <a href="{{ route('teams.gantt', [$team, 'reset_filters' => 1]) }}" class="p-1.5 text-gray-400 hover:text-red-500 transition-colors" title="{{ __('tasks.clear_search') ?? __('gantt.clear_search') }}">
                                 <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
@@ -180,7 +180,7 @@
 
                 <!-- Expediente Filter -->
                 <select name="expediente_id" onchange="this.form.submit()" class="w-40 {{ ($filters['expediente_id'] ?? null) ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' }} border rounded-xl text-xs font-bold uppercase py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
-                    <option value="">{{ __('Expediente') }}</option>
+                    <option value="">{{ __('gantt.expediente_filter') }}</option>
                     @foreach($expedientes as $exp)
                         <option value="{{ $exp->id }}" {{ ($filters['expediente_id'] ?? null) == $exp->id ? 'selected' : '' }}>{{ $exp->code }}</option>
                     @endforeach
@@ -188,7 +188,7 @@
 
                 <!-- Skill Filter -->
                 <select name="skill_id" onchange="this.form.submit()" class="w-40 {{ ($filters['skill_id'] ?? null) ? 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400' }} border rounded-xl text-xs font-bold uppercase py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
-                    <option value="">{{ __('tasks.skill') ?? 'Especialidad' }}</option>
+                    <option value="">{{ __('tasks.skill') ?? __('gantt.skill') }}</option>
                     @foreach($skills as $skill)
                         <option value="{{ $skill->id }}" {{ ($filters['skill_id'] ?? null) == $skill->id ? 'selected' : '' }}>{{ $skill->name }}</option>
                     @endforeach
@@ -202,11 +202,11 @@
                     <option value="plain" {{ ($filters['type'] ?? null) === 'plain' ? 'selected' : '' }}>{{ __('tasks.task') }}</option>
                 </select>
                 <select name="time_range" onchange="this.form.submit()" class="w-44 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold uppercase py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all text-violet-600 dark:text-violet-400 shadow-sm">
-                    <option value="all"   {{ request('time_range') === 'all'                                              ? 'selected' : '' }}>📅 Todo</option>
-                    <option value="1"     {{ request('time_range') === '1'                                                ? 'selected' : '' }}>🔍 1 Mes</option>
-                    <option value="3"     {{ request('time_range') === '3' || (!request()->has('time_range'))             ? 'selected' : '' }}>📆 3 Meses</option>
-                    <option value="6"     {{ request('time_range') === '6'                                                ? 'selected' : '' }}>🗓 6 Meses</option>
-                    <option value="12"    {{ request('time_range') === '12'                                               ? 'selected' : '' }}>📅 1 Año</option>
+                    <option value="all"   {{ request('time_range') === 'all'                                              ? 'selected' : '' }}>📅 {{ __('gantt.time_all') }}</option>
+                    <option value="1"     {{ request('time_range') === '1'                                                ? 'selected' : '' }}>🔍 {{ __('gantt.time_1_month') }}</option>
+                    <option value="3"     {{ request('time_range') === '3' || (!request()->has('time_range'))             ? 'selected' : '' }}>📆 {{ __('gantt.time_3_months') }}</option>
+                    <option value="6"     {{ request('time_range') === '6'                                                ? 'selected' : '' }}>🗓 {{ __('gantt.time_6_months') }}</option>
+                    <option value="12"    {{ request('time_range') === '12'                                               ? 'selected' : '' }}>📅 {{ __('gantt.time_1_year') }}</option>
                 </select>
 
                 @if(collect($filters)->filter()->isNotEmpty() || request()->has('time_range'))
@@ -226,9 +226,9 @@
                     @endforeach
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="changeView('Day')" class="hover:text-violet-600 font-bold uppercase">Día</button>
-                    <button onclick="changeView('Week')" class="hover:text-violet-600 font-bold uppercase">Semana</button>
-                    <button onclick="changeView('Month')" class="hover:text-violet-600 font-bold uppercase">Mes</button>
+                    <button onclick="changeView('Day')" class="hover:text-violet-600 font-bold uppercase">{{ __('gantt.view_day') }}</button>
+                    <button onclick="changeView('Week')" class="hover:text-violet-600 font-bold uppercase">{{ __('gantt.view_week') }}</button>
+                    <button onclick="changeView('Month')" class="hover:text-violet-600 font-bold uppercase">{{ __('gantt.view_month') }}</button>
                 </div>
             </div>
 
@@ -236,7 +236,7 @@
             <div class="px-8 py-6 bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800 relative overflow-hidden">
                 <div class="flex items-center justify-between mb-6 relative z-10">
                     <div class="flex flex-col">
-                        <h4 class="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 mb-1">Onda de Resiliencia Colectiva</h4>
+                        <h4 class="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 mb-1">{{ __('gantt.wave_title') }}</h4>
                         <span class="text-lg font-black text-gray-900 dark:text-white">{{ now()->translatedFormat('F Y') }}</span>
                     </div>
                     
@@ -249,15 +249,15 @@
                     <div class="flex flex-wrap items-center gap-4 text-[9px] sm:text-[10px] font-black uppercase tracking-widest">
                         <div class="flex items-center gap-2 px-2 py-1 bg-gray-50 dark:bg-white/5 rounded-lg border border-gray-100 dark:border-white/5">
                             <div class="w-2 h-2 rounded bg-violet-500/30 border border-violet-500/50"></div>
-                            <span class="text-gray-500 dark:text-gray-400">Equipo</span>
+                            <span class="text-gray-500 dark:text-gray-400">{{ __('gantt.team') }}</span>
                         </div>
                         <div class="flex items-center gap-2 px-2 py-1 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-lg border border-emerald-100/50 dark:border-emerald-900/20">
                             <div class="w-2 h-0.5 bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.8)]"></div>
-                            <span class="text-emerald-600 dark:text-emerald-400">Propia</span>
+                            <span class="text-emerald-600 dark:text-emerald-400">{{ __('gantt.personal') }}</span>
                             
                             <div class="flex items-center gap-1.5 border-l border-emerald-200/50 dark:border-emerald-800/50 pl-2 ml-1">
                                 <input type="range" id="wave-amplifier" min="5" max="30" step="5" value="15" 
-                                       title="Ajustar amplificación visual"
+                                        title="{{ __('gantt.adjust_amplification') }}"
                                        class="w-16 h-1 bg-emerald-200/50 dark:bg-emerald-800/50 rounded-lg appearance-none cursor-pointer accent-emerald-500"
                                        oninput="document.getElementById('user-scale-badge').innerText = 'x' + (parseFloat(this.value) / 10).toFixed(1); renderActionWave();">
                                 <span id="user-scale-badge" class="px-1.5 py-0.5 rounded bg-emerald-500 text-white text-[8px] font-black inline-block min-w-[32px] text-center">
@@ -327,13 +327,13 @@
             <div id="wave-tooltip" class="fixed z-[9999] pointer-events-none opacity-0 transition-all p-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border dark:border-gray-800 min-w-[200px]">
                 <div class="flex flex-col gap-1">
                     <span id="w-tooltip-day" class="text-[10px] font-black uppercase text-gray-400"></span>
-                    <span class="text-sm font-black dark:text-white">Carga de Trabajo</span>
+                    <span class="text-sm font-black dark:text-white">{{ __('gantt.workload') }}</span>
                     <div class="h-1 w-full bg-gray-100 dark:bg-gray-800 rounded-full mt-2 overflow-hidden">
                         <div id="w-tooltip-bar" class="h-full transition-all duration-500"></div>
                     </div>
                     <div class="grid grid-cols-2 gap-4 mt-3 text-[10px] font-bold">
-                        <div><p class="text-gray-400 uppercase text-[8px]">Equipo</p><p id="w-tooltip-weight" class="dark:text-white"></p></div>
-                        <div><p class="text-emerald-500 uppercase text-[8px]">Propia</p><p id="w-tooltip-user-weight" class="text-emerald-600"></p></div>
+                        <div><p class="text-gray-400 uppercase text-[8px]">{{ __('gantt.team') }}</p><p id="w-tooltip-weight" class="dark:text-white"></p></div>
+                        <div><p class="text-emerald-500 uppercase text-[8px]">{{ __('gantt.personal') }}</p><p id="w-tooltip-user-weight" class="text-emerald-600"></p></div>
                     </div>
                 </div>
             </div>
@@ -369,6 +369,28 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.6.1/frappe-gantt.min.js"></script>
 
     <script>
+        const ganttTrans = {
+            asignando_plazo: '{{ __('gantt.asignando_plazo') }}',
+            plazo_abierto: '{{ __('gantt.plazo_abierto') }}',
+            detalles: '{{ __('gantt.detalles') }}',
+            nuevo_inicio: '{{ __('gantt.nuevo_inicio') }}',
+            nueva_entrega: '{{ __('gantt.nueva_entrega') }}',
+            reubicando: '{{ __('gantt.reubicando') }}',
+            sin_limite: '{{ __('gantt.sin_limite') }}',
+            dias: '{{ __('gantt.dias') }}',
+            responsable: '{{ __('gantt.responsable') }}',
+            asignado: '{{ __('gantt.asignado') }}',
+            estado: '{{ __('gantt.estado') }}',
+            pendientes: '{{ __('gantt.pendientes') }}',
+            habilidades: '{{ __('gantt.habilidades') }}',
+            sin_skills: '{{ __('gantt.sin_skills') }}',
+            progreso_total: '{{ __('gantt.progreso_total') }}',
+            desglose_ejecucion: '{{ __('gantt.desglose_ejecucion') }}',
+            inicia: '{{ __('gantt.inicia') }}',
+            termina: '{{ __('gantt.termina') }}',
+            tarea: '{{ __('gantt.tarea') }}',
+            sin_asignar: '{{ __('gantt.sin_asignar') }}'
+        };
         let gantt, allTasks = [], collapsedTasks = new Set();
 
         // Sync view mode with the selected time_range
@@ -440,7 +462,7 @@
             
             gantt = new Gantt("#gantt-container", display, {
                 header_height: 50, column_width: cWidth, step: 24, view_modes: ['Day', 'Week', 'Month'],
-                bar_height: 30, bar_corner_radius: 6, view_mode: currentMode, language: 'es',
+                bar_height: 30, bar_corner_radius: 6, view_mode: currentMode, language: '{{ app()->getLocale() }}',
                 custom_popup_html: () => '',
                 on_date_change: (t, start, end) => {
                     if (t.readonly) {
@@ -691,7 +713,7 @@
                 const diffDays = (dateStart instanceof Date && dateEnd instanceof Date) ? Math.ceil((dateEnd - dateStart) / (1000 * 60 * 60 * 24)) + 1 : 0;
 
                 const nameEl = document.getElementById('drag-task-name');
-                if (nameEl) nameEl.innerText = task.name || 'Tarea';
+                if (nameEl) nameEl.innerText = task.name || ganttTrans.tarea;
 
                 const progressTextEl = document.getElementById('drag-task-progress-text');
                 if (progressTextEl) progressTextEl.innerText = (task.progress || 0) + '%';
@@ -710,7 +732,7 @@
                 }
 
                 const userNameEl = document.getElementById('drag-user-name');
-                if (userNameEl) userNameEl.innerText = task.user_name || 'Sin asignar';
+                if (userNameEl) userNameEl.innerText = task.user_name || ganttTrans.sin_asignar;
 
                 const statusEl = document.getElementById('drag-task-status');
                 if (statusEl) statusEl.innerText = (task.status_label || task.status || 'PENDIENTE').toString().toUpperCase();
@@ -733,7 +755,7 @@
                             skillsC.appendChild(s);
                         });
                     } else {
-                        skillsC.innerHTML = '<span class="text-[6px] opacity-30 italic">Sin skills</span>';
+                        skillsC.innerHTML = `<span class="text-[6px] opacity-30 italic">${ganttTrans.sin_skills}</span>`;
                     }
                 }
 
@@ -742,10 +764,10 @@
                 const typeBadgeEl = document.getElementById('drag-type-badge');
                 if (typeBadgeEl) {
                     if (isDragging && task.is_undated) {
-                        typeBadgeEl.innerText = 'ASIGNANDO PLAZO';
+                        typeBadgeEl.innerText = ganttTrans.asignando_plazo;
                         typeBadgeEl.className = 'px-2 py-0.5 rounded-md bg-amber-600 text-[7px] font-black uppercase tracking-wider text-white';
                     } else if (isTaskUndated) {
-                        typeBadgeEl.innerText = 'PLAZO ABIERTO';
+                        typeBadgeEl.innerText = ganttTrans.plazo_abierto;
                         typeBadgeEl.className = 'px-2 py-0.5 rounded-md bg-amber-500 text-[7px] font-black uppercase tracking-wider text-white';
                     } else {
                         typeBadgeEl.innerText = type.toUpperCase();
@@ -762,7 +784,7 @@
                 const endLabelEl = document.getElementById('drag-end-label');
                 if (endLabelEl) {
                     if (isTaskUndated) {
-                        endLabelEl.innerHTML = '<span class="italic text-amber-500 dark:text-amber-400 font-bold">Sin límite</span>';
+                        endLabelEl.innerHTML = `<span class="italic text-amber-500 dark:text-amber-400 font-bold">${ganttTrans.sin_limite}</span>`;
                     } else {
                         endLabelEl.innerText = fmt(dateEnd);
                     }
@@ -881,13 +903,13 @@
 
                                 const x = parseFloat(bar.getAttribute('x'));
                                 const w = parseFloat(bar.getAttribute('width'));
-                                let type = 'Detalles';
-                                
-                                if (isDragging) {
-                                    if (dragPart === 'start') type = 'Nuevo Inicio';
-                                    else if (dragPart === 'end') type = 'Nueva Entrega';
-                                    else type = 'Reubicando';
-                                }
+                let type = ganttTrans.detalles;
+                
+                if (isDragging) {
+                    if (dragPart === 'start') type = ganttTrans.nuevo_inicio;
+                    else if (dragPart === 'end') type = ganttTrans.nueva_entrega;
+                    else type = ganttTrans.reubicando;
+                }
 
                                 updateRichPanel(task, x, w, type);
                                 
@@ -951,30 +973,30 @@
         <div class="flex items-start justify-between gap-4">
             <div class="flex flex-col flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1">
-                    <span id="drag-type-badge" class="px-2 py-0.5 rounded-md bg-violet-600 text-[7px] font-black uppercase tracking-wider text-white">REUBICANDO</span>
-                    <span id="drag-priority-badge" class="px-2 py-0.5 rounded-md bg-gray-200 dark:bg-gray-700 text-[7px] font-black uppercase tracking-wider text-gray-700 dark:text-gray-300">PRIORIDAD</span>
+                    <span id="drag-type-badge" class="px-2 py-0.5 rounded-md bg-violet-600 text-[7px] font-black uppercase tracking-wider text-white">{{ __('gantt.reubicando') }}</span>
+                    <span id="drag-priority-badge" class="px-2 py-0.5 rounded-md bg-gray-200 dark:bg-gray-700 text-[7px] font-black uppercase tracking-wider text-gray-700 dark:text-gray-300">{{ __('Priority') }}</span>
                 </div>
-                <span id="drag-task-name" class="text-sm font-black leading-tight truncate text-gray-900 dark:text-white">Tarea</span>
+                <span id="drag-task-name" class="text-sm font-black leading-tight truncate text-gray-900 dark:text-white">{{ __('gantt.tarea') }}</span>
             </div>
             <div class="flex flex-col items-center justify-center p-2 bg-gray-100 dark:bg-white/5 rounded-2xl border border-gray-200 dark:border-white/5">
                 <span id="drag-duration-days" class="text-lg font-black leading-none text-violet-600 dark:text-violet-400">0</span>
-                <span class="text-[7px] font-bold uppercase opacity-60">Días</span>
+                <span class="text-[7px] font-bold uppercase opacity-60">{{ __('gantt.dias') }}</span>
             </div>
         </div>
         <div class="grid grid-cols-2 gap-x-6 gap-y-3 py-3 border-y border-gray-100 dark:border-white/5">
-            <div class="flex flex-col gap-0.5"><span class="text-[8px] font-black uppercase opacity-50">Responsable</span><div class="flex items-center gap-2"><div id="drag-user-avatar" class="w-5 h-5 rounded-full bg-violet-600 flex items-center justify-center text-[8px] font-black text-white shadow-sm">??</div><span id="drag-user-name" class="text-[10px] font-extrabold truncate text-gray-700 dark:text-gray-200">Asignado</span></div></div>
-            <div class="flex flex-col gap-0.5 text-right"><span class="text-[8px] font-black uppercase opacity-50">Estado</span><span id="drag-task-status" class="text-[10px] font-black uppercase tracking-wide text-gray-800 dark:text-gray-100">PENDIENTE</span></div>
-            <div class="flex flex-col gap-0.5"><span class="text-[8px] font-black uppercase opacity-50">Habilidades</span><div id="drag-task-skills" class="flex flex-wrap gap-1 mt-0.5"></div></div>
-            <div class="flex flex-col gap-0.5 text-right"><span class="text-[8px] font-black uppercase opacity-50">Progreso Total</span><span id="drag-task-progress-text" class="text-[10px] font-black text-emerald-600 dark:text-emerald-400">0%</span></div>
+            <div class="flex flex-col gap-0.5"><span class="text-[8px] font-black uppercase opacity-50">{{ __('gantt.responsable') }}</span><div class="flex items-center gap-2"><div id="drag-user-avatar" class="w-5 h-5 rounded-full bg-violet-600 flex items-center justify-center text-[8px] font-black text-white shadow-sm">??</div><span id="drag-user-name" class="text-[10px] font-extrabold truncate text-gray-700 dark:text-gray-200">{{ __('gantt.asignado') }}</span></div></div>
+            <div class="flex flex-col gap-0.5 text-right"><span class="text-[8px] font-black uppercase opacity-50">{{ __('gantt.estado') }}</span><span id="drag-task-status" class="text-[10px] font-black uppercase tracking-wide text-gray-800 dark:text-gray-100">{{ __('gantt.pendientes') }}</span></div>
+            <div class="flex flex-col gap-0.5"><span class="text-[8px] font-black uppercase opacity-50">{{ __('gantt.habilidades') }}</span><div id="drag-task-skills" class="flex flex-wrap gap-1 mt-0.5"></div></div>
+            <div class="flex flex-col gap-0.5 text-right"><span class="text-[8px] font-black uppercase opacity-50">{{ __('gantt.progreso_total') }}</span><span id="drag-task-progress-text" class="text-[10px] font-black text-emerald-600 dark:text-emerald-400">0%</span></div>
         </div>
         <div id="drag-members-breakdown" style="display: none;" class="flex-col gap-2 py-3 border-b border-gray-100 dark:border-white/5">
-            <span class="text-[8px] font-black uppercase opacity-50">Desglose de Ejecución</span>
+            <span class="text-[8px] font-black uppercase opacity-50">{{ __('gantt.desglose_ejecucion') }}</span>
             <div id="drag-members-list" class="flex flex-col gap-1.5 mt-1"></div>
         </div>
         <div class="flex items-center justify-between gap-4 px-1 pb-1">
-            <div class="flex flex-col gap-0.5"><span class="text-[7px] font-black uppercase opacity-50">Inicia</span><span id="drag-start-label" class="text-xs font-black text-gray-900 dark:text-white"></span></div>
+            <div class="flex flex-col gap-0.5"><span class="text-[7px] font-black uppercase opacity-50">{{ __('gantt.inicia') }}</span><span id="drag-start-label" class="text-xs font-black text-gray-900 dark:text-white"></span></div>
             <div class="flex-1 flex items-center px-4"><div class="h-px flex-1 bg-gradient-to-r from-transparent via-gray-200 dark:via-white/20 to-transparent"></div></div>
-            <div class="flex flex-col gap-0.5 text-right"><span class="text-[7px] font-black uppercase opacity-50">Termina</span><span id="drag-end-label" class="text-xs font-black text-gray-900 dark:text-white"></span></div>
+            <div class="flex flex-col gap-0.5 text-right"><span class="text-[7px] font-black uppercase opacity-50">{{ __('gantt.termina') }}</span><span id="drag-end-label" class="text-xs font-black text-gray-900 dark:text-white"></span></div>
         </div>
         <div class="h-1.5 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden"><div id="drag-progress-bar" class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 shadow-[0_0_10px_rgba(16,185,129,0.2)]"></div></div>
     </div>

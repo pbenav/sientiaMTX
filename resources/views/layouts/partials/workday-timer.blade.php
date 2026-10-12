@@ -103,7 +103,7 @@
                                 confirmButtonColor: '#10b981',
                                 cancelButtonColor: '#6b7280',
                                 confirmButtonText: '⚡ Cerrar turnos antiguos automáticamente',
-                                cancelButtonText: 'Cancelar',
+                                cancelButtonText: '{{ __('Cancel') }}',
                                 customClass: {
                                     popup: 'bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-2xl rounded-2xl',
                                     title: 'text-lg font-bold text-gray-800 dark:text-white',
@@ -201,7 +201,7 @@
                     position: window.innerWidth < 640 ? 'center' : 'bottom-end', 
                     backdrop: window.innerWidth < 640 ? `rgba(0,0,0,0.4)` : false, 
                     icon: 'success', 
-                    title: '¡Energía registrada!', 
+                    title: '{{ __('¡Energía registrada!') }}', 
                     showConfirmButton: false, 
                     timer: 3000, 
                     customClass: { popup: 'bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-xl rounded-2xl w-full max-w-[280px] sm:max-w-md' } 
@@ -250,10 +250,10 @@
         </template>
     </button>
 
-    <!-- Contador Digital y Tarea Activa (Compacto y responsivo) -->
+    <!-- Contador Digital y Tarea {{ __('activa') }} (Compacto y responsivo) -->
     <div x-show="working" x-cloak
          class="flex items-center gap-1.5 px-2 py-1.5 bg-violet-50 dark:bg-violet-900/20 border border-violet-100 dark:border-violet-800 rounded-xl transition-all duration-300 min-w-0">
-        <div class="flex items-center gap-1.5 shrink-0 cursor-pointer" @click="showInfoModal = true; if(!cthData) fetchStatus();" title="Ver información del fichaje">
+        <div class="flex items-center gap-1.5 shrink-0 cursor-pointer" @click="showInfoModal = true; if(!cthData) fetchStatus();" title="{{ __("html.fingerprint_info") }}">
             <div class="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-red-500 animate-pulse"></div>
             <span class="text-[10px] sm:text-xs font-mono font-black text-violet-700 dark:text-violet-300" x-text="formatTime(elapsed)"></span>
         </div>
@@ -296,25 +296,25 @@
 
                 <div class="space-y-3 text-sm text-gray-600 dark:text-gray-300">
                     <div class="flex justify-between border-b dark:border-gray-700 pb-2">
-                        <span class="font-medium">Servidor:</span>
+                        <span class="font-medium">{{ __('servidor_') }}</span>
                         <span class="font-mono text-xs" x-text="cthData.server"></span>
                     </div>
                     <div class="flex justify-between border-b dark:border-gray-700 pb-2">
-                        <span class="font-medium">Usuario:</span>
+                        <span class="font-medium">{{ __('usuario_') }}</span>
                         <div class="text-right">
                             <span class="text-xs font-bold text-gray-900 dark:text-white block">{{ auth()->user()->name }}</span>
-                            <span class="text-[9px] text-red-500 font-bold block mt-0.5" x-show="!cthData.user_code">Sincronización no configurada</span>
+                            <span class="text-[9px] text-red-500 font-bold block mt-0.5" x-show="!cthData.user_code">{{ __('workday-timer.sync_not_configured') }}</span>
                         </div>
                     </div>
                     <div class="flex justify-between border-b dark:border-gray-700 pb-2">
-                        <span class="font-medium">Centro de Trabajo:</span>
+                        <span class="font-medium">{{ __('workday-timer.work_center') }}</span>
                         <span class="font-mono text-xs" :class="!cthData.work_center_code ? 'text-red-500 font-bold' : ''" x-text="cthData.work_center_code || 'No configurado'"></span>
                     </div>
                     
                     <template x-if="cthData.status">
                         <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-3 mt-4">
                             <div class="flex justify-between items-center mb-2">
-                                <span class="font-bold text-xs uppercase tracking-wider text-gray-500">Estado en CTH</span>
+                                <span class="font-bold text-xs uppercase tracking-wider text-gray-500">{{ __('workday-timer.cth_status') }}</span>
                                 <span :class="cthData.status.is_working ? 'text-emerald-500' : 'text-red-500'" class="font-bold flex items-center gap-1">
                                     <span class="w-2 h-2 rounded-full" :class="cthData.status.is_working ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'"></span>
                                     <span x-text="cthData.status.is_working ? 'TRABAJANDO' : 'DETENIDO'"></span>
@@ -323,14 +323,14 @@
                             
                             <template x-if="cthData.status.start_time">
                                 <div class="flex justify-between text-xs mt-1">
-                                    <span>Inicio del tramo:</span>
+                                    <span>{{ __('workday-timer.period_start') }}</span>
                                     <span class="font-mono font-bold" x-text="formatCthTime(cthData.status.start_time)"></span>
                                 </div>
                             </template>
                             
                             <template x-if="cthData.status.end_time">
                                 <div class="flex justify-between text-xs mt-1">
-                                    <span>Fin del tramo:</span>
+                                    <span>{{ __('workday-timer.period_end') }}</span>
                                     <span class="font-mono font-bold" x-text="formatCthTime(cthData.status.end_time)"></span>
                                 </div>
                             </template>
