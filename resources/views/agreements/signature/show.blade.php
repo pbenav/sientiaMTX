@@ -46,10 +46,10 @@
         <div class="flex-1 bg-gray-200 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-800 p-4">
             <div class="w-full h-full bg-white dark:bg-gray-900 rounded-2xl shadow-inner overflow-hidden border border-gray-300 dark:border-gray-700">
                 @if($attachment)
-                    <iframe src="{{ URL::signedRoute('agreements.signature.download', ['team' => $team->id, 'activity' => $activity->id]) }}" class="w-full h-full" title="Vista previa del documento"></iframe>
+                    <iframe src="{{ URL::signedRoute('agreements.signature.download', ['team' => $team->id, 'activity' => $activity->id]) }}" class="w-full h-full" title="{{ __('Document preview') }}"></iframe>
                 @else
                     <div class="flex items-center justify-center h-full text-gray-500">
-                        No se pudo generar o encontrar el documento PDF.
+                        {{ __('Could not generate or find the PDF document.') }}
                     </div>
                 @endif
             </div>

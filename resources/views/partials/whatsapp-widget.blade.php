@@ -54,7 +54,7 @@
                     <h4 class="text-white font-bold text-sm leading-tight">WhatsApp MTX</h4>
                     <div class="flex items-center gap-1.5">
                         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" style="background: #34d399; width: 8px; height: 8px; border-radius: 9999px;"></span>
-                        <span class="text-white/70 text-[10px] font-medium uppercase tracking-wider">En línea</span>
+                        <span class="text-white/70 text-[10px] font-medium uppercase tracking-wider">{{ __('Online') }}</span>
                     </div>
                 </div>
             </div>
@@ -62,7 +62,7 @@
                 <button @click="syncMessages()" 
                         :disabled="syncing || !teamId"
                         class="text-white/60 hover:text-white transition-colors p-1.5 rounded-full hover:bg-white/10 disabled:opacity-50"
-                        title="Sincronizar mensajes pendientes">
+                        title="{{ __('Sync pending messages') }}">
                     <svg class="w-5 h-5" :class="syncing ? 'animate-spin' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H17" />
                     </svg>
@@ -82,7 +82,7 @@
                 <button @click="loadOlderMessages()" 
                         class="px-4 py-1.5 rounded-full bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-[10px] font-black text-gray-400 hover:text-blue-500 hover:border-blue-500 transition-all shadow-sm uppercase tracking-widest disabled:opacity-50"
                         :disabled="loading">
-                    <span x-show="!loading">{{ __('View') }} anteriores</span>
+                    <span x-show="!loading">{{ __('View previous') }}</span>
                     <span x-show="loading">{{ __("Loading...") }}</span>
                 </button>
             </div>
@@ -121,7 +121,7 @@
                                 <template x-if="!msg.sticker">
                                     <div class="py-4 text-gray-400 flex flex-col items-center">
                                         <svg class="w-8 h-8 mb-1 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2"/></svg>
-                                        <span class="text-[9px] font-bold uppercase tracking-widest italic">Sticker no disponible</span>
+                                        <span class="text-[9px] font-bold uppercase tracking-widest italic">{{ __('Sticker unavailable') }}</span>
                                     </div>
                                 </template>
                             </div>
@@ -190,7 +190,7 @@
                             <div class="mb-2 py-2 px-1 bg-black/5 dark:bg-white/5 rounded-xl border border-black/5 dark:border-white/5">
                                 <div class="flex items-center gap-2 mb-1 px-1">
                                     <svg class="w-3 h-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-width="2.5"/></svg>
-                                    <span class="text-[9px] font-bold uppercase tracking-widest opacity-60">Mensaje de voz</span>
+                                    <span class="text-[9px] font-bold uppercase tracking-widest opacity-60">{{ __('Voice message') }}</span>
                                 </div>
                                 <template x-if="msg.voice">
                                     <audio controls class="w-full h-8" :src="msg.voice"></audio>
@@ -207,7 +207,7 @@
                         <!-- Respuesta a otro mensaje -->
                         <template x-if="msg.reply_to_text">
                             <div class="mb-2 py-1.5 px-2.5 bg-black/5 dark:bg-white/5 rounded-lg border-l-2 border-white/30 dark:border-blue-500/50 italic text-[10px] opacity-80 line-clamp-2">
-                                <span class="font-bold block uppercase text-[8px] mb-0.5 tracking-tighter">Respuesta a:</span>
+                                <span class="font-bold block uppercase text-[8px] mb-0.5 tracking-tighter">{{ __('Reply to:') }}</span>
                                 <span x-text="msg.reply_to_text"></span>
                             </div>
                         </template>
@@ -231,7 +231,7 @@
                                 <button @click="setReply(msg)"
                                         class="text-[9px] font-bold uppercase tracking-tighter"
                                         :class="msg.from_me ? 'text-white/70 hover:text-white' : 'text-green-500 hover:text-green-600'">
-                                    {{ __('Responder') }}
+                                    {{ __('Reply') }}
                                 </button>
 
                                 <!-- Botón de borrar -->
@@ -268,7 +268,7 @@
                     </div>
                 </div>
                 <div class="mt-3 pt-2 border-t border-gray-100 dark:border-gray-700 text-[10px] text-gray-400 font-bold uppercase tracking-widest text-center">
-                    Selector de Emojis
+                    {{ __('Emoji Picker') }}
                 </div>
             </div>
             
@@ -277,7 +277,7 @@
                 <div class="flex items-center gap-1">
                     <button type="button" @click="showEmojis = !showEmojis" :disabled="!teamId || isRecording"
                             class="p-2 text-gray-400 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors disabled:opacity-50"
-                            title="Emojis">
+                            title="{{ __('Emojis') }}">
                         <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     </button>
 
@@ -285,7 +285,7 @@
                     <button type="button" @click="toggleRecording()" :disabled="!teamId"
                             class="p-2 transition-all duration-300 relative group flex items-center justify-center rounded-xl"
                             :class="isRecording ? 'bg-red-50 text-red-500 dark:bg-red-900/30' : 'text-gray-400 hover:text-rose-500 dark:hover:text-rose-400'"
-                            title="{{ __('Send') }} audio">
+                            title="{{ __('Send audio') }}">
                         <svg x-show="!isRecording" class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
                         <div x-show="isRecording" class="flex items-center gap-1">
                             <span class="flex h-1.5 w-1.5 relative">
@@ -302,7 +302,7 @@
                            @paste="handlePaste($event)"
                            @keydown.enter="if(!$event.shiftKey) { $event.preventDefault(); send(); }"
                            rows="2"
-                           :placeholder="isRecording ? 'Grabando audio...' : (editingId ? 'Editando mensaje...' : 'Escribe un mensaje...')"
+                           :placeholder="isRecording ? '{{ __('Recording audio...') }}' : (editingId ? '{{ __('Editing message...') }}' : '{{ __('Write a message...') }}')"
                            :disabled="!teamId || isRecording"
                            :class="editingId ? 'ring-2 ring-amber-500 bg-amber-50 dark:bg-amber-950/20' : 'bg-gray-100 dark:bg-gray-800 border-none'"
                            class="w-full rounded-2xl px-4 py-2 text-sm focus:ring-2 focus:ring-green-500 dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-inner resize-none min-h-[45px] max-h-[120px] custom-scrollbar"></textarea>
@@ -311,7 +311,7 @@
                     <template x-if="replyToId">
                         <div class="absolute bottom-full mb-3 left-0 right-0 bg-white dark:bg-gray-800 p-3 rounded-2xl shadow-2xl border-l-4 border-green-500 flex items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-2">
                             <div class="overflow-hidden">
-                                <span class="text-[9px] font-black uppercase text-blue-500 tracking-widest block mb-0.5">Respondiendo a:</span>
+                                <span class="text-[9px] font-black uppercase text-blue-500 tracking-widest block mb-0.5">{{ __('Replying to:') }}</span>
                                 <p class="text-[10px] text-gray-500 dark:text-gray-400 truncate italic" x-text="replyToText"></p>
                             </div>
                             <button type="button" @click="cancelReply()" class="text-gray-400 hover:text-red-500 p-1">
@@ -362,7 +362,7 @@
                     <svg x-show="editingId" class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                 </button>
             </div>
-            <p class="text-[9px] text-gray-400 mt-2 text-center">Conectado vía @SientiaBot</p>
+            <p class="text-[9px] text-gray-400 mt-2 text-center">{{ __('Connected via @SientiaBot') }}</p>
         </form>
     </div>
 

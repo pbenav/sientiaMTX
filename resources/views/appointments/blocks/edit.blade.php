@@ -5,7 +5,8 @@
     <div class="flex items-center gap-3 flex-wrap">
         <div class="flex items-center gap-2 min-w-0">
             <a href="{{ route('appointments.blocks.index', $team) }}"
-                class="p-1.5 text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 rounded-lg transition-all shrink-0">
+                class="p-1.5 text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 rounded-lg transition-all shrink-0"
+                title="{{ __('Back to blocks') }}">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>

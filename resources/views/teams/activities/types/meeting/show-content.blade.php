@@ -193,19 +193,19 @@
                                 @if(!empty($guest['response_status']))
                                     @php
                                         $respMap = [
-                                            'accepted' => ['label' => 'Aceptada', 'cls' => 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/30'],
-                                            'declined' => ['label' => 'Rechazada', 'cls' => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-800/30'],
-                                            'tentative' => ['label' => 'Quizás', 'cls' => 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 border-amber-200 dark:border-amber-800/30'],
-                                            'needsAction' => ['label' => 'Pendiente', 'cls' => 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 border-gray-200 dark:border-gray-700'],
+                                            'accepted' => ['label' => __('Accepted'), 'cls' => 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/30'],
+                                            'declined' => ['label' => __('Declined'), 'cls' => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-800/30'],
+                                            'tentative' => ['label' => __('Maybe'), 'cls' => 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 border-amber-200 dark:border-amber-800/30'],
+                                            'needsAction' => ['label' => __('Pending'), 'cls' => 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 border-gray-200 dark:border-gray-700'],
                                         ];
                                         $statusCfg = $respMap[$guest['response_status']] ?? ['label' => ucfirst($guest['response_status']), 'cls' => 'bg-gray-100 text-gray-600 border-gray-200'];
                                     @endphp
-                                    <span class="px-2 py-0.5 rounded-md text-[9px] font-bold border {{ $statusCfg['cls'] }}" title="Respuesta en Google Calendar">
+                                    <span class="px-2 py-0.5 rounded-md text-[9px] font-bold border {{ $statusCfg['cls'] }}" title="{{ __('Google Calendar response') }}">
                                         {{ $statusCfg['label'] }}
                                     </span>
                                 @else
                                     <span class="px-2 py-0.5 rounded-md text-[9px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800/30">
-                                        Externo
+                                        {{ __('External') }}
                                     </span>
                                 @endif
 

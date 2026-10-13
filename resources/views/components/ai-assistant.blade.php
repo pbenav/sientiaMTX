@@ -76,11 +76,11 @@
                 <button @click="soundEnabled = !soundEnabled; localStorage.setItem('ai_sound_enabled', soundEnabled ? '1' : '0')" 
                         class="p-2 hover:bg-white/10 rounded-full transition-colors" 
                         :class="soundEnabled ? 'text-white' : 'text-indigo-300'"
-                        :title="soundEnabled ? 'Desactivar sonido' : 'Activar sonido'">
+                        :title="soundEnabled ? '{{ __('Disable sound') }}' : '{{ __('Enable sound') }}'">
                     <svg x-show="soundEnabled" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
                     <svg x-show="!soundEnabled" style="display:none;" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"></path></svg>
                 </button>
-                <button @click="showHelp = !showHelp" class="p-2 hover:bg-white/10 rounded-full transition-colors" title="Ayuda">
+                <button @click="showHelp = !showHelp" class="p-2 hover:bg-white/10 rounded-full transition-colors" title="{{ __('Help') }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </button>
                 <button @click="toggle()" class="p-2 hover:bg-white/10 rounded-full transition-colors">
@@ -244,14 +244,14 @@
                                 <template x-if="msg.role === 'ai'">
                                     <div class="absolute -bottom-10 right-0 flex items-center gap-2">
                                         <div class="flex space-x-1 text-sans">
-                                            <button @click="injectText(msg.content)" class="bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-indigo-600 dark:text-indigo-400" title="Inyectar en el campo de texto">
+                                            <button @click="injectText(msg.content)" class="bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-indigo-600 dark:text-indigo-400" title="{{ __('Inject into text field') }}">
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                                             </button>
-                                            <button @click="copyToClipboard(msg.content)" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-gray-500 dark:text-gray-300" title="Copiar al portapapeles">
+                                            <button @click="copyToClipboard(msg.content)" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-gray-500 dark:text-gray-300" title="{{ __('Copy to clipboard') }}">
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
                                             </button>
                                             @if(auth()->user()->google_token)
-                                            <button @click="saveToDrive(msg.content)" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-blue-500" title="{{ __('Save') }} en {{ __('Google Drive') }}">
+                                            <button @click="saveToDrive(msg.content)" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-blue-500" title="{{ __('Save to Google Drive') }}">
                                                 <svg class="w-3.5 h-3.5" viewBox="0 0 48 48">
                                                     <path fill="#FFC107" d="M17 6H11L2 22l3 5h6l9-16z"/>
                                                     <path fill="#2196F3" d="M37 42H11l-9-15 4-7h26l9 16z"/>
@@ -263,13 +263,13 @@
 
                                         <template x-if="msg.is_error">
                                             <div class="flex space-x-2">
-                                                <button @click="retryMessage(index)" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-red-600 text-white shadow-xl shadow-red-500/40 hover:bg-red-700 transition-all text-[10px] font-black uppercase tracking-tight" title="Reintentar ahora">
+                                                <button @click="retryMessage(index)" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-red-600 text-white shadow-xl shadow-red-500/40 hover:bg-red-700 transition-all text-[10px] font-black uppercase tracking-tight" title="{{ __('Retry now') }}">
                                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                                                    <span>Reintentar</span>
+                                                    <span>{{ __('Retry') }}</span>
                                                 </button>
-                                                <button @click="recoverMessage(index)" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500 text-white shadow-xl shadow-amber-500/40 hover:bg-amber-600 transition-all text-[10px] font-black uppercase tracking-tight" title="Rescatar mi texto">
+                                                <button @click="recoverMessage(index)" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500 text-white shadow-xl shadow-amber-500/40 hover:bg-amber-600 transition-all text-[10px] font-black uppercase tracking-tight" title="{{ __('Rescue my text') }}">
                                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
-                                                    <span>Rescatar</span>
+                                                    <span>{{ __('Rescue') }}</span>
                                                 </button>
                                             </div>
                                         </template>
@@ -317,7 +317,7 @@
                             @click="toggleRecording"
                             class="p-2 sm:p-2.5 rounded-xl transition-all relative flex items-center justify-center group"
                             :class="isRecording ? 'bg-red-50 text-red-600 dark:bg-red-950/30' : 'text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30'"
-                            :title="isRecording ? 'Detener' : 'Grabar'">
+                            :title="isRecording ? '{{ __('Stop') }}' : '{{ __('Record') }}'">
                         <svg x-show="!isRecording" class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
                         <div x-show="isRecording" class="flex items-center gap-1 sm:gap-2">
                             <span class="flex h-1.5 w-1.5 relative">
@@ -332,7 +332,7 @@
                     <button type="button" 
                             @click="$refs.fileInput.click()"
                             class="p-2 sm:p-2.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl transition-all"
-                            title="Adjuntar">
+                            title="{{ __('Attach') }}">
                         <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.414a6 6 0 108.486 8.486L20.5 13"/></svg>
                     </button>
                     <input type="file" x-ref="fileInput" @change="handleFileUpload" class="hidden" accept="audio/*,image/*,.pdf,application/pdf">
@@ -392,7 +392,7 @@
                 @click="window.dispatchEvent(new CustomEvent('quicknote-toggle-all', { bubbles: true }))"
                 class="w-10 h-10 transition-all rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 ring-2 ring-white dark:ring-gray-950 backdrop-blur-md quick-notes-trigger pointer-events-auto"
                 :class="quickNotesVisible ? 'bg-amber-500 text-white' : 'bg-gray-800/80 text-white hover:bg-gray-700'"
-                :title="quickNotesVisible ? 'Ocultar todas las notas' : '{{ __('View') }} todas las notas'">
+                :title="quickNotesVisible ? '{{ __('Hide all notes') }}' : '{{ __('View all notes') }}'">
                 <svg x-show="quickNotesVisible" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />

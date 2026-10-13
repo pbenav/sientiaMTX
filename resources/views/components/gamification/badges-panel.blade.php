@@ -8,8 +8,8 @@
 <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 dark:border-gray-700">
     <h3 class="text-xl font-black text-gray-900 dark:text-white mb-6 uppercase tracking-wider flex items-center gap-3">
         <span class="text-emerald-500">⭐</span>
-        MEDALLAS
-        <span class="text-gray-400 text-sm cursor-help ml-1" title="Desbloquea medallas completando objetivos y rachas en la plataforma.">ℹ️</span>
+        {{ __('Badges') }}
+        <span class="text-gray-400 text-sm cursor-help ml-1" title="{{ __('Unlock badges by completing goals and streaks on the platform.') }}">ℹ️</span>
     </h3>
 
     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
@@ -39,7 +39,7 @@
                     <p class="text-gray-300">{{ $badge->description }}</p>
                     @if(!$unlocked)
                         <div class="mt-2 text-[10px] text-emerald-400 uppercase tracking-widest font-black">
-                            🔒 Bloqueada
+                            🔒 {{ __('Locked') }}
                         </div>
                     @endif
                 </div>

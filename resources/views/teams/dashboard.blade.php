@@ -253,7 +253,7 @@
                                                             $cCompleted = $allChilds->filter->isCompleted()->count();
                                                         @endphp
                                                         @if($cTotal > 0)
-                                                            <span class="text-[7px] text-gray-500 font-mono font-bold shrink-0" title="Instancias completadas">{{ $cCompleted }}/{{ $cTotal }}</span>
+                                                            <span class="text-[7px] text-gray-500 font-mono font-bold shrink-0" title="{{ __('Completed instances') }}">{{ $cCompleted }}/{{ $cTotal }}</span>
                                                         @endif
                                                     @endif
                                                 @endif

@@ -24,7 +24,7 @@
                                 {{ __('Notifications') }}
                             </h1>
                             <x-demo-hint>
-                                Centro de notificaciones unificado. Recibe alertas en tiempo real sobre tareas asignadas, recordatorios, menciones en el foro, reconocimientos o avisos del sistema (como los resúmenes matutinos).
+                                {{ __('Unified notification center. Receive real-time alerts about assigned tasks, reminders, forum mentions, kudos, or system notices (such as morning summaries).') }}
                             </x-demo-hint>
                         </div>
                     </div>
@@ -41,7 +41,7 @@
                     <form action="{{ route('notifications.mark-all-as-read') }}" method="POST" class="hidden sm:block">
                         @csrf
                         <x-secondary-button type="submit" class="text-[10px] font-bold uppercase tracking-widest whitespace-nowrap">
-                            {{ __('Marcar todas leídas') }}
+                            {{ __('Mark all as read') }}
                         </x-secondary-button>
                     </form>
                 @endif
@@ -94,12 +94,12 @@
                         <input type="checkbox" @click="toggleAll()" x-model="allSelected" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
                         
                         <div x-show="selected.length === 0" class="flex items-center gap-2">
-                            <span class="text-xs font-bold text-gray-500 uppercase tracking-widest leading-none">{{ __('Seleccionar todo') }}</span>
+                            <span class="text-xs font-bold text-gray-500 uppercase tracking-widest leading-none">{{ __('Select all') }}</span>
                         </div>
 
                         <div x-show="selected.length > 0" class="flex items-center gap-4 animate-in fade-in slide-in-from-left-2" style="display: none">
                             <span class="text-sm font-black text-indigo-600 dark:text-indigo-400">
-                                <span x-text="selected.length"></span> seleccionadas
+                                <span x-text="selected.length"></span> {{ __('selected') }}
                             </span>
                             
                             <div class="h-4 w-px bg-gray-200 dark:bg-gray-700"></div>
@@ -113,11 +113,11 @@
                                     <input type="hidden" name="action" value="mark_as_read">
                                     <button type="submit" class="text-[10px] font-black text-gray-600 dark:text-gray-300 hover:text-indigo-600 transition-colors uppercase tracking-widest flex items-center gap-1.5">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
-                                        {{ __('Leídas') }}
+                                        {{ __('Mark as read') }}
                                     </button>
                                 </form>
 
-                                <form id="bulk-delete-notifications" action="{{ route('notifications.bulk-action') }}" method="POST" class="inline" onsubmit="window.confirmDelete('bulk-delete-notifications', '¿Estás seguro de que quieres eliminar estas notificaciones?'); return false;">
+                                <form id="bulk-delete-notifications" action="{{ route('notifications.bulk-action') }}" method="POST" class="inline" onsubmit="window.confirmDelete('bulk-delete-notifications', '{{ __('Are you sure you want to delete these notifications?') }}'); return false;">
                                     @csrf
                                     <template x-for="id in selected" :key="id">
                                         <input type="hidden" name="notification_ids[]" :value="id">
@@ -134,7 +134,7 @@
 
                     <div x-show="selected.length > 0" style="display: none">
                          <button @click="selected = []; allSelected = false" class="p-1 px-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-400 hover:text-gray-600 transition-colors text-[10px] font-bold uppercase tracking-tighter">
-                            {{ __('Cancel selección') }}
+                            {{ __('Deselect all') }}
                         </button>
                     </div>
                 </div>
@@ -192,7 +192,7 @@
                             <div class="flex-1 min-w-0">
                                 <div class="flex justify-between items-start">
                                     <p class="text-sm font-medium text-gray-900 dark:text-gray-100 {{ $notification->unread() ? 'font-bold' : '' }}">
-                                        {{ $notification->data['title'] ?? ($notification->data['message'] ?? 'Nueva notificación') }}
+                                        {{ $notification->data['title'] ?? ($notification->data['message'] ?? __('New notification')) }}
                                     </p>
                                     <div class="flex items-center gap-2">
                                         @if(isset($notification->data['team_name']))
@@ -231,7 +231,7 @@
                                         @if(isset($notification->data['privacy']))
                                             <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 uppercase tracking-wider">
                                                 <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7a4 4 0 00-8 0v4h8z"></path></svg>
-                                                {{ $notification->data['privacy'] === 'public' ? 'Pública' : ($notification->data['privacy'] === 'private' ? 'Privada' : 'Semiprivada') }}
+                                                {{ $notification->data['privacy'] === 'public' ? __('Public') : ($notification->data['privacy'] === 'private' ? __('Private') : __('Semi-private')) }}
                                             </span>
                                         @endif
                                         @if(isset($notification->data['creator_name']))
@@ -247,11 +247,11 @@
                                 <div class="mt-2 flex items-center gap-3">
                                     @if($notification->unread())
                                         <a href="{{ route('notifications.mark-as-read', $notification->id) }}" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 transition-colors uppercase tracking-wider">
-                                            {{ __('Ver / Marcar como leída') }}
+                                            {{ __('View / Mark as read') }}
                                         </a>
                                     @elseif(isset($notification->data['url']) || (isset($notification->data['task_id']) && isset($notification->data['team_id'])))
                                         <a href="{{ route('notifications.mark-as-read', $notification->id) }}" class="text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors uppercase tracking-wider">
-                                            {{ __('Ver de nuevo') }}
+                                            {{ __('View again') }}
                                         </a>
                                     @endif
                                 </div>
@@ -262,8 +262,8 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                             </svg>
-                            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-gray-200">{{ __('No hay notificaciones') }}</h3>
-                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ __('¡Estás al día!') }}</p>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-gray-200">{{ __('No notifications') }}</h3>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ __("You're all caught up!") }}</p>
                         </div>
                     @endforelse
                 </div>

@@ -162,7 +162,7 @@
                                 
                                 <form id="unlink-related-{{ $rel->id }}" action="{{ route('teams.expedientes.unlink-related', [$team, $expediente, $rel->id]) }}" method="POST" class="shrink-0 ml-2">
                                     @csrf
-                                    <button type="button" onclick="confirmUnlinkRelated({{ $rel->id }})" class="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all active:scale-90" title="Desvincular Expediente">
+                                    <button type="button" onclick="confirmUnlinkRelated({{ $rel->id }})" class="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all active:scale-90" title="{{ __('Unlink File') }}">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                                     </button>
                                 </form>
@@ -540,7 +540,7 @@
                                                             @else
                                                                 <form id="unlink-form-{{ $task->id }}" action="{{ route('teams.expedientes.unlink-task', [$team, $expediente, $task]) }}" method="POST" class="inline">
                                                                     @csrf
-                                                                    <button type="button" onclick="confirmUnlinkTask({{ $task->id }})" class="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all active:scale-90" title="Desvincular Actividad">
+                                                                    <button type="button" onclick="confirmUnlinkTask({{ $task->id }})" class="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all active:scale-90" title="{{ __('Unlink Activity') }}">
                                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                                                                     </button>
                                                                 </form>
@@ -717,7 +717,7 @@
                                 </div>
                                 <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                                     @if($attachment->is_office_compatible)
-                                        <a href="{{ route('onlyoffice.edit', $attachment) }}" target="_blank" class="p-1.5 text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300 transition-colors" title="Editar con Office">
+                                        <a href="{{ route('onlyoffice.edit', $attachment) }}" target="_blank" class="p-1.5 text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300 transition-colors" title="{{ __('Edit with Office') }}">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                               <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>

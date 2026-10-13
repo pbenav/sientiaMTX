@@ -1,12 +1,12 @@
 <x-app-layout>
-    @section('title', 'Papelera de Reciclaje — ' . $team->name)
+    @section('title', __('Recycle Bin') . ' — ' . $team->name)
 
     <x-slot name="header">
         <div class="flex items-center justify-between gap-3 flex-wrap">
             <div class="flex items-center gap-2 min-w-0">
                 <a href="{{ route('teams.dashboard', $team) }}"
                     class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0"
-                    title="{{ __('Back') }} al escritorio">
+                    title="{{ __('Back to dashboard') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -25,7 +25,7 @@
 
         <div class="mt-2">
             <x-demo-hint>
-                La Papelera del Equipo conserva temporalmente las actividades y expedientes eliminados antes de su purga definitiva. Los coordinadores pueden restaurar elementos borrados por error o forzar su eliminación permanente para liberar espacio.
+                {{ __('The Team Trash temporarily preserves deleted activities and files before their final purge. Coordinators can restore items deleted by mistake or force their permanent deletion to free up space.') }}
             </x-demo-hint>
         </div>
 
@@ -40,8 +40,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                 </div>
-                <h2 class="text-xl font-black text-gray-900 dark:text-white mb-2">La papelera está vacía</h2>
-                <p class="text-sm text-gray-500 max-w-md">No hay actividades, documentos ni expedientes eliminados recientemente en este equipo.</p>
+                <h2 class="text-xl font-black text-gray-900 dark:text-white mb-2">{{ __('Trash is empty') }}</h2>
+                <p class="text-sm text-gray-500 max-w-md">{{ __('There are no deleted activities, documents, or files recently in this team.') }}</p>
             </div>
         @else
             <div class="flex justify-end mb-4">
@@ -52,24 +52,24 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
-                        Vaciar Papelera
+                        {{ __('Empty Trash') }}
                     </button>
                 </form>
             </div>
 
             <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden">
                 <div class="p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
-                    <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ __('Elementos Eliminados') }}</h3>
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ __('Deleted Items') }}</h3>
                 </div>
                 
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left whitespace-nowrap">
                         <thead class="text-xs text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-800/50">
                             <tr>
-                                <th scope="col" class="px-6 py-3 font-semibold">Tipo</th>
-                                <th scope="col" class="px-6 py-3 font-semibold w-full">Título / Descripción</th>
-                                <th scope="col" class="px-6 py-3 font-semibold text-center">Fecha de Eliminación</th>
-                                <th scope="col" class="px-6 py-3 font-semibold text-right">Acciones</th>
+                                <th scope="col" class="px-6 py-3 font-semibold">{{ __('Type') }}</th>
+                                <th scope="col" class="px-6 py-3 font-semibold w-full">{{ __('Title / Description') }}</th>
+                                <th scope="col" class="px-6 py-3 font-semibold text-center">{{ __('Deleted Date') }}</th>
+                                <th scope="col" class="px-6 py-3 font-semibold text-right">{{ __('Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -77,7 +77,7 @@
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                                     <td class="px-6 py-4">
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 border border-violet-100 dark:border-violet-800">
-                                            Actividad / Doc
+                                            {{ __('Activity / Doc') }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4">
@@ -90,7 +90,7 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-end gap-2">
-                                            <form action="{{ route('teams.trash.restore.activity', [$team, $activity->id]) }}" method="POST" title="Restaurar">
+                                            <form action="{{ route('teams.trash.restore.activity', [$team, $activity->id]) }}" method="POST" title="{{ __('Restore') }}">
                                                 @csrf
                                                 <button type="submit" class="p-1.5 text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/30 rounded-lg transition-colors">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -116,7 +116,7 @@
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                                     <td class="px-6 py-4">
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-100 dark:border-blue-800">
-                                            Expediente
+                                            {{ __('File') }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4">
@@ -129,7 +129,7 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-end gap-2">
-                                            <form action="{{ route('teams.trash.restore.expediente', [$team, $expediente->id]) }}" method="POST" title="Restaurar">
+                                            <form action="{{ route('teams.trash.restore.expediente', [$team, $expediente->id]) }}" method="POST" title="{{ __('Restore') }}">
                                                 @csrf
                                                 <button type="submit" class="p-1.5 text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/30 rounded-lg transition-colors">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

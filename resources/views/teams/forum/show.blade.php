@@ -37,7 +37,7 @@
                         @if (auth()->id() === $thread->user_id || auth()->user()->getRole($team) === 'coordinator')
                             <h2 x-show="!editingTitle" @click="editingTitle = true; setTimeout(() => $refs.titleInput.focus(), 50)"
                                 class="font-bold text-xl text-gray-800 dark:text-gray-200 leading-tight truncate cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-0.5 rounded transition-colors -ml-2 border border-transparent hover:border-gray-200 dark:hover:border-gray-700"
-                                title="{{ __('Edit') }} título">
+                                title="{{ __('Edit title') }}">
                                 {{ $thread->title }}
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block ml-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                             </h2>

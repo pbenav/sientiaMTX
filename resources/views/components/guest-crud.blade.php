@@ -17,9 +17,9 @@
                     class="text-xs font-bold transition-all flex items-center gap-2 px-3.5 py-1.5 rounded-xl border shadow-sm"
                     :class="customMessage.trim().length > 0 ? 'bg-violet-100 dark:bg-violet-900/50 text-violet-700 dark:text-violet-300 border-violet-300 dark:border-violet-700' : 'text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 bg-violet-50 hover:bg-violet-100 dark:bg-violet-900/30 dark:hover:bg-violet-900/50 border-violet-200/80 dark:border-violet-500/30'">
                 <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                <span>{{ __('Personalizar Mensaje') }}</span>
+                <span>{{ __('Customize Message') }}</span>
                 <template x-if="customMessage.trim().length > 0">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Mensaje personalizado activo"></span>
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="{{ __('Active custom message') }}"></span>
                 </template>
             </button>
         </div>

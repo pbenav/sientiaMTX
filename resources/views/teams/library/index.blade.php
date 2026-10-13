@@ -28,7 +28,7 @@
 
         <div class="mt-2">
             <x-demo-hint>
-                La {{ __('Biblioteca') }} de Documentos centraliza el conocimiento y la wiki del equipo. Permite consultar, categorizar y editar en vivo documentos ofimáticos (mediante OnlyOffice) y notas de referencia, manteniendo un índice jerárquico accesible para todos los colaboradores.
+                {{ __('The Document Library centralizes the team\'s knowledge and wiki. It allows consulting, categorizing, and live editing office documents (via OnlyOffice) and reference notes, maintaining a hierarchical index accessible to all collaborators.') }}
             </x-demo-hint>
         </div>
 
@@ -45,11 +45,11 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                         </svg>
-                        Índice de Documentos
+                        {{ __('Document Index') }}
                     </h3>
                     <form action="{{ route('teams.library', $team) }}" method="GET" class="space-y-3">
                         <div class="relative">
-                            <input type="text" name="q" value="{{ request('q') }}" placeholder="{{ __('Search') }} en la wiki..."
+                            <input type="text" name="q" value="{{ request('q') }}" placeholder="{{ __('Search wiki...') }}"
                                    class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 pl-8 pr-8 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all placeholder-gray-400">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-2.5 top-2.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />

@@ -361,7 +361,7 @@
                 <span>v{{ config('app.version', '1.1.0') }}</span>
                 <span class="mx-1">|</span>
                 <a href="https://www.gnu.org/licenses/agpl-3.0.txt" target="_blank"
-                    class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">Licencia AGPL v3</a>
+                    class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">{{ __('AGPL v3 License') }}</a>
             </div>
             <div class="flex items-center space-x-6">
                 <!-- Open Source Links -->
