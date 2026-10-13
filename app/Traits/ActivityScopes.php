@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use App\Models\Team;
 use App\Models\User;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\DB;
@@ -125,6 +126,71 @@ trait ActivityScopes
     public function scopeDueToday(Builder $query)
     {
         return $query->whereDate('due_date', today());
+    }
+
+    /**
+     * Filtra actividades por cuadrante de la Matriz de Eisenhower (1, 2, 3, o 4).
+     *
+     * Cuadrantes:
+     * - 1 (Do First): Importante + Urgente
+     * - 2 (Schedule): Importante + No Urgente
+     * - 3 (Delegate): No Importante + Urgente
+     * - 4 (Eliminate): No Importante + No Urgente
+     */
+    public function scopeInQuadrant(Builder $query, int $quadrant)
+    {
+        $priorityValues = in_array($quadrant, [1, 2]) ? ['high', 'critical'] : ['low', 'medium'];
+        $urgencyValues = in_array($quadrant, [1, 3]) ? ['high', 'critical'] : ['low', 'medium'];
+
+        return $query->whereIn('priority', $priorityValues)
+            ->where(function ($q) use ($urgencyValues) {
+                $q->whereIn('metadata->urgency', $urgencyValues);
+                if (in_array('medium', $urgencyValues)) {
+                    $q->orWhereNull('metadata->urgency');
+                }
+            });
+    }
+
+    /**
+     * Filtra actividades prioritarias para el resumen matutino (morning summary):
+     * 1. Due date inminente (vence hoy / próximas 48h, o vencida recientemente / de alta prioridad).
+     * 2. Cuadrante Q1 (Importante + Urgente), siempre que no esté postergada al futuro.
+     * 3. Planificada para hoy (Q2 importante agendado específicamente para hoy).
+     */
+    public function scopeMorningFocus(Builder $query, ?CarbonInterface $date = null)
+    {
+        $targetDate = $date ?? today();
+
+        return $query->where(function ($q) use ($targetDate) {
+            // 1. Due date inminente (vence hoy o mañana) o vencida relevante (de alta prioridad/importancia)
+            $q->where(function ($sub) use ($targetDate) {
+                $sub->whereNotNull('due_date')
+                    ->where(function ($sq) use ($targetDate) {
+                        $sq->whereBetween('due_date', [
+                            $targetDate->copy()->startOfDay(),
+                            $targetDate->copy()->addDay()->endOfDay()
+                        ])
+                        ->orWhere(function ($overdue) use ($targetDate) {
+                            $overdue->where('due_date', '<', $targetDate->copy()->startOfDay())
+                                    ->whereIn('priority', ['high', 'critical']);
+                        });
+                    });
+            })
+            // 2. Q1 (Urgente e Importante, no pospuesta a una fecha futura)
+            ->orWhere(function ($sub) use ($targetDate) {
+                $sub->inQuadrant(1)
+                    ->where(function ($sq) use ($targetDate) {
+                        $sq->whereNull('scheduled_date')
+                           ->orWhereDate('scheduled_date', '<=', $targetDate);
+                    });
+            })
+            // 3. Planificada para hoy (Importante / Q2 programada para la fecha actual)
+            ->orWhere(function ($sub) use ($targetDate) {
+                $sub->whereIn('priority', ['high', 'critical'])
+                    ->whereNotNull('scheduled_date')
+                    ->whereDate('scheduled_date', $targetDate);
+            });
+        });
     }
 
     // ─── Scopes de filtrado por urgencia, bloqueo y asignación ────────────────

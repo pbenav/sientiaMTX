@@ -110,15 +110,12 @@ class SendMorningSummary extends Command
             })
             ->where('is_template', false)
             ->where('is_archived', false)
-            ->where(function($q) {
-                $q->whereDate('scheduled_date', '<=', now())
-                  ->orWhereDate('due_date', '<=', now())
-                  ->orWhereNull('scheduled_date');
-            })
+            ->morningFocus()
+            ->orderByRaw("CASE WHEN due_date IS NOT NULL AND due_date < NOW() THEN 0 ELSE 1 END")
             ->orderByRaw("FIELD(priority, 'critical', 'high', 'medium', 'low')")
             ->orderByRaw("ISNULL(due_date), due_date ASC")
             ->with('team')
-            ->limit(30)
+            ->limit(10)
             ->get()
             ->unique('id')
             ->unique(function ($task) {
@@ -127,7 +124,7 @@ class SendMorningSummary extends Command
             });
 
         if ($tasks->isEmpty()) {
-            $this->line("User {$user->name}: No pending tasks for today. Sending a focus-on-rest phrase.");
+            $this->line("User {$user->name}: No priority tasks for today. Sending a focus-on-rest phrase.");
         }
 
         try {

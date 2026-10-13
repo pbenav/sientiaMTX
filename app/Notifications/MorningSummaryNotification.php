@@ -30,8 +30,8 @@ class MorningSummaryNotification extends Notification
     public function toWebPush(object $notifiable, $notification): WebPushMessage
     {
         $taskMsg = $this->tasks->isEmpty() 
-            ? 'No tienes tareas pendientes para hoy.' 
-            : 'Tienes ' . $this->tasks->count() . ' tareas pendientes para hoy.';
+            ? 'No tienes tareas prioritarias para hoy.' 
+            : 'Tienes ' . $this->tasks->count() . ' tareas prioritarias para hoy.';
             
         return (new WebPushMessage)
             ->title('🌅 ¡Buenos días, ' . explode(' ', $notifiable->name)[0] . '!')
@@ -52,7 +52,7 @@ class MorningSummaryNotification extends Notification
         if ($this->tasks->isEmpty()) {
             $text .= "No tienes tareas prioritarias para hoy. ¡Disfruta de tu día!\n";
         } else {
-            $text .= "Tus tareas para hoy:\n";
+            $text .= "Tus tareas prioritarias para hoy:\n";
 
             foreach ($this->tasks->take(5) as $task) {
                 $text .= "• *" . $task->title . "* (" . ($task->team->name ?? 'Personal') . ")\n";
