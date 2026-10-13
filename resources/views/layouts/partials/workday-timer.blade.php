@@ -296,11 +296,11 @@
 
                 <div class="space-y-3 text-sm text-gray-600 dark:text-gray-300">
                     <div class="flex justify-between border-b dark:border-gray-700 pb-2">
-                        <span class="font-medium">{{ __('servidor_') }}</span>
+                        <span class="font-medium">{{ __('Servidor:') }}</span>
                         <span class="font-mono text-xs" x-text="cthData.server"></span>
                     </div>
                     <div class="flex justify-between border-b dark:border-gray-700 pb-2">
-                        <span class="font-medium">{{ __('usuario_') }}</span>
+                        <span class="font-medium">{{ __('Usuario:') }}</span>
                         <div class="text-right">
                             <span class="text-xs font-bold text-gray-900 dark:text-white block">{{ auth()->user()->name }}</span>
                             <span class="text-[9px] text-red-500 font-bold block mt-0.5" x-show="!cthData.user_code">{{ __('workday-timer.sync_not_configured') }}</span>

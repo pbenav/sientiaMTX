@@ -78,14 +78,14 @@
                 @endif
                     <!-- Tabs Nav -->
                     <div class="flex gap-4 border-b border-gray-200 dark:border-gray-800 pb-2 mb-6 overflow-x-auto">
-                        <button type="button" @click="setActiveTab('general')" :class="activeTab === 'general' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">{{ __('general') }}</button>
+                        <button type="button" @click="setActiveTab('general')" :class="activeTab === 'general' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">{{ __('General') }}</button>
                         @if($activity->type === 'document')
-                            <button type="button" @click="activeTab = 'chapters'" :class="activeTab === 'chapters' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">{{ __('cap_tulos') }}</button>
+                            <button type="button" @click="activeTab = 'chapters'" :class="activeTab === 'chapters' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">{{ __('Capítulos') }}</button>
                         @endif
-                        <button type="button" @click="activeTab = 'planning'" :class="activeTab === 'planning' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">{{ __('planificacion_y_estado') }}</button>
-                        <button type="button" @click="activeTab = 'team'" :class="activeTab === 'team' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">{{ __('equipo_y_ejecuci_n') }}</button>
-                        <button type="button" @click="activeTab = 'context'" :class="activeTab === 'context' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">{{ __('contexto_y_vinculaciones') }}</button>
-                        <button type="button" @click="setActiveTab('attachments')" :class="activeTab === 'attachments' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">{{ __('adjuntos') }}</button>
+                        <button type="button" @click="activeTab = 'planning'" :class="activeTab === 'planning' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">{{ __('Planificación y Estado') }}</button>
+                        <button type="button" @click="activeTab = 'team'" :class="activeTab === 'team' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">{{ __('Equipo y Ejecución') }}</button>
+                        <button type="button" @click="activeTab = 'context'" :class="activeTab === 'context' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">{{ __('Contexto y Vinculaciones') }}</button>
+                        <button type="button" @click="setActiveTab('attachments')" :class="activeTab === 'attachments' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="whitespace-nowrap px-4 py-2 border-b-2 font-bold text-sm tracking-tight transition-colors">{{ __('Adjuntos') }}</button>
                     </div>
 
                     <div x-show="activeTab === 'general'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
@@ -532,7 +532,7 @@
             </div>
         </div>
 
-        <!-- BLOCK: {{ __('gamificaci_n') }}, Impacto y Bienestar -->
+        <!-- BLOCK: {{ __('Gamificación, Impacto y Bienestar') }} -->
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-12">
             <div class="absolute top-0 right-0 p-8 opacity-5">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
@@ -543,14 +543,14 @@
                 </div>
                 <div>
                     <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
-                        {{ __('gamificaci_n') }}, Impacto y Bienestar
+                        {{ __('Gamificación, Impacto y Bienestar') }}
                     </h3>
                     <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Métricas humanas, resiliencia y esfuerzo mental</p>
                 </div>
             </div>
             <div class="space-y-8 relative z-10">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <!-- Columna 1: Impacto Humano y {{ __('gamificaci_n') }} -->
+                    <!-- Columna 1: Impacto Humano y {{ __('Gamificación') }} -->
                     <div class="space-y-6">
                         <div>
                             <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">
@@ -786,7 +786,7 @@
                             <button type="button" @click="addDaysStart(0)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-800/50 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors shadow-sm">{{ __('ahora') }}</button>
                             <button type="button" @click="addDaysStart(1)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Día</button>
                             <button type="button" @click="addDaysStart(7)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Sem</button>
-                            <button type="button" @click="addDaysStart(15)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">{{ __('_15_d_as') }}</button>
+                            <button type="button" @click="addDaysStart(15)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">{{ __('+15 Días') }}</button>
                             <button type="button" @click="addDaysStart(30)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Mes</button>
                         </div>
                     </div>
@@ -799,7 +799,7 @@
                             <button type="button" @click="addDaysEnd(0)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-800/50 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors shadow-sm">{{ __('ahora') }}</button>
                             <button type="button" @click="addDaysEnd(1)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Día</button>
                             <button type="button" @click="addDaysEnd(7)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Sem</button>
-                            <button type="button" @click="addDaysEnd(15)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">{{ __('_15_d_as') }}</button>
+                            <button type="button" @click="addDaysEnd(15)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">{{ __('+15 Días') }}</button>
                             <button type="button" @click="addDaysEnd(30)" class="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm">+1 Mes</button>
                         </div>
                     </div>
@@ -1093,7 +1093,7 @@
                     </div>
                     </div>
                     <div x-show="activeTab === 'context'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
-                        <!-- BLOCK: {{ __('contexto_y_vinculaciones') }} -->
+                        <!-- BLOCK: {{ __('Contexto y Vinculaciones') }} -->
     <div  class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-all hover:shadow-md mb-8 group relative overflow-hidden order-11">
         <div class="absolute top-0 right-0 p-8 opacity-5">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
@@ -1104,7 +1104,7 @@
             </div>
             <div>
                 <h3 class="text-sm font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
-                    {{ __('contexto_y_vinculaciones') }}
+                    {{ __('Contexto y Vinculaciones') }}
                 </h3>
                 <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wider">Relaciones con expedientes y servicios</p>
             </div>
