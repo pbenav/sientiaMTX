@@ -82,7 +82,7 @@
                     <!-- Dropdown -->
                     <div x-show="open" x-transition x-cloak style="display: none;"
                          class="absolute right-0 mt-2 w-32 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl shadow-xl z-50 overflow-hidden">
-                        @foreach(['es' => 'Español', 'fr' => 'Français', 'en' => 'English', 'ro' => 'Română', 'ar' => 'العربية', 'wo' => 'Wolof'] as $code => $name)
+                        @foreach(['es' => 'Español', 'en' => 'English', 'fr' => 'Français', 'de' => 'Deutsch', 'pt' => 'Português', 'ro' => 'Română', 'ar' => 'العربية', 'wo' => 'Wolof'] as $code => $name)
                             <a href="{{ route('locale.switch', $code) }}" class="block px-4 py-2 text-xs font-semibold {{ app()->getLocale() === $code ? 'bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
                                 {{ $name }}
                             </a>

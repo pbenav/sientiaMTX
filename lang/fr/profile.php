@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'edit_profile' => 'Modifier le profil',
+    'name' => 'Nom',
+    'email' => 'Correo electrónico',
+    'password' => 'Mot de passe',
+    'new_password' => 'Nouveau mot de passe',
+    'confirm_password' => 'Confirmer le mot de passe',
+    'current_password' => 'Mot de passe actuel',
+    'timezone' => 'fuseau horaire',
+    'language' => 'Langue',
+    'save' => 'Enregistrer les modifications',
+    'updated' => 'Profil mis à jour avec succès.',
+    'delete_account' => 'Supprimer le compte',
+    'delete_warning' => 'Une fois supprimées, toutes les données seront définitivement supprimées.',
+    'preferences' => 'Préférences',
+    'update_profile_intro' => 'Mettez à jour vos informations de profil et votre adresse e-mail.',
+    'password_intro' => 'Assurez-vous que votre compte utilise un mot de passe long et aléatoire pour rester en sécurité.',
+    'delete_account_intro' => 'Une fois votre compte supprimé, toutes vos ressources et données seront définitivement supprimées. Avant de supprimer votre compte, téléchargez toutes les données ou informations que vous souhaitez conserver.',
+    'delete_account_confirm_title' => 'Êtes-vous sûr de vouloir supprimer votre compte ?',
+    'delete_account_confirm_text' => 'Une fois votre compte supprimé, toutes vos ressources et données seront définitivement supprimées. Entrez votre mot de passe pour confirmer que vous souhaitez supprimer définitivement votre compte.',
+    'cancel' => 'Annuler',
+    'welcome_messages' => 'Messages de bienvenue',
+    'welcome_messages_desc' => 'Recevez un message d\'accueil joyeux et inspirant à chaque fois que vous vous connectez.',
+];

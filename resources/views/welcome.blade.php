@@ -702,6 +702,12 @@
                         class="{{ app()->getLocale() === 'en' ? 'active' : '' }}">EN</a>
                     <a href="{{ route('locale.switch', 'es') }}"
                         class="{{ app()->getLocale() === 'es' ? 'active' : '' }}">ES</a>
+                    <a href="{{ route('locale.switch', 'fr') }}"
+                        class="{{ app()->getLocale() === 'fr' ? 'active' : '' }}">FR</a>
+                    <a href="{{ route('locale.switch', 'de') }}"
+                        class="{{ app()->getLocale() === 'de' ? 'active' : '' }}">DE</a>
+                    <a href="{{ route('locale.switch', 'pt') }}"
+                        class="{{ app()->getLocale() === 'pt' ? 'active' : '' }}">PT</a>
                 </div>
                 @auth
                     <a href="{{ route('teams.index') }}" class="btn btn-primary">

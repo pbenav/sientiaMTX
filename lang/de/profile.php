@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'edit_profile' => 'Profil bearbeiten',
+    'name' => 'Name',
+    'email' => 'E-Mail',
+    'password' => 'Passwort',
+    'new_password' => 'Neues Passwort',
+    'confirm_password' => 'Passwort bestätigen',
+    'current_password' => 'Aktuelles Passwort',
+    'timezone' => 'Zeitzone',
+    'language' => 'Sprache',
+    'save' => 'Änderungen speichern',
+    'updated' => 'Profil erfolgreich aktualisiert.',
+    'delete_account' => 'Konto löschen',
+    'delete_warning' => 'Nach dem Löschen werden alle Daten dauerhaft entfernt.',
+    'preferences' => 'Präferenzen',
+    'update_profile_intro' => 'Aktualisieren Sie Ihre Profilinformationen und E-Mail-Adresse.',
+    'password_intro' => 'Stellen Sie sicher, dass Ihr Konto ein langes, zufälliges Passwort verwendet, um die Sicherheit zu gewährleisten.',
+    'delete_account_intro' => 'Sobald Ihr Konto gelöscht wird, werden alle seine Ressourcen und Daten dauerhaft gelöscht. Bevor Sie Ihr Konto löschen, laden Sie bitte alle Daten oder Informationen herunter, die Sie behalten möchten.',
+    'delete_account_confirm_title' => 'Sind Sie sicher, dass Sie Ihr Konto löschen möchten?',
+    'delete_account_confirm_text' => 'Sobald Ihr Konto gelöscht wird, werden alle seine Ressourcen und Daten dauerhaft gelöscht. Bitte geben Sie Ihr Passwort ein, um zu bestätigen, dass Sie Ihr Konto dauerhaft löschen möchten.',
+    'cancel' => 'Abbrechen',
+    'welcome_messages' => 'Willkommensnachrichten',
+    'welcome_messages_desc' => 'Erhalten Sie jedes Mal, wenn Sie sich anmelden, eine fröhliche und inspirierende Begrüßung.',
+];

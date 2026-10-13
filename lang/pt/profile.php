@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'edit_profile' => 'Editar perfil',
+    'name' => 'Nome',
+    'email' => 'E-mail',
+    'password' => 'Senha',
+    'new_password' => 'Nova Senha',
+    'confirm_password' => 'Confirmar contraseña',
+    'current_password' => 'Senha atual',
+    'timezone' => 'Zona horaria',
+    'language' => 'Linguagem',
+    'save' => 'Salvar alterações',
+    'updated' => 'Perfil actualizado correctamente.',
+    'delete_account' => 'Excluir cuenta',
+    'delete_warning' => 'Una vez eliminada, todos los datos serán borrados permanentemente.',
+    'preferences' => 'Preferências',
+    'update_profile_intro' => 'Actualiza la informação de tu perfil y tu direcção de correo electrónico.',
+    'password_intro' => 'Asegúrate de que tu cuenta use una senha larga y aleatoria para mantener la seguridade.',
+    'delete_account_intro' => 'Una vez que se elimine tu cuenta, todos sus recursos y datos se eliminarán permanentemente. Antes de Excluir tu cuenta, descarga cualquier dato o informação que desees conservar.',
+    'delete_account_confirm_title' => '¿Estás seguro de que quieres Excluir tu cuenta?',
+    'delete_account_confirm_text' => 'Una vez que se elimine tu cuenta, todos sus recursos y datos se eliminarán permanentemente. Ingresa tu senha para Confirmar que deseas Excluir tu cuenta de forma permanente.',
+    'cancel' => 'Cancelar',
+    'welcome_messages' => 'Mensagens de boas-vindas',
+    'welcome_messages_desc' => 'Receba uma saudação alegre e inspiradora sempre que fizer login.',
+];

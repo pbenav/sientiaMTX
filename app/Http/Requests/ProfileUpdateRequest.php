@@ -25,7 +25,7 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
-            'locale' => ['required', 'string', 'in:en,es'],
+            'locale' => ['required', 'string', 'in:en,es,fr,de,pt,ro,ar,wo'],
             'timezone' => ['required', 'string', 'timezone'],
             'show_welcome_messages' => ['nullable', 'boolean'],
             'work_start_time' => ['nullable', 'string', 'regex:/^[0-9]{2}:[0-9]{2}$/'],

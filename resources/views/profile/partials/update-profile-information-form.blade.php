@@ -136,6 +136,9 @@
                 class="mt-1 block w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
                 <option value="en" {{ old('locale', $user->locale) === 'en' ? 'selected' : '' }}>English</option>
                 <option value="es" {{ old('locale', $user->locale) === 'es' ? 'selected' : '' }}>Español</option>
+                <option value="fr" {{ old('locale', $user->locale) === 'fr' ? 'selected' : '' }}>Français</option>
+                <option value="de" {{ old('locale', $user->locale) === 'de' ? 'selected' : '' }}>Deutsch</option>
+                <option value="pt" {{ old('locale', $user->locale) === 'pt' ? 'selected' : '' }}>Português</option>
             </select>
             <x-input-error class="mt-2" :messages="$errors->get('locale')" />
         </div>
