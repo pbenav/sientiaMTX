@@ -243,11 +243,11 @@
                                     $dpTemplate = str_replace(
                                         ['{responsable}', '{correo}', '{direccion}', '{url}', '{finalidad}'],
                                         [
-                                            '<strong>' . e($survey->data_protection['responsible'] ?? "{{ __('Not specified') }}") . '</strong>',
-                                            '<strong>' . e($survey->data_protection['dpo_email'] ?? "{{ __('Not specified') }}") . '</strong>',
-                                            '<strong>' . e($survey->data_protection['address'] ?? "{{ __('Not specified') }}") . '</strong>',
-                                            !empty($survey->data_protection['url']) ? '<a href="'.e($survey->data_protection['url']).'" target="_blank" class="text-indigo-600 hover:text-indigo-800 underline">{{ __('Link to extended privacy policy') }}</a>' : '<strong>No especificado</strong>',
-                                            '<strong>' . e($survey->data_protection['purpose'] ?? "{{ __('Not specified') }}") . '</strong>',
+                                            '<strong>' . e($survey->data_protection['responsible'] ?? __('Not specified')) . '</strong>',
+                                            '<strong>' . e($survey->data_protection['dpo_email'] ?? __('Not specified')) . '</strong>',
+                                            '<strong>' . e($survey->data_protection['address'] ?? __('Not specified')) . '</strong>',
+                                            !empty($survey->data_protection['url']) ? '<a href="'.e($survey->data_protection['url']).'" target="_blank" class="text-indigo-600 hover:text-indigo-800 underline">' . __('Link to extended privacy policy') . '</a>' : '<strong>' . __('Not specified') . '</strong>',
+                                            '<strong>' . e($survey->data_protection['purpose'] ?? __('Not specified')) . '</strong>',
                                         ],
                                         e($dpTemplate)
                                     );

@@ -22,7 +22,7 @@
     </div>
     <div class="mt-2 border-t border-gray-100 dark:border-gray-800 pt-3">
         <x-demo-hint>
-            {!! __('This is the <strong>people directory (applicants)</strong> who have booked appointments in any of this team's services. Here you can check and update their contact details and manage their records.') !!}
+            {!! __('This is the <strong>people directory (applicants)</strong> who have booked appointments in any of this team\'s services. Here you can check and update their contact details and manage their records.') !!}
         </x-demo-hint>
     </div>
     <!-- Sub-Menú de Navegación -->

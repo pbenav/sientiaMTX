@@ -326,10 +326,10 @@
                                 ['{responsable}', '{correo}', '{direccion}', '{url}', '{finalidad}'],
                                 [
                                     '<strong>' . e($service->data_protection['responsible'] ?? __('Not specified')) . '</strong>',
-                                    '<strong>' . e($service->data_protection['dpo_email'] ?? 'No especificado') . '</strong>',
-                                    '<strong>' . e($service->data_protection['address'] ?? 'No especificado') . '</strong>',
-                                    !empty($service->data_protection['url']) ? '<a href="'.e($service->data_protection['url']).'" target="_blank" class="text-cyan-600 hover:text-cyan-800 underline">{{ __('Link to extended policy') }}</a>' : '<strong>No especificado</strong>',
-                                    '<strong>' . e($service->data_protection['purpose'] ?? 'No especificado') . '</strong>',
+                                    '<strong>' . e($service->data_protection['dpo_email'] ?? __('Not specified')) . '</strong>',
+                                    '<strong>' . e($service->data_protection['address'] ?? __('Not specified')) . '</strong>',
+                                    !empty($service->data_protection['url']) ? '<a href="'.e($service->data_protection['url']).'" target="_blank" class="text-cyan-600 hover:text-cyan-800 underline">' . __('Link to extended policy') . '</a>' : '<strong>' . __('Not specified') . '</strong>',
+                                    '<strong>' . e($service->data_protection['purpose'] ?? __('Not specified')) . '</strong>',
                                 ],
                                 e($dpTemplate)
                             );
