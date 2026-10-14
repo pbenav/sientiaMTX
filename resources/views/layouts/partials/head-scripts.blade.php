@@ -974,7 +974,9 @@
             body.print-clean-mode button,
             body.print-clean-mode .no-print,
             body.print-clean-mode #docs-sidebar,
-            body.print-clean-mode #docs-mobile-toggle {
+            body.print-clean-mode #docs-mobile-toggle,
+            body.print-clean-mode .page-header-slot,
+            body.print-clean-mode .header-v-fix {
                 display: none !important;
             }
             body.print-clean-mode main,
@@ -1274,7 +1276,7 @@
                       '<h1 style="font-size:26px;font-weight:900;color:#0f172a;letter-spacing:-.03em;line-height:1.1;margin:0 0 6px">' + title + '</h1>' +
                       '<div style="font-size:11px;color:#94a3b8;font-weight:500">Generado el ' + dateStr + '</div>' +
                   '</div>'
-                : '<h1 style="font-size:22px;font-weight:800;color:#0f172a;border-bottom:2px solid #e2e8f0;padding-bottom:12px;margin-bottom:30px;letter-spacing:-.02em">' + title + '</h1>';
+                : '';
 
             var watermark = withHeaders
                 ? '<div style="position:fixed;bottom:20px;right:20px;font-size:80px;font-weight:900;color:rgba(99,102,241,.04);pointer-events:none;z-index:0">Sientia.</div>'
@@ -1291,7 +1293,7 @@
                 window.SientiaPrint.wrapEmojis(element);
             }
         };
-                window.printSection = function(sectionLabel, contentId, customTitle = null) {
+        window.printSection = function(sectionLabel, contentId, customTitle = null) {
             const el = document.getElementById(contentId);
             if (!el) {
                 console.error('Print section element not found:', contentId);
@@ -1300,8 +1302,22 @@
             
             let title = customTitle;
             if (!title) {
-                const h1 = document.querySelector('h1');
-                title = h1 ? h1.innerText.trim() : document.title.split('—').pop().trim();
+                const activityTitleEl = document.querySelector('[data-activity-title]') || 
+                                        document.getElementById('activity-title') ||
+                                        document.querySelector('.activity-title');
+                if (activityTitleEl) {
+                    title = activityTitleEl.getAttribute('data-activity-title') || activityTitleEl.innerText.trim();
+                } else {
+                    const titleParts = document.title ? document.title.split('—') : [];
+                    if (titleParts.length > 1) {
+                        title = titleParts[1].trim();
+                    } else if (titleParts.length === 1 && titleParts[0].trim()) {
+                        title = titleParts[0].trim();
+                    } else {
+                        const h1 = document.querySelector('h1');
+                        title = h1 ? h1.innerText.trim() : '';
+                    }
+                }
             }
             
             if (window.SientiaPrint && window.SientiaPrint.print) {
@@ -1325,8 +1341,22 @@
 
             let title = customTitle;
             if (!title) {
-                const h1 = document.querySelector('h1');
-                title = h1 ? h1.innerText.trim() : document.title.split('—').pop().trim();
+                const activityTitleEl = document.querySelector('[data-activity-title]') || 
+                                        document.getElementById('activity-title') ||
+                                        document.querySelector('.activity-title');
+                if (activityTitleEl) {
+                    title = activityTitleEl.getAttribute('data-activity-title') || activityTitleEl.innerText.trim();
+                } else {
+                    const titleParts = document.title ? document.title.split('—') : [];
+                    if (titleParts.length > 1) {
+                        title = titleParts[1].trim();
+                    } else if (titleParts.length === 1 && titleParts[0].trim()) {
+                        title = titleParts[0].trim();
+                    } else {
+                        const h1 = document.querySelector('h1');
+                        title = h1 ? h1.innerText.trim() : '';
+                    }
+                }
             }
             
             if (window.SientiaPrint && window.SientiaPrint.print) {

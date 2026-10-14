@@ -336,7 +336,7 @@
         </script>
 
         @if (isset($header) && $layout === 'horizontal')
-            <div class="mb-3">
+            <div class="mb-3 page-header-slot">
                 {{ $header }}
             </div>
         @endif

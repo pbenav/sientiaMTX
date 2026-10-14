@@ -917,7 +917,7 @@
                         </span>
                     @endif
                 </div>
-                <p class="text-xl font-bold text-gray-900 dark:text-white heading leading-tight flex items-center gap-2">
+                <p id="activity-title" data-activity-title="{{ $activity->title }}" class="text-xl font-bold text-gray-900 dark:text-white heading leading-tight flex items-center gap-2">
                     @php
                         $typeColors = [
                             'task'     => 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
