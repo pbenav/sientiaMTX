@@ -476,7 +476,11 @@ ESTRUCTURA HTML MÍNIMA RECOMENDADA:
 - PROHIBIDO texto blanco sobre fondos claros (#fff, #f8fafc, amarillo pálido).
 - PROHIBIDO texto oscuro sobre fondos oscuros sin contraste ≥ 4.5:1.
 - .ms-hero SIEMPRE: fondo oscuro/degradado + color: #ffffff en h1, p y botones ghost.
-- Enlaces y botones claramente distinguibles.
+- Enlaces y botones claramente distinguibles:
+  * Enlaces de texto (<a href="...">): color con contraste suficiente y subrayado sutil; en :hover acentuado con subrayado nítido.
+  * Botones (.ms-btn--primary o <a class="ms-btn ms-btn--primary">): texto SIEMPRE blanco (#ffffff) en reposo y en :hover. Al :hover oscurecer fondo y elevar.
+  * Botones outline (.ms-btn--outline): fondo transparente y texto primario; en :hover fondo primario y texto blanco (#ffffff).
+  * En .ms-hero: todos los enlaces de texto deben ser blancos (#ffffff con subrayado), NUNCA del color oscuro del fondo.
 
 ═══ CALIDAD PREMIUM (NIVEL AGENCIA — OBLIGATORIO) ═══
 - Tipografía: @import Google Fonts al inicio del CSS (Playfair Display + DM Sans, o similar serif + sans).

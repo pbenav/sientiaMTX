@@ -125,8 +125,44 @@ class MicrositeContentService
 }
 .ms-root *, .ms-root *::before, .ms-root *::after { box-sizing: border-box; }
 .ms-root img, .ms-root video { max-width: 100%; height: auto; display: block; }
-.ms-root a { color: var(--ms-primary); text-decoration: none; transition: color 0.2s; }
-.ms-root a:hover { color: var(--ms-accent); }
+
+/* ── Enlaces generales (solo texto, excluyendo botones y tarjetas) ── */
+.ms-root a {
+  color: var(--ms-primary);
+  text-decoration: underline;
+  text-decoration-color: rgba(67, 56, 202, 0.3);
+  text-underline-offset: 3px;
+  transition: color 0.2s ease, text-decoration-color 0.2s ease, opacity 0.2s ease;
+}
+.ms-root a:hover {
+  color: var(--ms-accent);
+  text-decoration-color: var(--ms-accent);
+}
+
+/* ── Enlaces que envuelven tarjetas ── */
+.ms-root a.ms-card {
+  color: inherit;
+  text-decoration: none;
+  display: block;
+}
+.ms-root a.ms-card:hover {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ── Enlaces dentro del Hero (fondo oscuro/degradado) ── */
+.ms-hero a:not(.ms-btn) {
+  color: #ffffff;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.5);
+  text-underline-offset: 3px;
+  transition: opacity 0.2s ease, text-decoration-color 0.2s ease;
+}
+.ms-hero a:not(.ms-btn):hover {
+  color: #ffffff;
+  text-decoration-color: #ffffff;
+  opacity: 0.9;
+}
 
 .ms-container { max-width: var(--ms-max-w); margin: 0 auto; padding: 0 1.5rem; }
 
@@ -157,22 +193,80 @@ class MicrositeContentService
   border: 1px solid rgba(15, 23, 42, 0.06);
 }
 
+/* ── Botones y enlaces con estilo de botón (.ms-btn) ── */
+.ms-root .ms-btn,
+.ms-root a.ms-btn,
 .ms-btn {
-  display: inline-flex; align-items: center; gap: 0.5rem;
-  padding: 0.75rem 1.5rem; border-radius: 9999px; font-weight: 600;
-  font-size: 0.9375rem; border: none; cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  line-height: 1.25;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none !important;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
-.ms-btn:hover { transform: translateY(-1px); box-shadow: var(--ms-shadow-sm); }
-.ms-btn--primary { background: var(--ms-primary); color: #fff; }
-.ms-btn--primary:hover { background: var(--ms-primary-dark); color: #fff; }
+.ms-root .ms-btn:hover,
+.ms-root a.ms-btn:hover,
+.ms-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--ms-shadow-sm);
+  text-decoration: none !important;
+}
+
+/* Botón primario: siempre texto blanco en reposo y en hover */
+.ms-root .ms-btn--primary,
+.ms-root a.ms-btn--primary,
+.ms-btn--primary {
+  background: var(--ms-primary);
+  border-color: var(--ms-primary);
+  color: #ffffff !important;
+}
+.ms-root .ms-btn--primary:hover,
+.ms-root a.ms-btn--primary:hover,
+.ms-btn--primary:hover {
+  background: var(--ms-primary-dark);
+  border-color: var(--ms-primary-dark);
+  color: #ffffff !important;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.15);
+}
+
+/* Botón fantasma (hero, toolbars): fondo sutil translúcido, texto blanco */
+.ms-root .ms-btn--ghost,
+.ms-root a.ms-btn--ghost,
 .ms-btn--ghost {
-  background: rgba(255,255,255,0.15); color: inherit;
-  border: 1px solid rgba(255,255,255,0.35);
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.35);
 }
+.ms-root .ms-btn--ghost:hover,
+.ms-root a.ms-btn--ghost:hover,
+.ms-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.28);
+  border-color: rgba(255, 255, 255, 0.6);
+  color: #ffffff !important;
+}
+
+/* Botón outline: fondo transparente con borde primario; al hover fondo primario y texto blanco */
+.ms-root .ms-btn--outline,
+.ms-root a.ms-btn--outline,
 .ms-btn--outline {
-  background: transparent; color: var(--ms-primary);
+  background: transparent;
+  color: var(--ms-primary) !important;
   border: 2px solid var(--ms-primary);
+}
+.ms-root .ms-btn--outline:hover,
+.ms-root a.ms-btn--outline:hover,
+.ms-btn--outline:hover {
+  background: var(--ms-primary);
+  border-color: var(--ms-primary);
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(67, 56, 202, 0.25);
 }
 
 /* Visor PDF premium con pantalla completa */
@@ -193,11 +287,20 @@ class MicrositeContentService
   display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;
   padding: 0.875rem 1.25rem;
   background: linear-gradient(90deg, var(--ms-primary-dark), var(--ms-primary));
-  color: #fff;
+  color: #ffffff;
 }
-.ms-pdf-title { font-weight: 600; font-size: 0.9375rem; opacity: 0.95; }
+.ms-pdf-title { font-weight: 600; font-size: 0.9375rem; opacity: 0.95; color: #ffffff; }
 .ms-pdf-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-.ms-pdf-actions .ms-btn { font-size: 0.8125rem; padding: 0.5rem 1rem; }
+.ms-pdf-actions .ms-btn,
+.ms-pdf-actions a.ms-btn {
+  font-size: 0.8125rem;
+  padding: 0.5rem 1rem;
+  color: #ffffff !important;
+}
+.ms-pdf-actions .ms-btn:hover,
+.ms-pdf-actions a.ms-btn:hover {
+  color: #ffffff !important;
+}
 .ms-pdf-frame {
   width: 100%; min-height: 75vh; height: 80vh; border: none; display: block;
   background: #1e293b;

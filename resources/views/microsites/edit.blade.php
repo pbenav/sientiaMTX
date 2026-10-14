@@ -166,10 +166,10 @@
          x-data="floatingDraggable"
          @mousedown="startDrag"
          @touchstart.passive="startDrag"
-         @window:mousemove="drag"
-         @window:touchmove.passive="drag"
-         @window:mouseup="stopDrag"
-         @window:touchend="stopDrag"
+         @mousemove.window="drag"
+         @touchmove.window.passive="drag"
+         @mouseup.window="stopDrag"
+         @touchend.window="stopDrag"
          class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-4 z-[800] flex items-center gap-2 px-4 py-2.5 bg-white/90 dark:bg-gray-800/95 backdrop-blur-xl border border-gray-100 dark:border-gray-600 rounded-2xl shadow-2xl dark:shadow-[0_0_15px_rgba(0,0,0,0.5)] opacity-0 pointer-events-none transition-all duration-300 whitespace-nowrap cursor-move"
          :class="isDragging ? 'scale-105 shadow-[0_20px_50px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)]' : ''">
 
