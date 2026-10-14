@@ -278,7 +278,7 @@
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 survey-questions-grid">
                                 @foreach($survey->questions as $question)
                                     <div x-data="{ showModal: false }"
                                          class="bg-white dark:bg-gray-800/40 p-3 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col h-full hover:shadow-md transition-all cursor-pointer hover:border-indigo-500/50 group/card"
@@ -287,7 +287,7 @@
                                             <div class="min-w-0">
                                                 <h3 class="text-xs sm:text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight" title="{{ $question->title }}">{{ $question->title }}</h3>
                                                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                                                    {{ $question->type !== 'text' ? $question->votes()->count() . ' ' . __('Responses') : __('Open-ended question') }}
+                                                    {{ $question->type !== 'text' ? ($question->votes ? $question->votes->count() : $question->votes()->count()) . ' ' . __('Responses') : __('Open-ended question') }}
                                                 </p>
                                             </div>
                                             <div class="shrink-0 text-indigo-400 opacity-0 group-hover/card:opacity-100 transition-opacity">
@@ -297,28 +297,35 @@
 
                                         @if($question->type !== 'text')
                                             <div class="flex flex-1 items-center gap-4">
-                                                <!-- Legend (Ultra compact KPI style) -->
+                                                <!-- Legend -->
                                                 <div class="flex-1 space-y-2">
                                                     @php
-                                                        $qTotalVotes = $question->votes()->count();
-                                                        $maxVotes = $question->options->max('votes_count');
+                                                        $qTotalVotes = $question->votes ? $question->votes->count() : $question->votes()->count();
+                                                        $maxVotes = $question->options->max('votes_count') ?? 0;
+                                                        $displayOptions = $question->type === 'rating'
+                                                            ? $question->options->sortBy('order')
+                                                            : $question->options->sortByDesc('votes_count');
                                                     @endphp
-                                                    @foreach($question->options->sortByDesc('votes_count')->take(3) as $option)
+                                                    @foreach($displayOptions as $option)
                                                         @php
-                                                            $percentage = $qTotalVotes > 0 ? round(($option->votes_count / $qTotalVotes) * 100, 0) : 0;
-                                                            $isWinner = $qTotalVotes > 0 && $maxVotes === $option->votes_count;
+                                                            $votesCount = $option->votes_count ?? 0;
+                                                            $percentage = $qTotalVotes > 0 ? round(($votesCount / $qTotalVotes) * 100, 0) : 0;
+                                                            $isWinner = $qTotalVotes > 0 && $maxVotes > 0 && $maxVotes === $votesCount;
                                                         @endphp
                                                         <div class="relative">
                                                             <div class="flex items-center justify-between mb-1 px-0.5">
-                                                                <span class="text-[11px] sm:text-xs font-bold {{ $isWinner ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500' }}">
+                                                                <span class="text-[11px] sm:text-xs font-bold {{ $isWinner ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-300' }}">
                                                                     {{ $option->label }}
                                                                 </span>
-                                                                <span class="text-xs font-black {{ $isWinner ? 'text-indigo-600' : 'text-gray-400' }}">
-                                                                    {{ $percentage }}%
-                                                                </span>
+                                                                <div class="flex items-center gap-1.5 shrink-0 ml-2">
+                                                                    <span class="text-[10px] font-bold text-gray-400 dark:text-gray-500">({{ $votesCount }})</span>
+                                                                    <span class="text-xs font-black {{ $isWinner ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400' }}">
+                                                                        {{ $percentage }}%
+                                                                    </span>
+                                                                </div>
                                                             </div>
-                                                            <div class="h-1 w-full bg-gray-100 dark:bg-gray-800/50 rounded-full overflow-hidden">
-                                                                <div class="h-full rounded-full {{ $isWinner ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-700' }}"
+                                                            <div class="h-1.5 w-full bg-gray-100 dark:bg-gray-800/50 rounded-full overflow-hidden">
+                                                                <div class="h-full rounded-full transition-all duration-500 {{ $isWinner ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-700' }}"
                                                                      style="width: {{ $percentage }}%">
                                                                 </div>
                                                             </div>
@@ -420,13 +427,17 @@
                                                             <!-- Detail Legend -->
                                                             <div class="space-y-3">
                                                                 @php
-                                                                    $qTotalVotes = $question->votes()->count();
-                                                                    $maxVotes = $question->options->max('votes_count');
+                                                                    $qTotalVotes = $question->votes ? $question->votes->count() : $question->votes()->count();
+                                                                    $maxVotes = $question->options->max('votes_count') ?? 0;
+                                                                    $displayOptionsModal = $question->type === 'rating'
+                                                                        ? $question->options->sortBy('order')
+                                                                        : $question->options->sortByDesc('votes_count');
                                                                 @endphp
-                                                                @foreach($question->options->sortByDesc('votes_count') as $option)
+                                                                @foreach($displayOptionsModal as $option)
                                                                     @php
-                                                                        $percentage = $qTotalVotes > 0 ? round(($option->votes_count / $qTotalVotes) * 100, 0) : 0;
-                                                                        $isWinner = $qTotalVotes > 0 && $maxVotes === $option->votes_count;
+                                                                        $votesCount = $option->votes_count ?? 0;
+                                                                        $percentage = $qTotalVotes > 0 ? round(($votesCount / $qTotalVotes) * 100, 0) : 0;
+                                                                        $isWinner = $qTotalVotes > 0 && $maxVotes > 0 && $maxVotes === $votesCount;
                                                                     @endphp
                                                                     <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
                                                                         <div class="flex items-center justify-between mb-2">
@@ -434,12 +445,12 @@
                                                                                 {{ $option->label }}
                                                                             </span>
                                                                             <div class="flex items-center gap-3">
-                                                                                <span class="text-xs font-medium text-gray-500">{{ $option->votes_count }} votos</span>
-                                                                                <span class="text-sm font-black {{ $isWinner ? 'text-indigo-600' : 'text-gray-400' }}">{{ $percentage }}%</span>
+                                                                                <span class="text-xs font-medium text-gray-500">{{ $votesCount }} {{ $votesCount === 1 ? __('voto') : __('votos') }}</span>
+                                                                                <span class="text-sm font-black {{ $isWinner ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400' }}">{{ $percentage }}%</span>
                                                                             </div>
                                                                         </div>
                                                                         <div class="h-2 w-full bg-gray-100 dark:bg-gray-800/50 rounded-full overflow-hidden">
-                                                                            <div class="h-full rounded-full {{ $isWinner ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-700' }}"
+                                                                            <div class="h-full rounded-full transition-all duration-500 {{ $isWinner ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-700' }}"
                                                                                  style="width: {{ $percentage }}%">
                                                                             </div>
                                                                         </div>
@@ -681,8 +692,9 @@
             document.querySelectorAll('canvas[id^="chart-"]').forEach(canvas => {
                 const ctx = canvas.getContext('2d');
                 const type = canvas.dataset.type;
-                const labels = JSON.parse(canvas.dataset.labels);
-                const values = JSON.parse(canvas.dataset.values);
+                const labels = JSON.parse(canvas.dataset.labels || '[]');
+                const values = JSON.parse(canvas.dataset.values || '[]').map(v => Number(v) || 0);
+                const isMini = !canvas.id.includes('modal');
 
                 let chartConfig = {
                     type: type === 'single_choice' ? 'doughnut' : 'bar',
@@ -693,19 +705,25 @@
                             backgroundColor: type === 'single_choice' ? colors : colors[0],
                             borderRadius: type === 'single_choice' ? 0 : 8,
                             borderWidth: 0,
-                            hoverOffset: 15
+                            hoverOffset: isMini ? 4 : 15
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: true,
                         plugins: {
-                            legend: { display: false }
+                            legend: { display: false },
+                            tooltip: { enabled: true }
                         }
                     }
                 };
 
-                if (type === 'multiple_choice' || type === 'rating') {
+                if (isMini) {
+                    chartConfig.options.scales = {
+                        x: { display: false },
+                        y: { display: false }
+                    };
+                } else if (type === 'multiple_choice' || type === 'rating') {
                     chartConfig.options.indexAxis = type === 'multiple_choice' ? 'y' : 'x';
                     chartConfig.options.scales = {
                         y: {
@@ -722,7 +740,7 @@
                 }
 
                 if (type === 'single_choice') {
-                    chartConfig.options.cutout = '60%';
+                    chartConfig.options.cutout = isMini ? '65%' : '60%';
                 }
 
                 new Chart(ctx, chartConfig);
@@ -860,9 +878,11 @@
             .lg\:grid-cols-4 > div { padding: 0.4rem !important; border-radius: 0.5rem !important; }
             .lg\:grid-cols-4 h4 { font-size: 10pt !important; }
 
-            /* Dashboard Grid (Question cards) - Force 3 columns for maximum density */
-            .grid-cols-1.md\:grid-cols-2.xl\:grid-cols-3 {
-                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            /* Dashboard Grid (Question cards) - Force 2 columns for clean print */
+            .survey-questions-grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 0.5rem !important;
             }
 
             /* Typography Scaling */
@@ -882,6 +902,7 @@
             .space-y-2 > * + * { margin-top: 0.15rem !important; }
 
             /* Page Management */
+            .survey-questions-grid > div,
             .grid-cols-1.md\:grid-cols-2 > div,
             .lg\:grid-cols-4 > div {
                 page-break-inside: avoid !important;
@@ -914,10 +935,10 @@
          x-data="floatingDraggable"
          @mousedown="startDrag"
          @touchstart.passive="startDrag"
-         @window:mousemove="drag"
-         @window:touchmove.passive="drag"
-         @window:mouseup="stopDrag"
-         @window:touchend="stopDrag"
+         @mousemove.window="drag"
+         @touchmove.window.passive="drag"
+         @mouseup.window="stopDrag"
+         @touchend.window="stopDrag"
          class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-4 z-50 flex items-center gap-2 p-2.5 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl opacity-0 pointer-events-none transition-all duration-300 whitespace-nowrap cursor-move"
          :class="isDragging ? 'scale-105 shadow-[0_20px_50px_rgba(0,0,0,0.2)]' : ''">
 

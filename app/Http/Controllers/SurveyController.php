@@ -241,9 +241,13 @@ class SurveyController extends Controller
     {
         $this->resolveParams($team, $survey);
 
-        $survey->load(['creator', 'questions.options' => function($q) {
-            $q->withCount('votes');
-        }]);
+        $survey->load([
+            'creator',
+            'questions.votes',
+            'questions.options' => function($q) {
+                $q->withCount('votes');
+            }
+        ]);
         
         $user = Auth::user();
         $hasVoted = $survey->hasVoted($user);
@@ -254,7 +258,8 @@ class SurveyController extends Controller
             ->get()
             ->groupBy('question_id');
 
-        $totalVotes = $survey->votes()->select('user_id')->distinct()->count('user_id');
+        $totalVotes = $survey->votes()->whereNotNull('user_id')->distinct('user_id')->count('user_id')
+                    + $survey->votes()->whereNull('user_id')->distinct('session_id')->count('session_id');
         $showResults = $survey->show_results_before_voting || $survey->is_closed || $hasVoted;
 
         return view('surveys.show', compact(

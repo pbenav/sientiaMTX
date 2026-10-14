@@ -20,6 +20,59 @@
             background: none;
             border: none;
         }
+
+        @media print {
+            @page {
+                size: auto;
+                margin: 0.5cm;
+            }
+
+            .print-hide, header, .lg\:col-span-4, #survey-form, .animate-pulse {
+                display: none !important;
+            }
+
+            body {
+                background: white !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            .max-w-7xl, .lg\:col-span-8 {
+                max-width: 100% !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            .py-12, .px-4, .sm\:px-6, .lg\:px-8 {
+                padding: 0 !important;
+            }
+
+            .bg-white, .dark\:bg-gray-900 {
+                background-color: #ffffff !important;
+                border: 1px solid #e5e7eb !important;
+                box-shadow: none !important;
+                border-radius: 0.75rem !important;
+            }
+
+            .survey-questions-grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 0.5rem !important;
+            }
+
+            .survey-questions-grid > div {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            canvas {
+                max-width: 80px !important;
+                max-height: 80px !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col">
@@ -89,40 +142,58 @@
 
                 @if($showResults)
                     <div class="bg-white dark:bg-gray-900 rounded-[2rem] shadow-xl p-6 sm:p-8 border border-gray-100 dark:border-gray-800">
-                        <h2 class="text-lg sm:text-xl font-black text-gray-900 dark:text-white tracking-tight uppercase mb-6 border-b border-gray-100 dark:border-gray-850 pb-4">
-                            {{ __('Results and Participation') }}
-                        </h2>
+                        <div class="flex items-center justify-between mb-6 border-b border-gray-100 dark:border-gray-850 pb-4">
+                            <h2 class="text-lg sm:text-xl font-black text-gray-900 dark:text-white tracking-tight uppercase">
+                                {{ __('Results and Participation') }}
+                            </h2>
+                            <button type="button"
+                                    onclick="window.print()"
+                                    class="print-hide inline-flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition-all">
+                                <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                                <span>{{ __('Imprimir Informe') }}</span>
+                            </button>
+                        </div>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 survey-questions-grid">
                             @foreach($survey->questions as $question)
                                 <div class="bg-gray-50 dark:bg-gray-800/40 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col h-full">
                                     <div class="mb-3 border-l-3 border-indigo-600 pl-3">
                                         <h3 class="text-xs sm:text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight" title="{{ $question->title }}">{{ $question->title }}</h3>
+                                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                                            {{ $question->type !== 'text' ? ($question->votes ? $question->votes->count() : $question->votes()->count()) . ' ' . __('Responses') : __('Open-ended question') }}
+                                        </p>
                                     </div>
                                     
                                     @if($question->type !== 'text')
                                         <div class="flex flex-1 items-center gap-4">
-                                            <div class="flex-1 space-y-3">
+                                            <div class="flex-1 space-y-2">
                                                 @php 
-                                                    $qTotalVotes = $question->votes()->count();
-                                                    $maxVotes = $question->options->max('votes_count');
+                                                    $qTotalVotes = $question->votes ? $question->votes->count() : $question->votes()->count();
+                                                    $maxVotes = $question->options->max('votes_count') ?? 0;
+                                                    $displayOptions = $question->type === 'rating'
+                                                        ? $question->options->sortBy('order')
+                                                        : $question->options->sortByDesc('votes_count');
                                                 @endphp
-                                                @foreach($question->options->sortByDesc('votes_count')->take(3) as $option)
+                                                @foreach($displayOptions as $option)
                                                     @php
-                                                        $percentage = $qTotalVotes > 0 ? round(($option->votes_count / $qTotalVotes) * 100, 0) : 0;
-                                                        $isWinner = $qTotalVotes > 0 && $maxVotes === $option->votes_count;
+                                                        $votesCount = $option->votes_count ?? 0;
+                                                        $percentage = $qTotalVotes > 0 ? round(($votesCount / $qTotalVotes) * 100, 0) : 0;
+                                                        $isWinner = $qTotalVotes > 0 && $maxVotes > 0 && $maxVotes === $votesCount;
                                                     @endphp
                                                     <div class="relative">
                                                         <div class="flex items-center justify-between mb-1 px-0.5">
-                                                            <span class="text-[11px] sm:text-xs font-bold {{ $isWinner ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500' }}">
+                                                            <span class="text-[11px] sm:text-xs font-bold {{ $isWinner ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-300' }}">
                                                                 {{ $option->label }}
                                                             </span>
-                                                            <span class="text-xs font-black {{ $isWinner ? 'text-indigo-600' : 'text-gray-400' }}">
-                                                                {{ $percentage }}%
-                                                            </span>
+                                                            <div class="flex items-center gap-1.5 shrink-0 ml-2">
+                                                                <span class="text-[10px] font-bold text-gray-400 dark:text-gray-500">({{ $votesCount }})</span>
+                                                                <span class="text-xs font-black {{ $isWinner ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400' }}">
+                                                                    {{ $percentage }}%
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                         <div class="h-1.5 w-full bg-gray-200 dark:bg-gray-800/50 rounded-full overflow-hidden">
-                                                            <div class="h-full rounded-full {{ $isWinner ? 'bg-indigo-600' : 'bg-gray-400 dark:bg-gray-600' }}"
+                                                            <div class="h-full rounded-full transition-all duration-500 {{ $isWinner ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-600' }}"
                                                                  style="width: {{ $percentage }}%">
                                                             </div>
                                                         </div>
@@ -415,8 +486,8 @@
             document.querySelectorAll('canvas[id^="chart-"]').forEach(canvas => {
                 const ctx = canvas.getContext('2d');
                 const type = canvas.dataset.type;
-                const labels = JSON.parse(canvas.dataset.labels);
-                const values = JSON.parse(canvas.dataset.values);
+                const labels = JSON.parse(canvas.dataset.labels || '[]');
+                const values = JSON.parse(canvas.dataset.values || '[]').map(v => Number(v) || 0);
 
                 let chartConfig = {
                     type: type === 'single_choice' ? 'doughnut' : 'bar',
@@ -427,36 +498,29 @@
                             backgroundColor: type === 'single_choice' ? colors : colors[0],
                             borderRadius: type === 'single_choice' ? 0 : 8,
                             borderWidth: 0,
-                            hoverOffset: 15
+                            hoverOffset: 4
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: true,
                         plugins: {
-                            legend: { display: false }
+                            legend: { display: false },
+                            tooltip: { enabled: true }
+                        },
+                        scales: {
+                            x: { display: false },
+                            y: { display: false }
                         }
                     }
                 };
 
                 if (type === 'multiple_choice' || type === 'rating') {
                     chartConfig.options.indexAxis = type === 'multiple_choice' ? 'y' : 'x';
-                    chartConfig.options.scales = {
-                        y: {
-                            beginAtZero: true,
-                            grid: { display: false },
-                            ticks: { color: textColor, font: { weight: 'bold' } }
-                        },
-                        x: {
-                            beginAtZero: true,
-                            grid: { display: false },
-                            ticks: { color: textColor, font: { weight: 'bold' } }
-                        }
-                    };
                 }
 
                 if (type === 'single_choice') {
-                    chartConfig.options.cutout = '60%';
+                    chartConfig.options.cutout = '65%';
                 }
 
                 new Chart(ctx, chartConfig);

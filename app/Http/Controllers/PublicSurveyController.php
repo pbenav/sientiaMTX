@@ -35,7 +35,13 @@ class PublicSurveyController extends Controller
         $survey = Survey::where('uuid', $uuid)
             ->where('is_public', true)
             ->where('is_active', true)
-            ->with(['questions.options', 'creator'])
+            ->with([
+                'creator',
+                'questions.votes',
+                'questions.options' => function($q) {
+                    $q->withCount('votes');
+                }
+            ])
             ->firstOrFail();
 
         if ($survey->is_expired || $survey->closed_at !== null) {
