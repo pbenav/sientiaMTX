@@ -39,6 +39,7 @@ use Illuminate\Support\Str;
  * @property int $created_by_id ID del usuario creador
  * @property int|null $parent_id ID de la actividad padre (para templates/ocurrencias)
  * @property int|null $expediente_id ID del expediente asociado
+ * @property int|null $folder_id ID de la carpeta contenedora en biblioteca
  * @property string $type Tipo de actividad (task, document, note, link, agreement, meeting, reminder)
  * @property string $title Título de la actividad
  * @property string|null $description Descripción detallada
@@ -150,6 +151,7 @@ class Activity extends Model
         'created_by_id',
         'parent_id',
         'expediente_id',
+        'folder_id',
         'type',
         'title',
         'description',
@@ -360,6 +362,16 @@ class Activity extends Model
     public function kanbanColumn(): BelongsTo
     {
         return $this->belongsTo(KanbanColumn::class);
+    }
+
+    /**
+     * Relación de pertenencia a una carpeta de la biblioteca.
+     *
+     * @return BelongsTo<\App\Models\TeamFolder, $this>
+     */
+    public function folder(): BelongsTo
+    {
+        return $this->belongsTo(TeamFolder::class, 'folder_id');
     }
 
     // ─── Infraestructura compartida ───────────────────────────────────────────

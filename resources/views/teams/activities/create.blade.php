@@ -56,6 +56,9 @@
             <form id="create-task-form" method="POST" action="{{ route('teams.activities.store', $team) }}" class="" enctype="multipart/form-data" @submit="console.log('chapter_title:', document.querySelector('input[name=\'metadata[chapter_title]\']')?.value, 'chapter_content:', document.querySelector('textarea[name=\'metadata[chapter_content]\']')?.value)">
                 @csrf
                 <input type="hidden" name="type" value="{{ $type }}">
+                @if(request('folder_id'))
+                    <input type="hidden" name="folder_id" value="{{ request('folder_id') }}">
+                @endif
                 <div x-data="{ 
     activeTab: '{{ request('tab', 'general') }}',
     setActiveTab(t) {

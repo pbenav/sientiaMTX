@@ -95,6 +95,17 @@ trait ActivityScopes
     }
 
     /**
+     * Filtra actividades por carpeta de biblioteca.
+     * Si $folderId es null, filtra las de la raíz (sin carpeta).
+     */
+    public function scopeInFolder(Builder $query, ?int $folderId)
+    {
+        return $folderId === null
+            ? $query->whereNull('folder_id')
+            : $query->where('folder_id', $folderId);
+    }
+
+    /**
      * Filtra actividades activas (no archivadas).
      */
     public function scopeActive(Builder $query)

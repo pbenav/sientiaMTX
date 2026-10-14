@@ -18,7 +18,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                     </svg>
-                    <span class="truncate">{{ __('Biblioteca') }}</span>
+                    <span class="truncate">{{ __('Biblioteca y Navegador de Archivos') }}</span>
                 </h1>
             </div>
             <div class="flex items-center gap-2 shrink-0">
@@ -28,494 +28,336 @@
 
         <div class="mt-2">
             <x-demo-hint>
-                {{ __('The Document Library centralizes the team\'s knowledge and wiki. It allows consulting, categorizing, and live editing office documents (via OnlyOffice) and reference notes, maintaining a hierarchical index accessible to all collaborators.') }}
+                {{ __('Organiza los documentos del equipo en carpetas y subcarpetas, arrastra para mover, gestiona capítulos y edita archivos de oficina en tiempo real.') }}
             </x-demo-hint>
         </div>
 
         @include('teams.partials.team-view-nav', ['showCreateActions' => false])
     </x-slot>
 
-    <div class="flex flex-col md:flex-row gap-6">
-        <!-- Sidebar de Wiki -->
-        <!-- Sidebar de Wiki -->
-        <div class="w-full md:w-80 xl:w-96 shrink-0 flex flex-col gap-4">
-            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden flex flex-col h-[calc(100vh-14rem)] sticky top-24">
-                <div class="p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20">
-                    <h3 class="text-xs font-black uppercase tracking-widest text-gray-900 dark:text-white flex items-center gap-2 mb-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                        </svg>
-                        {{ __('Document Index') }}
-                    </h3>
-                    <form action="{{ route('teams.library', $team) }}" method="GET" class="space-y-3">
-                        <div class="relative">
-                            <input type="text" name="q" value="{{ request('q') }}" placeholder="{{ __('Search wiki...') }}"
-                                   class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 pl-8 pr-8 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all placeholder-gray-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-2.5 top-2.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                            @if(request('q'))
-                            <a href="{{ request()->fullUrlWithQuery(['q' => '']) }}" class="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" title="{{ __("html.clear_search") }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </a>
-                            @endif
-                        </div>
-                        <div class="flex gap-2">
-                            <select name="status" class="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 px-2.5 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all">
-                                <option value="">{{ __('All Statuses') }}</option>
-                                @php
-                                    $docStatuses = \App\Models\Activities\DocumentActivity::STATUSES;
-                                @endphp
-                                @foreach($docStatuses as $val)
-                                    <option value="{{ $val }}" {{ request('status') == $val ? 'selected' : '' }}>
-                                        {{ __("activities.statuses.{$val}") }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="flex gap-2">
-                            <input type="date" name="date_from" value="{{ request('date_from', $dateFrom) }}" placeholder="{{ __('From') }}"
-                                   class="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 px-2.5 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all text-gray-600 dark:text-gray-400">
-                            <input type="date" name="date_to" value="{{ request('date_to', $dateTo) }}" placeholder="{{ __('To') }}"
-                                   class="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 px-2.5 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all text-gray-600 dark:text-gray-400">
-                        </div>
-                        @if(request('doc'))
-                            <input type="hidden" name="doc" value="{{ request('doc') }}">
+    <script>
+    function libraryBrowser(config) {
+        return {
+            viewLayout: localStorage.getItem('library_view_layout') || 'grid',
+            setLayout(val) {
+                this.viewLayout = val;
+                localStorage.setItem('library_view_layout', val);
+            },
+            selectedDocs: [],
+            selectedFolders: [],
+            allDocIds: config.allDocIds || [],
+            allFolderIds: config.allFolderIds || [],
+            selectAll() {
+                this.selectedDocs = [...this.allDocIds];
+                this.selectedFolders = [...this.allFolderIds];
+            },
+            clearSelection() {
+                this.selectedDocs = [];
+                this.selectedFolders = [];
+            },
+            get isAllSelected() {
+                const total = this.allDocIds.length + this.allFolderIds.length;
+                return total > 0 && (this.selectedDocs.length + this.selectedFolders.length) === total;
+            },
+            get totalSelected() {
+                return this.selectedDocs.length + this.selectedFolders.length;
+            },
+            isMovingItems: false,
+            startDrag(event, type, id) {
+                let docIds = [];
+                let folderIds = [];
+
+                if (type === 'document') {
+                    if (this.selectedDocs.includes(id)) {
+                        docIds = [...this.selectedDocs];
+                        folderIds = [...this.selectedFolders];
+                    } else if (this.selectedDocs.length > 0 || this.selectedFolders.length > 0) {
+                        docIds = Array.from(new Set([...this.selectedDocs, id]));
+                        folderIds = [...this.selectedFolders];
+                    } else {
+                        docIds = [id];
+                        folderIds = [];
+                    }
+                } else if (type === 'folder') {
+                    if (this.selectedFolders.includes(id)) {
+                        docIds = [...this.selectedDocs];
+                        folderIds = [...this.selectedFolders];
+                    } else if (this.selectedDocs.length > 0 || this.selectedFolders.length > 0) {
+                        docIds = [...this.selectedDocs];
+                        folderIds = Array.from(new Set([...this.selectedFolders, id]));
+                    } else {
+                        docIds = [];
+                        folderIds = [id];
+                    }
+                }
+
+                const payload = {
+                    document_ids: docIds,
+                    folder_ids: folderIds,
+                    type: type,
+                    id: id
+                };
+
+                event.dataTransfer.setData('text/plain', JSON.stringify(payload));
+                event.dataTransfer.effectAllowed = 'move';
+
+                this.createDragGhost(event, docIds.length, folderIds.length);
+            },
+            createDragGhost(event, docCount, folderCount) {
+                const total = docCount + folderCount;
+                if (total <= 1) return;
+
+                const ghost = document.createElement('div');
+                ghost.style.position = 'absolute';
+                ghost.style.top = '-9999px';
+                ghost.style.left = '-9999px';
+                ghost.style.padding = '6px 14px';
+                ghost.style.background = '#7c3aed';
+                ghost.style.color = '#ffffff';
+                ghost.style.borderRadius = '12px';
+                ghost.style.fontSize = '12px';
+                ghost.style.fontWeight = '700';
+                ghost.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.4)';
+                ghost.style.display = 'flex';
+                ghost.style.alignItems = 'center';
+                ghost.style.gap = '8px';
+                ghost.style.pointerEvents = 'none';
+                ghost.style.zIndex = '99999';
+
+                let label = '';
+                if (docCount > 0 && folderCount > 0) {
+                    label = `${docCount} doc. y ${folderCount} carp.`;
+                } else if (docCount > 0) {
+                    label = docCount === 1 ? '1 documento' : `${docCount} documentos`;
+                } else {
+                    label = folderCount === 1 ? '1 carpeta' : `${folderCount} carpetas`;
+                }
+
+                const badge = document.createElement('span');
+                badge.style.background = 'rgba(255,255,255,0.25)';
+                badge.style.borderRadius = '9999px';
+                badge.style.padding = '1px 7px';
+                badge.style.fontSize = '11px';
+                badge.textContent = total;
+
+                const textSpan = document.createElement('span');
+                textSpan.textContent = label;
+
+                ghost.appendChild(badge);
+                ghost.appendChild(textSpan);
+
+                document.body.appendChild(ghost);
+                if (event.dataTransfer && event.dataTransfer.setDragImage) {
+                    event.dataTransfer.setDragImage(ghost, 20, 20);
+                }
+                setTimeout(() => {
+                    if (ghost.parentNode) {
+                        ghost.parentNode.removeChild(ghost);
+                    }
+                }, 0);
+            }
+        };
+    }
+    </script>
+
+    <div x-data="libraryBrowser({
+            allDocIds: @json($documents->pluck('id')->values()),
+            allFolderIds: @json($subfolders->pluck('id')->values())
+        })"
+        @bulk-move-items.window="isMovingItems = true">
+        
+        {{-- Barra superior de navegación por carpetas y herramientas --}}
+        @include('teams.library.partials.header-toolbar', [
+            'team' => $team,
+            'currentFolder' => $currentFolder,
+            'breadcrumbs' => $breadcrumbs,
+            'mode' => $mode,
+            'searchQuery' => $searchQuery,
+            'searchScope' => $searchScope,
+            'subfoldersCount' => $subfolders->count(),
+            'documentsCount' => $documents->count(),
+        ])
+
+        {{-- Modo 1: EXPLORADOR DE ARCHIVOS (Grid o Lista) --}}
+        @if($mode === 'browser')
+            <div class="space-y-6">
+                <!-- Barra de control de vista (Grid vs List y Selección) -->
+                <div class="flex items-center justify-between gap-3 text-xs">
+                    <div class="flex items-center gap-3 text-gray-500 font-semibold">
+                        @if($currentFolder)
+                            <span class="flex items-center gap-1.5 text-gray-800 dark:text-gray-200">
+                                <span class="w-2.5 h-2.5 rounded-full bg-violet-500"></span>
+                                {{ $currentFolder->name }}
+                            </span>
+                        @else
+                            <span>{{ __('Raíz de la Biblioteca') }}</span>
                         @endif
-                        <div class="flex gap-2">
-                            <button type="submit" class="flex-1 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold py-2 rounded-xl transition-colors">
-                                {{ __('Filter') }}
+
+                        @if($documents->isNotEmpty() || $subfolders->isNotEmpty())
+                            <span class="text-gray-300 dark:text-gray-700">|</span>
+                            <button type="button"
+                                    @click="isAllSelected ? clearSelection() : selectAll()"
+                                    class="text-[11px] font-bold text-violet-600 dark:text-violet-400 hover:underline flex items-center gap-1 transition-colors">
+                                <span x-text="isAllSelected ? '{{ __('Deseleccionar todo') }}' : '{{ __('Seleccionar todo') }}'"></span>
                             </button>
-                            <a href="{{ route('teams.library', $team) }}" class="flex items-center justify-center px-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs font-bold rounded-xl transition-colors" title="{{ __('Reset filters') }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                </svg>
-                            </a>
-                        </div>
-                        @if(request('status') || request('q'))
-                            <a href="{{ route('teams.library', $team) }}" class="block w-full text-center text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 py-1 transition-colors">
-                                {{ __('Clear filters') }}
-                            </a>
                         @endif
-                    </form>
-                </div>
-
-                <div class="flex-1 overflow-y-auto no-scrollbar p-2">
-                    @forelse($documents as $doc)
-                         <a href="{{ route('teams.library', [$team, 'doc' => $doc->id]) }}"
-                            class="flex items-start gap-2.5 p-2.5 rounded-xl transition-all mb-1 {{ $activeDocument && $activeDocument->id == $doc->id ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400' }}">
-                            <div class="mt-0.5 shrink-0">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 {{ $doc->status_value == 'completed' ? 'text-emerald-500' : 'text-gray-400' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                            </div>
-                            <div class="flex flex-col min-w-0">
-                                <span class="text-sm font-semibold truncate">{{ $doc->title }}</span>
-                                <span class="text-[10px] uppercase font-bold {{ $doc->status_value == 'completed' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400' }}">{{ __("activities.statuses.{$doc->status_value}") }}</span>
-                                <span class="text-[10px] text-gray-400">{{ $doc->created_at->format('d/m/Y') }}</span>
-                            </div>
-                         </a>
-                    @empty
-                        <div class="text-center p-6">
-                            <span class="text-xs text-gray-400">{{ __('library.no_documents') }}</span>
-                        </div>
-                    @endforelse
-                </div>
-            </div>
-        </div>
-
-        <!-- Contenido principal -->
-        <div class="flex-1 min-w-0">
-            @if($activeDocument)
-                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden min-h-[calc(100vh-14rem)] flex flex-col">
-                    <div class="p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-start gap-4">
-                        <div class="min-w-0">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="px-2 py-1 text-[10px] font-bold rounded bg-violet-50 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300 uppercase tracking-wider border border-violet-200 dark:border-violet-800 shrink-0">DOCUMENTO WIKI</span>
-                                <span class="px-2 py-1 text-[10px] font-bold rounded {{ $activeDocument->status_value == 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-800' : 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400' }} uppercase tracking-wider border shrink-0">
-                                    {{ __("activities.statuses.{$activeDocument->status_value}") }}
-                                </span>
-                            </div>
-                            <h2 class="text-2xl font-black text-gray-900 dark:text-white truncate">{{ $activeDocument->title }}</h2>
-                            <div class="flex items-center gap-4 mt-2 text-[11px] text-gray-400 font-medium shrink-0 flex-wrap">
-                                <span class="flex items-center gap-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                    Creado: <strong class="text-gray-600 dark:text-gray-300">{{ $activeDocument->created_at->format('d/m/Y') }}</strong>
-                                </span>
-                                @if($activeDocument->updated_at && $activeDocument->updated_at->ne($activeDocument->created_at))
-                                <span class="flex items-center gap-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                                    Actualizado: <strong class="text-gray-600 dark:text-gray-300">{{ $activeDocument->updated_at->diffForHumans() }}</strong>
-                                </span>
-                                @endif
-                            </div>
-                            @if($activeDocument->description)
-                                <div x-data="{
-                                        content: `{{ base64_encode($activeDocument->description) }}`,
-                                        search: @js(request('q', '')),
-                                        init() {
-                                            $nextTick(() => {
-                                                const decodeB64 = (s) => { try { return new TextDecoder().decode(Uint8Array.from(atob(s), c => c.charCodeAt(0))); } catch(_) { try { return decodeURIComponent(escape(atob(s))); } catch(e) { return atob(s); } } };
-                                                const decoded = decodeB64(this.content);
-                                                let html = typeof marked !== 'undefined' ? marked.parse(decoded, {breaks: true, gfm: true}) : decoded;
-                                                this.$refs.descContainer.innerHTML = html;
-                                                if (this.search && this.search.trim() !== '') {
-                                                    let s = this.search.trim();
-                                                    let escaped = s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                                                    let regex = new RegExp('(' + escaped + ')', 'gi');
-                                                    let walker = document.createTreeWalker(this.$refs.descContainer, NodeFilter.SHOW_TEXT, null, false);
-                                                    let nodesToReplace = [];
-                                                    let node;
-                                                    while (node = walker.nextNode()) {
-                                                        if (node.parentNode && ['SCRIPT', 'STYLE', 'MARK'].includes(node.parentNode.nodeName)) continue;
-                                                        if (node.nodeValue.match(regex)) nodesToReplace.push(node);
-                                                    }
-                                                    nodesToReplace.forEach(n => {
-                                                        let span = document.createElement('span');
-                                                        span.innerHTML = n.nodeValue.replace(regex, '<mark class=\'bg-yellow-300 dark:bg-yellow-900 text-gray-900 dark:text-yellow-100 rounded px-1.5 py-0.5 font-bold shadow-sm search-highlight-mark\'>$1</mark>');
-                                                        n.parentNode.replaceChild(span, n);
-                                                    });
-                                                }
-                                                this.$dispatch('matches-updated');
-                                            });
-                                        }
-                                     }">
-                                    <div x-ref="descContainer" class="prose prose-sm dark:prose-invert max-w-none text-gray-500 dark:text-gray-400 mt-2 markdown-body">
-                                        <div class="flex items-center p-2">
-                                            <svg class="animate-spin h-4 w-4 text-violet-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
-                        <a href="{{ route('teams.activities.show', [$team, $activeDocument]) }}" class="shrink-0 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-bold uppercase rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center gap-1.5">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                            </svg>
-                            {{ __('View') }} Actividad
-                        </a>
                     </div>
 
-                    <div class="p-6 flex-1 flex flex-col min-w-0">
-                        @php
-                            $notesStr = is_string($activeDocument->notes) ? trim($activeDocument->notes) : '';
-                            $hasNotes = $notesStr !== '' && $notesStr !== '[]' && strip_tags($notesStr) !== '';
-                        @endphp
-                        @if($hasNotes)
-                            <div x-data="{
-                                    rawNotes: `{{ base64_encode($activeDocument->notes) }}`,
-                                    search: @js(request('q', '')),
-                                    init() {
-                                        $nextTick(() => {
-                                            const decodeB64 = (s) => { try { return new TextDecoder().decode(Uint8Array.from(atob(s), c => c.charCodeAt(0))); } catch(_) { try { return decodeURIComponent(escape(atob(s))); } catch(e) { return atob(s); } } };
-                                            const decoded = decodeB64(this.rawNotes);
-                                            let html = typeof marked !== 'undefined' ? marked.parse(decoded, {breaks: true, gfm: true}) : decoded;
-                                            this.$refs.notesContainer.innerHTML = html;
-                                            if (this.search && this.search.trim() !== '') {
-                                                let s = this.search.trim();
-                                                let escaped = s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                                                let regex = new RegExp('(' + escaped + ')', 'gi');
-                                                let walker = document.createTreeWalker(this.$refs.notesContainer, NodeFilter.SHOW_TEXT, null, false);
-                                                let nodesToReplace = [];
-                                                let node;
-                                                while (node = walker.nextNode()) {
-                                                    if (node.parentNode && ['SCRIPT', 'STYLE', 'MARK'].includes(node.parentNode.nodeName)) continue;
-                                                    if (node.nodeValue.match(regex)) nodesToReplace.push(node);
-                                                }
-                                                nodesToReplace.forEach(n => {
-                                                    let span = document.createElement('span');
-                                                    span.innerHTML = n.nodeValue.replace(regex, '<mark class=\'bg-yellow-300 dark:bg-yellow-900 text-gray-900 dark:text-yellow-100 rounded px-1.5 py-0.5 font-bold shadow-sm search-highlight-mark\'>$1</mark>');
-                                                    n.parentNode.replaceChild(span, n);
-                                                });
-                                            }
-                                            this.$dispatch('matches-updated');
-                                        });
-                                    }
-                                 }" class="prose dark:prose-invert max-w-none text-sm w-full mb-6 break-words">
-                                <div x-ref="notesContainer">
-                                    {!! str($activeDocument->notes)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
-                                </div>
+                    <div class="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 p-0.5 rounded-xl border border-gray-200 dark:border-gray-700">
+                        <button type="button" 
+                                @click="setLayout('grid')" 
+                                :class="viewLayout === 'grid' ? 'bg-white dark:bg-gray-900 text-violet-600 dark:text-violet-400 shadow-xs' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
+                                class="p-1.5 rounded-lg transition-all"
+                                title="{{ __('Vista en cuadrícula') }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                            </svg>
+                        </button>
+                        <button type="button" 
+                                @click="setLayout('list')" 
+                                :class="viewLayout === 'list' ? 'bg-white dark:bg-gray-900 text-violet-600 dark:text-violet-400 shadow-xs' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
+                                class="p-1.5 rounded-lg transition-all"
+                                title="{{ __('Vista en lista detallada') }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Visualización en Cuadrícula (Grid) --}}
+                <div x-show="viewLayout === 'grid'" class="space-y-8">
+                    {{-- Sección de Subcarpetas --}}
+                    @if($subfolders->isNotEmpty())
+                        <div>
+                            <h3 class="text-xs font-black uppercase tracking-wider text-gray-400 mb-3 flex items-center gap-2 select-none">
+                                <span>{{ __('Carpetas') }}</span>
+                                <span class="text-[10px] bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full font-bold text-gray-500">
+                                    {{ $subfolders->count() }}
+                                </span>
+                            </h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                @foreach($subfolders as $folder)
+                                    @include('teams.library.partials.folder-card', ['team' => $team, 'folder' => $folder, 'mode' => $mode])
+                                @endforeach
                             </div>
-                        @endif
+                        </div>
+                    @endif
 
-                        @php
-                            $chapters = $activeDocument->metadata['chapters'] ?? [];
-                        @endphp
+                    {{-- Sección de Documentos --}}
+                    <div>
+                        <h3 class="text-xs font-black uppercase tracking-wider text-gray-400 mb-3 flex items-center gap-2 select-none">
+                            <span>{{ __('Documentos') }}</span>
+                            <span class="text-[10px] bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full font-bold text-gray-500">
+                                {{ $documents->count() }}
+                            </span>
+                        </h3>
 
-                        @if(count($chapters) > 0)
-                            <div id="chapters-section" x-data="{
-                                    search: @js(request('q', '')),
-                                    currentIndex: 0,
-                                    totalMatches: 0,
-                                    init() {
-                                        $watch('search', () => {
-                                            this.currentIndex = 0;
-                                            this.updateMatches();
-                                        });
-                                        setTimeout(() => this.updateMatches(), 400);
-                                    },
-                                    updateMatches() {
-                                        setTimeout(() => {
-                                            const marks = document.querySelectorAll('mark.search-highlight-mark');
-                                            this.totalMatches = marks.length;
-                                            if (this.totalMatches === 0) {
-                                                this.currentIndex = 0;
-                                                return;
-                                            }
-                                            if (this.currentIndex >= this.totalMatches || this.currentIndex < 0) {
-                                                this.currentIndex = 0;
-                                            }
-                                            this.highlightCurrent(marks);
-                                        }, 100);
-                                    },
-                                    highlightCurrent(marks) {
-                                        const list = marks || document.querySelectorAll('mark.search-highlight-mark');
-                                        if (list.length === 0) return;
-                                        list.forEach((m, idx) => {
-                                            if (idx === this.currentIndex) {
-                                                m.className = 'bg-violet-600 text-white dark:bg-violet-500 font-extrabold rounded px-2 py-0.5 shadow-md ring-2 ring-violet-400 transition-all search-highlight-mark search-highlight-active';
-                                                m.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                            } else {
-                                                m.className = 'bg-yellow-300 dark:bg-yellow-900 text-gray-900 dark:text-yellow-100 rounded px-1.5 py-0.5 font-bold shadow-sm search-highlight-mark';
-                                            }
-                                        });
-                                    },
-                                    nextMatch() {
-                                        if (this.totalMatches <= 0) return;
-                                        this.currentIndex = (this.currentIndex + 1) % this.totalMatches;
-                                        this.highlightCurrent();
-                                    },
-                                    prevMatch() {
-                                        if (this.totalMatches <= 0) return;
-                                        this.currentIndex = (this.currentIndex - 1 + this.totalMatches) % this.totalMatches;
-                                        this.highlightCurrent();
-                                    }
-                                }"
-                                @matches-updated.window="updateMatches()"
-                                class="bg-gray-50/50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800 rounded-3xl p-6 shadow-sm transition-colors space-y-6">
-                                <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-700">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-2xl bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0 border border-violet-200 dark:border-violet-800/50 shadow-sm">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                                            </svg>
-                                        </div>
-                                        <div class="min-w-0">
-                                            <h3 class="text-sm font-bold text-gray-800 dark:text-white truncate">{{ __('Book: Document Structure') }}</h3>
-                                            <p class="text-[10px] text-gray-400 font-medium uppercase tracking-wide">{{ count($chapters) }} {{ __('Chapters') }}</p>
-                                        </div>
-                                    </div>
-                                    <div class="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto">
-                                        <div class="relative w-full sm:w-64 shrink-0">
-                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <svg class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
-                                            </div>
-                                            <input type="text" x-model="search" @keydown.enter.prevent="nextMatch()" @keydown.shift.enter.prevent="prevMatch()" class="block w-full pl-9 pr-9 py-2 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 sm:text-xs transition-colors" placeholder="{{ __('Search in document...') }}">
-                                            <button type="button" x-show="search.length > 0" @click="search = ''; totalMatches = 0;" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" style="display: none;" title="{{ __("html.clear_search") }}">
-                                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                                            </button>
-                                        </div>
-
-                                        <!-- Navegador de ocurrencias -->
-                                        <div class="flex items-center gap-1.5 shrink-0 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-2.5 py-1.5 shadow-sm" x-show="search.trim().length > 0">
-                                            <span class="text-xs font-bold text-gray-500 dark:text-gray-400 font-mono mr-1 select-none flex items-center gap-1">
-                                                <template x-if="totalMatches > 0">
-                                                    <span><span x-text="currentIndex + 1" class="text-violet-600 dark:text-violet-400 font-extrabold"></span>/<span x-text="totalMatches"></span></span>
-                                                </template>
-                                                <template x-if="totalMatches === 0">
-                                                    <span class="text-rose-500 font-semibold">0/0</span>
-                                                </template>
-                                            </span>
-                                            <button type="button" @click="prevMatch()" :disabled="totalMatches <= 1" class="p-1 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 disabled:opacity-30 disabled:hover:text-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="{{ __("html.previous_occurrence") }} (Shift+Enter)">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
-                                                </svg>
-                                            </button>
-                                            <button type="button" @click="nextMatch()" :disabled="totalMatches <= 1" class="p-1 text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 disabled:opacity-30 disabled:hover:text-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="{{ __("html.next_occurrence") }} (Enter)">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                                                </svg>
-                                            </button>
-                                        </div>
-
-                                        <button type="button" onclick="printDocumentBook()" class="flex items-center justify-center gap-1.5 text-xs bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 px-3.5 py-2 rounded-xl border border-gray-200 dark:border-gray-700 font-bold transition-all shadow-sm active:scale-95 w-full sm:w-auto shrink-0">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                                            </svg>
-                                            <span class="whitespace-nowrap">{{ __('Imprimir') }}</span>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div class="space-y-4 min-w-0">
-                                    @foreach($chapters as $idx => $chapter)
-                                    <div x-data="{
-                                            open: false,
-                                            rawContent: `{{ base64_encode($chapter['content'] ?? '') }}`,
-                                            decodedContent: '',
-                                            init() {
-                                                const decodeB64 = (s) => { try { return new TextDecoder().decode(Uint8Array.from(atob(s), c => c.charCodeAt(0))); } catch(_) { try { return decodeURIComponent(escape(atob(s))); } catch(e) { return atob(s); } } };
-                                                this.decodedContent = decodeB64(this.rawContent);
-                                                if (this.search && this.search.trim() !== '' && this.isMatch) {
-                                                    this.open = true;
-                                                }
-                                                $watch('search', value => {
-                                                    if (value && value.trim() !== '' && this.isMatch) {
-                                                        this.open = true;
-                                                    } else if (!value || value.trim() === '') {
-                                                        this.open = false;
-                                                    }
-                                                    this.updateContent();
-                                                });
-                                            },
-                                            get isMatch() {
-                                                if (!this.search || this.search.trim() === '') return true;
-                                                const s = this.search.trim().toLowerCase();
-                                                return '{{ addslashes(strtolower($chapter['title'] ?? '')) }}'.includes(s) || this.decodedContent.toLowerCase().includes(s);
-                                            },
-                                            updateContent() {
-                                                if (!this.$refs.mdContainer) return;
-                                                let html = typeof marked !== 'undefined' ? marked.parse(this.decodedContent, {breaks: true, gfm: true}) : this.decodedContent;
-                                                this.$refs.mdContainer.innerHTML = html;
-
-                                                if (this.search && this.search.trim() !== '') {
-                                                    let s = this.search.trim();
-                                                    let escaped = s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                                                    let regex = new RegExp('(' + escaped + ')', 'gi');
-                                                    let walker = document.createTreeWalker(this.$refs.mdContainer, NodeFilter.SHOW_TEXT, null, false);
-                                                    let nodesToReplace = [];
-                                                    let node;
-
-                                                    while (node = walker.nextNode()) {
-                                                        if (node.parentNode && ['SCRIPT', 'STYLE', 'MARK'].includes(node.parentNode.nodeName)) continue;
-                                                        if (node.nodeValue.match(regex)) {
-                                                            nodesToReplace.push(node);
-                                                        }
-                                                    }
-
-                                                    nodesToReplace.forEach(n => {
-                                                        let span = document.createElement('span');
-                                                        span.innerHTML = n.nodeValue.replace(regex, '<mark class=\'bg-yellow-300 dark:bg-yellow-900 text-gray-900 dark:text-yellow-100 rounded px-1.5 py-0.5 font-bold shadow-sm search-highlight-mark\'>$1</mark>');
-                                                        n.parentNode.replaceChild(span, n);
-                                                    });
-                                                }
-
-                                                this.$dispatch('matches-updated');
-                                            }
-                                         }"
-                                         x-show="isMatch"
-                                         class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-4 shadow-sm transition-all duration-300">
-                                        <div class="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800/50 cursor-pointer group" @click="open = !open">
-                                            <div class="flex items-center gap-3 min-w-0">
-                                                <span class="w-7 h-7 rounded-xl bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 font-black text-xs flex items-center justify-center border border-violet-100 dark:border-violet-800/50 shrink-0 group-hover:scale-110 transition-transform">
-                                                    {{ $idx + 1 }}
-                                                </span>
-                                                <div class="min-w-0">
-                                                    <h4 class="text-xs font-bold text-gray-900 dark:text-white truncate group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">{{ $chapter['title'] ?? 'Capítulo sin título' }}</h4>
-                                                    <p class="text-[10px] text-gray-400">Por {{ $chapter['author_name'] ?? 'Autor' }} • {{ isset($chapter['updated_at']) ? \Carbon\Carbon::parse($chapter['updated_at'])->diffForHumans() : '' }}</p>
-                                                </div>
-                                            </div>
-                                            <div class="flex items-center gap-2 shrink-0">
-                                                <div class="text-gray-400 transition-transform duration-200" :class="open ? 'rotate-180' : ''">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                                    </svg>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div x-show="open" x-collapse style="display: none;"
-                                             x-init="$nextTick(() => { updateContent(); })">
-                                            <div x-ref="mdContainer" id="chapter-content-{{ $idx }}" class="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 resize-y min-h-[120px] pr-4 p-4 bg-gray-50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/80 rounded-2xl mt-2 markdown-body overflow-x-hidden">
-                                                <div class="flex items-center justify-center p-4">
-                                                    <svg class="animate-spin h-5 w-5 text-violet-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    @endforeach
-                                </div>
+                        @if($documents->isNotEmpty())
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                @foreach($documents as $doc)
+                                    @include('teams.library.partials.document-card', ['team' => $team, 'doc' => $doc])
+                                @endforeach
                             </div>
                         @else
-                            @if(!$hasNotes)
-                                <p class="text-gray-400 italic">{{ __('No direct notes or chapters in the wiki for this document. Check the attached files.') }}</p>
-                            @endif
-                        @endif
-
-                        @if($activeDocument->attachments->isNotEmpty())
-                            <div class="mt-8 pt-8 border-t border-gray-100 dark:border-gray-800">
-                                <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4">{{ __('Attached Files') }} (OnlyOffice)</h3>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    @foreach($activeDocument->attachments as $attachment)
-                                        <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-4 flex items-center gap-3 bg-gray-50 dark:bg-gray-800/50">
-                                            <div class="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                </svg>
-                                            </div>
-                                            <div class="min-w-0 flex-1">
-                                                <p class="text-xs font-bold text-gray-900 dark:text-white truncate" title="{{ $attachment->file_name }}">{{ $attachment->file_name }}</p>
-                                                <p class="text-[10px] text-gray-500">{{ number_format($attachment->file_size / 1024, 2) }} KB</p>
-                                            </div>
-                                            <a href="{{ route('onlyoffice.activity.edit', $attachment) }}" target="_blank" class="p-2 text-violet-600 dark:text-violet-400 hover:bg-violet-100 dark:hover:bg-violet-900/40 rounded-lg transition-colors">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                </svg>
-                                            </a>
-                                        </div>
-                                    @endforeach
+                            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-12 text-center">
+                                <div class="w-14 h-14 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-3 text-gray-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
                                 </div>
+                                <h4 class="text-sm font-bold text-gray-900 dark:text-white mb-1">{{ __('No hay documentos aquí') }}</h4>
+                                <p class="text-xs text-gray-400 max-w-sm mx-auto mb-4">{{ __('Puedes crear un nuevo documento o mover documentos existentes a esta carpeta.') }}</p>
+                                <a href="{{ route('teams.activities.create', array_filter(['team' => $team, 'type' => 'document', 'folder_id' => $currentFolder?->id])) }}"
+                                   class="inline-flex items-center gap-1.5 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-bold transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    {{ __('Crear Documento') }}
+                                </a>
                             </div>
                         @endif
                     </div>
                 </div>
-            @else
-                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm h-[calc(100vh-14rem)] flex flex-col items-center justify-center p-8 text-center">
-                    <div class="w-20 h-20 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                        </svg>
-                    </div>
-                    <h2 class="text-xl font-black text-gray-900 dark:text-white mb-2">{{ __('Empty Library') }}</h2>
-                    <p class="text-sm text-gray-500 max-w-md">{{ __('You have no documents registered in this team. Create "Document" type activities and they will appear organized here as an internal Wiki.') }}</p>
+
+                {{-- Visualización en Lista (List / Table) --}}
+                <div x-show="viewLayout === 'list'" style="display: none;">
+                    @include('teams.library.partials.list-view', [
+                        'team' => $team,
+                        'subfolders' => $subfolders,
+                        'documents' => $documents,
+                        'currentFolder' => $currentFolder,
+                    ])
                 </div>
-            @endif
+            </div>
+
+        {{-- Modo 2: LECTOR WIKI --}}
+        @else
+            @include('teams.library.partials.reader-view', [
+                'team' => $team,
+                'documents' => $documents,
+                'activeDocument' => $activeDocument,
+                'currentFolder' => $currentFolder,
+                'dateFrom' => $dateFrom,
+                'dateTo' => $dateTo,
+            ])
+        @endif
+
+        {{-- Barra flotante de acciones masivas --}}
+        @include('teams.library.partials.bulk-bar', ['team' => $team])
+
+        {{-- Modales de Creación, Edición, Mover y Eliminar --}}
+        @include('teams.library.partials.modals', [
+            'team' => $team,
+            'currentFolder' => $currentFolder,
+            'folderOptions' => $folderOptions,
+        ])
+        {{-- Indicador flotante mientras se mueven elementos en segundo plano --}}
+        <div x-show="isMovingItems"
+             x-transition:enter="transition ease-out duration-150"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             style="display: none;"
+             class="fixed inset-0 z-50 bg-gray-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl px-6 py-4 shadow-2xl flex items-center gap-3 text-sm font-bold text-gray-800 dark:text-gray-200">
+                <svg class="animate-spin h-5 w-5 text-violet-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                </svg>
+                <span>{{ __('Moviendo elementos...') }}</span>
+            </div>
         </div>
     </div>
-</x-app-layout>
 
-@if(isset($activeDocument))
-<script>
-let scrollSearchMatchTimeout = null;
-window.scrollToFirstSearchMatch = function() {
-    if (scrollSearchMatchTimeout) clearTimeout(scrollSearchMatchTimeout);
-    scrollSearchMatchTimeout = setTimeout(() => {
-        const firstMark = document.querySelector('mark.search-highlight-mark');
-        if (firstMark) {
-            firstMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            firstMark.classList.add('ring-4', 'ring-violet-500', 'ring-offset-2', 'transition-all');
-            setTimeout(() => {
-                firstMark.classList.remove('ring-4', 'ring-violet-500', 'ring-offset-2');
-            }, 2500);
+    {{-- Script de impresión y eventos auxiliares --}}
+    <script>
+    window.addEventListener('print-document-by-id', async (e) => {
+        const docId = e.detail.id;
+        try {
+            const res = await fetch(`{{ route('teams.activities.show', [$team, ':DOC_ID']) }}`.replace(':DOC_ID', docId), {
+                headers: { 'Accept': 'application/json' }
+            });
+            // Si la vista normal tiene el objeto, o bien abrimos el lector
+            window.location.href = `{{ route('teams.library', [$team]) }}?doc=${docId}&mode=reader`;
+        } catch(err) {
+            console.error(err);
         }
-    }, 350);
-};
-
-document.addEventListener('DOMContentLoaded', () => {
-    if (@js(request('q', '')) !== '') {
-        window.scrollToFirstSearchMatch();
-    }
-});
-
-function printDocumentBook() {
-    SientiaPrint.printDocumentBook({
-        title:    @json($activeDocument->title ?? ''),
-        teamName: @json($team->name ?? ''),
-        version:  @json($activeDocument->metadata['version'] ?? '1.0.0'),
-        chapters: @json($activeDocument->metadata['chapters'] ?? []),
-        attachments: {!! json_encode(isset($activeDocument) && $activeDocument->attachments ? $activeDocument->attachments->map(fn($att) => ['name' => $att->file_name, 'url' => route('teams.activities.attachments.view', [$team, $activeDocument, $att]), 'mime_type' => $att->mime_type, 'is_image' => str_starts_with($att->mime_type, 'image/')])->toArray() : []) !!}
     });
-}
-</script>@endif
+
+    @if(isset($activeDocument))
+    function printDocumentBook() {
+        if (typeof SientiaPrint !== 'undefined') {
+            SientiaPrint.printDocumentBook({
+                title:    @json($activeDocument->title ?? ''),
+                teamName: @json($team->name ?? ''),
+                version:  @json($activeDocument->metadata['version'] ?? '1.0.0'),
+                chapters: @json($activeDocument->metadata['chapters'] ?? []),
+                attachments: {!! json_encode(isset($activeDocument) && $activeDocument->attachments ? $activeDocument->attachments->map(fn($att) => ['name' => $att->file_name, 'url' => route('teams.activities.attachments.view', [$team, $activeDocument, $att]), 'mime_type' => $att->mime_type, 'is_image' => str_starts_with($att->mime_type, 'image/')])->toArray() : []) !!}
+            });
+        } else {
+            window.print();
+        }
+    }
+    @endif
+    </script>
+</x-app-layout>

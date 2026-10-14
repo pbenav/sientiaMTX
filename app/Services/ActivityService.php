@@ -10,6 +10,7 @@ use App\Models\ActivityAssignment;
 use App\Models\ActivityAttachment;
 use App\Models\ActivityHistory;
 use App\Models\Team;
+use App\Models\TeamFolder;
 use App\Models\User;
 use App\Models\Group;
 use Illuminate\Database\Eloquent\Builder;
@@ -51,13 +52,21 @@ class ActivityService
         }
 
         return DB::transaction(function () use ($team, $type, $data, $files, $driveAttachmentsJson) {
+            $visibility = $data['visibility'] ?? 'private';
+            if (!empty($data['folder_id'])) {
+                $folder = TeamFolder::where('team_id', $team->id)->find($data['folder_id']);
+                if ($folder && $folder->isPrivate()) {
+                    $visibility = 'private';
+                }
+            }
+
             $activity = new Activity([
                 'type'                => $type,
                 'title'               => $data['title'],
                 'description'         => $data['description'] ?? null,
                 'status'              => $this->buildInitialStatus($type, $data),
                 'metadata'            => $this->buildMetadata($type, $data),
-                'visibility'          => $data['visibility'] ?? 'private',
+                'visibility'          => $visibility,
                 'due_date'            => $data['due_date'] ?? null,
                 'scheduled_date'      => $data['scheduled_date'] ?? null,
                 'original_due_date'   => $data['due_date'] ?? null,
@@ -66,6 +75,7 @@ class ActivityService
                 'progress_percentage' => $data['progress_percentage'] ?? 0,
                 'parent_id'           => $data['parent_id'] ?? null,
                 'expediente_id'       => $data['expediente_id'] ?? null,
+                'folder_id'           => $data['folder_id'] ?? null,
                 'is_template'         => $data['is_template'] ?? false,
                 'kanban_column_id'    => $data['kanban_column_id'] ?? null,
                 'kanban_order'        => $data['kanban_order'] ?? null,
@@ -133,7 +143,7 @@ class ActivityService
             $fillable = [
                 'title', 'description', 'visibility', 'due_date', 'scheduled_date',
                 'priority', 'auto_priority', 'progress_percentage',
-                'parent_id', 'expediente_id', 'is_template',
+                'parent_id', 'expediente_id', 'folder_id', 'is_template',
                 'kanban_column_id', 'kanban_order', 'matrix_order',
             ];
 

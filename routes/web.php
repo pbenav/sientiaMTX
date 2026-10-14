@@ -209,9 +209,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/teams/{team}/groups/{group}/members', [GroupController::class, 'addMember'])->name('teams.groups.addMember');
     Route::delete('/teams/{team}/groups/{group}/members/{user}', [GroupController::class, 'removeMember'])->name('teams.groups.removeMember');
 
-    // Activities routes (universal polymorphic activities infrastructure)
-    // Biblioteca / Wiki
+    // Biblioteca / Explorador de archivos
     Route::get('/teams/{team}/library', [\App\Http\Controllers\TeamLibraryController::class, 'index'])->name('teams.library');
+    Route::post('/teams/{team}/library/folders', [\App\Http\Controllers\TeamFolderController::class, 'store'])->name('teams.library.folders.store');
+    Route::patch('/teams/{team}/library/folders/{folder}', [\App\Http\Controllers\TeamFolderController::class, 'update'])->name('teams.library.folders.update');
+    Route::delete('/teams/{team}/library/folders/{folder}', [\App\Http\Controllers\TeamFolderController::class, 'destroy'])->name('teams.library.folders.destroy');
+    Route::post('/teams/{team}/library/move', [\App\Http\Controllers\TeamFolderController::class, 'move'])->name('teams.library.move');
+    Route::post('/teams/{team}/library/bulk-move', [\App\Http\Controllers\TeamFolderController::class, 'bulkMove'])->name('teams.library.bulk-move');
+    Route::post('/teams/{team}/library/bulk-delete', [\App\Http\Controllers\TeamFolderController::class, 'bulkDelete'])->name('teams.library.bulk-delete');
+    Route::get('/teams/{team}/library/folders-tree', [\App\Http\Controllers\TeamFolderController::class, 'tree'])->name('teams.library.folders.tree');
 
     // Trash Routes
     Route::prefix('teams/{team}/trash')->name('teams.trash.')->group(function() {
