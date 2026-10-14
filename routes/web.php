@@ -398,6 +398,12 @@ Route::middleware('auth')->group(function () {
 
     // Micrositios (Backoffice)
     Route::resource('teams.microsites', MicrositeController::class)->except(['show']);
+    Route::prefix('teams/{team}/microsites/{microsite}/images')->name('teams.microsites.images.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Microsite\MicrositeImageController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Microsite\MicrositeImageController::class, 'store'])->name('store');
+        Route::patch('/{image}', [\App\Http\Controllers\Microsite\MicrositeImageController::class, 'update'])->name('update');
+        Route::delete('/{image}', [\App\Http\Controllers\Microsite\MicrositeImageController::class, 'destroy'])->name('destroy');
+    });
 
     // Theme route
     Route::post('/theme', [\App\Http\Controllers\ThemeController::class, 'update'])->name('theme.update');

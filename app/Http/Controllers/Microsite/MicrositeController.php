@@ -110,6 +110,8 @@ class MicrositeController extends Controller
             abort(403);
         }
 
+        $microsite->load('images');
+
         return view('microsites.edit', compact('team', 'microsite'));
     }
 
