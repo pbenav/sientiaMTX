@@ -225,15 +225,47 @@ class GeminiService implements AiAssistantInterface
             $contextInfo .= "- Título: {$this->taskContext->title}\n";
             
             if ($this->taskContext->visibility === 'public' || $canViewPrivate) {
+                $contextInfo .= "- Tipo: " . ($this->taskContext->type ?? 'task') . "\n";
                 $contextInfo .= "- Descripción: " . ($this->taskContext->description ?: 'N/A') . "\n";
                 $contextInfo .= "- Observaciones: " . ($this->taskContext->observations ?: 'N/A') . "\n";
                 
                 if (isset($this->taskContext->metadata['chapters']) && is_array($this->taskContext->metadata['chapters'])) {
-                    $contextInfo .= "- Capítulos del Documento:\n";
+                    $chapterCount = count($this->taskContext->metadata['chapters']);
+                    $contextInfo .= "- Capítulos del Documento ({$chapterCount}):\n";
                     foreach ($this->taskContext->metadata['chapters'] as $idx => $chap) {
                         $cTitle = $chap['title'] ?? 'Sin título';
-                        $cContent = mb_substr($chap['content'] ?? '', 0, 1500); // truncate if too long
+                        $cContent = mb_substr($chap['content'] ?? '', 0, 50000); // Ampliado sustancialmente para incluir páginas y capítulos íntegros
                         $contextInfo .= "  Capítulo " . ($idx+1) . " - {$cTitle}:\n  {$cContent}\n";
+                    }
+                }
+
+                // Sub-actividades / páginas hijas si existen
+                if (method_exists($this->taskContext, 'children') && $this->taskContext->children()->exists()) {
+                    $children = $this->taskContext->children()->get();
+                    $contextInfo .= "- Sub-actividades / Páginas hijas asociadas (" . $children->count() . "):\n";
+                    foreach ($children as $cIdx => $child) {
+                        $childTitle = $child->title ?? 'Sin título';
+                        $childType = $child->type ?? 'task';
+                        $childDesc = mb_substr($child->description ?? '', 0, 15000);
+                        $contextInfo .= "  * Elemento " . ($cIdx + 1) . " [{$childType}] - {$childTitle}:\n    Descripción: {$childDesc}\n";
+                        if (isset($child->metadata['chapters']) && is_array($child->metadata['chapters'])) {
+                            foreach ($child->metadata['chapters'] as $chIdx => $ch) {
+                                $chTitle = $ch['title'] ?? 'Sin título';
+                                $chContent = mb_substr($ch['content'] ?? '', 0, 30000);
+                                $contextInfo .= "    - Capítulo " . ($chIdx + 1) . " ({$chTitle}):\n      {$chContent}\n";
+                            }
+                        }
+                    }
+                }
+
+                // Archivos adjuntos asociados a la actividad
+                if (method_exists($this->taskContext, 'attachments') && $this->taskContext->attachments()->exists()) {
+                    $contextInfo .= "- Archivos adjuntos en la actividad:\n";
+                    foreach ($this->taskContext->attachments()->get() as $att) {
+                        $attName = $att->file_name ?? 'Archivo';
+                        $attMime = $att->mime_type ?? 'application/octet-stream';
+                        $attUrl = method_exists($att, 'getPublicEmbedUrl') ? $att->getPublicEmbedUrl() : null;
+                        $contextInfo .= "  * [ID: {$att->id}] {$attName} ({$attMime})" . ($attUrl ? " — URL para incrustar/enlazar: {$attUrl}" : "") . "\n";
                     }
                 }
             } else {
@@ -298,7 +330,7 @@ class GeminiService implements AiAssistantInterface
                 }
             } else {
                 Log::warning("Ax.ia: El tipo MIME {$mime} no es reconocido como multimodal. Intentando tratar como texto.");
-                $contextInfo .= "\nARCHIVO ADJUNTO (Texto): " . mb_substr($this->cachedFileContent, 0, 5000) . "\n";
+                $contextInfo .= "\nARCHIVO ADJUNTO (Texto): " . mb_substr($this->cachedFileContent, 0, 50000) . "\n";
             }
         }
 
@@ -345,7 +377,7 @@ class GeminiService implements AiAssistantInterface
                             ];
                             $contextInfo .= "- Instrucción: He adjuntado este archivo binario para que lo analices directamente (visión/multimodal).\n";
                         } else {
-                            $contextInfo .= "- Contenido (extraído): " . mb_substr($driveContent, 0, 5000) . "\n";
+                            $contextInfo .= "- Contenido (extraído): " . mb_substr($driveContent, 0, 50000) . "\n";
                         }
                     } else {
                         $contextInfo .= "- Contenido: No se pudo extraer el contenido.\n";
@@ -367,7 +399,7 @@ class GeminiService implements AiAssistantInterface
                             ];
                             $contextInfo .= "- Instrucción: He adjuntado este archivo binario para que lo analices directamente (visión/multimodal).\n";
                         } else {
-                            $contextInfo .= "- Contenido (fragmento): " . mb_substr($content, 0, 3000) . "\n";
+                            $contextInfo .= "- Contenido (fragmento): " . mb_substr($content, 0, 50000) . "\n";
                         }
                     }
                 } catch (\Exception $e) {
@@ -418,7 +450,7 @@ class GeminiService implements AiAssistantInterface
         $systemInstruction .= "Instrucción final para {$userName}: Responde de inmediato a la petición. Si su energía es baja, sé empático y añade sutilmente la etiqueta secreta [RECHARGE] al final de tu contenido.";
 
         if (preg_match('/micrositio|microsite|genera(?:r)?\s+(?:un\s+)?(?:sitio|p[aá]gina|web)/iu', $prompt)) {
-            $systemInstruction .= "\n\n⚡ REFUERZO ACTIVO — DISEÑO DE MICROSITIO: El usuario pide un micrositio. Responde con intent 'generate_microsite'. Aplica el design system ms-* (hero, secciones, tarjetas, botones). Si hay PDF adjunto, usa OBLIGATORIAMENTE la plantilla ms-pdf-viewer del system prompt. El resultado debe verse como una landing premium de agencia, no como un documento HTML básico.\n";
+            $systemInstruction .= "\n\n⚡ REFUERZO ACTIVO — DISEÑO DE MICROSITIO: El usuario pide un micrositio. Responde con intent 'generate_microsite'. Aplica el design system ms-* (hero, secciones, tarjetas, botones). Si la actividad o contexto contiene capítulos, páginas o documentos extensos, ES OBLIGATORIO TRASLADAR TODOS LOS CAPÍTULOS Y CONTENIDOS ÍNTEGROS al micrositio organizados en secciones o tarjetas navegables, con todo el nivel de detalle y profundidad que tienen en el original (NUNCA resumas un documento de varias páginas a un par de viñetas). Si hay PDF adjunto, usa OBLIGATORIAMENTE la plantilla ms-pdf-viewer del system prompt. El resultado debe ser una web premium, visualmente impecable, interactiva, completa y 100% usable.\n";
         }
 
         // Añadimos el prompt del usuario
@@ -459,11 +491,25 @@ Clases disponibles en la plataforma (puedes extenderlas en tu CSS):
   .ms-btn .ms-btn--primary / .ms-btn--outline / .ms-btn--ghost
   .ms-pdf-viewer  → visor PDF con toolbar y pantalla completa (OBLIGATORIO para PDFs)
 
-ESTRUCTURA HTML MÍNIMA RECOMENDADA:
+═══ FIDELIDAD Y EXHAUSTIVIDAD DE CONTENIDOS (MÁXIMA PRIORIDAD) ═══
+- Si la actividad, documento o contexto contiene múltiples capítulos, páginas o secciones, TRASLÁDALOS TODOS ÍNTEGRAMENTE al micrositio.
+- PROHIBIDO resumir o comprimir un documento de varios capítulos/páginas en 3 o 4 viñetas genéricas. El usuario necesita un micrositio completo, profundo y usable, no una maqueta vacía ni un folleto superficial.
+- Cada capítulo debe traducirse en un bloque o sección estructurada con:
+  * Título y subtítulo del capítulo claros y destacados (.ms-card o .ms-section).
+  * Todo el texto explicativo, pasos, procedimientos, puntos clave, ejemplos y directrices desarrollados en profundidad.
+  * Jerarquía visual rica: listas detalladas, pasos numerados, tablas, llamadas de atención, citas o acordeones/tarjetas temáticas.
+- Si hay más de 3 capítulos o páginas, incluye un Índice / Navegación rápida (tabla de contenidos) tras el hero, con enlaces de ancla (ej: <a href="#capitulo-1">...) para que el usuario pueda saltar directamente a cualquier sección.
+- El micrositio debe ser un recurso informativo y formativo autosuficiente y de alta calidad editorial.
+
+ESTRUCTURA HTML RECOMENDADA:
 <div class="ms-root">
-  <header class="ms-hero"><div class="ms-container"><h1>Título</h1><p>Subtítulo</p></div></header>
-  <section class="ms-section"><div class="ms-container">...</div></section>
-  <section class="ms-section ms-section--alt"><div class="ms-container">...</div></section>
+  <header class="ms-hero"><div class="ms-container"><h1>Título</h1><p>Subtítulo descriptivo</p></div></header>
+  <!-- Si hay múltiples capítulos: Barra de navegación o índice con enlaces ancla -->
+  <nav class="ms-section ms-section--alt"><div class="ms-container">...índice de capítulos...</div></nav>
+  <!-- Cada capítulo o bloque temático completo desarrollado con profundidad -->
+  <section id="capitulo-1" class="ms-section"><div class="ms-container">...Capítulo 1 completo...</div></section>
+  <section id="capitulo-2" class="ms-section ms-section--alt"><div class="ms-container">...Capítulo 2 completo...</div></section>
+  <!-- Más capítulos sucesivos sin omitir ninguno -->
 </div>
 
 ═══ PALETA Y ESTILO (OBLIGATORIO) ═══
@@ -477,7 +523,7 @@ ESTRUCTURA HTML MÍNIMA RECOMENDADA:
 - PROHIBIDO texto oscuro sobre fondos oscuros sin contraste ≥ 4.5:1.
 - .ms-hero SIEMPRE: fondo oscuro/degradado + color: #ffffff en h1, p y botones ghost.
 - Enlaces y botones claramente distinguibles:
-  * Enlaces de texto (<a href="...">): color con contraste suficiente y subrayado sutil; en :hover acentuado con subrayado nítido.
+  * Enlaces de texto (<a href="...">): color con contraste suficiente y subrayado sutil; en :hover acentuado con subrayado nítido y cambio de color visible.
   * Botones (.ms-btn--primary o <a class="ms-btn ms-btn--primary">): texto SIEMPRE blanco (#ffffff) en reposo y en :hover. Al :hover oscurecer fondo y elevar.
   * Botones outline (.ms-btn--outline): fondo transparente y texto primario; en :hover fondo primario y texto blanco (#ffffff).
   * En .ms-hero: todos los enlaces de texto deben ser blancos (#ffffff con subrayado), NUNCA del color oscuro del fondo.
@@ -509,11 +555,12 @@ Si hay URL de PDF en el contexto, incrusta EXACTAMENTE con esta estructura (copi
 - Imágenes: <img> con border-radius y sombra dentro de .ms-card.
 
 ═══ AUTO-REVISIÓN FINAL (antes de emitir JSON) ═══
-1. ¿Parece una landing premium, no un informe Word convertido a HTML?
-2. ¿Todas las clases del HTML están en CSS o en el design system ms-*?
-3. ¿Contraste correcto en hero, secciones y tarjetas?
-4. ¿PDF con ms-pdf-viewer + data-ms-fullscreen + allowfullscreen?
-5. ¿Colores del prompt reflejados en --ms-* variables?
+1. ¿Están TODOS los capítulos y contenidos de la actividad incorporados de forma completa y profunda?
+2. ¿Parece un recurso premium, usable e interactivo, no un simple folleto recortado ni un Word plano?
+3. ¿Todas las clases del HTML están en CSS o en el design system ms-*?
+4. ¿Contraste y hovers correctos en hero, secciones, tarjetas y enlaces?
+5. ¿PDF con ms-pdf-viewer + data-ms-fullscreen + allowfullscreen si existe?
+6. ¿Colores del prompt reflejados en --ms-* variables?
 
 MS;
     }
@@ -805,15 +852,20 @@ MS;
             $payload['tools'] = $this->getToolsDefinition();
         }
 
+        $generationConfig = [
+            'maxOutputTokens' => 8192,
+            'temperature' => 0.7,
+        ];
+
         if ($jsonSchema) {
-            $payload['generationConfig'] = [
-                'responseMimeType' => 'application/json',
-                'responseSchema' => $jsonSchema
-            ];
+            $generationConfig['responseMimeType'] = 'application/json';
+            $generationConfig['responseSchema'] = $jsonSchema;
         }
 
+        $payload['generationConfig'] = $generationConfig;
+
         try {
-            $response = Http::timeout(25)->post($url, $payload);
+            $response = Http::timeout(60)->post($url, $payload);
             $status = $response->status();
             $errorBody = $response->json('error') ?? [];
             $errorMsg = $errorBody['message'] ?? 'Error desconocido';
