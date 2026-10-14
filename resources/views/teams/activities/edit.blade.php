@@ -1,5 +1,5 @@
 <x-app-layout>
-    @section('title', __('Edit') . ' ' . $activity->type_label . ': ' . $activity->title)
+    @section('title', $activity->title . ' — ' . $team->name)
 
     <x-slot name="header">
         <div class="flex items-center gap-3">
@@ -13,9 +13,9 @@
             <div>
                 @include('teams.partials.breadcrumb')
                 <div class="flex items-center gap-4">
-                    <h1 class="text-xl font-bold text-gray-900 dark:text-white heading truncate">
-                        {{ __('Edit') }} {{ __('Activity') }}: {{ $activity->title }}
-                        <span class="ml-2 text-sm font-medium text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400 px-2 py-1 rounded-md">
+                    <h1 class="text-xl font-bold text-gray-900 dark:text-white heading truncate flex items-center gap-2">
+                        <span class="truncate">{{ $activity->title }}</span>
+                        <span class="ml-2 text-sm font-medium text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400 px-2 py-1 rounded-md shrink-0">
                             @if ($activity->is_template)
                                 @if(isset($activity->metadata['assignment_mode']) && $activity->metadata['assignment_mode'] === 'shared')
                                     {{ __('activities.collaborative_task') ?? 'Tarea Colaborativa' }}
