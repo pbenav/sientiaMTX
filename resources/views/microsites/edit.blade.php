@@ -128,17 +128,302 @@
                     </div>
                 </div>
 
+    {{-- Datos y función del Gestor de Imágenes del Micrositio --}}
+    <script>
+        window.__micrositeInitialImages = @json($microsite->images);
+        window.__micrositeImageRoutes = {
+            store: '{{ route('teams.microsites.images.store', [$team, $microsite]) }}',
+            updateUrl: '{{ route('teams.microsites.images.update', [$team, $microsite, 'IMG_ID']) }}',
+            destroyUrl: '{{ route('teams.microsites.images.destroy', [$team, $microsite, 'IMG_ID']) }}'
+        };
+        window.__micrositeCsrfToken = '{{ csrf_token() }}';
+
+        function micrositeImagesManager() {
+            return {
+                images: (window.__micrositeInitialImages || []).map(img => ({
+                    ...img,
+                    _editing: false,
+                    _editTitle: img.title || '',
+                    _justInserted: false,
+                    _copied: false,
+                })),
+                isUploading: false,
+                isDraggingOver: false,
+                uploadTitle: '',
+                notification: null,
+                notificationTimeout: null,
+                lastCursorPos: null,
+
+                init() {
+                    const textarea = document.getElementById('html_content');
+                    if (textarea) {
+                        const trackCursor = () => {
+                            this.lastCursorPos = textarea.selectionStart;
+                        };
+                        textarea.addEventListener('keyup', trackCursor);
+                        textarea.addEventListener('click', trackCursor);
+                        textarea.addEventListener('select', trackCursor);
+                        textarea.addEventListener('blur', trackCursor);
+                    }
+                },
+
+                showNotification(message, type = 'success') {
+                    if (this.notificationTimeout) clearTimeout(this.notificationTimeout);
+                    this.notification = { message, type };
+                    this.notificationTimeout = setTimeout(() => {
+                        this.notification = null;
+                    }, 3500);
+                },
+
+                triggerFileInput() {
+                    const input = document.getElementById('microsite-image-file-input') || (this.$refs && this.$refs.fileInput);
+                    if (input) input.click();
+                },
+
+                handleFileSelect(event) {
+                    const files = event.target.files;
+                    if (files && files.length > 0) {
+                        this.uploadFile(files[0]);
+                    }
+                    event.target.value = '';
+                },
+
+                handleDrop(event) {
+                    this.isDraggingOver = false;
+                    const files = event.dataTransfer ? event.dataTransfer.files : null;
+                    if (files && files.length > 0) {
+                        const file = files[0];
+                        if (!file.type || !file.type.startsWith('image/')) {
+                            this.showNotification('{{ __('Por favor, selecciona un archivo de imagen válido.') }}', 'error');
+                            return;
+                        }
+                        this.uploadFile(file);
+                    }
+                },
+
+                async uploadFile(file) {
+                    if (!file) return;
+
+                    if (file.size > 10 * 1024 * 1024) {
+                        this.showNotification('{{ __('La imagen supera el límite máximo permitido de 10 MB.') }}', 'error');
+                        return;
+                    }
+
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    if (this.uploadTitle && this.uploadTitle.trim()) {
+                        formData.append('title', this.uploadTitle.trim());
+                    }
+
+                    this.isUploading = true;
+
+                    try {
+                        const csrfToken = window.__micrositeCsrfToken || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                        const response = await fetch(window.__micrositeImageRoutes.store, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json',
+                            },
+                            body: formData,
+                        });
+
+                        const data = await response.json();
+
+                        if (!response.ok) {
+                            const errorMsg = data.errors ? Object.values(data.errors).flat().join(' ') : (data.message || '{{ __('Error al subir la imagen.') }}');
+                            throw new Error(errorMsg);
+                        }
+
+                        const newImage = {
+                            ...data.image,
+                            _editing: false,
+                            _editTitle: data.image.title || '',
+                            _justInserted: false,
+                            _copied: false,
+                        };
+                        this.images.unshift(newImage);
+                        this.uploadTitle = '';
+                        this.showNotification('{{ __('Imagen subida correctamente.') }}');
+                    } catch (err) {
+                        console.error('Error uploading image:', err);
+                        this.showNotification(err.message || '{{ __('No se pudo subir la imagen.') }}', 'error');
+                    } finally {
+                        this.isUploading = false;
+                    }
+                },
+
+                startEdit(image) {
+                    image._editTitle = image.title || '';
+                    image._editing = true;
+                    this.$nextTick(() => {
+                        const input = document.getElementById('img-title-input-' + image.id);
+                        if (input) {
+                            input.focus();
+                            input.select();
+                        }
+                    });
+                },
+
+                cancelEdit(image) {
+                    image._editing = false;
+                    image._editTitle = image.title || '';
+                },
+
+                async saveTitle(image) {
+                    const newTitle = (image._editTitle || '').trim();
+                    if (!newTitle) {
+                        this.showNotification('{{ __('El título no puede estar vacío.') }}', 'error');
+                        return;
+                    }
+
+                    const url = window.__micrositeImageRoutes.updateUrl.replace('IMG_ID', image.id);
+
+                    try {
+                        const csrfToken = window.__micrositeCsrfToken || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                        const response = await fetch(url, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json',
+                            },
+                            body: JSON.stringify({ title: newTitle }),
+                        });
+
+                        const data = await response.json();
+
+                        if (!response.ok) {
+                            throw new Error(data.message || '{{ __('Error al actualizar el título.') }}');
+                        }
+
+                        image.title = data.image.title;
+                        image._editing = false;
+                        this.showNotification('{{ __('Título actualizado correctamente.') }}');
+                    } catch (err) {
+                        console.error('Error updating title:', err);
+                        this.showNotification(err.message || '{{ __('Error al guardar el título.') }}', 'error');
+                    }
+                },
+
+                async deleteImage(image) {
+                    if (!confirm('{{ __('¿Eliminar esta imagen? Se borrará definitivamente del servidor.') }}')) {
+                        return;
+                    }
+
+                    const url = window.__micrositeImageRoutes.destroyUrl.replace('IMG_ID', image.id);
+
+                    try {
+                        const csrfToken = window.__micrositeCsrfToken || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                        const response = await fetch(url, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json',
+                            },
+                        });
+
+                        const data = await response.json();
+
+                        if (!response.ok) {
+                            throw new Error(data.message || '{{ __('Error al eliminar la imagen.') }}');
+                        }
+
+                        this.images = this.images.filter(img => img.id !== image.id);
+                        this.showNotification('{{ __('Imagen eliminada correctamente.') }}');
+                    } catch (err) {
+                        console.error('Error deleting image:', err);
+                        this.showNotification(err.message || '{{ __('Error al eliminar la imagen.') }}', 'error');
+                    }
+                },
+
+                copyUrl(image) {
+                    if (!image.url) return;
+
+                    const done = () => {
+                        image._copied = true;
+                        setTimeout(() => { image._copied = false; }, 2000);
+                        this.showNotification('{{ __('URL copiada al portapapeles.') }}');
+                    };
+
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(image.url).then(done).catch(() => {
+                            this.fallbackCopyText(image.url);
+                            done();
+                        });
+                    } else {
+                        this.fallbackCopyText(image.url);
+                        done();
+                    }
+                },
+
+                fallbackCopyText(text) {
+                    const el = document.createElement('textarea');
+                    el.value = text;
+                    el.style.position = 'fixed';
+                    el.style.left = '-9999px';
+                    document.body.appendChild(el);
+                    el.select();
+                    try {
+                        document.execCommand('copy');
+                    } catch (e) {}
+                    document.body.removeChild(el);
+                },
+
+                insertIntoHtml(image) {
+                    const textarea = document.getElementById('html_content');
+                    if (!textarea) return;
+
+                    const alt = (image.title || image.file_name || 'Imagen').replace(/"/g, '&quot;');
+                    let snippet = '';
+                    if (image.title) {
+                        snippet = `\n<figure class="my-6">\n  <img src="${image.url}" alt="${alt}" class="w-full max-h-[500px] object-cover rounded-2xl shadow-md border border-gray-100 dark:border-gray-800">\n  <figcaption class="text-center text-xs text-gray-500 dark:text-gray-400 mt-2 italic">${alt}</figcaption>\n</figure>\n`;
+                    } else {
+                        snippet = `\n<img src="${image.url}" alt="${alt}" class="w-full max-h-[500px] object-cover rounded-2xl shadow-md border border-gray-100 dark:border-gray-800 my-6">\n`;
+                    }
+
+                    let start = textarea.selectionStart;
+                    let end = textarea.selectionEnd;
+
+                    if ((start === 0 && end === 0 && this.lastCursorPos !== null) || start === undefined) {
+                        start = this.lastCursorPos ?? textarea.value.length;
+                        end = start;
+                    }
+
+                    const fullText = textarea.value;
+                    textarea.value = fullText.substring(0, start) + snippet + fullText.substring(end);
+                    textarea.selectionStart = textarea.selectionEnd = start + snippet.length;
+                    this.lastCursorPos = textarea.selectionEnd;
+
+                    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                    textarea.dispatchEvent(new Event('change', { bubbles: true }));
+
+                    image._justInserted = true;
+                    setTimeout(() => { image._justInserted = false; }, 2000);
+
+                    this.showNotification('{{ __('¡Imagen insertada en el código HTML!') }}');
+
+                    textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    textarea.focus();
+                }
+            };
+        }
+
+        window.micrositeImagesManager = micrositeImagesManager;
+        if (window.Alpine && window.Alpine.data) {
+            window.Alpine.data('micrositeImagesManager', micrositeImagesManager);
+        } else {
+            document.addEventListener('alpine:init', () => {
+                if (window.Alpine && window.Alpine.data) {
+                    window.Alpine.data('micrositeImagesManager', micrositeImagesManager);
+                }
+            });
+        }
+    </script>
+
                 {{-- Sección 3: Gestor de Imágenes del Micrositio --}}
                 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 md:p-8 shadow-sm"
-                     x-data="micrositeImagesManager({
-                         initialImages: @json($microsite->images),
-                         routes: {
-                             store: '{{ route('teams.microsites.images.store', [$team, $microsite]) }}',
-                             updateUrl: '{{ route('teams.microsites.images.update', [$team, $microsite, 'IMG_ID']) }}',
-                             destroyUrl: '{{ route('teams.microsites.images.destroy', [$team, $microsite, 'IMG_ID']) }}'
-                         },
-                         csrfToken: '{{ csrf_token() }}'
-                     })">
+                     x-data="micrositeImagesManager()">
 
                     {{-- Encabezado de la sección --}}
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
@@ -147,7 +432,9 @@
                             <div>
                                 <h2 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                     {{ __('Imágenes del Micrositio') }}
-                                    <span class="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-pink-50 dark:bg-pink-900/40 text-pink-600 dark:text-pink-300 border border-pink-200 dark:border-pink-800"
+                                    <span x-show="images.length > 0"
+                                          x-cloak
+                                          class="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-pink-50 dark:bg-pink-900/40 text-pink-600 dark:text-pink-300 border border-pink-200 dark:border-pink-800"
                                           x-text="images.length + ' ' + (images.length === 1 ? '{{ __('imagen') }}' : '{{ __('imágenes') }}')"></span>
                                 </h2>
                                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
@@ -156,35 +443,29 @@
                             </div>
                         </div>
 
-                        {{-- Botón rápido para subir --}}
+                        {{-- Botón rápido para subir en la cabecera --}}
                         <div>
                             <button type="button"
+                                    id="microsite-upload-btn-header"
                                     @click="triggerFileInput()"
+                                    onclick="document.getElementById('microsite-image-file-input').click()"
                                     :disabled="isUploading"
                                     class="inline-flex items-center gap-2 px-4 py-2 bg-pink-500 hover:bg-pink-600 active:scale-95 text-white text-xs font-bold rounded-xl transition-all shadow-sm disabled:opacity-50">
-                                <template x-if="!isUploading">
-                                    <span class="flex items-center gap-1.5">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-                                        </svg>
-                                        <span>{{ __('Subir Imagen') }}</span>
-                                    </span>
-                                </template>
-                                <template x-if="isUploading">
-                                    <span class="flex items-center gap-1.5">
-                                        <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        <span>{{ __('Subiendo...') }}</span>
-                                    </span>
-                                </template>
+                                <svg x-show="!isUploading" class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                </svg>
+                                <svg x-show="isUploading" x-cloak style="display:none;" class="w-4 h-4 shrink-0 animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span x-text="isUploading ? '{{ __('Subiendo...') }}' : '{{ __('Subir Imagen') }}'">{{ __('Subir Imagen') }}</span>
                             </button>
                         </div>
                     </div>
 
                     {{-- Notificación / Feedback --}}
                     <div x-show="notification"
+                         x-cloak
                          x-transition:enter="transition ease-out duration-200"
                          x-transition:enter-start="opacity-0 -translate-y-2"
                          x-transition:enter-end="opacity-100 translate-y-0"
@@ -199,13 +480,15 @@
                     </div>
 
                     {{-- Zona de Drag & Drop y Formulario de subida --}}
-                    <div class="mb-6 p-4 md:p-6 border-2 border-dashed rounded-2xl transition-all duration-200"
+                    <div class="mb-6 p-4 md:p-6 border-2 border-dashed rounded-2xl transition-all duration-200 cursor-pointer"
                          :class="isDraggingOver ? 'border-pink-500 bg-pink-50/50 dark:bg-pink-950/20' : 'border-gray-200 dark:border-gray-700 bg-gray-50/40 dark:bg-gray-800/30 hover:border-pink-300 dark:hover:border-pink-600/50'"
                          @dragover.prevent="isDraggingOver = true"
                          @dragleave.prevent="isDraggingOver = false"
-                         @drop.prevent="handleDrop($event)">
+                         @drop.prevent="handleDrop($event)"
+                         @click="if ($event.target.tagName !== 'INPUT' && $event.target.tagName !== 'BUTTON') triggerFileInput()">
 
                         <input type="file"
+                               id="microsite-image-file-input"
                                x-ref="fileInput"
                                @change="handleFileSelect($event)"
                                accept="image/jpeg,image/png,image/jpg,image/gif,image/webp,image/svg+xml"
@@ -228,7 +511,7 @@
                                 </div>
                             </div>
 
-                            <div class="flex items-center gap-2 w-full md:w-auto">
+                            <div class="flex items-center gap-2 w-full md:w-auto" @click.stop>
                                 <input type="text"
                                        x-model="uploadTitle"
                                        @keydown.enter.prevent="triggerFileInput()"
@@ -237,6 +520,7 @@
 
                                 <button type="button"
                                         @click="triggerFileInput()"
+                                        onclick="document.getElementById('microsite-image-file-input').click()"
                                         :disabled="isUploading"
                                         class="px-3.5 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl transition-all shrink-0">
                                     {{ __('Explorar') }}
@@ -263,6 +547,7 @@
 
                         {{-- Rejilla de tarjetas --}}
                         <div x-show="images.length > 0"
+                             x-cloak
                              class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             <template x-for="img in images" :key="img.id">
                                 <div class="bg-gray-50/70 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/80 rounded-2xl overflow-hidden flex flex-col group transition-all duration-200 hover:border-pink-300 dark:hover:border-pink-600/50 hover:shadow-md">
@@ -283,16 +568,12 @@
                                                 @click="copyUrl(img)"
                                                 class="absolute top-2 right-2 p-1.5 rounded-lg bg-white/90 dark:bg-gray-900/90 hover:bg-white text-gray-700 dark:text-gray-200 shadow-sm backdrop-blur-sm transition-all"
                                                 :title="'{{ __('Copiar URL') }}'">
-                                            <template x-if="!img._copied">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-                                                </svg>
-                                            </template>
-                                            <template x-if="img._copied">
-                                                <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                                                </svg>
-                                            </template>
+                                            <svg x-show="!img._copied" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                                            </svg>
+                                            <svg x-show="img._copied" x-cloak style="display:none;" class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                            </svg>
                                         </button>
                                     </div>
 
@@ -313,7 +594,7 @@
                                             </div>
 
                                             {{-- Formulario edición en línea del título --}}
-                                            <div x-show="img._editing" class="space-y-2" style="display: none;">
+                                            <div x-show="img._editing" x-cloak class="space-y-2" style="display: none;">
                                                 <input type="text"
                                                        :id="'img-title-input-' + img.id"
                                                        x-model="img._editTitle"
@@ -343,22 +624,13 @@
                                                     @click="insertIntoHtml(img)"
                                                     :class="img._justInserted ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-pink-500 hover:bg-pink-600'"
                                                     class="w-full py-2 px-3 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95">
-                                                <template x-if="!img._justInserted">
-                                                    <span class="flex items-center gap-1.5">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                                        </svg>
-                                                        <span>{{ __('Insertar en HTML') }}</span>
-                                                    </span>
-                                                </template>
-                                                <template x-if="img._justInserted">
-                                                    <span class="flex items-center gap-1.5">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                                                        </svg>
-                                                        <span>{{ __('¡Insertada!') }}</span>
-                                                    </span>
-                                                </template>
+                                                <svg x-show="!img._justInserted" class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                                </svg>
+                                                <svg x-show="img._justInserted" x-cloak style="display:none;" class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                                </svg>
+                                                <span x-text="img._justInserted ? '{{ __('¡Insertada!') }}' : '{{ __('Insertar en HTML') }}'">{{ __('Insertar en HTML') }}</span>
                                             </button>
 
                                             {{-- Fila Secundaria: Copiar URL + Eliminar --}}
@@ -366,17 +638,17 @@
                                                 <button type="button"
                                                         @click="copyUrl(img)"
                                                         class="flex-1 py-1.5 px-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700/60 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-[11px] font-semibold flex items-center justify-center gap-1 transition-colors">
-                                                    <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg class="w-3.5 h-3.5 text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
                                                     </svg>
-                                                    <span x-text="img._copied ? '{{ __('¡Copiada!') }}' : '{{ __('Copiar URL') }}'"></span>
+                                                    <span x-text="img._copied ? '{{ __('¡Copiada!') }}' : '{{ __('Copiar URL') }}'">{{ __('Copiar URL') }}</span>
                                                 </button>
 
                                                 <button type="button"
                                                         @click="deleteImage(img)"
                                                         class="py-1.5 px-2.5 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg text-[11px] font-semibold flex items-center justify-center gap-1 transition-colors"
                                                         title="{{ __('Eliminar imagen') }}">
-                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                     </svg>
                                                     <span>{{ __('Eliminar') }}</span>
@@ -464,284 +736,4 @@
             <span>{{ __('Save') }}</span>
         </button>
     </div>
-
-    {{-- Script del Gestor de Imágenes del Micrositio --}}
-    <script>
-        (function () {
-            function initMicrositeImagesManager() {
-                if (!window.Alpine) return;
-
-                window.Alpine.data('micrositeImagesManager', (config) => ({
-                    images: (config.initialImages || []).map(img => ({
-                        ...img,
-                        _editing: false,
-                        _editTitle: img.title || '',
-                        _justInserted: false,
-                        _copied: false,
-                    })),
-                    isUploading: false,
-                    isDraggingOver: false,
-                    uploadTitle: '',
-                    notification: null,
-                    notificationTimeout: null,
-                    lastCursorPos: null,
-
-                    init() {
-                        const textarea = document.getElementById('html_content');
-                        if (textarea) {
-                            const trackCursor = () => {
-                                this.lastCursorPos = textarea.selectionStart;
-                            };
-                            textarea.addEventListener('keyup', trackCursor);
-                            textarea.addEventListener('click', trackCursor);
-                            textarea.addEventListener('select', trackCursor);
-                            textarea.addEventListener('blur', trackCursor);
-                        }
-                    },
-
-                    showNotification(message, type = 'success') {
-                        if (this.notificationTimeout) clearTimeout(this.notificationTimeout);
-                        this.notification = { message, type };
-                        this.notificationTimeout = setTimeout(() => {
-                            this.notification = null;
-                        }, 3500);
-                    },
-
-                    triggerFileInput() {
-                        if (this.$refs && this.$refs.fileInput) {
-                            this.$refs.fileInput.click();
-                        }
-                    },
-
-                    handleFileSelect(event) {
-                        const files = event.target.files;
-                        if (files && files.length > 0) {
-                            this.uploadFile(files[0]);
-                        }
-                        event.target.value = '';
-                    },
-
-                    handleDrop(event) {
-                        this.isDraggingOver = false;
-                        const files = event.dataTransfer ? event.dataTransfer.files : null;
-                        if (files && files.length > 0) {
-                            const file = files[0];
-                            if (!file.type.startsWith('image/')) {
-                                this.showNotification('{{ __('Por favor, selecciona un archivo de imagen válido.') }}', 'error');
-                                return;
-                            }
-                            this.uploadFile(file);
-                        }
-                    },
-
-                    async uploadFile(file) {
-                        if (file.size > 10 * 1024 * 1024) {
-                            this.showNotification('{{ __('La imagen supera el límite máximo permitido de 10 MB.') }}', 'error');
-                            return;
-                        }
-
-                        const formData = new FormData();
-                        formData.append('image', file);
-                        if (this.uploadTitle && this.uploadTitle.trim()) {
-                            formData.append('title', this.uploadTitle.trim());
-                        }
-
-                        this.isUploading = true;
-
-                        try {
-                            const response = await fetch(config.routes.store, {
-                                method: 'POST',
-                                headers: {
-                                    'X-CSRF-TOKEN': config.csrfToken,
-                                    'Accept': 'application/json',
-                                },
-                                body: formData,
-                            });
-
-                            const data = await response.json();
-
-                            if (!response.ok) {
-                                const errorMsg = data.errors ? Object.values(data.errors).flat().join(' ') : (data.message || '{{ __('Error al subir la imagen.') }}');
-                                throw new Error(errorMsg);
-                            }
-
-                            const newImage = {
-                                ...data.image,
-                                _editing: false,
-                                _editTitle: data.image.title || '',
-                                _justInserted: false,
-                                _copied: false,
-                            };
-                            this.images.unshift(newImage);
-                            this.uploadTitle = '';
-                            this.showNotification('{{ __('Imagen subida correctamente.') }}');
-                        } catch (err) {
-                            console.error('Error uploading image:', err);
-                            this.showNotification(err.message || '{{ __('No se pudo subir la imagen.') }}', 'error');
-                        } finally {
-                            this.isUploading = false;
-                        }
-                    },
-
-                    startEdit(image) {
-                        image._editTitle = image.title || '';
-                        image._editing = true;
-                        this.$nextTick(() => {
-                            const input = document.getElementById('img-title-input-' + image.id);
-                            if (input) {
-                                input.focus();
-                                input.select();
-                            }
-                        });
-                    },
-
-                    cancelEdit(image) {
-                        image._editing = false;
-                        image._editTitle = image.title || '';
-                    },
-
-                    async saveTitle(image) {
-                        const newTitle = (image._editTitle || '').trim();
-                        if (!newTitle) {
-                            this.showNotification('{{ __('El título no puede estar vacío.') }}', 'error');
-                            return;
-                        }
-
-                        const url = config.routes.updateUrl.replace('IMG_ID', image.id);
-
-                        try {
-                            const response = await fetch(url, {
-                                method: 'PATCH',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': config.csrfToken,
-                                    'Accept': 'application/json',
-                                },
-                                body: JSON.stringify({ title: newTitle }),
-                            });
-
-                            const data = await response.json();
-
-                            if (!response.ok) {
-                                throw new Error(data.message || '{{ __('Error al actualizar el título.') }}');
-                            }
-
-                            image.title = data.image.title;
-                            image._editing = false;
-                            this.showNotification('{{ __('Título actualizado correctamente.') }}');
-                        } catch (err) {
-                            console.error('Error updating title:', err);
-                            this.showNotification(err.message || '{{ __('Error al guardar el título.') }}', 'error');
-                        }
-                    },
-
-                    async deleteImage(image) {
-                        if (!confirm('{{ __('¿Eliminar esta imagen? Se borrará definitivamente del servidor.') }}')) {
-                            return;
-                        }
-
-                        const url = config.routes.destroyUrl.replace('IMG_ID', image.id);
-
-                        try {
-                            const response = await fetch(url, {
-                                method: 'DELETE',
-                                headers: {
-                                    'X-CSRF-TOKEN': config.csrfToken,
-                                    'Accept': 'application/json',
-                                },
-                            });
-
-                            const data = await response.json();
-
-                            if (!response.ok) {
-                                throw new Error(data.message || '{{ __('Error al eliminar la imagen.') }}');
-                            }
-
-                            this.images = this.images.filter(img => img.id !== image.id);
-                            this.showNotification('{{ __('Imagen eliminada correctamente.') }}');
-                        } catch (err) {
-                            console.error('Error deleting image:', err);
-                            this.showNotification(err.message || '{{ __('Error al eliminar la imagen.') }}', 'error');
-                        }
-                    },
-
-                    copyUrl(image) {
-                        if (!image.url) return;
-
-                        const done = () => {
-                            image._copied = true;
-                            setTimeout(() => { image._copied = false; }, 2000);
-                            this.showNotification('{{ __('URL copiada al portapapeles.') }}');
-                        };
-
-                        if (navigator.clipboard && navigator.clipboard.writeText) {
-                            navigator.clipboard.writeText(image.url).then(done).catch(() => {
-                                this.fallbackCopyText(image.url);
-                                done();
-                            });
-                        } else {
-                            this.fallbackCopyText(image.url);
-                            done();
-                        }
-                    },
-
-                    fallbackCopyText(text) {
-                        const el = document.createElement('textarea');
-                        el.value = text;
-                        el.style.position = 'fixed';
-                        el.style.left = '-9999px';
-                        document.body.appendChild(el);
-                        el.select();
-                        try {
-                            document.execCommand('copy');
-                        } catch (e) {}
-                        document.body.removeChild(el);
-                    },
-
-                    insertIntoHtml(image) {
-                        const textarea = document.getElementById('html_content');
-                        if (!textarea) return;
-
-                        const alt = (image.title || image.file_name || 'Imagen').replace(/"/g, '&quot;');
-                        let snippet = '';
-                        if (image.title) {
-                            snippet = `\n<figure class="my-6">\n  <img src="${image.url}" alt="${alt}" class="w-full max-h-[500px] object-cover rounded-2xl shadow-md border border-gray-100 dark:border-gray-800">\n  <figcaption class="text-center text-xs text-gray-500 dark:text-gray-400 mt-2 italic">${alt}</figcaption>\n</figure>\n`;
-                        } else {
-                            snippet = `\n<img src="${image.url}" alt="${alt}" class="w-full max-h-[500px] object-cover rounded-2xl shadow-md border border-gray-100 dark:border-gray-800 my-6">\n`;
-                        }
-
-                        let start = textarea.selectionStart;
-                        let end = textarea.selectionEnd;
-
-                        if ((start === 0 && end === 0 && this.lastCursorPos !== null) || start === undefined) {
-                            start = this.lastCursorPos ?? textarea.value.length;
-                            end = start;
-                        }
-
-                        const fullText = textarea.value;
-                        textarea.value = fullText.substring(0, start) + snippet + fullText.substring(end);
-                        textarea.selectionStart = textarea.selectionEnd = start + snippet.length;
-                        this.lastCursorPos = textarea.selectionEnd;
-
-                        textarea.dispatchEvent(new Event('input', { bubbles: true }));
-                        textarea.dispatchEvent(new Event('change', { bubbles: true }));
-
-                        image._justInserted = true;
-                        setTimeout(() => { image._justInserted = false; }, 2000);
-
-                        this.showNotification('{{ __('¡Imagen insertada en el código HTML!') }}');
-
-                        textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        textarea.focus();
-                    }
-                }));
-            }
-
-            if (window.Alpine && window.Alpine.data) {
-                initMicrositeImagesManager();
-            } else {
-                document.addEventListener('alpine:init', initMicrositeImagesManager);
-            }
-        })();
-    </script>
 </x-app-layout>

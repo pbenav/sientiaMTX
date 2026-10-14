@@ -21,7 +21,7 @@ class MicrositeImageController extends Controller
     protected function authorizeAccess(Team $team, Microsite $microsite): void
     {
         $user = auth()->user();
-        if ($microsite->team_id !== $team->id || $microsite->user_id !== $user->id) {
+        if ((int) $microsite->team_id !== (int) $team->id || (int) $microsite->user_id !== (int) $user->id) {
             abort(403, 'No tienes permiso para gestionar los archivos de este micrositio.');
         }
     }
