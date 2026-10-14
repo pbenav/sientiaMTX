@@ -103,102 +103,116 @@
     </script>
     <!-- 🚀 Sientia Floating Draggable Trait 🚀 -->
     <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('floatingDraggable', () => ({
-                isDragging: false,
-                hasDragged: false,
-                startX: 0,
-                startY: 0,
-                isVisible: false,
+        (function() {
+            function registerFloatingDraggable() {
+                if (typeof window.Alpine === 'undefined') return;
+                window.Alpine.data('floatingDraggable', () => ({
+                    isDragging: false,
+                    hasDragged: false,
+                    startX: 0,
+                    startY: 0,
+                    isVisible: false,
 
-                init() {
-                    const checkScroll = (e) => {
-                        const s = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-                        let targetScroll = 0;
-                        if (e && e.target && e.target !== document && e.target !== window && typeof e.target.scrollTop === 'number') {
-                            targetScroll = e.target.scrollTop || 0;
-                        }
-                        const maxScroll = Math.max(s, targetScroll);
-                        this.isVisible = maxScroll > 50;
+                    init() {
+                        const checkScroll = (e) => {
+                            const s = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+                            let targetScroll = 0;
+                            if (e && e.target && e.target !== document && e.target !== window && typeof e.target.scrollTop === 'number') {
+                                targetScroll = e.target.scrollTop || 0;
+                            }
+                            const maxScroll = Math.max(s, targetScroll);
+                            this.isVisible = maxScroll > 50;
+                            
+                            if (this.isVisible) {
+                                this.$el.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+                                this.$el.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                                this.$el.style.opacity = '1';
+                                this.$el.style.pointerEvents = 'auto';
+                                this.$el.style.visibility = 'visible';
+                            } else {
+                                this.$el.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+                                this.$el.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                                this.$el.style.opacity = '0';
+                                this.$el.style.pointerEvents = 'none';
+                                this.$el.style.visibility = 'hidden';
+                            }
+                        };
                         
-                        if (this.isVisible) {
-                            this.$el.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
-                            this.$el.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
-                            this.$el.style.opacity = '1';
-                            this.$el.style.pointerEvents = 'auto';
-                            this.$el.style.visibility = 'visible';
-                        } else {
-                            this.$el.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
-                            this.$el.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
-                            this.$el.style.opacity = '0';
-                            this.$el.style.pointerEvents = 'none';
-                            this.$el.style.visibility = 'hidden';
+                        window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
+                        document.addEventListener('scroll', checkScroll, { passive: true, capture: true });
+                        window.addEventListener('resize', checkScroll, { passive: true });
+                        
+                        window.addEventListener('mousemove', (e) => { if (this.isDragging) this.drag(e); });
+                        window.addEventListener('touchmove', (e) => { if (this.isDragging) this.drag(e); }, { passive: false });
+                        window.addEventListener('mouseup', () => { if (this.isDragging) this.stopDrag(); });
+                        window.addEventListener('touchend', () => { if (this.isDragging) this.stopDrag(); });
+
+                        // Initial checks
+                        checkScroll();
+                        setTimeout(checkScroll, 50);
+                        setTimeout(checkScroll, 200);
+                        setTimeout(checkScroll, 500);
+                    },
+
+                    startDrag(e) {
+                        if (e.target.closest('button') || e.target.closest('a') || e.target.closest('input')) return;
+
+                        this.isDragging = true;
+                        this.$el.style.transition = 'none';
+
+                        const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                        const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+
+                        const rect = this.$el.getBoundingClientRect();
+
+                        if (!this.hasDragged) {
+                            this.$el.style.bottom = 'auto';
+                            this.$el.style.right = 'auto';
+                            this.$el.style.transform = 'none';
+                            this.$el.style.left = rect.left + 'px';
+                            this.$el.style.top = rect.top + 'px';
+                            this.hasDragged = true;
                         }
-                    };
-                    
-                    window.addEventListener('scroll', checkScroll, { passive: true, capture: true });
-                    document.addEventListener('scroll', checkScroll, { passive: true, capture: true });
-                    window.addEventListener('resize', checkScroll, { passive: true });
-                    
-                    // Initial checks
-                    checkScroll();
-                    setTimeout(checkScroll, 50);
-                    setTimeout(checkScroll, 200);
-                    setTimeout(checkScroll, 500);
-                },
 
-                startDrag(e) {
-                    if (e.target.closest('button') || e.target.closest('a') || e.target.closest('input')) return;
+                        this.startX = clientX - rect.left;
+                        this.startY = clientY - rect.top;
+                    },
 
-                    this.isDragging = true;
-                    this.$el.style.transition = 'none';
+                    drag(e) {
+                        if (!this.isDragging) return;
+                        if (e.cancelable) e.preventDefault();
 
-                    const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
-                    const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+                        const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                        const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
 
-                    const rect = this.$el.getBoundingClientRect();
+                        let newLeft = clientX - this.startX;
+                        let newTop = clientY - this.startY;
 
-                    if (!this.hasDragged) {
-                        this.$el.style.bottom = 'auto';
-                        this.$el.style.right = 'auto';
-                        this.$el.style.transform = 'none';
-                        this.$el.style.left = rect.left + 'px';
-                        this.$el.style.top = rect.top + 'px';
-                        this.hasDragged = true;
+                        const rect = this.$el.getBoundingClientRect();
+                        const maxLeft = window.innerWidth - rect.width;
+                        const maxTop = window.innerHeight - rect.height;
+
+                        newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+                        newTop = Math.max(0, Math.min(newTop, maxTop));
+
+                        this.$el.style.left = newLeft + 'px';
+                        this.$el.style.top = newTop + 'px';
+                    },
+
+                    stopDrag() {
+                        if (!this.isDragging) return;
+                        this.isDragging = false;
+                        this.$el.style.transition = 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
                     }
+                }));
+            }
 
-                    this.startX = clientX - rect.left;
-                    this.startY = clientY - rect.top;
-                },
-
-                drag(e) {
-                    if (!this.isDragging) return;
-                    if (e.cancelable) e.preventDefault();
-
-                    const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
-                    const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-
-                    let newLeft = clientX - this.startX;
-                    let newTop = clientY - this.startY;
-
-                    const rect = this.$el.getBoundingClientRect();
-                    const maxLeft = window.innerWidth - rect.width;
-                    const maxTop = window.innerHeight - rect.height;
-
-                    newLeft = Math.max(0, Math.min(newLeft, maxLeft));
-                    newTop = Math.max(0, Math.min(newTop, maxTop));
-
-                    this.$el.style.left = newLeft + 'px';
-                    this.$el.style.top = newTop + 'px';
-                },
-
-                stopDrag() {
-                    if (!this.isDragging) return;
-                    this.isDragging = false;
-                    this.$el.style.transition = 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
-                }
-            }));
-        });
+            if (window.Alpine) {
+                registerFloatingDraggable();
+            } else {
+                document.addEventListener('alpine:init', registerFloatingDraggable);
+            }
+        })();
     </script>
 
     <!-- Letrero Flotante de Celebración (Tipo Banner de Feria/Fiesta) -->

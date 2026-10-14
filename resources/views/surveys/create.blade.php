@@ -347,6 +347,51 @@
         </div>
     </div>
 
+    {{-- BARRA FLOTANTE DE ACCIONES RÁPIDAS (CREACIÓN) --}}
+    <div id="survey-create-floating-bar"
+         x-data="floatingDraggable"
+         @mousedown="startDrag"
+         @touchstart.passive="startDrag"
+         @mousemove.window="drag"
+         @touchmove.window.passive="drag"
+         @mouseup.window="stopDrag"
+         @touchend.window="stopDrag"
+         class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-4 z-[800] flex items-center gap-2 px-4 py-2.5 bg-white/93 dark:bg-gray-900/93 backdrop-blur-xl border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl opacity-0 pointer-events-none transition-all duration-300 whitespace-nowrap cursor-move"
+         :class="isDragging ? 'scale-105 shadow-[0_20px_50px_rgba(0,0,0,0.2)]' : ''">
+
+        {{-- {{ __('Back') }} --}}
+        <a href="{{ $isGlobal ? route('global-surveys.index') : route('teams.surveys.index', $team) }}"
+           style="display:flex;align-items:center;gap:0.375rem;font-size:0.75rem;font-weight:700;color:#6b7280;padding:0.375rem 0.75rem;border-radius:0.625rem;text-decoration:none;transition:all 0.15s ease;"
+           onmouseover="this.style.color='#0891b2';this.style.background='#ecfeff'"
+           onmouseout="this.style.color='#6b7280';this.style.background='transparent'">
+            <svg style="width:1rem;height:1rem;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+            </svg>
+            <span>{{ __('Back') }}</span>
+        </a>
+
+        <div style="width:1px;height:1.25rem;background:#e5e7eb;flex-shrink:0" class="dark:bg-gray-700"></div>
+
+        {{-- Título --}}
+        <span style="font-size:0.75rem;font-weight:900;color:#1f2937;max-width:200px;overflow:hidden;text-overflow:ellipsis;" class="dark:text-gray-300">
+            {{ $isGlobal ? __('Launch Global Survey') : __('New Survey') }}
+        </span>
+
+        <div style="width:1px;height:1.25rem;background:#e5e7eb;flex-shrink:0" class="dark:bg-gray-700"></div>
+
+        {{-- Guardar / Lanzar --}}
+        <button type="button"
+                onclick="const f = document.getElementById('survey-create-form'); if(f.requestSubmit) { f.requestSubmit(); } else { f.submit(); }"
+           style="display:flex;align-items:center;gap:0.375rem;font-size:0.75rem;font-weight:700;color:#fff;background:#4f46e5;padding:0.375rem 0.75rem;border-radius:0.625rem;text-decoration:none;transition:background 0.15s ease;border:none;cursor:pointer;"
+           onmouseover="this.style.background='#4338ca'"
+           onmouseout="this.style.background='#4f46e5'">
+            <svg style="width:1rem;height:1rem;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span>{{ __('Launch Survey') }}</span>
+        </button>
+    </div>
+
     <x-google-drive-picker :team="$team" />
 
     <script>
