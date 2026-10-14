@@ -114,7 +114,7 @@
                             </svg>
                         </div>
                         <input type="text" x-model="search"
-                            :placeholder="__('Search by title or description...')" enterkeyhint="search"
+                            placeholder="{{ __('Search by title or description...') }}" enterkeyhint="search"
                             :class="search !== '' ?
                                 'bg-violet-50/50 dark:bg-violet-900/10 border-violet-300 dark:border-violet-800 ring-2 ring-violet-500/20' :
                                 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'"

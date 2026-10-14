@@ -231,7 +231,7 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <x-input-label for="criteria_type" :value="__('Rule (Criteria Type)')" />
-                        <x-text-input id="criteria_type" name="criteria_type" type="text" class="mt-1 block w-full font-mono text-sm" :placeholder="__('e.g., completed_tasks')" required />
+                        <x-text-input id="criteria_type" name="criteria_type" type="text" class="mt-1 block w-full font-mono text-sm" placeholder="{{ __('e.g., completed_tasks') }}" required />
                     </div>
                     <div>
                         <x-input-label for="criteria_threshold" :value="__('Threshold')" />

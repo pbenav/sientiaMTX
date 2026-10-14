@@ -5,6 +5,16 @@ import collapse from '@alpinejs/collapse';
 
 import { Passkeys } from '@laravel/passkeys';
 
+window.__ = window.__ || function(key, replace = {}) {
+    let str = key;
+    if (replace && typeof replace === 'object') {
+        for (const [k, v] of Object.entries(replace)) {
+            str = String(str).replace(':' + k, v);
+        }
+    }
+    return str;
+};
+
 window.Alpine = Alpine;
 Alpine.plugin(collapse);
 window.Passkeys = Passkeys;

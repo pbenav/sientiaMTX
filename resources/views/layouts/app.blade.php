@@ -30,6 +30,17 @@
         } else {
             document.documentElement.classList.remove('dark');
         }
+        window.__ = window.__ || function(key, replace) {
+            var str = key;
+            if (replace && typeof replace === 'object') {
+                for (var k in replace) {
+                    if (Object.prototype.hasOwnProperty.call(replace, k)) {
+                        str = String(str).replace(':' + k, replace[k]);
+                    }
+                }
+            }
+            return str;
+        };
     })();
 </script>
 

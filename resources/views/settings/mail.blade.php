@@ -86,7 +86,7 @@
                                     </p>
                                     <div class="relative">
                                         <input type="text" x-model="search"
-                                            :placeholder="__('Search timezone (e.g. Madrid, London, UTC)...')"
+                                            placeholder="{{ __('Search timezone (e.g. Madrid, London, UTC)...') }}"
                                             class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:border-violet-500 focus:ring focus:ring-violet-500/20 transition-all mb-2" />
                                         <select id="site_timezone" name="site_timezone" x-model="tz"
                                             class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:border-violet-500 transition-all cursor-pointer">
@@ -526,7 +526,7 @@
                                 
                                 <div>
                                     <x-input-label for="CTH_S2S_SECRET" :value="__('S2S Security Secret')" />
-                                    <x-text-input id="CTH_S2S_SECRET" name="CTH_S2S_SECRET" type="password" class="mt-1 block w-full bg-gray-50" :value="$cth['secret']" :placeholder="__('Enter the shared secret')" />
+                                    <x-text-input id="CTH_S2S_SECRET" name="CTH_S2S_SECRET" type="password" class="mt-1 block w-full bg-gray-50" :value="$cth['secret']" placeholder="{{ __('Enter the shared secret') }}" />
                                     <p class="text-[11px] text-gray-400 mt-2">{{ __('Must match exactly the Secret configured on the CTH server.') }}</p>
                                     <x-input-error :messages="$errors->get('CTH_S2S_SECRET')" class="mt-2" />
                                 </div>
@@ -601,7 +601,7 @@
             <div>
                 <x-input-label for="test_chat_id" :value="__('notifications.telegram_chat_id')" />
                 <x-text-input id="test_chat_id" name="test_chat_id" type="text" class="mt-1 block w-full"
-                    :placeholder="__('e.g. 123456789')" required />
+                    placeholder="{{ __('e.g. 123456789') }}" required />
                 <x-input-error :messages="$errors->get('test_chat_id')" class="mt-2" />
             </div>
 

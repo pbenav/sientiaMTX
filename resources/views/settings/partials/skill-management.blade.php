@@ -148,7 +148,7 @@
 
                 <div class="space-y-1.5">
                     <x-input-label for="skill_name" :value="__('Name')" class="font-extrabold uppercase tracking-widest text-[9px] text-gray-400" />
-                    <x-text-input id="skill_name" name="name" type="text" class="mt-1 block w-full text-xs bg-gray-50/50 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-700/60 rounded-xl px-4 py-2.5 font-bold focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 transition-all outline-none" required :placeholder="__('e.g., Facilitation')" />
+                    <x-text-input id="skill_name" name="name" type="text" class="mt-1 block w-full text-xs bg-gray-50/50 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-700/60 rounded-xl px-4 py-2.5 font-bold focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 transition-all outline-none" required placeholder="{{ __('e.g., Facilitation') }}" />
                 </div>
 
                 <div class="space-y-1.5">

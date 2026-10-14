@@ -71,7 +71,7 @@
                             <div class="flex-1">
                                 <textarea name="to" rows="2" required
                                     class="w-full text-sm bg-transparent border-none focus:ring-0 outline-none p-2 resize-none text-gray-900 dark:text-white placeholder-gray-400"
-                                    :placeholder="__('emails@example.com, other@example.com (separated by commas, line breaks or spaces)')"></textarea>
+                                    placeholder="{{ __('emails@example.com, other@example.com (separated by commas, line breaks or spaces)') }}"></textarea>
                                 <p class="text-[11px] text-gray-400 mt-1">{{ __('Paste your email list here. Duplicates will be cleaned automatically.') }}</p>
                             </div>
                         </div>
@@ -81,7 +81,7 @@
                             <span class="text-sm font-bold text-gray-400 w-12 pt-2">{{ __('CC:') }}</span>
                             <input type="text" name="cc" 
                                 class="flex-1 text-sm bg-transparent border-none focus:ring-0 outline-none p-2 text-gray-900 dark:text-white placeholder-gray-400"
-                                :placeholder="__('Visible copy...')">
+                                placeholder="{{ __('Visible copy...') }}">
                         </div>
 
                         <!-- Campo CCO (BCC) -->
@@ -89,7 +89,7 @@
                             <span class="text-sm font-bold text-gray-400 w-12 pt-2">{{ __('BCC:') }}</span>
                             <input type="text" name="bcc" 
                                 class="flex-1 text-sm bg-transparent border-none focus:ring-0 outline-none p-2 text-gray-900 dark:text-white placeholder-gray-400"
-                                :placeholder="__('Blind copy...')">
+                                placeholder="{{ __('Blind copy...') }}">
                         </div>
 
                         <!-- Campo ASUNTO -->
@@ -97,7 +97,7 @@
                             <span class="text-sm font-bold text-gray-400 w-12">{{ __('Subject:') }}</span>
                             <input type="text" name="subject" required
                                 class="flex-1 text-sm bg-transparent border-none focus:ring-0 outline-none p-2 text-gray-900 dark:text-white placeholder-gray-400 font-medium"
-                                :placeholder="__('Enter email subject...')">
+                                placeholder="{{ __('Enter email subject...') }}">
                         </div>
                     </div>
 
