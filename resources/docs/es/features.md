@@ -49,7 +49,7 @@ El centro de mando donde converge el esfuerzo del equipo y el pulso de los servi
 
 ### ⚡ Los 7 Tipos de Actividades
 *   **Tareas (`task`)**: Ejecución operativa, subtareas jerárquicas y cálculo de fecha de finalización (`completed_at`).
-*   **Documentos (`document`)**: Suite OnlyOffice integrada en vivo y editor de imágenes Filerobot.
+*   **Documentos (`document`)**: Suite OnlyOffice integrada en vivo, editor gráfico Filerobot y **Navegador Jerárquico de Archivos** por carpetas con arrastrar y soltar (*drag & drop*), selección múltiple, acciones masivas y herencia de privacidad.
 *   **Notas (`note`)**: Apuntes rápidos con dictado por voz y fijado (`pinned`).
 *   **Enlaces (`link`)**: Tarjetas de recursos web con extracción automática de OpenGraph.
 *   **Acuerdos (`agreement`)**: Registro de decisiones de equipo con justificación, alternativas, nivel de impacto y firmas digitales internas.

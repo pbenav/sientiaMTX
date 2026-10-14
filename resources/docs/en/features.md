@@ -49,7 +49,7 @@ The command center where team effort and service pulse converge.
 
 ### ⚡ The 7 Activity Types
 *   **Tasks (`task`)**: Operational execution, hierarchical subtasks, and exact completion timestamp (`completed_at`).
-*   **Documents (`document`)**: Live OnlyOffice office editing and Filerobot graphic manipulation.
+*   **Documents (`document`)**: Live OnlyOffice office editing, Filerobot graphic manipulation, and **Hierarchical File Browser** with folders, drag & drop, multi-selection, bulk actions, and privacy inheritance.
 *   **Notes (`note`)**: Rich markdown notes with voice dictation and pin support (`pinned`).
 *   **Links (`link`)**: Web reference cards with automatic Open Graph metadata fetching.
 *   **Agreements (`agreement`)**: Formal records of team decisions with rationale, alternatives, impact levels, and internal digital approvals.

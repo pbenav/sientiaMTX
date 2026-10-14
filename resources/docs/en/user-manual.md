@@ -54,6 +54,16 @@ Starting in v1.2.0, all work is organized under the universal **Activities (Item
 6. **Meetings (`meeting`)**: In-person sessions, instant video rooms on **Sientia Meet (Jitsi)**, or **Google Meet** with automatic URL sanitation, agendas, and minutes.
 7. **Reminders (`reminder`)**: Alarms with live countdown timers, completion toggle switches, and dispatch via Telegram, WhatsApp, Email, or Web Push.
 
+### 🗂️ 3.1. Document Library & Folder File Browser
+The **Team Library** (`/teams/{team}/library`) provides a centralized, interactive workspace to manage all team office documents and graphic assets:
+- **Hierarchical Organization**: Create unlimited folders and subfolders with 8 custom color tags to structure workstreams, client cases, or operational areas.
+- **Custom Views**: Switch with one click between visual **Grid View** (cards with document badges) and detailed **List View** (table with size, modification timestamps, author, and actions).
+- **Fast Navigation**: Navigate instantly using **interactive breadcrumbs** with state icons or the `.. (Go up one level)` button.
+- **Fluid Drag & Drop**: Drag documents and folders directly onto any destination folder or into the back button to reorder them on the fly.
+- **Multi-Selection & Bulk Actions**: Select multiple documents or folders with checkboxes. Dragging any selected item transports **the entire batch simultaneously**, and the bottom floating bar enables **bulk move or bulk delete** in one click.
+- **Public & Private Folders (🔒)**: Control access granularity. Private folders are exclusively visible to their creator and team coordinators/managers.
+- **Automatic Privacy Inheritance**: Any asset created in or moved into a private folder automatically becomes private, preventing accidental data leaks.
+
 > [!NOTE]
 > For complete technical schemas and detailed capabilities, refer to the [Activities & Workflow Guide](activities.md).
 

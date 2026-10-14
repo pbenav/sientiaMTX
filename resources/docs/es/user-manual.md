@@ -54,6 +54,16 @@ A partir de la versión v1.2.0, el trabajo se estructura a través del modelo un
 6. **Reuniones (`meeting`)**: Sesiones presenciales, salas instantáneas en **Sientia Meet (Jitsi)** o **Google Meet** con apertura automática de salas, agendas y actas de reunión.
 7. **Recordatorios (`reminder`)**: Alarmas con cuenta atrás, interruptor de completado y avisos por Telegram, WhatsApp, Email y Push.
 
+### 🗂️ 3.1. Biblioteca de Documentos y Gestor de Archivos por Carpetas
+La **Biblioteca de Equipo** (`/teams/{team}/library`) ofrece un entorno unificado para clasificar y organizar todos los documentos ofimáticos e imágenes del equipo:
+- **Organización Jerárquica**: Crea carpetas y subcarpetas ilimitadas con colores identificativos para estructurar departamentos, clientes o proyectos.
+- **Vistas Personalizadas**: Conmuta con un clic entre **Vista Cuadrícula** (tarjetas visuales) y **Vista Lista** (tabla con detalles de autor, tamaño y fechas).
+- **Navegación Ágil**: Utiliza las **migas de pan (*breadcrumbs*)** o el botón `.. (Subir un nivel)` para moverte velozmente por el árbol de directorios.
+- **Arrastrar y Soltar (*Drag & Drop*)**: Arrastra archivos y carpetas a cualquier directorio visible o al botón de subir nivel para moverlos al instante.
+- **Selección Múltiple y Acciones Masivas**: Marca varios elementos para realizar acciones en bloque. Al arrastrar un elemento marcado se desplaza **toda la selección agrupada**, y la barra flotante inferior te permite **mover o eliminar por lotes** en un solo paso.
+- **Carpetas Públicas y Privadas (🔒)**: Controla la confidencialidad de tus carpetas. Las privadas solo son visibles para su creador y los coordinadores del equipo.
+- **Herencia Automática de Privacidad**: Todo archivo o subcarpeta creado o movido al interior de una carpeta privada adquiere automáticamente visibilidad privada para garantizar la seguridad de la información.
+
 > [!NOTE]
 > Para conocer a fondo cada uno de los 7 tipos y sus especificaciones técnicas, consulta la [Guía de Actividades y Flujo de Trabajo](activities.md).
 

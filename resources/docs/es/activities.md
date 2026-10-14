@@ -39,6 +39,31 @@ Gestión documental colaborativa con capacidades ofimáticas completas dentro de
 - **Capítulos y Estructura**: Posibilidad de añadir capítulos estructurados de texto con autoría individual y marcas de tiempo, o inyectar secciones completas redactadas por **Ax.ia**.
 - **Control de Versiones y Estados**: `draft`, `review`, `approved`, `rejected` y `archived`.
 
+#### 🗂️ Biblioteca de Documentos y Navegador de Archivos (File Browser)
+A partir de la versión v1.3.0, la biblioteca del equipo (`/teams/{team}/library`) incorpora un navegador de archivos jerárquico de nivel empresarial:
+
+* **Estructura en Carpetas y Subcarpetas**:
+  * Organización multinivel sin límite de profundidad.
+  * Paleta de **8 colores temáticos** (violeta, azul, esmeralda, ámbar, rosa, índigo, cian y gris) para diferenciar visualmente proyectos y áreas.
+  * Modos de visualización conmutables en tiempo real: **Vista Cuadrícula (*Grid*)** con tarjetas visuales e indicadores de contenido, y **Vista Lista (*Table*)** con columnas de tamaño, creador, fecha de modificación y menú de acciones.
+* **Navegación Jerárquica Fluida**:
+  * **Migas de Pan (*Breadcrumbs*)**: Barra superior interactiva que muestra la ruta completa con iconos y candados de estado, permitiendo saltar a cualquier nivel superior o a la raíz con un solo clic.
+  * **Acceso Directo `.. (Subir un nivel)`**: Permite regresar a la carpeta superior tanto haciendo clic como soltando elementos arrastrados.
+* **Arrastrar y Soltar (*Drag & Drop*) Dinámico**:
+  * Mueve cualquier documento o carpeta arrastrándolo y soltándolo sobre otra carpeta o sobre el botón de subir nivel.
+  * **Arrastre Multielemento**: Si seleccionas varios documentos y/o carpetas, al arrastrar uno de ellos se transporta **la selección completa en bloque**, mostrando un *ghost* flotante con el número de elementos seleccionados.
+* **Selección Múltiple y Barra Flotante de Acciones Masivas**:
+  * Casillas de verificación (*checkboxes*) integradas en cada tarjeta y fila para selección individual o combinada.
+  * **Barra de Acciones Flotante**: Al marcar uno o más elementos, emerge en la parte inferior una barra interactiva con contador y botones directos para:
+    * **Mover en Bloque**: Despliega un modal con el árbol de carpetas del equipo para reubicar todos los elementos seleccionados en una sola transacción segura.
+    * **Eliminar en Bloque**: Borrado masivo con confirmación preventiva.
+  * **Menús Contextuales Adaptativos**: Los menús contextuales de tarjeta y fila detectan si el elemento forma parte de una selección múltiple para ofrecer la acción sobre todo el grupo.
+* **Seguridad, Visibilidad y Herencia de Privacidad**:
+  * **Carpetas Públicas**: Visibles y accesibles para todos los integrantes del equipo.
+  * **Carpetas Privadas (🔒)**: Confidenciales, restringidas exclusivamente a su autor y a los coordinadores/managers del equipo. Se distinguen visualmente con un candado de seguridad en tarjetas, filas y migas de pan.
+  * **Herencia Automática de Privacidad**: Cualquier documento o subcarpeta creado dentro de una carpeta privada, o movido hacia ella, adopta inmediatamente la visibilidad `private` para evitar la exposición involuntaria de información protegida.
+  * **Protección contra Fuga de Metadatos (*Zero Leakage*)**: Los contadores de documentos y subcarpetas calculan únicamente los elementos que el usuario autenticado tiene permiso para consultar.
+
 ---
 
 ### 1.3. Nota (`note`)
