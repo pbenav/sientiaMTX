@@ -26,10 +26,10 @@ class TeamLibraryBrowserTest extends TestCase
         $this->user = User::factory()->create();
         $this->team = Team::create([
             'name' => 'Equipo de Pruebas',
-            'user_id' => $this->user->id,
+            'created_by_id' => $this->user->id,
             'personal_team' => false,
         ]);
-        $this->team->users()->attach($this->user, ['role' => 'coordinator']);
+        $this->team->members()->syncWithoutDetaching([$this->user->id => ['role_id' => 1]]);
 
         $this->folderService = new LibraryFolderService();
     }

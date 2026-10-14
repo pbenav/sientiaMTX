@@ -99,5 +99,38 @@ class TeamFolderTest extends TestCase
         // Usuario nulo no tiene acceso
         $this->assertFalse($folder->isVisibleTo(null));
     }
+
+    public function test_policy_allows_team_owner_and_creator_to_update_and_delete(): void
+    {
+        $policy = new \App\Policies\TeamFolderPolicy();
+
+        $owner = new \App\Models\User();
+        $owner->id = 1;
+
+        $team = new \App\Models\Team(['name' => 'Test Team']);
+        $team->id = 10;
+        $team->created_by_id = $owner->id;
+
+        $publicFolder = new TeamFolder(['visibility' => 'public', 'created_by_id' => $owner->id]);
+        $publicFolder->setRelation('team', $team);
+
+        // Owner can update and delete
+        $this->assertTrue($policy->update($owner, $publicFolder));
+        $this->assertTrue($policy->delete($owner, $publicFolder));
+        $this->assertTrue($policy->create($owner, $team));
+
+        // Private folder can be updated by its creator
+        $creator = new \App\Models\User();
+        $creator->id = 2;
+        $creatorFolder = new TeamFolder(['visibility' => 'private', 'created_by_id' => $creator->id]);
+        $creatorFolder->setRelation('team', $team);
+
+        // Admin can update
+        $admin = new \App\Models\User();
+        $admin->id = 99;
+        $admin->is_admin = true;
+        $this->assertTrue($policy->update($admin, $creatorFolder));
+        $this->assertTrue($policy->delete($admin, $creatorFolder));
+    }
 }
 

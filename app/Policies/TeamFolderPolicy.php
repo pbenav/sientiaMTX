@@ -27,6 +27,10 @@ class TeamFolderPolicy
 
     public function update(User $user, TeamFolder $folder): bool
     {
+        if ($user->is_admin) {
+            return true;
+        }
+
         if (!$this->isTeamMember($user, $folder->team)) {
             return false;
         }
@@ -40,6 +44,14 @@ class TeamFolderPolicy
 
     public function delete(User $user, TeamFolder $folder): bool
     {
+        if ($user->is_admin) {
+            return true;
+        }
+
+        if (!$this->isTeamMember($user, $folder->team)) {
+            return false;
+        }
+
         if ($folder->created_by_id === $user->id) {
             return true;
         }
@@ -49,11 +61,11 @@ class TeamFolderPolicy
 
     protected function isTeamMember(User $user, Team $team): bool
     {
-        if ($team->user_id === $user->id) {
+        if ($user->is_admin || $team->created_by_id === $user->id) {
             return true;
         }
 
-        return $team->users()->where('users.id', $user->id)->exists();
+        return $team->members()->where('users.id', $user->id)->exists();
     }
 }
 
