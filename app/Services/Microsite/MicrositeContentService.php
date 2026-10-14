@@ -126,15 +126,15 @@ class MicrositeContentService
 .ms-root *, .ms-root *::before, .ms-root *::after { box-sizing: border-box; }
 .ms-root img, .ms-root video { max-width: 100%; height: auto; display: block; }
 
-/* ── Enlaces generales (solo texto, excluyendo botones y tarjetas) ── */
-.ms-root a {
+/* ── Enlaces generales (solo texto plano en contenido normal, NUNCA botones ni tarjetas) ── */
+.ms-root a:not(.ms-btn):not(.btn):not(.ms-card) {
   color: var(--ms-primary);
   text-decoration: underline;
   text-decoration-color: rgba(67, 56, 202, 0.3);
   text-underline-offset: 3px;
   transition: color 0.2s ease, text-decoration-color 0.2s ease, opacity 0.2s ease;
 }
-.ms-root a:hover {
+.ms-root a:not(.ms-btn):not(.btn):not(.ms-card):hover {
   color: var(--ms-accent);
   text-decoration-color: var(--ms-accent);
 }
@@ -150,16 +150,16 @@ class MicrositeContentService
   text-decoration: none;
 }
 
-/* ── Enlaces dentro del Hero (fondo oscuro/degradado) ── */
-.ms-hero a:not(.ms-btn) {
-  color: #ffffff;
+/* ── Enlaces de texto dentro del Hero (fondo oscuro/degradado) ── */
+.ms-hero a:not(.ms-btn):not(.btn):not(.ms-card) {
+  color: #ffffff !important;
   text-decoration: underline;
   text-decoration-color: rgba(255, 255, 255, 0.5);
   text-underline-offset: 3px;
   transition: opacity 0.2s ease, text-decoration-color 0.2s ease;
 }
-.ms-hero a:not(.ms-btn):hover {
-  color: #ffffff;
+.ms-hero a:not(.ms-btn):not(.btn):not(.ms-card):hover {
+  color: #ffffff !important;
   text-decoration-color: #ffffff;
   opacity: 0.9;
 }
@@ -179,6 +179,7 @@ class MicrositeContentService
   line-height: 1.15;
   margin: 0 0 1rem;
   letter-spacing: -0.02em;
+  color: #ffffff;
 }
 .ms-hero p { color: rgba(255,255,255,0.88); font-size: 1.125rem; max-width: 40rem; margin: 0 auto; }
 
@@ -193,10 +194,13 @@ class MicrositeContentService
   border: 1px solid rgba(15, 23, 42, 0.06);
 }
 
-/* ── Botones y enlaces con estilo de botón (.ms-btn) ── */
+/* ── Botones y enlaces con estilo de botón (.ms-btn / .btn) ── */
 .ms-root .ms-btn,
 .ms-root a.ms-btn,
-.ms-btn {
+.ms-root .btn,
+.ms-root a.btn,
+.ms-btn,
+.btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -213,60 +217,206 @@ class MicrositeContentService
 }
 .ms-root .ms-btn:hover,
 .ms-root a.ms-btn:hover,
-.ms-btn:hover {
+.ms-root .btn:hover,
+.ms-root a.btn:hover,
+.ms-btn:hover,
+.btn:hover {
   transform: translateY(-1px);
   box-shadow: var(--ms-shadow-sm);
   text-decoration: none !important;
 }
 
-/* Botón primario: siempre texto blanco en reposo y en hover */
+/* Botón primario (contenido normal): fondo primario, texto blanco en reposo y en hover */
 .ms-root .ms-btn--primary,
 .ms-root a.ms-btn--primary,
-.ms-btn--primary {
+.ms-root .btn-primary,
+.ms-root a.btn-primary,
+.ms-btn--primary,
+.btn-primary {
   background: var(--ms-primary);
   border-color: var(--ms-primary);
   color: #ffffff !important;
 }
 .ms-root .ms-btn--primary:hover,
 .ms-root a.ms-btn--primary:hover,
-.ms-btn--primary:hover {
+.ms-root .btn-primary:hover,
+.ms-root a.btn-primary:hover,
+.ms-btn--primary:hover,
+.btn-primary:hover {
   background: var(--ms-primary-dark);
   border-color: var(--ms-primary-dark);
   color: #ffffff !important;
   box-shadow: 0 6px 16px rgba(15, 23, 42, 0.15);
 }
 
-/* Botón fantasma (hero, toolbars): fondo sutil translúcido, texto blanco */
+/* Botón fantasma (contenido normal) */
 .ms-root .ms-btn--ghost,
 .ms-root a.ms-btn--ghost,
 .ms-btn--ghost {
-  background: rgba(255, 255, 255, 0.15);
-  color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(15, 23, 42, 0.05);
+  color: var(--ms-text) !important;
+  border: 1px solid rgba(15, 23, 42, 0.2);
 }
 .ms-root .ms-btn--ghost:hover,
 .ms-root a.ms-btn--ghost:hover,
 .ms-btn--ghost:hover {
-  background: rgba(255, 255, 255, 0.28);
-  border-color: rgba(255, 255, 255, 0.6);
-  color: #ffffff !important;
+  background: rgba(15, 23, 42, 0.1);
+  border-color: rgba(15, 23, 42, 0.35);
+  color: var(--ms-text) !important;
 }
 
-/* Botón outline: fondo transparente con borde primario; al hover fondo primario y texto blanco */
+/* Botón outline (contenido normal / fondos claros):
+   Fondo transparente, borde y texto primario visible; al hover fondo primario y texto blanco */
 .ms-root .ms-btn--outline,
 .ms-root a.ms-btn--outline,
-.ms-btn--outline {
+.ms-root .btn-outline,
+.ms-root a.btn-outline,
+.ms-btn--outline,
+.btn-outline {
   background: transparent;
-  color: var(--ms-primary) !important;
+  color: var(--ms-primary);
   border: 2px solid var(--ms-primary);
 }
 .ms-root .ms-btn--outline:hover,
 .ms-root a.ms-btn--outline:hover,
-.ms-btn--outline:hover {
+.ms-root .btn-outline:hover,
+.ms-root a.btn-outline:hover,
+.ms-btn--outline:hover,
+.btn-outline:hover {
   background: var(--ms-primary);
   border-color: var(--ms-primary);
   color: #ffffff !important;
   box-shadow: 0 4px 14px rgba(67, 56, 202, 0.25);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   REGLAS ESPECÍFICAS PARA .ms-hero (Y CONTENEDORES OSCUROS)
+   Garantizan que cualquier botón o enlace sea 100% VISIBLE en reposo y en hover
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Todos los botones por defecto en el Hero: texto blanco en reposo */
+.ms-hero .ms-btn,
+.ms-hero a.ms-btn,
+.ms-hero .btn,
+.ms-hero a.btn,
+.ms-root .ms-hero .ms-btn,
+.ms-root .ms-hero a.ms-btn {
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.12);
+}
+.ms-hero .ms-btn:hover,
+.ms-hero a.ms-btn:hover,
+.ms-hero .btn:hover,
+.ms-hero a.btn:hover,
+.ms-root .ms-hero .ms-btn:hover,
+.ms-root .ms-hero a.ms-btn:hover {
+  color: #ffffff !important;
+  border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.28);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+}
+
+/* Botón Outline en el Hero: borde blanco y texto blanco en reposo; fondo blanco y texto primario en hover */
+.ms-hero .ms-btn--outline,
+.ms-hero a.ms-btn--outline,
+.ms-root .ms-hero .ms-btn--outline,
+.ms-root .ms-hero a.ms-btn--outline,
+.ms-hero .btn-outline,
+.ms-hero a.btn-outline,
+.ms-root .ms-hero .btn-outline,
+.ms-root .ms-hero a.btn-outline {
+  background: transparent !important;
+  color: #ffffff !important;
+  border: 2px solid #ffffff !important;
+}
+.ms-hero .ms-btn--outline:hover,
+.ms-hero a.ms-btn--outline:hover,
+.ms-root .ms-hero .ms-btn--outline:hover,
+.ms-root .ms-hero a.ms-btn--outline:hover,
+.ms-hero .btn-outline:hover,
+.ms-hero a.btn-outline:hover,
+.ms-root .ms-hero .btn-outline:hover,
+.ms-root .ms-hero a.btn-outline:hover {
+  background: #ffffff !important;
+  color: var(--ms-primary) !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+/* Botón Primario en el Hero: fondo blanco y texto primario para máximo contraste; en hover brillo suave */
+.ms-hero .ms-btn--primary,
+.ms-hero a.ms-btn--primary,
+.ms-root .ms-hero .ms-btn--primary,
+.ms-root .ms-hero a.ms-btn--primary,
+.ms-hero .btn-primary,
+.ms-hero a.btn-primary,
+.ms-root .ms-hero .btn-primary,
+.ms-root .ms-hero a.btn-primary {
+  background: #ffffff !important;
+  color: var(--ms-primary) !important;
+  border: 1px solid #ffffff !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+}
+.ms-hero .ms-btn--primary:hover,
+.ms-hero a.ms-btn--primary:hover,
+.ms-root .ms-hero .ms-btn--primary:hover,
+.ms-root .ms-hero a.ms-btn--primary:hover,
+.ms-hero .btn-primary:hover,
+.ms-hero a.btn-primary:hover,
+.ms-root .ms-hero .btn-primary:hover,
+.ms-root .ms-hero a.btn-primary:hover {
+  background: #f8fafc !important;
+  color: var(--ms-primary-dark) !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Botón Ghost en el Hero: translúcido blanco */
+.ms-hero .ms-btn--ghost,
+.ms-hero a.ms-btn--ghost,
+.ms-root .ms-hero .ms-btn--ghost,
+.ms-root .ms-hero a.ms-btn--ghost {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+}
+.ms-hero .ms-btn--ghost:hover,
+.ms-hero a.ms-btn--ghost:hover,
+.ms-root .ms-hero .ms-btn--ghost:hover,
+.ms-root .ms-hero a.ms-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+}
+
+/* Soporte para cualquier sección oscura / dark mode en micrositios */
+.ms-root [class*="dark"] a:not(.ms-btn):not(.btn):not(.ms-card),
+.ms-root .ms-section--dark a:not(.ms-btn):not(.btn):not(.ms-card),
+.ms-root [class*="bg-indigo"] a:not(.ms-btn):not(.btn):not(.ms-card),
+.ms-root [class*="bg-slate"] a:not(.ms-btn):not(.btn):not(.ms-card) {
+  color: #ffffff !important;
+}
+
+.ms-root [class*="dark"] .ms-btn--outline,
+.ms-root [class*="dark"] a.ms-btn--outline,
+.ms-root .ms-section--dark .ms-btn--outline,
+.ms-root .ms-section--dark a.ms-btn--outline,
+.ms-root [class*="bg-indigo"] .ms-btn--outline,
+.ms-root [class*="bg-indigo"] a.ms-btn--outline {
+  background: transparent !important;
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+}
+.ms-root [class*="dark"] .ms-btn--outline:hover,
+.ms-root [class*="dark"] a.ms-btn--outline:hover,
+.ms-root .ms-section--dark .ms-btn--outline:hover,
+.ms-root .ms-section--dark a.ms-btn--outline:hover,
+.ms-root [class*="bg-indigo"] .ms-btn--outline:hover,
+.ms-root [class*="bg-indigo"] a.ms-btn--outline:hover {
+  background: #ffffff !important;
+  color: var(--ms-primary) !important;
+  border-color: #ffffff !important;
 }
 
 /* Visor PDF premium con pantalla completa */

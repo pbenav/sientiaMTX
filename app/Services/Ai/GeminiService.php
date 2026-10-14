@@ -519,14 +519,20 @@ ESTRUCTURA HTML RECOMENDADA:
 - NUNCA dejes secciones sin color de fondo y texto explícitos en CSS.
 
 ═══ CONTRASTE Y ACCESIBILIDAD (VERIFICA SIEMPRE) ═══
+- REGLA ABSOLUTA DE VISIBILIDAD: El texto de TODOS los botones y enlaces DEBE SER 100% VISIBLE Y LEGIBLE EN ESTADO DE REPOSO (SIN pasar el ratón por encima). PROHIBIDO que el texto solo se distinga al hacer :hover.
 - PROHIBIDO texto blanco sobre fondos claros (#fff, #f8fafc, amarillo pálido).
-- PROHIBIDO texto oscuro sobre fondos oscuros sin contraste ≥ 4.5:1.
-- .ms-hero SIEMPRE: fondo oscuro/degradado + color: #ffffff en h1, p y botones ghost.
-- Enlaces y botones claramente distinguibles:
-  * Enlaces de texto (<a href="...">): color con contraste suficiente y subrayado sutil; en :hover acentuado con subrayado nítido y cambio de color visible.
-  * Botones (.ms-btn--primary o <a class="ms-btn ms-btn--primary">): texto SIEMPRE blanco (#ffffff) en reposo y en :hover. Al :hover oscurecer fondo y elevar.
-  * Botones outline (.ms-btn--outline): fondo transparente y texto primario; en :hover fondo primario y texto blanco (#ffffff).
-  * En .ms-hero: todos los enlaces de texto deben ser blancos (#ffffff con subrayado), NUNCA del color oscuro del fondo.
+- PROHIBIDO texto oscuro o de color primario sobre fondos oscuros o primarios.
+- En .ms-hero o cualquier fondo oscuro/gradiente:
+  * El fondo es oscuro/gradiente primario.
+  * h1 y p: SIEMPRE color: #ffffff.
+  * Todos los enlaces de texto: SIEMPRE color: #ffffff con subrayado sutil. NUNCA del color oscuro del fondo.
+  * Botones outline (.ms-btn--outline): borde blanco y texto blanco (#ffffff) en reposo; al :hover fondo blanco y texto primario (#4338ca). NUNCA texto primario en reposo dentro del hero.
+  * Botones primarios (.ms-btn--primary): fondo blanco (#ffffff) y texto primario (#4338ca) para máximo contraste; o fondo acento (.ms-accent) con texto blanco. NUNCA fondo primario idéntico al fondo del hero.
+  * Botones ghost (.ms-btn--ghost): fondo translúcido blanco y texto blanco (#ffffff) en reposo y en :hover.
+- En secciones claras (fondo blanco o surface):
+  * Enlaces de texto: color primario (var(--ms-primary)) con subrayado; en :hover color acento (var(--ms-accent)).
+  * Botones primarios (.ms-btn--primary): fondo primario y texto blanco (#ffffff) en reposo y en :hover.
+  * Botones outline (.ms-btn--outline): fondo transparente, borde primario y texto primario en reposo; en :hover fondo primario y texto blanco (#ffffff).
 
 ═══ CALIDAD PREMIUM (NIVEL AGENCIA — OBLIGATORIO) ═══
 - Tipografía: @import Google Fonts al inicio del CSS (Playfair Display + DM Sans, o similar serif + sans).
