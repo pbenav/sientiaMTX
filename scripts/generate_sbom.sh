@@ -18,7 +18,7 @@ else
     SYFT_PATH="syft"
 fi
 
-OUTPUT_FILE="sientiamtx-sbom.spdx.json"
+OUTPUT_FILE="${1:-sbom.spdx.json}"
 
 echo "⚙️  Escaneando dependencias de Laravel y Node.js..."
 $SYFT_PATH . -o spdx-json > "$OUTPUT_FILE"
