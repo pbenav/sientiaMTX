@@ -505,7 +505,10 @@
             @endif
 
             {{-- Sección de Notas Privadas: Disponible para cualquier usuario con acceso a la tarea --}}
-            @if($personalInstance)
+            @php
+                $notesTarget = $personalInstance ?? $activity;
+            @endphp
+            @if($notesTarget)
                 <div class="bg-white dark:bg-gray-900 border border-amber-100 dark:border-amber-900/30 rounded-2xl p-5 shadow-sm mt-5">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center gap-2">
@@ -528,13 +531,13 @@
                         </div>
                     </div>
                     
-                    <form action="{{ route('teams.activities.private-notes.update', [$team, $personalInstance]) }}" method="POST" id="private-notes-form">
+                    <form action="{{ route('teams.activities.private-notes.update', [$team, $notesTarget]) }}" method="POST" id="private-notes-form">
                         @csrf
                         <div style="max-height: 400px; overflow-y: auto;" class="max-h-[500px] overflow-y-auto custom-scrollbar">
                             <x-markdown-editor 
                                 name="content" 
                                 id="reply-content-private"
-                                :value="old('content', $personalInstance->currentPrivateNote?->content)"
+                                :value="old('content', $notesTarget->currentPrivateNote?->content)"
                                 :label="null"
                                 rows="6"
                                 placeholder="{{ __('Write your personal notes about this task here... No one else will see them.') }}"

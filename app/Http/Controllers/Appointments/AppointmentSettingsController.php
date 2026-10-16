@@ -36,7 +36,26 @@ class AppointmentSettingsController extends Controller
             
         $expedientes = Expediente::where('team_id', $team->id)->orderBy('title')->get();
 
-        return view('appointments.settings', compact('settings', 'expedientes', 'team'));
+        // Secretarios/as asignados por este usuario en este equipo
+        $secretaries = \App\Models\AppointmentDelegation::where('team_id', $team->id)
+            ->where('user_id', $user->id)
+            ->with('delegate')
+            ->get();
+
+        // Miembros del equipo disponibles para ser nombrados secretarios (excluyendo al usuario y a los ya asignados)
+        $assignedDelegateIds = $secretaries->pluck('delegate_id')->push($user->id)->toArray();
+        $availableMembers = $team->members()
+            ->whereNotIn('users.id', $assignedDelegateIds)
+            ->orderBy('name')
+            ->get();
+
+        // Titulares que han designado a este usuario como secretario/a en este equipo
+        $delegatedBy = \App\Models\AppointmentDelegation::where('team_id', $team->id)
+            ->where('delegate_id', $user->id)
+            ->with('user')
+            ->get();
+
+        return view('appointments.settings', compact('settings', 'expedientes', 'team', 'secretaries', 'availableMembers', 'delegatedBy'));
     }
 
     /**

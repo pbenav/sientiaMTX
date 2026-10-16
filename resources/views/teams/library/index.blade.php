@@ -44,35 +44,40 @@
                 localStorage.setItem('library_view_layout', val);
             },
             selectedDocs: [],
+            selectedLinks: [],
             selectedFolders: [],
             allDocIds: config.allDocIds || [],
+            allLinkIds: config.allLinkIds || [],
             allFolderIds: config.allFolderIds || [],
             selectAll() {
                 this.selectedDocs = [...this.allDocIds];
+                this.selectedLinks = [...this.allLinkIds];
                 this.selectedFolders = [...this.allFolderIds];
             },
             clearSelection() {
                 this.selectedDocs = [];
+                this.selectedLinks = [];
                 this.selectedFolders = [];
             },
             get isAllSelected() {
-                const total = this.allDocIds.length + this.allFolderIds.length;
-                return total > 0 && (this.selectedDocs.length + this.selectedFolders.length) === total;
+                const total = this.allDocIds.length + this.allLinkIds.length + this.allFolderIds.length;
+                return total > 0 && (this.selectedDocs.length + this.selectedLinks.length + this.selectedFolders.length) === total;
             },
             get totalSelected() {
-                return this.selectedDocs.length + this.selectedFolders.length;
+                return this.selectedDocs.length + this.selectedLinks.length + this.selectedFolders.length;
             },
             isMovingItems: false,
             startDrag(event, type, id) {
                 let docIds = [];
                 let folderIds = [];
+                const combinedSelected = [...this.selectedDocs, ...this.selectedLinks];
 
-                if (type === 'document') {
-                    if (this.selectedDocs.includes(id)) {
-                        docIds = [...this.selectedDocs];
+                if (type === 'document' || type === 'link') {
+                    if (this.selectedDocs.includes(id) || this.selectedLinks.includes(id)) {
+                        docIds = [...combinedSelected];
                         folderIds = [...this.selectedFolders];
-                    } else if (this.selectedDocs.length > 0 || this.selectedFolders.length > 0) {
-                        docIds = Array.from(new Set([...this.selectedDocs, id]));
+                    } else if (combinedSelected.length > 0 || this.selectedFolders.length > 0) {
+                        docIds = Array.from(new Set([...combinedSelected, id]));
                         folderIds = [...this.selectedFolders];
                     } else {
                         docIds = [id];
@@ -80,10 +85,10 @@
                     }
                 } else if (type === 'folder') {
                     if (this.selectedFolders.includes(id)) {
-                        docIds = [...this.selectedDocs];
+                        docIds = [...combinedSelected];
                         folderIds = [...this.selectedFolders];
-                    } else if (this.selectedDocs.length > 0 || this.selectedFolders.length > 0) {
-                        docIds = [...this.selectedDocs];
+                    } else if (combinedSelected.length > 0 || this.selectedFolders.length > 0) {
+                        docIds = [...combinedSelected];
                         folderIds = Array.from(new Set([...this.selectedFolders, id]));
                     } else {
                         docIds = [];
@@ -126,9 +131,9 @@
 
                 let label = '';
                 if (docCount > 0 && folderCount > 0) {
-                    label = `${docCount} doc. y ${folderCount} carp.`;
+                    label = `${docCount} elem. y ${folderCount} carp.`;
                 } else if (docCount > 0) {
-                    label = docCount === 1 ? '1 documento' : `${docCount} documentos`;
+                    label = docCount === 1 ? '1 elemento' : `${docCount} elementos`;
                 } else {
                     label = folderCount === 1 ? '1 carpeta' : `${folderCount} carpetas`;
                 }
@@ -162,6 +167,7 @@
 
     <div x-data="libraryBrowser({
             allDocIds: @json($documents->pluck('id')->values()),
+            allLinkIds: @json($links->pluck('id')->values()),
             allFolderIds: @json($subfolders->pluck('id')->values())
         })"
         @bulk-move-items.window="isMovingItems = true">
@@ -176,6 +182,7 @@
             'searchScope' => $searchScope,
             'subfoldersCount' => $subfolders->count(),
             'documentsCount' => $documents->count(),
+            'linksCount' => $links->count(),
         ])
 
         {{-- Modo 1: EXPLORADOR DE ARCHIVOS (Grid o Lista) --}}
@@ -193,7 +200,7 @@
                             <span>{{ __('Raíz de la Biblioteca') }}</span>
                         @endif
 
-                        @if($documents->isNotEmpty() || $subfolders->isNotEmpty())
+                        @if($documents->isNotEmpty() || $links->isNotEmpty() || $subfolders->isNotEmpty())
                             <span class="text-gray-300 dark:text-gray-700">|</span>
                             <button type="button"
                                     @click="isAllSelected ? clearSelection() : selectAll()"
@@ -245,39 +252,72 @@
                     @endif
 
                     {{-- Sección de Documentos --}}
-                    <div>
-                        <h3 class="text-xs font-black uppercase tracking-wider text-gray-400 mb-3 flex items-center gap-2 select-none">
-                            <span>{{ __('Documentos') }}</span>
-                            <span class="text-[10px] bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full font-bold text-gray-500">
-                                {{ $documents->count() }}
-                            </span>
-                        </h3>
+                    @if($documents->isNotEmpty())
+                        <div>
+                            <h3 class="text-xs font-black uppercase tracking-wider text-gray-400 mb-3 flex items-center gap-2 select-none">
+                                <span>{{ __('Documentos') }}</span>
+                                <span class="text-[10px] bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full font-bold text-gray-500">
+                                    {{ $documents->count() }}
+                                </span>
+                            </h3>
 
-                        @if($documents->isNotEmpty())
                             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                                 @foreach($documents as $doc)
                                     @include('teams.library.partials.document-card', ['team' => $team, 'doc' => $doc])
                                 @endforeach
                             </div>
-                        @else
-                            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-12 text-center">
-                                <div class="w-14 h-14 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-3 text-gray-400">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                </div>
-                                <h4 class="text-sm font-bold text-gray-900 dark:text-white mb-1">{{ __('No hay documentos aquí') }}</h4>
-                                <p class="text-xs text-gray-400 max-w-sm mx-auto mb-4">{{ __('Puedes crear un nuevo documento o mover documentos existentes a esta carpeta.') }}</p>
+                        </div>
+                    @endif
+
+                    {{-- Sección de Enlaces --}}
+                    @if($links->isNotEmpty())
+                        <div>
+                            <h3 class="text-xs font-black uppercase tracking-wider text-purple-600 dark:text-purple-400 mb-3 flex items-center gap-2 select-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                </svg>
+                                <span>{{ __('Enlaces y Recursos Web') }}</span>
+                                <span class="text-[10px] bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-800/50 px-2 py-0.5 rounded-full font-bold">
+                                    {{ $links->count() }}
+                                </span>
+                            </h3>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                @foreach($links as $link)
+                                    @include('teams.library.partials.link-card', ['team' => $team, 'link' => $link])
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- Estado vacío si no hay documentos ni enlaces --}}
+                    @if($documents->isEmpty() && $links->isEmpty())
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-12 text-center">
+                            <div class="w-14 h-14 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-3 text-gray-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            </div>
+                            <h4 class="text-sm font-bold text-gray-900 dark:text-white mb-1">{{ __('No hay documentos ni enlaces aquí') }}</h4>
+                            <p class="text-xs text-gray-400 max-w-sm mx-auto mb-5">{{ __('Puedes crear un nuevo documento, guardar enlaces web o mover elementos existentes a esta carpeta.') }}</p>
+                            <div class="flex items-center justify-center gap-2.5 flex-wrap">
                                 <a href="{{ route('teams.activities.create', array_filter(['team' => $team, 'type' => 'document', 'folder_id' => $currentFolder?->id])) }}"
-                                   class="inline-flex items-center gap-1.5 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-bold transition-colors">
+                                   class="inline-flex items-center gap-1.5 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-bold transition-colors shadow-xs">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                                     </svg>
                                     {{ __('Crear Documento') }}
                                 </a>
+                                <a href="{{ route('teams.activities.create', array_filter(['team' => $team, 'type' => 'link', 'folder_id' => $currentFolder?->id])) }}"
+                                   class="inline-flex items-center gap-1.5 px-4 py-2 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-xl text-xs font-bold transition-colors shadow-xs">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                    </svg>
+                                    {{ __('Añadir Enlace') }}
+                                </a>
                             </div>
-                        @endif
-                    </div>
+                        </div>
+                    @endif
                 </div>
 
                 {{-- Visualización en Lista (List / Table) --}}
@@ -286,6 +326,7 @@
                         'team' => $team,
                         'subfolders' => $subfolders,
                         'documents' => $documents,
+                        'links' => $links,
                         'currentFolder' => $currentFolder,
                     ])
                 </div>

@@ -17,7 +17,7 @@
                 return;
             }
 
-            const docIds = data.document_ids || (data.type === 'document' ? [data.id] : []);
+            const docIds = data.document_ids || ((data.type === 'document' || data.type === 'link') ? [data.id] : []);
             const folderIds = data.folder_ids || (data.type === 'folder' ? [data.id] : []);
 
             if (docIds.length === 0 && folderIds.length === 0) return;
@@ -70,6 +70,10 @@
                     </div>
                 <div class="flex items-center gap-2 mt-1 text-[11px] text-gray-500 dark:text-gray-400 font-medium">
                     <span>{{ $folder->documents_count }} {{ trans_choice('documento|documentos', $folder->documents_count) }}</span>
+                    @if(($folder->links_count ?? 0) > 0)
+                        <span>•</span>
+                        <span>{{ $folder->links_count }} {{ trans_choice('enlace|enlaces', $folder->links_count) }}</span>
+                    @endif
                     @if($folder->children_count > 0)
                         <span>•</span>
                         <span>{{ $folder->children_count }} {{ trans_choice('carpeta|carpetas', $folder->children_count) }}</span>

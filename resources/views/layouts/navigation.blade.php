@@ -59,14 +59,14 @@
                     <x-nav-link :href="route('teams.index')" :active="request()->routeIs('teams.index')">
                         {{ __('navigation.my_teams') ?? 'Mis Equipos' }}
                     </x-nav-link>
-                    @if(auth()->user()->hasAppointmentsEnabled() || auth()->user()->hasMicrositesEnabled())
+                    @if(auth()->user()->canAccessAnyAppointments() || auth()->user()->hasMicrositesEnabled())
                         @php
                             $routeTeam = request()->route('team');
                             $routeTeamId = $routeTeam instanceof \App\Models\Team ? $routeTeam->id : $routeTeam;
                             
                             $navTeam = null;
-                            if (auth()->user()->hasAppointmentsEnabled()) {
-                                if ($routeTeamId && auth()->user()->hasAppointmentsEnabledForTeam($routeTeamId)) {
+                            if (auth()->user()->canAccessAnyAppointments()) {
+                                if ($routeTeamId && auth()->user()->canAccessAppointmentsForTeam($routeTeamId)) {
                                     $navTeam = $routeTeam;
                                 }
                                 if (!$navTeam) {
@@ -191,7 +191,7 @@
                                                 {{ __('navigation.team_surveys') }}
                                             </x-dropdown-link>
                                         @endif
-                                        @if(auth()->user()->hasAppointmentsEnabledForTeam($currentTeamId))
+                                        @if(auth()->user()->canAccessAppointmentsForTeam($currentTeamId))
                                             <x-dropdown-link :href="route('appointments.index', $currentTeamId)">
                                                 {{ __('navigation.prev_appointments') }}
                                             </x-dropdown-link>
@@ -347,14 +347,14 @@
             <x-responsive-nav-link :href="route('teams.index')" :active="request()->routeIs('teams.index')">
                 {{ __('navigation.my_teams') ?? 'Mis Equipos' }}
             </x-responsive-nav-link>
-                    @if(auth()->user()->hasAppointmentsEnabled() || auth()->user()->hasMicrositesEnabled())
+                    @if(auth()->user()->canAccessAnyAppointments() || auth()->user()->hasMicrositesEnabled())
                         @php
                             $routeTeam = request()->route('team');
                             $routeTeamId = $routeTeam instanceof \App\Models\Team ? $routeTeam->id : $routeTeam;
                             
                             $navTeam = null;
-                            if (auth()->user()->hasAppointmentsEnabled()) {
-                                if ($routeTeamId && auth()->user()->hasAppointmentsEnabledForTeam($routeTeamId)) {
+                            if (auth()->user()->canAccessAnyAppointments()) {
+                                if ($routeTeamId && auth()->user()->canAccessAppointmentsForTeam($routeTeamId)) {
                                     $navTeam = $routeTeam;
                                 }
                                 if (!$navTeam) {
@@ -459,7 +459,7 @@
                                 {{ __('navigation.team_surveys') }}
                             </x-responsive-nav-link>
                         @endif
-                         @if(auth()->user()->hasAppointmentsEnabledForTeam($currentTeamId))
+                         @if(auth()->user()->canAccessAppointmentsForTeam($currentTeamId))
                              <x-responsive-nav-link :href="route('appointments.index', $currentTeamId)" :active="request()->routeIs('appointments.*')" class="text-sm">
                                  {{ __('navigation.prev_appointments') }}
                              </x-responsive-nav-link>

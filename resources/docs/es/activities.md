@@ -163,3 +163,69 @@ Ax.ia interactúa directamente con el ciclo de vida de las actividades:
    - Nuevo capítulo en un documento (`DocumentActivity`).
    - Nueva publicación en el foro del equipo.
 
+---
+
+## 🔐 5. Modelo de Seguridad, Visibilidad y Permisos
+
+Para garantizar la soberanía de los datos y el orden organizativo, SientiaMTX implementa una política granular de autorización en [`ActivityPolicy`](app/Policies/ActivityPolicy.php).
+
+### 5.1. Principio Fundamental: Lectura ≠ Escritura
+* **Hacer una actividad `Pública` NO otorga permisos de edición a cualquiera**.
+* La visibilidad pública (`visibility = 'public'`) significa **visibilidad de lectura** para todos los integrantes del equipo.
+* Los miembros que solo tienen acceso de lectura pueden consultar el contenido, leer el historial y participar en las notas internas o adjuntos, pero **no pueden cambiar el estado ni alterar la ficha técnica** a menos que estén explícitamente asignados o tengan rol de gestión en el equipo.
+
+---
+
+### 5.2. ¿Quién puede VER una actividad? (`view`)
+Un integrante del equipo puede consultar una actividad si:
+1. **Es el creador / autor** de la actividad.
+2. **Está asignado** directamente a ella (o su grupo de trabajo está asignado).
+3. **Es pública (`public`)** dentro del equipo y no tiene asignados excluyentes.
+4. **Es Manager del equipo** (Coordinador o Moderador): puede supervisar todas las actividades del equipo salvo las estrictamente privadas de otros usuarios.
+
+> [!NOTE]
+> **Privacidad Estricta en Tareas Asignadas**: Si una actividad tiene asignados específicos y no perteneces a ellos ni eres creador ni manager, el sistema protege la intimidad operativa del asignado y oculta la actividad para el resto de miembros.
+
+---
+
+### 5.3. ¿Quién puede MODIFICAR una actividad o CAMBIAR SU ESTADO? (`update` y `changeStatus`)
+Pueden modificar los datos y cambiar el estado (ej. pasar de `draft` a `approved`, o de `pending` a `completed`) únicamente:
+1. **El Creador** original de la actividad.
+2. **Cualquier usuario Asignado directamente** a la actividad.
+3. **Cualquier integrante de un Grupo Asignado** a la actividad (asignaciones colectivas).
+4. **Los Coordinadores y Moderadores** (*Managers*) del equipo de trabajo.
+
+Si un miembro con acceso de solo lectura intenta alterar el estado o los datos, el sistema bloquea la acción, manteniendo al usuario en la misma pantalla y mostrando un **toast informativo** que le recuerda que carece de permisos de modificación.
+
+---
+
+### 5.4. Matriz Resumen de Autorización
+
+| Acción | Creador | Asignado / Grupo | Coordinador / Moderador | Miembro Lector (Público) |
+|---|:---:|:---:|:---:|:---:|
+| **Consultar contenido** (`view`) | ✅ | ✅ | ✅ | ✅ |
+| **Añadir notas internas / comentarios** (`addNote`) | ✅ | ✅ | ✅ | ✅ |
+| **Adjuntar archivos complementarios** (`attach`) | ✅ | ✅ | ✅ | ✅ |
+| **Modificar título, descripción y campos** (`update`) | ✅ | ✅ | ✅ | ❌ *(Solo lectura)* |
+| **Cambiar estado operativo** (`changeStatus`) | ✅ | ✅ | ✅ | ❌ *(Solo lectura)* |
+| **Reasignar responsables** (`assign`) | ✅ | ❌ | ✅ | ❌ |
+| **Archivar / Desarchivar** (`archive`) | ✅ | ❌ | ✅ | ❌ |
+| **Eliminar / Restaurar** (`delete`, `restore`) | ✅ | ❌ | ✅ | ❌ |
+
+---
+
+### 5.5. Roles del Equipo y Dónde se Configuran
+
+Los permisos se articulan a través de tres niveles configurables desde la interfaz:
+
+1. **Roles del Equipo** (configurados en `/teams/{team}/members`):
+   - **Coordinador (`coordinator`)**: Administrador del equipo. Posee control total sobre las actividades, configuración de flujos y miembros.
+   - **Moderador (`moderator`)**: Rol de gestión operativa (*Manager*). Puede coordinar, editar y cambiar el estado de las actividades del equipo.
+   - **Miembro (`user`)**: Usuario operativo estándar. Trabaja en las actividades creadas por él o asignadas a su persona o grupo. En las demás actividades públicas tiene acceso de consulta.
+2. **Grupos de Trabajo** (configurados en `/teams/{team}/groups`):
+   - Permiten crear áreas temáticas (ej. *Administración*, *Diseño*, *Asesoría Jurídica*). Asignar una actividad a un grupo habilita inmediatamente la edición y cambio de estado a todos los miembros de dicho grupo.
+3. **Ficha de la Actividad** (durante la creación o edición):
+   - **Selector de Visibilidad**: Determina si es `Pública` (auditable por todo el equipo) o `Privada` (restringida a creador, asignados y managers).
+   - **Selector de Asignación**: Añade usuarios o grupos autorizados para ejecutar y certificar el estado de la actividad.
+
+

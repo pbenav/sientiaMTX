@@ -57,6 +57,36 @@
         {{-- Banner de Contador Activo --}}
         @include('partials.active-timer-banner')
 
+        {{-- Modo Secretaría Banner --}}
+        @if(isset($agendaUser) && $agendaUser->id !== auth()->id())
+            <div class="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-300 dark:border-amber-600/40 rounded-2xl p-4 flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 flex items-center justify-center text-lg shrink-0 shadow-sm">
+                        📋
+                    </div>
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-xs font-black uppercase tracking-widest px-2 py-0.5 bg-amber-500 text-white rounded-md text-[9px]">
+                                {{ __('Modo Secretaría') }}
+                            </span>
+                            <span class="text-sm font-black text-gray-900 dark:text-white truncate">
+                                {{ __('Gestionando la agenda de:') }} <span class="text-amber-700 dark:text-amber-300 font-black">{{ $agendaUser->name }}</span>
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                            {{ __('Tienes acceso delegado para atender, agendar, reorganizar y gestionar todas sus citas y bloqueos.') }}
+                        </p>
+                    </div>
+                </div>
+                @if(auth()->user()->hasAppointmentsEnabledForTeam($team->id))
+                    <a href="{{ request()->fullUrlWithQuery(['agenda_user_id' => auth()->id()]) }}"
+                       class="px-3 py-1.5 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-black text-gray-700 dark:text-gray-300 shadow-sm transition-all shrink-0">
+                        ← {{ __('Volver a mi agenda') }}
+                    </a>
+                @endif
+            </div>
+        @endif
+
         {{-- Alerta si no está configurado --}}
         @if(!$settings || !$settings->is_public)
             <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-5 flex items-start gap-4">
@@ -64,11 +94,17 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                 </div>
                 <div>
-                    <p class="text-sm font-black text-amber-800 dark:text-amber-300">{{ __('Your public profile is not active') }}</p>
-                    <p class="text-xs text-amber-700 dark:text-amber-400 mt-1">{{ __('To allow citizens to book appointments with you, activate your public profile in settings.') }}</p>
-                    <a href="{{ route('appointments.settings', $team) }}" class="mt-3 inline-flex items-center gap-1.5 text-xs font-black text-amber-700 dark:text-amber-300 hover:underline">
-                        {{ __('Go to Settings') }} →
-                    </a>
+                    <p class="text-sm font-black text-amber-800 dark:text-amber-300">
+                        {{ isset($agendaUser) && $agendaUser->id !== auth()->id() ? __('El perfil público de ' . $agendaUser->name . ' no está activo') : __('Your public profile is not active') }}
+                    </p>
+                    <p class="text-xs text-amber-700 dark:text-amber-400 mt-1">
+                        {{ __('To allow citizens to book appointments with you, activate your public profile in settings.') }}
+                    </p>
+                    @if(!isset($agendaUser) || $agendaUser->id === auth()->id())
+                        <a href="{{ route('appointments.settings', $team) }}" class="mt-3 inline-flex items-center gap-1.5 text-xs font-black text-amber-700 dark:text-amber-300 hover:underline">
+                            {{ __('Go to Settings') }} →
+                        </a>
+                    @endif
                 </div>
             </div>
         @endif

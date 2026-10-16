@@ -109,6 +109,7 @@ return [
     'archived_success' => 'Aktivität archiviert.',
     'unarchived_success' => 'Aktivität nicht archiviert.',
     'status_updated' => 'Aktivitätsstatus aktualisiert.',
+    'unauthorized_status_change' => 'Sie haben keine Berechtigung, den Status dieser Aktivität zu ändern.',
     'note_added' => 'Hinweis hinzugefügt.',
     'note_updated' => 'Hinweis aktualisiert.',
     'note_deleted' => 'Notiz gelöscht.',

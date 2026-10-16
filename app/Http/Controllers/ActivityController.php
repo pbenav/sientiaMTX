@@ -340,7 +340,11 @@ class ActivityController extends Controller
     public function archive(Team $team, Activity $activity)
     {
         if (auth()->user()->cannot('archive', $activity)) {
-            abort(403);
+            $message = __('teams.unauthorized_access');
+            if (request()->expectsJson() || request()->ajax()) {
+                return response()->json(['success' => false, 'message' => $message], 403);
+            }
+            return back()->with('error', $message);
         }
 
         $this->activityService->archive($activity);
@@ -358,7 +362,11 @@ class ActivityController extends Controller
     public function unarchive(Team $team, Activity $activity)
     {
         if (auth()->user()->cannot('archive', $activity)) {
-            abort(403);
+            $message = __('teams.unauthorized_access');
+            if (request()->expectsJson() || request()->ajax()) {
+                return response()->json(['success' => false, 'message' => $message], 403);
+            }
+            return back()->with('error', $message);
         }
 
         $this->activityService->unarchive($activity);
@@ -372,16 +380,33 @@ class ActivityController extends Controller
      * @param  Request  $request
      * @param  Team  $team
      * @param  Activity  $activity
-     * @return \Illuminate\Http\RedirectResponse
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
      */
     public function changeStatus(Request $request, Team $team, Activity $activity)
     {
         if (auth()->user()->cannot('changeStatus', $activity)) {
-            abort(403);
+            $message = __('activities.unauthorized_status_change');
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'error'   => $message,
+                    'message' => $message,
+                ], 403);
+            }
+
+            return back()->with('error', $message);
         }
 
         $request->validate(['status' => 'required|string']);
         $this->activityService->changeStatus($activity, $request->get('status'));
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => __('activities.status_updated'),
+                'status'  => $activity->fresh()->status_value,
+            ]);
+        }
 
         return back()->with('success', __('activities.status_updated'));
     }

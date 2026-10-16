@@ -9,6 +9,8 @@ use App\Models\Appointment;
 use App\Models\Team;
 use Illuminate\Http\Request;
 
+use App\Http\Controllers\Appointments\Concerns\ResolvesAppointmentAgendaUser;
+
 /**
  * Controlador para la gestión de tramos bloqueados (horarios no disponibles) en el sistema de citas.
  *
@@ -24,8 +26,10 @@ use Illuminate\Http\Request;
  */
 class AppointmentBlockController extends Controller
 {
+    use ResolvesAppointmentAgendaUser;
+
     /**
-     * Muestra la lista de tramos bloqueados del usuario dentro de un equipo.
+     * Muestra la lista de tramos bloqueados del usuario o de la agenda delegada dentro de un equipo.
      *
      * Incluye los bloques generales y los asociados a servicios del equipo, junto con
      * los servicios activos del usuario en ese equipo.
@@ -35,7 +39,9 @@ class AppointmentBlockController extends Controller
      */
     public function index(Team $team)
     {
-        $blocks = auth()->user()->appointmentBlocks()
+        $agendaUser = $this->resolveAgendaUser($team, request());
+
+        $blocks = $agendaUser->appointmentBlocks()
             ->where(function($q) use ($team) {
                 $q->whereNull('service_id')
                   ->orWhereHas('service', fn($sq) => $sq->where('team_id', $team->id));
@@ -44,18 +50,18 @@ class AppointmentBlockController extends Controller
             ->with('service')
             ->get();
 
-        $services = auth()->user()->appointmentServices()
+        $services = $agendaUser->appointmentServices()
             ->where('team_id', $team->id)
             ->active()
             ->get();
 
-        return view('appointments.blocks.index', compact('blocks', 'services', 'team'));
+        return view('appointments.blocks.index', compact('blocks', 'services', 'team', 'agendaUser'));
     }
 
     /**
-     * Crea un nuevo tramo bloqueado para el usuario autenticado.
+     * Crea un nuevo tramo bloqueado para el usuario o la agenda gestionada.
      *
-     * Verifica que el servicio asociado (si existe) pertenezca al usuario y al equipo.
+     * Verifica que el servicio asociado (si existe) pertenezca al usuario de la agenda y al equipo.
      * Opcionalmente cancela las citas afectadas dentro del rango del bloqueo.
      *
      * @param Team $team
@@ -64,6 +70,8 @@ class AppointmentBlockController extends Controller
      */
     public function store(Team $team, Request $request)
     {
+        $agendaUser = $this->resolveAgendaUser($team, $request);
+
         $data = $request->validate([
             'service_id'       => 'nullable|exists:appointment_services,id',
             'start_datetime'   => 'required|date|after_or_equal:now',
@@ -72,15 +80,15 @@ class AppointmentBlockController extends Controller
             'notify_affected'  => 'boolean',
         ]);
 
-        // Verificar que el servicio pertenece al usuario y al equipo si se especifica
+        // Verificar que el servicio pertenece al usuario de la agenda y al equipo si se especifica
         if (!empty($data['service_id'])) {
             $service = AppointmentService::find($data['service_id']);
-            if ($service->user_id !== auth()->id() || $service->team_id !== $team->id) {
+            if ($service->user_id !== $agendaUser->id || $service->team_id !== $team->id) {
                 abort(403);
             }
         }
 
-        $block = auth()->user()->appointmentBlocks()->create($data);
+        $block = $agendaUser->appointmentBlocks()->create($data);
 
         // Si notify_affected, enviar emails a citas afectadas
         if ($block->notify_affected) {
@@ -93,7 +101,7 @@ class AppointmentBlockController extends Controller
     /**
      * Elimina un tramo bloqueado.
      *
-     * Solo el propietario del bloqueo puede eliminarlo.
+     * Solo el propietario del bloqueo o su secretario/a pueden eliminarlo.
      *
      * @param Team $team
      * @param AppointmentBlock $block
@@ -101,7 +109,7 @@ class AppointmentBlockController extends Controller
      */
     public function destroy(Team $team, AppointmentBlock $block)
     {
-        if ($block->user_id !== auth()->id()) {
+        if ($block->user_id !== auth()->id() && !auth()->user()->isSecretaryOf($block->user_id, $team->id)) {
             abort(403);
         }
         if ($block->service_id && $block->service->team_id !== $team->id) {
@@ -121,11 +129,11 @@ class AppointmentBlockController extends Controller
      */
     public function edit(Team $team, AppointmentBlock $block)
     {
-        if ($block->user_id !== auth()->id()) {
+        if ($block->user_id !== auth()->id() && !auth()->user()->isSecretaryOf($block->user_id, $team->id)) {
             abort(403);
         }
 
-        $services = auth()->user()->appointmentServices()
+        $services = $block->user->appointmentServices()
             ->where('team_id', $team->id)
             ->active()
             ->get();
@@ -143,7 +151,7 @@ class AppointmentBlockController extends Controller
      */
     public function update(Request $request, Team $team, AppointmentBlock $block)
     {
-        if ($block->user_id !== auth()->id()) {
+        if ($block->user_id !== auth()->id() && !auth()->user()->isSecretaryOf($block->user_id, $team->id)) {
             abort(403);
         }
 
@@ -157,7 +165,7 @@ class AppointmentBlockController extends Controller
 
         if (!empty($data['service_id'])) {
             $service = AppointmentService::find($data['service_id']);
-            if ($service->user_id !== auth()->id() || $service->team_id !== $team->id) {
+            if ($service->user_id !== $block->user_id || $service->team_id !== $team->id) {
                 abort(403);
             }
         }
@@ -185,7 +193,7 @@ class AppointmentBlockController extends Controller
      */
     private function notifyAffectedAppointments(AppointmentBlock $block, Team $team): void
     {
-        $query = Appointment::where('user_id', auth()->id())
+        $query = Appointment::where('user_id', $block->user_id)
             ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
             ->where('appointment_date', '>=', $block->start_datetime->toDateString())
             ->where('appointment_date', '<=', $block->end_datetime->toDateString())

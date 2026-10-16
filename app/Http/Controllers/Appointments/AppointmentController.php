@@ -12,28 +12,32 @@ use App\Services\AppointmentAvailabilityService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
+use App\Http\Controllers\Appointments\Concerns\ResolvesAppointmentAgendaUser;
+
 class AppointmentController extends Controller
 {
+    use ResolvesAppointmentAgendaUser;
+
     public function __construct(private AppointmentAvailabilityService $availability) {}
 
     /**
-     * Dashboard principal de citas previas del miembro.
+     * Dashboard principal de citas previas del miembro o de la agenda delegada.
      */
     public function index(Team $team, Request $request)
     {
-        $user     = auth()->user();
-        $settings = $user->appointmentSettings()->where('team_id', $team->id)->first();
+        $agendaUser = $this->resolveAgendaUser($team, $request);
+        $settings   = $agendaUser->appointmentSettings()->where('team_id', $team->id)->first();
         
         $selectedDate = $request->get('date', now()->toDateString());
 
-        $upcoming = Appointment::where('user_id', $user->id)
+        $upcoming = Appointment::where('user_id', $agendaUser->id)
             ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
             ->upcoming()
             ->with(['service', 'visitor'])
             ->take(10)
             ->get();
 
-        $todayCitas = Appointment::where('user_id', $user->id)
+        $todayCitas = Appointment::where('user_id', $agendaUser->id)
             ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
             ->forDate($selectedDate)
             ->whereNotIn('status', ['cancelled', 'blocked'])
@@ -42,7 +46,7 @@ class AppointmentController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
 
-        $monthAppointments = Appointment::where('user_id', $user->id)
+        $monthAppointments = Appointment::where('user_id', $agendaUser->id)
             ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
             ->whereYear('appointment_date', now()->year)
             ->whereMonth('appointment_date', now()->month)
@@ -55,7 +59,7 @@ class AppointmentController extends Controller
         $totalThisMonth = array_sum($monthAppointments);
 
         // Stats: duración de citas (últimos 30 días)
-        $pastAppointments = Appointment::where('user_id', $user->id)
+        $pastAppointments = Appointment::where('user_id', $agendaUser->id)
             ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
             ->where('appointment_date', '>=', now()->subDays(30)->toDateString())
             ->where('status', 'completed')
@@ -97,7 +101,7 @@ class AppointmentController extends Controller
             \App\Jobs\SyncAppointmentWithGoogleJob::dispatch($app);
         }
 
-        return view('appointments.index', compact('settings', 'upcoming', 'todayCitas', 'totalThisMonth', 'monthAppointments', 'team', 'selectedDate', 'statsDuration'));
+        return view('appointments.index', compact('settings', 'upcoming', 'todayCitas', 'totalThisMonth', 'monthAppointments', 'team', 'selectedDate', 'statsDuration', 'agendaUser'));
     }
 
     /**
@@ -105,19 +109,21 @@ class AppointmentController extends Controller
      */
     public function list(\App\Models\Team $team, \Illuminate\Http\Request $request, \App\Actions\Appointments\FilterAppointmentsAction $filterAction)
     {
+        $agendaUser = $this->resolveAgendaUser($team, $request);
+
         if ($request->has('clear')) {
-            $filterAction->execute($team, $request); // This handles session forget
+            $filterAction->execute($team, $request, true, $agendaUser); // This handles session forget
             return redirect()->route('appointments.list', $team);
         }
 
-        $appointments = $filterAction->execute($team, $request);
+        $appointments = $filterAction->execute($team, $request, true, $agendaUser);
         
         $services = \App\Models\AppointmentService::where('team_id', $team->id)
-            ->where('user_id', auth()->id())
+            ->where('user_id', $agendaUser->id)
             ->orderBy('name')
             ->get();
 
-        return view('appointments.list', compact('team', 'appointments', 'services'));
+        return view('appointments.list', compact('team', 'appointments', 'services', 'agendaUser'));
     }
 
     /**
@@ -194,7 +200,7 @@ class AppointmentController extends Controller
         \App\Jobs\SyncAppointmentWithGoogleJob::dispatchSync($appointment);
         
         // Use the Action to get the filtered/sorted query without pagination
-        $query = $filterAction->execute($team, $request, false);
+        $query = $filterAction->execute($team, $request, false, $appointment->member);
         $query->whereNotIn('appointments.status', ['completed', 'cancelled', 'blocked']);
         
         $orderedIds = $query->pluck('appointments.id')->toArray();
@@ -432,11 +438,11 @@ class AppointmentController extends Controller
      */
     public function agenda(Team $team, Request $request)
     {
-        $user  = auth()->user();
+        $agendaUser = $this->resolveAgendaUser($team, $request);
         $start = Carbon::parse($request->get('start', now()->startOfWeek()));
         $end   = Carbon::parse($request->get('end', now()->endOfWeek()));
 
-        $appointments = Appointment::where('user_id', $user->id)
+        $appointments = Appointment::where('user_id', $agendaUser->id)
             ->whereHas('service', fn($q) => $q->where('team_id', $team->id))
             ->whereBetween('appointment_date', [$start->toDateString(), $end->toDateString()])
             ->with(['service', 'visitor'])
@@ -453,7 +459,7 @@ class AppointmentController extends Controller
                 'status_color' => $a->status_color,
             ]);
 
-        $blocks = AppointmentBlock::where('user_id', $user->id)
+        $blocks = AppointmentBlock::where('user_id', $agendaUser->id)
             ->where(function($q) use ($team) {
                 $q->whereNull('service_id')
                   ->orWhereHas('service', fn($sq) => $sq->where('team_id', $team->id));

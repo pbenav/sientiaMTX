@@ -99,6 +99,7 @@ return array (
   'mark_favorite' => 'Marcar como favorito',
   'revoke_all_modules' => 'Deshabilitar todos los módulos a todos',
   'team' => 'Equipamento',
+  'trash' => 'Lixeira',
   'trash_team' => 'Papelera del equipo',
   'team_limit' => 'Límite del equipo',
   'email_list' => 'Lista de correos',

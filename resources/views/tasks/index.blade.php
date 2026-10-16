@@ -239,8 +239,14 @@
                     </button>
                 </div>
             </div>
-            <div class="overflow-x-auto min-h-[200px] no-scrollbar">
-                <table class="w-full text-left border-collapse min-w-[700px]">
+            <div x-data="tableScrollDrag"
+                @mousedown="handleMouseDown($event)"
+                @mousemove.window="handleMouseMove($event)"
+                @mouseup.window="handleMouseUp()"
+                @click.capture="if (hasMoved) { $event.preventDefault(); $event.stopPropagation(); $event.stopImmediatePropagation(); }"
+                class="overflow-x-auto min-h-[200px] custom-scrollbar"
+                :class="{ 'cursor-grab': hasOverflow && !isDown, 'cursor-grabbing select-none': isDown && hasMoved }">
+                <table class="w-full text-left border-collapse min-w-[950px]">
                     <thead>
                         <tr class="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
                             <th class="px-4 py-4 w-10 text-center">

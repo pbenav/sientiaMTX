@@ -116,6 +116,7 @@ return array (
   'archived_success' => 'Actividade archivada.',
   'unarchived_success' => 'Actividade desarchivada.',
   'status_updated' => 'Estado de la actividade actualizado.',
+  'unauthorized_status_change' => 'Você não tem permissão para alterar o estado desta atividade.',
   'note_added' => 'Nota añadida.',
   'note_updated' => 'Nota actualizada.',
   'note_deleted' => 'Nota eliminada.',

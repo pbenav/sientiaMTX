@@ -261,6 +261,118 @@
                 </button>
             </div>
         </form>
+
+        {{-- Secretarías y Delegación de Agenda --}}
+        <div id="secretarias" class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden mt-8 scroll-mt-24">
+            <div class="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 flex items-center justify-between flex-wrap gap-2">
+                <div>
+                    <p class="text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">👥 {{ __('Secretarías y Gestión Delegada') }}</p>
+                    <p class="text-[10px] text-gray-400 mt-0.5">{{ __('Permite que otros miembros del equipo gestionen tu agenda, citas y bloqueos conjuntamente.') }}</p>
+                </div>
+                @if(isset($secretaries) && $secretaries->isNotEmpty())
+                    <span class="text-[10px] font-bold px-2.5 py-1 bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-lg">
+                        {{ $secretaries->count() }} {{ $secretaries->count() === 1 ? __('secretario/a asignado/a') : __('secretarios/as asignados/as') }}
+                    </span>
+                @endif
+            </div>
+
+            <div class="p-6 space-y-6">
+                @if(session('success') && (str_contains(session('success'), 'secretario') || str_contains(session('success'), 'delegación') || str_contains(session('success'), 'secretaría')))
+                    <div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 rounded-2xl p-3.5 text-xs font-bold flex items-center gap-2.5">
+                        <svg class="w-4 h-4 shrink-0 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                {{-- Formulario para asignar un nuevo secretario --}}
+                @if(isset($availableMembers) && $availableMembers->isNotEmpty())
+                    <form method="POST"
+                          action="{{ route('appointments.delegations.store', $team) }}"
+                          x-data="{ submitting: false }"
+                          @submit="submitting = true; sessionStorage.setItem('appointments_settings_scroll', window.scrollY)"
+                          class="p-4 bg-gray-50 dark:bg-gray-800/40 rounded-2xl border border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
+                        @csrf
+                        <div class="flex-1">
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-600 dark:text-gray-300 mb-1.5">
+                                {{ __('Añadir nuevo/a secretario/a') }}
+                            </label>
+                            <select name="delegate_id" required class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring focus:ring-cyan-500/20 rounded-xl px-4 py-2.5 text-xs text-gray-900 dark:text-white outline-none transition-all">
+                                <option value="">{{ __('Seleccionar miembro del equipo...') }}</option>
+                                @foreach($availableMembers as $member)
+                                    <option value="{{ $member->id }}">{{ $member->name }} ({{ $member->email }})</option>
+                                @endforeach
+                            </select>
+                            @error('delegate_id')
+                                <p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <button type="submit"
+                                :disabled="submitting"
+                                class="px-5 py-2.5 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-sm transition-all flex items-center justify-center gap-1.5 shrink-0">
+                            <svg x-show="!submitting" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                            <svg x-show="submitting" style="display:none;" class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span>{{ __('Asignar') }}</span>
+                        </button>
+                    </form>
+                @endif
+
+                {{-- Lista de secretarios actuales --}}
+                <div>
+                    <h4 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3">{{ __('Secretarios/as con acceso a tu agenda') }}</h4>
+                    @if(isset($secretaries) && $secretaries->isNotEmpty())
+                        <div class="divide-y divide-gray-100 dark:divide-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden">
+                            @foreach($secretaries as $delegation)
+                                <div class="p-4 flex items-center justify-between gap-3 bg-white dark:bg-gray-900 hover:bg-gray-50/50 dark:hover:bg-gray-850/50 transition-colors">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <div class="w-9 h-9 rounded-xl bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 font-black text-xs flex items-center justify-center shrink-0">
+                                            {{ strtoupper(substr($delegation->delegate->name ?? 'U', 0, 2)) }}
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p class="text-xs font-black text-gray-900 dark:text-white truncate">
+                                                {{ $delegation->delegate->name ?? __('Usuario eliminado') }}
+                                            </p>
+                                            <p class="text-[10px] text-gray-400 truncate">
+                                                {{ $delegation->delegate->email ?? '' }} • {{ __('Asignado el') }} {{ $delegation->created_at->format('d/m/Y') }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <form method="POST" action="{{ route('appointments.delegations.destroy', [$team, $delegation]) }}" onsubmit="sessionStorage.setItem('appointments_settings_scroll', window.scrollY); return confirm('¿Seguro que deseas revocar los permisos de secretaría a este usuario?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-all" title="{{ __('Revocar acceso') }}">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="p-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-2xl">
+                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ __('No has designado ningún secretario/a. Solo tú puedes gestionar tus citas en este equipo.') }}</p>
+                        </div>
+                    @endif
+                </div>
+
+                {{-- Agendas que tú gestionas como secretario/a --}}
+                @if(isset($delegatedBy) && $delegatedBy->isNotEmpty())
+                    <div class="pt-4 border-t border-gray-100 dark:border-gray-800">
+                        <h4 class="text-xs font-black uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-2 flex items-center gap-1.5">
+                            <span>📋</span> {{ __('Agendas en las que figuras como secretario/a') }}
+                        </h4>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach($delegatedBy as $del)
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-xl text-xs font-bold text-amber-800 dark:text-amber-300">
+                                    <span>👤</span> {{ $del->user->name ?? __('Titular') }}
+                                </span>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+            </div>
+        </div>
     </div>
 </div>
 
@@ -374,6 +486,43 @@
             }
         };
     }
+
+    // Preserva la posición de scroll al interactuar con las secretarías o saltar al ancla
+    (function() {
+        const restoreScroll = function() {
+            const savedScroll = sessionStorage.getItem('appointments_settings_scroll');
+            if (savedScroll !== null) {
+                sessionStorage.removeItem('appointments_settings_scroll');
+                window.scrollTo({
+                    top: parseInt(savedScroll, 10),
+                    behavior: 'instant'
+                });
+                setTimeout(function() {
+                    window.scrollTo({
+                        top: parseInt(savedScroll, 10),
+                        behavior: 'instant'
+                    });
+                }, 80);
+            } else if (window.location.hash === '#secretarias') {
+                const el = document.getElementById('secretarias');
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', restoreScroll);
+        } else {
+            restoreScroll();
+        }
+        window.addEventListener('load', function() {
+            const savedScroll = sessionStorage.getItem('appointments_settings_scroll');
+            if (savedScroll !== null) {
+                restoreScroll();
+            }
+        });
+    })();
 </script>
 </x-app-layout>
 

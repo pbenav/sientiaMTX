@@ -276,6 +276,42 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
     }
 
     /**
+     * Delegaciones donde este usuario es el titular (ha designado secretarios/as).
+     */
+    public function appointmentDelegations(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(AppointmentDelegation::class, 'user_id');
+    }
+
+    /**
+     * Secretarios/as asignados por este usuario.
+     */
+    public function appointmentSecretaries(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'appointment_delegations', 'user_id', 'delegate_id')
+            ->withPivot('team_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * Delegaciones donde este usuario actúa como secretario/a (le han delegado agendas).
+     */
+    public function delegatedAppointmentAgendas(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(AppointmentDelegation::class, 'delegate_id');
+    }
+
+    /**
+     * Titulares cuyas agendas puede gestionar este usuario como secretario/a.
+     */
+    public function appointmentTitulares(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'appointment_delegations', 'delegate_id', 'user_id')
+            ->withPivot('team_id')
+            ->withTimestamps();
+    }
+
+    /**
      * Tareas asignadas al usuario.
      *
      * @property-read \Illuminate\Database\Eloquent\Collection<int, Task> $assignedTasks

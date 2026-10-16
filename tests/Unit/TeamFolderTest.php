@@ -132,5 +132,14 @@ class TeamFolderTest extends TestCase
         $this->assertTrue($policy->update($admin, $creatorFolder));
         $this->assertTrue($policy->delete($admin, $creatorFolder));
     }
+
+    public function test_folder_links_relationship(): void
+    {
+        $folder = new TeamFolder();
+        $relation = $folder->links();
+
+        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\HasMany::class, $relation);
+        $this->assertEquals('folder_id', $relation->getForeignKeyName());
+    }
 }
 

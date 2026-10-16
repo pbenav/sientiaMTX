@@ -559,7 +559,7 @@
                             $drawerViews[] = ['divider' => true];
                             $drawerViews[] = ['name' => __('Encuestas del Equipo'), 'route' => route('teams.surveys.index', $drawerTeamId), 'active' => request()->routeIs('teams.surveys.*')];
                         }
-                        if (auth()->user()->hasAppointmentsEnabledForTeam($drawerTeamId)) {
+                        if (auth()->user()->canAccessAppointmentsForTeam($drawerTeamId)) {
                             $drawerViews[] = [
                                 'name' => 'Citas Previas',
                                 'route' => route('appointments.index', $drawerTeamId),

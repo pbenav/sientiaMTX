@@ -131,6 +131,7 @@ Ax.ia (potenciada por los modelos **Gemini 2.0 Flash** y **Gemini 1.5 Pro**) est
 - **Portal Público de Reservas**: Comparte tu enlace de agenda para que los ciudadanos o clientes elijan servicio, modalidad y franja horaria.
 - **Localizador Único**: Cada reserva genera un localizador (ej. `25C-B4A1`) con el que el visitante puede consultar o cancelar su cita.
 - **Botón "Atender Ahora"**: Desplaza la cita a la hora actual en el momento de la llegada e inicia el cronómetro de consulta.
+- **Secretarías y Gestión Delegada**: Nombra a uno o varios miembros del equipo como secretarios para gestionar tu agenda, concertar citas y registrar atenciones en tu nombre, incluso si ellos no tienen citas públicas propias habilitadas.
 
 ---
 

@@ -9,9 +9,9 @@ use Illuminate\Support\Facades\DB;
 
 class FilterAppointmentsAction
 {
-    public function execute(Team $team, Request $request, bool $paginate = true)
+    public function execute(Team $team, Request $request, bool $paginate = true, ?\App\Models\User $agendaUser = null)
     {
-        $user = auth()->user();
+        $user = $agendaUser ?? auth()->user();
 
         if ($request->has('clear')) {
             session()->forget("appointments_filters_{$team->id}");

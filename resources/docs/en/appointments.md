@@ -91,3 +91,37 @@ SientiaMTX implements strict European data protection standards:
 - **Isolated Visitor Registry (`AppointmentVisitor`)**: Personal identification data is structured and isolated from system users.
 - **Definitive Anonymization**: Fulfill Right to Erasure requests (GDPR Art. 17) by irreversibly scrubbing all personal identifiers (name, ID number, phone, email) while preserving operational statistical counts for public service reporting.
 
+---
+
+## 👥 7. Appointment Secretaries & Delegated Agenda Management
+
+In professional practices, public administrations, and collaborative workspaces, practitioners frequently rely on administrative support staff or secretaries to manage their calendars, or collaborate across shared agendas. SientiaMTX includes a full-featured **Delegated Agenda Management** system:
+
+### Delegation Model Principles
+- **Practitioner Ownership**: Each team member who has the appointments module enabled is the owner of their agenda and directly designates which teammates are authorized to manage it.
+- **Many-to-Many ($M:N$) Relationship**:
+  - A practitioner can designate **one or multiple secretaries** simultaneously.
+  - A secretary can manage the agendas of **multiple practitioners**, switching seamlessly between them.
+- **Secretaries without Personal Booking Portals**:
+  - A teammate **does not need to have personal appointments enabled** to act as a secretary.
+  - Once designated as a secretary by any practitioner, the system automatically unlocks access to the team's appointments module in **Secretary Mode**, allowing them to coordinate delegated bookings without publishing their own services.
+
+### Configuration & Designating Secretaries
+1. The practitioner visits their appointments desk and navigates to the **Settings** tab (`/mis-citas/configuracion`).
+2. Under the **"Secretaries & Delegated Management"** card, select the desired team member from the dropdown and click **"Assign Secretary"**.
+3. The assigned secretary appears immediately in the active delegates list. The practitioner can **revoke delegation at any time** with a single click.
+4. The panel also displays any external agendas currently delegated to the active user.
+
+### Working in "Secretary Mode"
+When an authorized user accesses the Appointments desk:
+- **Active Agenda Switcher**: A dropdown menu in the top navigation bar (`Active Agenda`) allows switching effortlessly between the user's personal agenda (if enabled) and any delegated agendas.
+- **Visual "Secretary Mode" Banner**: When viewing a delegated agenda, a clear badge and informational banner alert the operator to the active practitioner's identity.
+- **Operational Capabilities for Secretaries**:
+  - View daily and monthly appointment slots for the agenda owner.
+  - Filter consultations by status, service, date range, or keywords.
+  - Book manual appointments on behalf of the practitioner.
+  - Reschedule, edit consultation notes, or cancel bookings.
+  - Operate the attention desk and launch the **live consultation stopwatch** ("Attend Now").
+  - Manage **calendar blocks** (vacations, holidays, or leaves for the agenda owner).
+- **Cloud Synchronization**: All appointments scheduled or modified on a delegated agenda sync directly to the practitioner's linked **Google Calendar** and **Google Tasks**, keeping their personal and corporate schedules up-to-date.
+

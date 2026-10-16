@@ -163,3 +163,69 @@ Ax.ia integrates seamlessly into the activity lifecycle:
    - New chapter inside a Document activity (`DocumentActivity`).
    - New forum discussion thread.
 
+---
+
+## 🔐 5. Security, Visibility & Permissions Model
+
+To safeguard sensitive institutional data and maintain organizational structure, SientiaMTX implements a granular authorization policy in [`ActivityPolicy`](app/Policies/ActivityPolicy.php).
+
+### 5.1. Fundamental Principle: Read Access ≠ Write Access
+* **Making an activity `Public` DOES NOT grant editing permissions to everyone**.
+* Public visibility (`visibility = 'public'`) provides **read-only visibility** to all team members.
+* Members with read-only access can review content, inspect revision history, and participate in internal notes or attachments, but **cannot change the status or modify core properties** unless explicitly assigned or holding a managerial role.
+
+---
+
+### 5.2. Who can VIEW an activity? (`view`)
+A team member can view an activity if:
+1. **They are the creator / author** of the activity.
+2. **They are directly assigned** (or their assigned working group is).
+3. **The activity is public (`public`)** within the team and has no exclusive assignees.
+4. **They are a Team Manager** (Coordinator or Moderator): managers can inspect all team activities except strictly private activities of other users.
+
+> [!NOTE]
+> **Strict Privacy on Assigned Tasks**: If an activity has designated assignees and you are neither an assignee, creator, nor manager, the system protects operational privacy and conceals the activity from non-assigned members.
+
+---
+
+### 5.3. Who can MODIFY an activity or CHANGE ITS STATUS? (`update` & `changeStatus`)
+Only the following users can modify properties and update lifecycle statuses (e.g., advancing from `draft` to `approved`, or `pending` to `completed`):
+1. **The original Creator** of the activity.
+2. **Any user directly Assigned** to the activity.
+3. **Any member of a Working Group Assigned** to the activity.
+4. **Team Coordinators & Moderators** (*Managers*).
+
+If a member with read-only access attempts to change the status or edit fields, the system prevents the action, keeps the user on the current screen, and triggers a **friendly toast alert** informing them of missing modification privileges.
+
+---
+
+### 5.4. Authorization Matrix
+
+| Action | Creator | Assignee / Group | Coordinator / Moderator | Read-only Member (Public) |
+|---|:---:|:---:|:---:|:---:|
+| **View content** (`view`) | ✅ | ✅ | ✅ | ✅ |
+| **Add internal notes / comments** (`addNote`) | ✅ | ✅ | ✅ | ✅ |
+| **Attach supplementary files** (`attach`) | ✅ | ✅ | ✅ | ✅ |
+| **Modify title, description & fields** (`update`) | ✅ | ✅ | ✅ | ❌ *(Read-only)* |
+| **Change operational status** (`changeStatus`) | ✅ | ✅ | ✅ | ❌ *(Read-only)* |
+| **Reassign owners** (`assign`) | ✅ | ❌ | ✅ | ❌ |
+| **Archive / Unarchive** (`archive`) | ✅ | ❌ | ✅ | ❌ |
+| **Delete / Restore** (`delete`, `restore`) | ✅ | ❌ | ✅ | ❌ |
+
+---
+
+### 5.5. Team Roles & Configuration Locations
+
+Permissions are configured across three intuitive layers in the application:
+
+1. **Team Roles** (managed at `/teams/{team}/members`):
+   - **Coordinator (`coordinator`)**: Full team administrator with master control over all activities, workflows, and memberships.
+   - **Moderator (`moderator`)**: Operational manager (*Manager*). Can coordinate, edit, and update the status of team activities.
+   - **Member (`user`)**: Standard operational user. Can only modify activities they created or were assigned to (individually or via their group). Holds read-only access to other public activities.
+2. **Working Groups** (managed at `/teams/{team}/groups`):
+   - Group colleagues by department or skill (e.g., *Legal*, *Design*, *DevOps*). Assigning an activity to a group instantly grants edit and status-change privileges to every member of that group.
+3. **Activity Form** (during creation or editing):
+   - **Visibility Selector**: Sets whether an item is `Public` (discoverable by the entire team) or `Private` (restricted to creator, assignees, and managers).
+   - **Assignees Selector**: Selects which team members or groups have the mandate to execute and transition the activity.
+
+

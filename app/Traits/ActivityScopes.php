@@ -31,6 +31,38 @@ trait ActivityScopes
     }
 
     /**
+     * Filtra solo actividades operativas y activas, excluyendo las que hayan alcanzado
+     * su estado de madurez, publicación o archivo según su tipo.
+     * En recordatorios, también excluye los vencidos en el pasado sin repetición.
+     */
+    public function scopeActiveOnly(Builder $query): Builder
+    {
+        return $query->where('is_archived', false)
+            ->where(function (Builder $sub) {
+                foreach (\App\Models\Activity::CONCLUDED_STATUSES as $type => $statuses) {
+                    $sub->where(function (Builder $typeQuery) use ($type, $statuses) {
+                        $typeQuery->where('type', '!=', $type)
+                                  ->orWhere(function (Builder $statusQuery) use ($type, $statuses) {
+                                      $statusQuery->where(function (Builder $sq) use ($statuses) {
+                                          $sq->whereNull('status')
+                                             ->orWhereNotIn('status->value', $statuses);
+                                      });
+
+                                      // Para recordatorios: si la fecha ya pasó y no tiene repetición, también excluirlo
+                                      if ($type === 'reminder') {
+                                          $statusQuery->where(function (Builder $remQ) {
+                                              $remQ->whereNull('due_date')
+                                                   ->orWhere('due_date', '>=', now()->startOfDay())
+                                                   ->orWhereJsonContains('metadata->repeat', true);
+                                          });
+                                      }
+                                  });
+                    });
+                }
+            });
+    }
+
+    /**
      * Filtra actividades por relevancia según su tipo y estado.
      * Excluye estados obsoletos (deprecated, completed, cancelled, under_review).
      * Las plantillas maestras se excluyen del filtro de estado.
@@ -67,10 +99,10 @@ trait ActivityScopes
                     $inner->where('type', 'reminder')
                           ->whereIn('status->value', ['pending']);
                 })
-                // link: solo active
+                // link: solo draft
                 ->orWhere(function ($inner) {
                     $inner->where('type', 'link')
-                          ->whereIn('status->value', ['active']);
+                          ->whereIn('status->value', ['draft']);
                 })
                 // sin estado definido (NULL): considerar relevante
                 ->orWhereNull('status->value');

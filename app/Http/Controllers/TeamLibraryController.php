@@ -53,6 +53,7 @@ class TeamLibraryController extends Controller
             ->visibleTo(auth()->user(), $isManager)
             ->withCount([
                 'documents' => fn($q) => $q->visibleTo(auth()->user(), $isManager),
+                'links'     => fn($q) => $q->whereIn('status->value', Activity::CONCLUDED_STATUSES['link'])->visibleTo(auth()->user(), $isManager),
                 'children'  => fn($q) => $q->visibleTo(auth()->user(), $isManager),
             ])
             ->orderBy('order')
@@ -102,7 +103,44 @@ class TeamLibraryController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // 4. Documento activo para vista de lectura (Reader / Wiki)
+        // 4. Enlaces en el nivel actual (o resultado de búsqueda)
+        $linksQuery = Activity::where('team_id', $team->id)
+            ->where('type', 'link')
+            ->visibleTo(auth()->user(), $isManager);
+
+        if ($searchQuery !== '') {
+            $searchTerm = '%' . $searchQuery . '%';
+            $linksQuery->where(function ($q) use ($searchTerm) {
+                $q->where('title', 'LIKE', $searchTerm)
+                  ->orWhere('description', 'LIKE', $searchTerm)
+                  ->orWhere('metadata', 'LIKE', $searchTerm)
+                  ->orWhereHas('notes', function ($nq) use ($searchTerm) {
+                      $nq->where('content', 'LIKE', $searchTerm);
+                  });
+            });
+
+            if ($searchScope === 'folder') {
+                $linksQuery->where('folder_id', $currentFolder?->id);
+            }
+        } else {
+            $linksQuery->where('folder_id', $currentFolder?->id);
+        }
+
+        if ($request->filled('status')) {
+            $linksQuery->where('status->value', $request->input('status'));
+        } else {
+            $linksQuery->whereIn('status->value', Activity::CONCLUDED_STATUSES['link']);
+        }
+
+        $linksQuery->whereDate('created_at', '>=', $dateFrom);
+        $linksQuery->whereDate('created_at', '<=', $dateTo);
+
+        $links = $linksQuery->with(['creator', 'folder'])
+            ->orderBy('is_archived', 'asc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // 5. Documento activo para vista de lectura (Reader / Wiki)
         $activeDocumentId = $request->get('doc');
         $activeDocument = null;
         if ($activeDocumentId) {
@@ -119,12 +157,17 @@ class TeamLibraryController extends Controller
             $activeDocument = $documents->first();
         }
 
-        // 5. Opciones para el selector de movimiento de carpetas (filtradas por visibilidad)
+        // 6. Opciones para el selector de movimiento de carpetas (filtradas por visibilidad)
         $folderOptions = $this->folderService->getFolderOptions($team, null, auth()->user(), $isManager);
 
-        // 6. Estadísticas globales del equipo para la cabecera (filtradas por visibilidad)
+        // 7. Estadísticas globales del equipo para la cabecera (filtradas por visibilidad)
         $totalTeamDocuments = Activity::where('team_id', $team->id)
             ->where('type', 'document')
+            ->visibleTo(auth()->user(), $isManager)
+            ->count();
+        $totalTeamLinks = Activity::where('team_id', $team->id)
+            ->where('type', 'link')
+            ->whereIn('status->value', Activity::CONCLUDED_STATUSES['link'])
             ->visibleTo(auth()->user(), $isManager)
             ->count();
         $totalTeamFolders = TeamFolder::where('team_id', $team->id)
@@ -137,12 +180,14 @@ class TeamLibraryController extends Controller
             'breadcrumbs',
             'subfolders',
             'documents',
+            'links',
             'activeDocument',
             'mode',
             'searchQuery',
             'searchScope',
             'folderOptions',
             'totalTeamDocuments',
+            'totalTeamLinks',
             'totalTeamFolders',
             'dateFrom',
             'dateTo'

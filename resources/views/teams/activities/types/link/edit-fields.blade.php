@@ -28,14 +28,20 @@
             <label for="status" class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2 font-sans">
                 {{ __('Status') }}
             </label>
+            @php
+                $currentStatus = old('status', $activity->status_value ?? $activity->metadata['status'] ?? 'draft');
+            @endphp
             <select name="status" id="status" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-blue-400 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer focus:ring focus:ring-blue-100 dark:focus:ring-blue-900/30">
-                <option value="active" {{ old('status', $activity->metadata['status'] ?? 'active') === 'active' ? 'selected' : '' }}>
+                <option value="draft" {{ $currentStatus === 'draft' ? 'selected' : '' }}>
+                    {{ __('Borrador') }}
+                </option>
+                <option value="active" {{ $currentStatus === 'active' ? 'selected' : '' }}>
                     {{ __('Activo') }}
                 </option>
-                <option value="broken" {{ old('status', $activity->metadata['status'] ?? 'active') === 'broken' ? 'selected' : '' }}>
+                <option value="broken" {{ $currentStatus === 'broken' ? 'selected' : '' }}>
                     {{ __('Roto') }}
                 </option>
-                <option value="archived" {{ old('status', $activity->metadata['status'] ?? 'active') === 'archived' ? 'selected' : '' }}>
+                <option value="archived" {{ $currentStatus === 'archived' ? 'selected' : '' }}>
                     {{ __('Archivado') }}
                 </option>
             </select>

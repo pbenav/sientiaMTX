@@ -4,12 +4,13 @@
     if (empty($links) && !empty($meta['url'])) {
         $links = [['title' => 'Enlace Adjunto', 'url' => $meta['url']]];
     }
-    $status = $meta['status'] ?? 'active';
+    $status = $activity->status_value ?? $meta['status'] ?? 'draft';
     $statusColors = [
-        'active' => ['bg' => 'green-50', 'dark_bg' => 'green-900/10', 'border' => 'green-100', 'dark_border' => 'green-800/30', 'text' => 'green-600', 'dark_text' => 'green-400', 'label' => 'Activo'],
-        'broken' => ['bg' => 'red-50', 'dark_bg' => 'red-900/10', 'border' => 'red-100', 'dark_border' => 'red-800/30', 'text' => 'red-600', 'dark_text' => 'red-400', 'label' => 'Roto'],
-        'archived' => ['bg' => 'gray-50', 'dark_bg' => 'gray-900/10', 'border' => 'gray-100', 'dark_border' => 'gray-800/30', 'text' => 'gray-600', 'dark_text' => 'gray-400', 'label' => 'Archivado'],
-    ][$status] ?? ['bg' => 'blue-50', 'dark_bg' => 'blue-900/10', 'border' => 'blue-100', 'dark_border' => 'blue-800/30', 'text' => 'blue-600', 'dark_text' => 'blue-400', 'label' => ucfirst($status)];
+        'draft'    => ['class' => 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 border-amber-200 dark:border-amber-800/30', 'label' => __('Borrador')],
+        'active'   => ['class' => 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/30', 'label' => __('Activo')],
+        'broken'   => ['class' => 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300 border-rose-200 dark:border-rose-800/30', 'label' => __('Roto')],
+        'archived' => ['class' => 'bg-gray-100 text-gray-700 dark:bg-gray-800/50 dark:text-gray-300 border-gray-200 dark:border-gray-700', 'label' => __('Archivado')],
+    ][$status] ?? ['class' => 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800/30', 'label' => ucfirst($status)];
 @endphp
 
 
@@ -49,7 +50,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
             <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Estado</p>
-            <span class="px-3 py-1 rounded-lg text-xs font-black bg-{{ $statusColors['text'] }}-100 text-{{ $statusColors['text'] }}-700 dark:bg-{{ $statusColors['text'] }}-900/30 dark:text-{{ $statusColors['text'] }}-300 border border-{{ $statusColors['text'] }}-200 dark:border-{{ $statusColors['text'] }}-800/30">
+            <span class="px-3 py-1 rounded-lg text-xs font-black border {{ $statusColors['class'] }}">
                 {{ $statusColors['label'] }}
             </span>
         </div>

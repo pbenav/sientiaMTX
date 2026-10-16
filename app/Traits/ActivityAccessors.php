@@ -210,4 +210,44 @@ trait ActivityAccessors
         }
         $this->attributes['status'] = $this->castAttributeAsJson('status', $value);
     }
+
+    // ─── Helpers para Enlaces (LinkActivity / type = 'link') ──────────────────
+
+    /**
+     * Obtiene la URL principal para actividades de enlace o con metadatos de url.
+     */
+    public function getUrl(): ?string
+    {
+        if (!empty($this->metadata['url'])) {
+            return $this->metadata['url'];
+        }
+        if (!empty($this->metadata['links']) && is_array($this->metadata['links']) && count($this->metadata['links']) > 0) {
+            return $this->metadata['links'][0]['url'] ?? null;
+        }
+        return null;
+    }
+
+    /**
+     * Obtiene el título Open Graph para enlaces.
+     */
+    public function getOgTitle(): ?string
+    {
+        return $this->metadata['og_title'] ?? $this->title;
+    }
+
+    /**
+     * Obtiene la imagen Open Graph para enlaces.
+     */
+    public function getOgImage(): ?string
+    {
+        return $this->metadata['og_image'] ?? null;
+    }
+
+    /**
+     * Determina si el enlace está marcado como roto.
+     */
+    public function isBroken(): bool
+    {
+        return $this->status_value === 'broken';
+    }
 }

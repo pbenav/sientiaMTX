@@ -133,7 +133,7 @@ class TeamFolderController extends Controller
         $this->authorize('view', $team);
 
         $validated = $request->validate([
-            'type'             => ['required', 'string', 'in:folder,document'],
+            'type'             => ['required', 'string', 'in:folder,document,link'],
             'id'               => ['required', 'integer'],
             'target_folder_id' => [
                 'nullable',
@@ -150,11 +150,13 @@ class TeamFolderController extends Controller
                 $this->folderService->moveFolder($folder, $targetFolderId);
                 $message = __('Carpeta movida correctamente.');
             } else {
-                $document = Activity::where('team_id', $team->id)
-                    ->where('type', 'document')
+                $activity = Activity::where('team_id', $team->id)
+                    ->whereIn('type', ['document', 'link'])
                     ->findOrFail($validated['id']);
-                $this->folderService->moveDocument($document, $targetFolderId);
-                $message = __('Documento movido correctamente.');
+                $this->folderService->moveDocument($activity, $targetFolderId);
+                $message = $activity->type === 'link'
+                    ? __('Enlace movido correctamente.')
+                    : __('Documento movido correctamente.');
             }
 
             if ($request->wantsJson()) {

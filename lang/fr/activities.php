@@ -109,6 +109,7 @@ return [
     'archived_success' => 'Activité archivée.',
     'unarchived_success' => 'Activité non archivée.',
     'status_updated' => 'Statut d\'activité mis à jour.',
+    'unauthorized_status_change' => 'Vous n\'avez pas la permission de modifier le statut de cette activité.',
     'note_added' => 'Remarque ajoutée.',
     'note_updated' => 'Remarque mise à jour.',
     'note_deleted' => 'Remarque supprimée.',

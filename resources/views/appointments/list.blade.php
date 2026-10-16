@@ -35,6 +35,33 @@
         {{-- Banner de Contador Activo --}}
         @include('partials.active-timer-banner')
 
+        {{-- Modo Secretaría Banner --}}
+        @if(isset($agendaUser) && $agendaUser->id !== auth()->id())
+            <div class="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-300 dark:border-amber-600/40 rounded-2xl p-3 sm:p-4 flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 flex items-center justify-center text-base shrink-0 shadow-sm">
+                        📋
+                    </div>
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-xs font-black uppercase tracking-widest px-2 py-0.5 bg-amber-500 text-white rounded-md text-[9px]">
+                                {{ __('Modo Secretaría') }}
+                            </span>
+                            <span class="text-sm font-black text-gray-900 dark:text-white truncate">
+                                {{ __('Viendo citas de:') }} <span class="text-amber-700 dark:text-amber-300 font-black">{{ $agendaUser->name }}</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                @if(auth()->user()->hasAppointmentsEnabledForTeam($team->id))
+                    <a href="{{ request()->fullUrlWithQuery(['agenda_user_id' => auth()->id()]) }}"
+                       class="px-3 py-1.5 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-black text-gray-700 dark:text-gray-300 shadow-sm transition-all shrink-0">
+                        ← {{ __('Volver a mi agenda') }}
+                    </a>
+                @endif
+            </div>
+        @endif
+
         @if(session('success'))
             <div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 rounded-2xl p-4 text-sm font-bold flex items-center gap-3">
                 <svg class="w-5 h-5 shrink-0 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>

@@ -131,6 +131,7 @@ Ax.ia (powered by **Gemini 2.0 Flash** and **Gemini 1.5 Pro**) is integrated int
 - **Public Portal**: Share your booking link so citizens or clients can select services, modalities, and time slots.
 - **Unique Locator**: Bookings generate a locator code (e.g., `25C-B4A1`) for easy tracking and self-service cancellation.
 - **"Attend Now" Desk Action**: Update appointment start time to the current second when visitors arrive early or late, launching the consultation stopwatch.
+- **Secretaries & Delegated Agendas**: Designate one or multiple teammates as secretaries to manage your calendar, schedule consultations, and log visitor arrivals on your behalf, even if they do not maintain a public booking portal of their own.
 
 ---
 

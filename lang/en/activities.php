@@ -116,6 +116,7 @@ return array (
   'archived_success' => 'Activity archived.',
   'unarchived_success' => 'Activity unarchived.',
   'status_updated' => 'Activity status updated.',
+  'unauthorized_status_change' => 'You do not have permission to change the status of this activity.',
   'note_added' => 'Note added.',
   'note_updated' => 'Note updated.',
   'note_deleted' => 'Note deleted.',

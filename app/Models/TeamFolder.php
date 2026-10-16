@@ -105,6 +105,12 @@ class TeamFolder extends Model
             ->where('type', 'document');
     }
 
+    public function links(): HasMany
+    {
+        return $this->hasMany(Activity::class, 'folder_id')
+            ->where('type', 'link');
+    }
+
     public function activities(): HasMany
     {
         return $this->hasMany(Activity::class, 'folder_id');

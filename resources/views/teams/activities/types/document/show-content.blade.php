@@ -35,21 +35,42 @@
     <div class="flex flex-col xl:flex-row gap-6 justify-between">
         <div class="flex-1">
             <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">{{ __('Document Status') }}</p>
-            <form action="{{ route('teams.activities.change-status', [$team, $activity]) }}" method="POST" class="w-full">
-                @csrf
-                @method('PATCH')
-                <div class="flex items-center p-1 bg-gray-100 dark:bg-gray-800 rounded-xl w-full sm:w-auto sm:inline-flex overflow-x-auto no-scrollbar shadow-inner">
-                    @php
-                        $docStatuses = ['draft', 'review', 'approved', 'rejected', 'published', 'archived'];
-                    @endphp
-                    @foreach($docStatuses as $val)
-                        <label class="relative cursor-pointer shrink-0 px-3 sm:px-5 py-2 text-[10px] sm:text-xs font-bold uppercase tracking-wider rounded-lg transition-all text-center flex-1 sm:flex-none {{ $activity->status_value == $val ? 'bg-white dark:bg-gray-700 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-200/50 dark:border-gray-600/50' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-700/50' }}">
-                            <input type="radio" name="status" value="{{ $val }}" class="hidden" onchange="this.form.submit()" {{ $activity->status_value == $val ? 'checked' : '' }}>
-                            {{ __("activities.statuses.{$val}") }}
-                        </label>
-                    @endforeach
+            @can('changeStatus', $activity)
+                <form action="{{ route('teams.activities.change-status', [$team, $activity]) }}" method="POST" class="w-full">
+                    @csrf
+                    @method('PATCH')
+                    <div class="flex items-center p-1 bg-gray-100 dark:bg-gray-800 rounded-xl w-full sm:w-auto sm:inline-flex overflow-x-auto no-scrollbar shadow-inner">
+                        @php
+                            $docStatuses = ['draft', 'review', 'approved', 'rejected', 'published', 'archived'];
+                        @endphp
+                        @foreach($docStatuses as $val)
+                            <label class="relative cursor-pointer shrink-0 px-3 sm:px-5 py-2 text-[10px] sm:text-xs font-bold uppercase tracking-wider rounded-lg transition-all text-center flex-1 sm:flex-none {{ $activity->status_value == $val ? 'bg-white dark:bg-gray-700 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-200/50 dark:border-gray-600/50' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-700/50' }}">
+                                <input type="radio" name="status" value="{{ $val }}" class="hidden" onchange="this.form.submit()" {{ $activity->status_value == $val ? 'checked' : '' }}>
+                                {{ __("activities.statuses.{$val}") }}
+                            </label>
+                        @endforeach
+                    </div>
+                </form>
+            @else
+                <div class="flex items-center gap-3 flex-wrap">
+                    <div class="flex items-center p-1 bg-gray-100 dark:bg-gray-800/60 rounded-xl w-full sm:w-auto sm:inline-flex overflow-x-auto no-scrollbar opacity-90">
+                        @php
+                            $docStatuses = ['draft', 'review', 'approved', 'rejected', 'published', 'archived'];
+                        @endphp
+                        @foreach($docStatuses as $val)
+                            <span class="shrink-0 px-3 sm:px-5 py-2 text-[10px] sm:text-xs font-bold uppercase tracking-wider rounded-lg text-center flex-1 sm:flex-none {{ $activity->status_value == $val ? 'bg-white dark:bg-gray-700 text-violet-600 dark:text-violet-400 shadow-sm border border-gray-200/50 dark:border-gray-600/50' : 'text-gray-400 dark:text-gray-600 cursor-not-allowed' }}">
+                                {{ __("activities.statuses.{$val}") }}
+                            </span>
+                        @endforeach
+                    </div>
+                    <span class="text-[11px] text-gray-400 dark:text-gray-500 font-medium flex items-center gap-1.5" title="{{ __('activities.unauthorized_status_change') }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        {{ __('Solo lectura') }}
+                    </span>
                 </div>
-            </form>
+            @endcan
         </div>
         @if(!empty($meta['collaborators']))
         <div class="xl:w-1/3 shrink-0">

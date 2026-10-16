@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout maxWidth="max-w-none">
     @section('title', __('Create Microsite'))
 
     <x-slot name="header">
@@ -19,8 +19,8 @@
         </div>
     </x-slot>
 
-    <div class="pt-12 pb-32 px-4">
-        <div class="max-w-5xl mx-auto">
+    <div class="py-6 pb-32">
+        <div class="w-full space-y-6">
 
             @if ($errors->any())
                 <div class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
@@ -116,27 +116,72 @@
                 </div>
 
                 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 md:p-8 shadow-sm">
-                    <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                         <span class="w-8 h-8 rounded-lg bg-pink-100 dark:bg-pink-900/30 text-pink-600 flex items-center justify-center">3</span>
                         {{ __('Content & Design') }}
                     </h2>
 
+                    <div class="flex items-center gap-3 text-[11px] text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/40 px-3.5 py-2 rounded-xl border border-gray-100 dark:border-gray-800/60 mb-6 overflow-x-auto">
+                        <span class="font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-[10px]">{{ __('Atajos de edición') }}:</span>
+                        <span><kbd class="px-1.5 py-0.5 rounded bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 font-mono text-[10px] text-gray-700 dark:text-gray-300">Ctrl+F</kbd> {{ __('Buscar') }}</span>
+                        <span><kbd class="px-1.5 py-0.5 rounded bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 font-mono text-[10px] text-gray-700 dark:text-gray-300">Ctrl+H</kbd> {{ __('Reemplazar') }}</span>
+                        <span><kbd class="px-1.5 py-0.5 rounded bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 font-mono text-[10px] text-gray-700 dark:text-gray-300">Ctrl+/</kbd> {{ __('Comentar') }}</span>
+                        <span><kbd class="px-1.5 py-0.5 rounded bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 font-mono text-[10px] text-gray-700 dark:text-gray-300">Ctrl+Espacio</kbd> {{ __('Autocompletar') }}</span>
+                        <span><kbd class="px-1.5 py-0.5 rounded bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 font-mono text-[10px] text-gray-700 dark:text-gray-300">F11</kbd> {{ __('Pantalla completa') }}</span>
+                    </div>
+
                     <div class="space-y-6">
                         <div>
-                            <label for="css_content" class="flex items-center gap-2 text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
-                                {{ __('Custom CSS Styles') }}
-                                <span class="px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded text-[10px] uppercase font-black">CSS</span>
-                            </label>
+                            <div class="flex items-center justify-between mb-1.5 flex-wrap gap-2">
+                                <label for="css_content" class="flex items-center gap-2 text-sm font-bold text-gray-700 dark:text-gray-300">
+                                    {{ __('Custom CSS Styles') }}
+                                    <span class="px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded text-[10px] uppercase font-black">CSS</span>
+                                </label>
+                                <div class="flex items-center gap-1.5">
+                                    <button type="button"
+                                            onclick="formatCodeMirrorEditor('css')"
+                                            class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors cursor-pointer"
+                                            title="{{ __('Auto-indentar código CSS') }}">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10M4 18h16"/></svg>
+                                        <span>{{ __('Auto-indentar') }}</span>
+                                    </button>
+                                    <button type="button"
+                                            onclick="toggleCodeMirrorFullscreen('css')"
+                                            class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors cursor-pointer"
+                                            title="{{ __('Pantalla completa (F11)') }}">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+                                        <span>{{ __('Pantalla completa') }}</span>
+                                    </button>
+                                </div>
+                            </div>
                             <textarea name="css_content" id="css_content" rows="6" placeholder="body { background-color: #f3f4f6; }&#10;.mi-clase { color: pink; }"
                                 class="w-full bg-[#1e1e1e] border border-gray-700 rounded-xl px-4 py-3 text-gray-300 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-colors font-mono text-sm shadow-inner resize-y">{{ old('css_content') }}</textarea>
                             <p class="text-xs text-gray-500 mt-1">{{ __('It will be automatically wrapped in <style> tags. Do not use Javascript, it will be removed.') }}</p>
                         </div>
 
                         <div>
-                            <label for="html_content" class="flex items-center gap-2 text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
-                                {{ __('Page Content') }} <span class="text-pink-500">*</span>
-                                <span class="px-2 py-0.5 bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 rounded text-[10px] uppercase font-black">HTML</span>
-                            </label>
+                            <div class="flex items-center justify-between mb-1.5 flex-wrap gap-2">
+                                <label for="html_content" class="flex items-center gap-2 text-sm font-bold text-gray-700 dark:text-gray-300">
+                                    {{ __('Page Content') }} <span class="text-pink-500">*</span>
+                                    <span class="px-2 py-0.5 bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 rounded text-[10px] uppercase font-black">HTML</span>
+                                </label>
+                                <div class="flex items-center gap-1.5">
+                                    <button type="button"
+                                            onclick="formatCodeMirrorEditor('html')"
+                                            class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors cursor-pointer"
+                                            title="{{ __('Auto-indentar código HTML') }}">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10M4 18h16"/></svg>
+                                        <span>{{ __('Auto-indentar') }}</span>
+                                    </button>
+                                    <button type="button"
+                                            onclick="toggleCodeMirrorFullscreen('html')"
+                                            class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors cursor-pointer"
+                                            title="{{ __('Pantalla completa (F11)') }}">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+                                        <span>{{ __('Pantalla completa') }}</span>
+                                    </button>
+                                </div>
+                            </div>
                             <textarea name="html_content" id="html_content" rows="15" required placeholder="&lt;div class=&quot;max-w-2xl mx-auto p-4&quot;&gt;&#10;  &lt;h1 class=&quot;text-3xl font-bold&quot;&gt;¡Hola Mundo!&lt;/h1&gt;&#10;  &lt;p&gt;Este es mi nuevo micrositio.&lt;/p&gt;&#10;&lt;/div&gt;"
                                 class="w-full bg-[#1e1e1e] border border-gray-700 rounded-xl px-4 py-3 text-gray-300 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-colors font-mono text-sm shadow-inner resize-y">{{ old('html_content') }}</textarea>
                             <p class="text-xs text-gray-500 mt-1">{{ __('You can use standard HTML and Tailwind CSS classes as needed. Code will be rendered exactly as written.') }}</p>
@@ -180,7 +225,7 @@
 
         {{-- Guardar --}}
         <button type="button"
-                onclick="document.getElementById('microsite-form').submit()"
+                onclick="window.submitMicrositeForm ? window.submitMicrositeForm() : document.getElementById('microsite-form').submit()"
                 class="flex items-center gap-1.5 text-xs font-bold text-white bg-pink-500 hover:bg-pink-600 px-3 py-1.5 rounded-xl transition-all shadow-sm">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
@@ -189,4 +234,5 @@
         </button>
     </div>
 
+    @include('microsites.partials.code-editor-assets')
 </x-app-layout>

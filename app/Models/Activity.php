@@ -135,6 +135,28 @@ class Activity extends Model
      */
     public const GANTT_TYPES  = ['task', 'meeting', 'reminder', 'document', 'agreement'];
 
+    /**
+     * Estados considerados concluidos o maduros por tipo de actividad.
+     * En el listado operativo y cuando 'hide_completed_tasks' está activo,
+     * estas actividades se ocultan para despejar la vista operativa.
+     */
+    public const CONCLUDED_STATUSES = [
+        'task'      => ['completed', 'cancelled', 'archived'],
+        'document'  => ['published', 'archived', 'approved', 'rejected', 'completed', 'cancelled'],
+        'reminder'  => ['dismissed', 'completed', 'cancelled', 'triggered', 'archived'],
+        'link'      => ['active', 'archived', 'broken', 'completed', 'cancelled', 'approved'],
+        'note'      => ['final', 'archived', 'completed', 'cancelled'],
+        'agreement' => ['implemented', 'rejected', 'superseded', 'approved', 'completed', 'cancelled', 'archived'],
+        'meeting'   => ['completed', 'cancelled', 'archived'],
+    ];
+
+    /**
+     * Lista aplanada de todos los estados terminales.
+     */
+    public const ALL_CONCLUDED_STATUSES = [
+        'completed', 'cancelled', 'published', 'archived', 'dismissed', 'triggered', 'broken', 'final', 'implemented', 'superseded', 'approved', 'rejected'
+    ];
+
     // ─── Atributos ────────────────────────────────────────────────────────────
 
     /**
@@ -605,6 +627,36 @@ class Activity extends Model
     public function isPending(): bool
     {
         return in_array($this->status_value, ['pending', 'draft', 'scheduled', 'proposed', 'todo']);
+    }
+
+    /**
+     * Determina si la actividad ha alcanzado un estado de madurez, conclusión o archivo.
+     */
+    public function isConcluded(): bool
+    {
+        if ($this->is_archived) {
+            return true;
+        }
+
+        // Cualquier actividad con estado completado o cancelado está concluida
+        if (in_array($this->status_value, ['completed', 'cancelled', 'archived', 'done', 'accepted', 'finished'], true)) {
+            return true;
+        }
+
+        $concluded = self::CONCLUDED_STATUSES[$this->type] ?? ['completed', 'cancelled', 'archived'];
+        if (in_array($this->status_value, $concluded, true)) {
+            return true;
+        }
+
+        // Recordatorios vencidos en el pasado sin repetición
+        if ($this->type === 'reminder' && $this->due_date && $this->due_date->isPast()) {
+            $isRepeat = (bool) data_get($this->metadata, 'repeat', false);
+            if (!$isRepeat) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     // ─── Compatibilidad con partial timer (Task compat layer) ─────────────────

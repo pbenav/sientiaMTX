@@ -74,7 +74,7 @@
             ];
         }
 
-        if (auth()->user()->hasAppointmentsEnabledForTeam($teamId)) {
+        if (auth()->user()->canAccessAppointmentsForTeam($teamId)) {
             $views[] = [
                 'name' => __('Appointments'),
                 'route' => route('appointments.index', $teamId),

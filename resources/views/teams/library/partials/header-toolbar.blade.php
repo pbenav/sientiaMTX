@@ -7,6 +7,7 @@
     'searchScope' => 'folder',
     'subfoldersCount' => 0,
     'documentsCount' => 0,
+    'linksCount' => 0,
 ])
 
 <div class="space-y-4 mb-6">
@@ -23,7 +24,7 @@
                    isDragTarget = false;
                    let data = {};
                    try { data = JSON.parse($event.dataTransfer.getData('text/plain') || '{}'); } catch(e) {}
-                   let dIds = data.document_ids || (data.type === 'document' ? [data.id] : []);
+                   let dIds = data.document_ids || ((data.type === 'document' || data.type === 'link') ? [data.id] : []);
                    let fIds = data.folder_ids || (data.type === 'folder' ? [data.id] : []);
                    if (dIds.length || fIds.length) {
                        $dispatch('bulk-move-items', { document_ids: dIds, folder_ids: fIds, target_folder_id: null });
@@ -60,7 +61,7 @@
                            isDragTarget = false;
                            let data = {};
                            try { data = JSON.parse($event.dataTransfer.getData('text/plain') || '{}'); } catch(e) {}
-                           let dIds = data.document_ids || (data.type === 'document' ? [data.id] : []);
+                           let dIds = data.document_ids || ((data.type === 'document' || data.type === 'link') ? [data.id] : []);
                            let fIds = data.folder_ids || (data.type === 'folder' ? [data.id] : []);
                            if (fIds.includes({{ $bc['id'] }})) return;
                            if (dIds.length || fIds.length) {
@@ -115,6 +116,15 @@
                 </svg>
                 <span>{{ __('Nueva Carpeta') }}</span>
             </button>
+
+            <!-- Botón Nuevo Enlace -->
+            <a href="{{ route('teams.activities.create', array_filter(['team' => $team, 'type' => 'link', 'folder_id' => $currentFolder?->id])) }}"
+               class="flex items-center gap-1.5 px-3.5 py-2 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                </svg>
+                <span>{{ __('Nuevo Enlace') }}</span>
+            </a>
 
             <!-- Botón Nuevo Documento -->
             <a href="{{ route('teams.activities.create', array_filter(['team' => $team, 'type' => 'document', 'folder_id' => $currentFolder?->id])) }}"
@@ -172,6 +182,9 @@
                 <span>📁 {{ $subfoldersCount }} {{ trans_choice('carpeta|carpetas', $subfoldersCount) }}</span>
             @endif
             <span>📄 {{ $documentsCount }} {{ trans_choice('documento|documentos', $documentsCount) }}</span>
+            @if($linksCount > 0)
+                <span>🔗 {{ $linksCount }} {{ trans_choice('enlace|enlaces', $linksCount) }}</span>
+            @endif
         </div>
     </div>
 </div>

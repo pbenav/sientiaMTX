@@ -608,7 +608,7 @@ class ActivityService
         $query = Activity::byTeam($team->id)
             ->active()
             ->with([
-                'creator', 'assignedTo', 'kanbanColumn', 'tags', 'assignedGroups', 'expediente', 'assignedUser', 'skills', 'parent',
+                'creator', 'assignedTo', 'kanbanColumn', 'tags', 'assignedGroups', 'expediente', 'assignedUser', 'skills', 'parent', 'folder',
                 'children' => function($q) use ($user, $isManager) {
                     $q->where('is_archived', false)
                       ->orderBy('created_at')
@@ -692,8 +692,8 @@ class ActivityService
 
         if (!empty($filters['status'])) {
             is_array($filters['status']) ? $query->whereIn('status->value', $filters['status']) : $query->where('status->value', $filters['status']);
-        } elseif (session('hide_completed_tasks', true)) {
-            $query->whereNotIn('status->value', ['completed', 'cancelled']);
+        } elseif (empty($filters['archived']) && session('hide_completed_tasks', true)) {
+            $query->activeOnly();
         }
 
         if (!empty($filters['priority'])) {
@@ -791,7 +791,7 @@ class ActivityService
             'task'     => 'pending',
             'document' => 'draft',
             'note'     => 'draft',
-            'link'     => 'active',
+            'link'     => !empty($data['folder_id']) ? 'active' : 'draft',
             'agreement' => 'proposed',
             'meeting'  => 'scheduled',
             'reminder' => 'pending',

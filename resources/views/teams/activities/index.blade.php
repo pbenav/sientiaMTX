@@ -222,11 +222,81 @@
             </div>
         </div>
 
+        @if (($filters['type'] ?? '') === 'document')
+            <div class="mb-4 p-4 rounded-2xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+                <div class="flex items-center gap-3">
+                    <div class="p-2.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300">
+                            {{ __('Biblioteca y Gestión de Documentos') }}
+                        </h4>
+                        <p class="text-xs text-amber-700/80 dark:text-amber-400/80 mt-0.5">
+                            @if(session('hide_completed_tasks', true))
+                                {{ __('Los documentos publicados y archivados se encuentran organizados en la Biblioteca del Equipo. Aquí solo se listan los documentos en curso o borrador.') }}
+                            @else
+                                {{ __('Tienes activada la visualización de concluidas («Visibles»), por lo que se muestran todos los documentos (incluidos publicados y archivados). En modo normal («Ocultas») solo verás borradores y documentos en curso.') }}
+                            @endif
+                        </p>
+                    </div>
+                </div>
+                <a href="{{ route('teams.library', $team) }}" 
+                   class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-sm transition-colors shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                    </svg>
+                    <span>{{ __('Ir a la Biblioteca') }}</span>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+            </div>
+        @endif
+
+        @if (($filters['type'] ?? '') === 'link')
+            <div class="mb-4 p-4 rounded-2xl bg-purple-50/80 dark:bg-purple-950/30 border border-purple-200/80 dark:border-purple-800/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+                <div class="flex items-center gap-3">
+                    <div class="p-2.5 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-purple-800 dark:text-purple-300">
+                            {{ __('Biblioteca y Gestión de Enlaces') }}
+                        </h4>
+                        <p class="text-xs text-purple-700/80 dark:text-purple-400/80 mt-0.5">
+                            {{ __('Los enlaces y recursos web se pueden organizar en carpetas y consultar en la Biblioteca del Equipo.') }}
+                        </p>
+                    </div>
+                </div>
+                <a href="{{ route('teams.library', $team) }}" 
+                   class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-700 text-white shadow-sm transition-colors shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                    </svg>
+                    <span>{{ __('Ir a la Biblioteca') }}</span>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+            </div>
+        @endif
+
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-xl rounded-2xl overflow-hidden transition-all">
 
             
-            <div class="overflow-x-auto min-h-[200px] no-scrollbar">
-                <table class="w-full text-left border-collapse min-w-[700px]">
+            <div x-data="tableScrollDrag"
+                @mousedown="handleMouseDown($event)"
+                @mousemove.window="handleMouseMove($event)"
+                @mouseup.window="handleMouseUp()"
+                @click.capture="if (hasMoved) { $event.preventDefault(); $event.stopPropagation(); $event.stopImmediatePropagation(); }"
+                class="overflow-x-auto min-h-[200px] custom-scrollbar"
+                :class="{ 'cursor-grab': hasOverflow && !isDown, 'cursor-grabbing select-none': isDown && hasMoved }">
+                <table class="w-full text-left border-collapse min-w-[950px]">
                     <thead>
                         <tr class="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
                             <th class="px-4 py-4 w-10 text-center">
@@ -393,17 +463,19 @@
                                                     </svg>
                                                     {{ __('Semi-private') }}
                                                 </span>
-                                            @else
-                                                <span
-                                                    class="ml-2 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-tighter bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 rounded shadow-sm inline-flex items-center"
-                                                    title="{{ __('tasks.public') }}">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                    </svg>
-                                                    {{ __('tasks.public') }}
-                                                </span>
                                             @endif
+
+                                            @if ($activity->type === 'document' && $activity->folder)
+                                                <a href="{{ route('teams.library', [$team, 'folder' => $activity->folder_id]) }}" 
+                                                   class="ml-2 px-1.5 py-0.5 text-[9px] font-medium bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 rounded border border-amber-200 dark:border-amber-700/50 inline-flex items-center gap-1 hover:underline"
+                                                   title="{{ __('Biblioteca') }}: {{ $activity->folder->name }}">
+                                                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                                                    </svg>
+                                                    <span>{{ $activity->folder->name }}</span>
+                                                </a>
+                                            @endif
+
                                             @if ($activity->is_template)
                                                 @php
                                                     $isCollaborative = isset($activity->metadata['assignment_mode']) && $activity->metadata['assignment_mode'] === 'shared';
@@ -429,11 +501,6 @@
                                                 <span class="ml-2 px-1.5 py-0.5 text-[10px] font-bold text-amber-500 bg-amber-50 dark:bg-amber-900/20 rounded shadow-sm inline-flex items-center gap-1 border border-amber-200/50 dark:border-amber-700/50" title="{{ __('html.average_rating') }}: {{ number_format($activity->avg_quality_score, 1) }} {{ __('html.stars') }}">
                                                     <svg class="w-3 h-3 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                                                     {{ number_format($activity->avg_quality_score, 1) }}
-                                                </span>
-                                            @else
-                                                <span class="ml-2 px-1.5 py-0.5 text-[10px] font-bold text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded shadow-sm inline-flex items-center gap-1 border border-gray-200/50 dark:border-gray-700/50" title="{{ __("html.no_ratings") }}">
-                                                    <svg class="w-3 h-3 fill-current opacity-50" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                                                    0
                                                 </span>
                                             @endif
 
@@ -582,7 +649,9 @@
                                 <td class="px-4 py-4 text-right whitespace-nowrap min-w-[124px]">
                                     <div
                                         class="flex items-center justify-end gap-1 transition-opacity">
-                                        @include('tasks.partials.task-timer-button', ['task' => $activity, 'size' => 'xs'])
+                                        @if ($activity->type === 'task')
+                                            @include('tasks.partials.task-timer-button', ['task' => $activity, 'size' => 'xs'])
+                                        @endif
                                         @can('update', $activity)
                                             <a href="{{ route('teams.activities.edit', [$team, $activity]) }}"
                                                 class="p-1.5 text-gray-400 hover:text-blue-500 transition-colors" title="{{ __('tasks.edit') }}">
@@ -674,11 +743,6 @@
                                                     <svg class="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                                                     {{ number_format($subtask->avg_quality_score, 1) }}
                                                 </span>
-                                            @else
-                                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold text-gray-400 bg-gray-50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 flex items-center gap-1" title="{{ __("html.no_ratings") }}">
-                                                    <svg class="w-2.5 h-2.5 fill-current opacity-50" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                                                    0
-                                                </span>
                                             @endif
                                         </div>
                                     </td>
@@ -741,9 +805,10 @@
                                         {{ $subtask->due_date ? $subtask->due_date->format('d/m/y') : '—' }}
                                     </td>
                                     <td class="px-4 py-3 text-right whitespace-nowrap min-w-[124px]">
-                                        <div
-                                            class="flex items-center justify-end gap-1 transition-opacity">
-                                            @include('tasks.partials.task-timer-button', ['task' => $subtask, 'size' => 'xs'])
+                                        <div class="flex items-center justify-end gap-1 transition-opacity">
+                                            @if($subtask->type === 'task')
+                                                @include('tasks.partials.task-timer-button', ['task' => $subtask, 'size' => 'xs'])
+                                            @endif
                                             <a href="{{ route('teams.activities.show', [$team, $subtask]) }}"
                                                 class="p-1 text-gray-400 hover:text-violet-400 transition-colors" title="{{ __('tasks.view') }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5"

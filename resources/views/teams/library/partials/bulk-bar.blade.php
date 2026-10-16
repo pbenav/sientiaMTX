@@ -24,7 +24,13 @@
                 <template x-if="selectedDocs.length > 0">
                     <span x-text="`${selectedDocs.length} ${selectedDocs.length === 1 ? '{{ __('documento') }}' : '{{ __('documentos') }}'}`"></span>
                 </template>
-                <template x-if="selectedDocs.length > 0 && selectedFolders.length > 0">
+                <template x-if="selectedDocs.length > 0 && (selectedLinks.length > 0 || selectedFolders.length > 0)">
+                    <span> • </span>
+                </template>
+                <template x-if="selectedLinks.length > 0">
+                    <span x-text="`${selectedLinks.length} ${selectedLinks.length === 1 ? '{{ __('enlace') }}' : '{{ __('enlaces') }}'}`"></span>
+                </template>
+                <template x-if="selectedLinks.length > 0 && selectedFolders.length > 0">
                     <span> • </span>
                 </template>
                 <template x-if="selectedFolders.length > 0">
@@ -40,7 +46,7 @@
     <div class="flex items-center gap-2 shrink-0">
         <!-- Mover Selección -->
         <button type="button"
-                @click="$dispatch('open-bulk-move-modal', { docIds: selectedDocs, folderIds: selectedFolders })"
+                @click="$dispatch('open-bulk-move-modal', { docIds: [...selectedDocs, ...selectedLinks], folderIds: selectedFolders })"
                 class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95"
                 title="{{ __('Mover elementos seleccionados a otra carpeta') }}">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -51,7 +57,7 @@
 
         <!-- Eliminar Selección -->
         <button type="button"
-                @click="$dispatch('open-bulk-delete-modal', { docIds: selectedDocs, folderIds: selectedFolders })"
+                @click="$dispatch('open-bulk-delete-modal', { docIds: [...selectedDocs, ...selectedLinks], folderIds: selectedFolders })"
                 class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-600/90 hover:bg-rose-600 text-white rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95"
                 title="{{ __('Eliminar elementos seleccionados') }}">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">

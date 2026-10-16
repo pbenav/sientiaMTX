@@ -105,8 +105,8 @@ class LibraryFolderService
                 foreach ($folder->children as $child) {
                     $this->deleteFolder($child, true);
                 }
-                // Borrar documentos dentro de la carpeta
-                $folder->documents()->delete();
+                // Borrar documentos y enlaces dentro de la carpeta
+                $folder->activities()->whereIn('type', ['document', 'link'])->delete();
             } else {
                 // Preservar contenidos: promover a la carpeta padre (o a la raíz si era null)
                 $newParentId = $folder->parent_id;
@@ -115,7 +115,7 @@ class LibraryFolderService
                     ->update(['parent_id' => $newParentId]);
 
                 Activity::where('folder_id', $folder->id)
-                    ->where('type', 'document')
+                    ->whereIn('type', ['document', 'link'])
                     ->update(['folder_id' => $newParentId]);
             }
 
@@ -124,12 +124,12 @@ class LibraryFolderService
     }
 
     /**
-     * Mueve un documento a una carpeta o a la raíz.
+     * Mueve un documento o enlace a una carpeta o a la raíz.
      */
     public function moveDocument(Activity $document, ?int $targetFolderId): bool
     {
-        if ($document->type !== 'document') {
-            throw new InvalidArgumentException(__('Solo se pueden organizar actividades de tipo documento en la biblioteca.'));
+        if (!in_array($document->type, ['document', 'link'])) {
+            throw new InvalidArgumentException(__('Solo se pueden organizar documentos y enlaces en la biblioteca.'));
         }
 
         $targetFolder = null;
@@ -144,11 +144,16 @@ class LibraryFolderService
             $document->visibility = 'private';
         }
 
+        // Si un enlace en borrador se organiza en una carpeta de la biblioteca, madura a activo
+        if ($document->type === 'link' && $document->status_value === 'draft' && $targetFolderId !== null) {
+            $document->status = ['value' => 'active'];
+        }
+
         return $document->save();
     }
 
     /**
-     * Mueve masivamente documentos y/o carpetas a una carpeta destino.
+     * Mueve masivamente documentos, enlaces y/o carpetas a una carpeta destino.
      *
      * @param Team $team
      * @param array<int> $documentIds
@@ -170,7 +175,7 @@ class LibraryFolderService
         ];
 
         DB::transaction(function () use ($team, $documentIds, $folderIds, $targetFolder, $targetFolderId, &$result) {
-            // Mover documentos
+            // Mover documentos y enlaces
             if (!empty($documentIds)) {
                 $docUpdate = ['folder_id' => $targetFolderId];
                 if ($targetFolder && $targetFolder->isPrivate()) {
@@ -178,7 +183,7 @@ class LibraryFolderService
                 }
 
                 $count = Activity::where('team_id', $team->id)
-                    ->where('type', 'document')
+                    ->whereIn('type', ['document', 'link'])
                     ->whereIn('id', $documentIds)
                     ->update($docUpdate);
                 $result['moved_documents'] = $count;
@@ -209,7 +214,7 @@ class LibraryFolderService
     }
 
     /**
-     * Elimina masivamente documentos y/o carpetas.
+     * Elimina masivamente documentos, enlaces y/o carpetas.
      *
      * @param Team $team
      * @param array<int> $documentIds
@@ -225,10 +230,10 @@ class LibraryFolderService
         ];
 
         DB::transaction(function () use ($team, $documentIds, $folderIds, $deleteContents, &$result) {
-            // Eliminar documentos
+            // Eliminar documentos y enlaces
             if (!empty($documentIds)) {
                 $docs = Activity::where('team_id', $team->id)
-                    ->where('type', 'document')
+                    ->whereIn('type', ['document', 'link'])
                     ->whereIn('id', $documentIds)
                     ->get();
 

@@ -21,7 +21,12 @@ class AppointmentPolicy
      */
     public function view(User $user, Appointment $appointment): bool
     {
-        return $user->id === $appointment->user_id;
+        if ($user->id === $appointment->user_id) {
+            return true;
+        }
+
+        $teamId = $appointment->service?->team_id ?? $appointment->service()->value('team_id');
+        return $teamId ? $user->isSecretaryOf($appointment->user_id, $teamId) : false;
     }
 
     /**
@@ -37,7 +42,12 @@ class AppointmentPolicy
      */
     public function update(User $user, Appointment $appointment): bool
     {
-        return $user->id === $appointment->user_id;
+        if ($user->id === $appointment->user_id) {
+            return true;
+        }
+
+        $teamId = $appointment->service?->team_id ?? $appointment->service()->value('team_id');
+        return $teamId ? $user->isSecretaryOf($appointment->user_id, $teamId) : false;
     }
 
     /**
@@ -45,7 +55,12 @@ class AppointmentPolicy
      */
     public function delete(User $user, Appointment $appointment): bool
     {
-        return $user->id === $appointment->user_id;
+        if ($user->id === $appointment->user_id) {
+            return true;
+        }
+
+        $teamId = $appointment->service?->team_id ?? $appointment->service()->value('team_id');
+        return $teamId ? $user->isSecretaryOf($appointment->user_id, $teamId) : false;
     }
 
     /**
@@ -53,7 +68,12 @@ class AppointmentPolicy
      */
     public function restore(User $user, Appointment $appointment): bool
     {
-        return $user->id === $appointment->user_id;
+        if ($user->id === $appointment->user_id) {
+            return true;
+        }
+
+        $teamId = $appointment->service?->team_id ?? $appointment->service()->value('team_id');
+        return $teamId ? $user->isSecretaryOf($appointment->user_id, $teamId) : false;
     }
 
     /**
@@ -61,6 +81,11 @@ class AppointmentPolicy
      */
     public function forceDelete(User $user, Appointment $appointment): bool
     {
-        return $user->id === $appointment->user_id;
+        if ($user->id === $appointment->user_id) {
+            return true;
+        }
+
+        $teamId = $appointment->service?->team_id ?? $appointment->service()->value('team_id');
+        return $teamId ? $user->isSecretaryOf($appointment->user_id, $teamId) : false;
     }
 }

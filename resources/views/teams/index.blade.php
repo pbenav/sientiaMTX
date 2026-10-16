@@ -180,7 +180,7 @@
                         @endif
 
                         <!-- {{ __("Appointments") }} Previas -->
-                        @if(auth()->user()->hasAppointmentsEnabledForTeam($team->id))
+                        @if(auth()->user()->canAccessAppointmentsForTeam($team->id))
                             <a href="{{ route('appointments.index', $team) }}" @click.stop
                                 class="flex-1 flex items-center justify-center py-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-all border border-gray-200 dark:border-gray-700"
                                 title="{{ __('teams.appointments') }}">

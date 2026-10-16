@@ -77,6 +77,7 @@ El centro de mando donde converge el esfuerzo del equipo y el pulso de los servi
 *   **Localizador Único**: Código simplificado (ej: `25C-B4A1`) para consultar o cancelar la cita.
 *   **Mesa Operativa**: Botón "Atender Ahora" para ajustar el inicio a la hora real, cronómetro de consulta y notas de atención.
 *   **Analítica de Duración**: Cálculo de tiempos mínimo, medio, moda y máximo en los últimos 30 días.
+*   **Secretarías y Gestión Delegada**: Delegación flexible M:N que permite a uno o varios secretarios administrar agendas ajenas en "Modo Secretaría" (incluso sin portal propio), con selector de agenda activa y sincronización directa con Google Calendar y Tasks del titular.
 
 ---
 

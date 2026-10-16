@@ -22,7 +22,7 @@ use App\Contracts\ExportableActivityInterface;
  */
 class LinkActivity extends Activity implements ExportableActivityInterface
 {
-    public const STATUSES = ['active', 'broken', 'archived'];
+    public const STATUSES = ['draft', 'active', 'broken', 'archived'];
 
     protected static function booted(): void
     {

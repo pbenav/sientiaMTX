@@ -99,6 +99,7 @@ return array (
   'mark_favorite' => 'Mark as favorite',
   'revoke_all_modules' => 'Disable all modules for everyone',
   'team' => 'Team',
+  'trash' => 'Trash',
   'trash_team' => 'Team Trash',
   'team_limit' => 'Team Limit',
   'email_list' => 'Email List',

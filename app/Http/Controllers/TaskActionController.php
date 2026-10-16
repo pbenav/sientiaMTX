@@ -25,7 +25,17 @@ class TaskActionController extends Controller
             return response()->json(['success' => false, 'error' => 'Tarea o actividad no encontrada.'], 404);
         }
 
-        $this->authorize('update', $task);
+        if (auth()->user()->cannot('update', $task)) {
+            $message = __('activities.unauthorized_status_change');
+            if ($request->expectsJson() || $request->isJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'error'   => $message,
+                    'message' => $message,
+                ], 403);
+            }
+            return back()->with('error', $message);
+        }
 
         try {
 

@@ -2,7 +2,9 @@
 
 namespace App\Traits;
 
+use App\Models\AppointmentDelegation;
 use App\Models\Team;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 trait UserTeamContext
@@ -54,14 +56,126 @@ trait UserTeamContext
     }
 
     /**
-     * Obtener el primer equipo que tiene citas previas habilitadas para este usuario.
+     * Comprueba si este usuario es secretario/a de un titular en un equipo específico.
+     */
+    public function isSecretaryOf(User|int $titular, int $teamId): bool
+    {
+        $titularId = $titular instanceof User ? $titular->id : (int) $titular;
+        if ($this->id === $titularId) {
+            return true;
+        }
+
+        return \App\Models\AppointmentDelegation::where('team_id', $teamId)
+            ->where('user_id', $titularId)
+            ->where('delegate_id', $this->id)
+            ->exists();
+    }
+
+    /**
+     * Comprobar si el usuario tiene alguna agenda delegada como secretario/a en un equipo específico.
+     */
+    public function hasDelegatedAppointmentsForTeam(int $teamId): bool
+    {
+        return \App\Models\AppointmentDelegation::where('team_id', $teamId)
+            ->where('delegate_id', $this->id)
+            ->exists();
+    }
+
+    /**
+     * Comprobar si el usuario tiene alguna agenda delegada como secretario/a en cualquier equipo.
+     */
+    public function hasAnyDelegatedAppointments(): bool
+    {
+        return \App\Models\AppointmentDelegation::where('delegate_id', $this->id)->exists();
+    }
+
+    /**
+     * Comprueba si el usuario puede acceder al módulo de citas en un equipo (propias o como secretario/a).
+     */
+    public function canAccessAppointmentsForTeam(int $teamId): bool
+    {
+        return $this->hasAppointmentsEnabledForTeam($teamId) || $this->hasDelegatedAppointmentsForTeam($teamId);
+    }
+
+    /**
+     * Comprueba si el usuario puede acceder a citas en cualquier equipo (propias o como secretario/a).
+     */
+    public function canAccessAnyAppointments(): bool
+    {
+        return $this->hasAppointmentsEnabled() || $this->hasAnyDelegatedAppointments();
+    }
+
+    /**
+     * Obtiene la colección de usuarios cuyas agendas de citas puede gestionar en un equipo.
+     * Incluye a sí mismo (si tiene allow_appointments) y a los titulares que le han delegado su agenda.
+     *
+     * @return \Illuminate\Support\Collection<int, User>
+     */
+    public function getManageableAppointmentUsersForTeam(int $teamId): \Illuminate\Support\Collection
+    {
+        $users = collect();
+
+        if ($this->hasAppointmentsEnabledForTeam($teamId)) {
+            $users->push($this);
+        }
+
+        $titularIds = \App\Models\AppointmentDelegation::where('team_id', $teamId)
+            ->where('delegate_id', $this->id)
+            ->pluck('user_id');
+
+        if ($titularIds->isNotEmpty()) {
+            $titulares = \App\Models\User::whereIn('id', $titularIds)->orderBy('name')->get();
+            $users = $users->merge($titulares);
+        }
+
+        return $users->unique('id')->values();
+    }
+
+    /**
+     * Obtener el primer equipo que tiene citas previas habilitadas para este usuario (propias o delegadas).
      */
     public function firstTeamWithAppointments(): ?Team
     {
-        return $this->teams()
+        $directTeam = $this->teams()
             ->whereJsonContains('settings->has_appointments', true)
             ->wherePivot('allow_appointments', true)
             ->first();
+
+        if ($directTeam) {
+            return $directTeam;
+        }
+
+        $delegatedTeamId = \App\Models\AppointmentDelegation::where('delegate_id', $this->id)->value('team_id');
+        if ($delegatedTeamId) {
+            return Team::find($delegatedTeamId);
+        }
+
+        return null;
+    }
+
+    /**
+     * Obtiene todos los equipos donde el usuario puede gestionar citas (propias o delegadas).
+     *
+     * @return \Illuminate\Support\Collection<int, Team>
+     */
+    public function teamsWithAppointments(): \Illuminate\Support\Collection
+    {
+        $directTeams = $this->teams()
+            ->whereJsonContains('settings->has_appointments', true)
+            ->wherePivot('allow_appointments', true)
+            ->get();
+
+        $delegatedTeamIds = \App\Models\AppointmentDelegation::where('delegate_id', $this->id)
+            ->pluck('team_id')
+            ->unique();
+
+        if ($delegatedTeamIds->isEmpty()) {
+            return $directTeams;
+        }
+
+        $delegatedTeams = Team::whereIn('id', $delegatedTeamIds)->get();
+
+        return $directTeams->merge($delegatedTeams)->unique('id')->values();
     }
 
     /**

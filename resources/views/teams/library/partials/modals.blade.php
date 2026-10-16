@@ -97,6 +97,14 @@
                 this.deleteOpen = true;
             });
 
+            window.addEventListener('open-delete-link-modal', (e) => {
+                this.deleteIsBulk = false;
+                this.deleteType = 'link';
+                this.deleteId = e.detail.id;
+                this.deleteTitle = e.detail.title;
+                this.deleteOpen = true;
+            });
+
             window.addEventListener('open-bulk-delete-modal', (e) => {
                 this.deleteIsBulk = true;
                 this.bulkDeleteDocIds = e.detail.docIds || [];
@@ -114,7 +122,7 @@
             });
 
             window.addEventListener('move-item', (e) => {
-                const docIds = e.detail.type === 'document' ? [e.detail.id] : [];
+                const docIds = (e.detail.type === 'document' || e.detail.type === 'link') ? [e.detail.id] : [];
                 const folderIds = e.detail.type === 'folder' ? [e.detail.id] : [];
                 this.quickBulkMove(docIds, folderIds, e.detail.target_folder_id ?? null);
             });
@@ -385,7 +393,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                 </svg>
                 <template x-if="!moveIsBulk">
-                    <span x-text="'Mover ' + (moveType === 'folder' ? '{{ __('carpeta') }}' : '{{ __('documento') }}')"></span>
+                    <span x-text="'Mover ' + (moveType === 'folder' ? '{{ __('carpeta') }}' : (moveType === 'link' ? '{{ __('enlace') }}' : '{{ __('documento') }}'))"></span>
                 </template>
                 <template x-if="moveIsBulk">
                     <span>{{ __('Mover elementos seleccionados') }}</span>
@@ -400,7 +408,7 @@
             <template x-if="moveIsBulk">
                 <p class="text-xs text-gray-500 dark:text-gray-400 mb-4 font-medium">
                     {{ __('Mover') }} <strong x-text="bulkDocIds.length + bulkFolderIds.length"></strong> {{ __('elementos seleccionados') }}
-                    <span class="block text-gray-400 text-[11px] mt-0.5" x-text="`(${bulkDocIds.length} {{ __('documentos') }}, ${bulkFolderIds.length} {{ __('carpetas') }})`"></span>
+                    <span class="block text-gray-400 text-[11px] mt-0.5" x-text="`(${bulkDocIds.length} {{ __('documentos/enlaces') }}, ${bulkFolderIds.length} {{ __('carpetas') }})`"></span>
                 </p>
             </template>
 
@@ -488,7 +496,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
                 <template x-if="!deleteIsBulk">
-                    <span x-text="'¿Eliminar ' + (deleteType === 'folder' ? '{{ __('carpeta') }}' : '{{ __('documento') }}') + '?'"></span>
+                    <span x-text="'¿Eliminar ' + (deleteType === 'folder' ? '{{ __('carpeta') }}' : (deleteType === 'link' ? '{{ __('enlace') }}' : '{{ __('documento') }}')) + '?'"></span>
                 </template>
                 <template x-if="deleteIsBulk">
                     <span>{{ __('¿Eliminar elementos seleccionados?') }}</span>
@@ -503,7 +511,7 @@
             <template x-if="deleteIsBulk">
                 <p class="text-xs text-gray-600 dark:text-gray-300 mb-4">
                     {{ __('¿Estás seguro de que deseas eliminar los') }} <strong x-text="bulkDeleteDocIds.length + bulkDeleteFolderIds.length"></strong> {{ __('elementos seleccionados?') }}
-                    <span class="block text-gray-400 text-[11px] mt-1" x-text="`(${bulkDeleteDocIds.length} {{ __('documentos') }}, ${bulkDeleteFolderIds.length} {{ __('carpetas') }})`"></span>
+                    <span class="block text-gray-400 text-[11px] mt-1" x-text="`(${bulkDeleteDocIds.length} {{ __('documentos/enlaces') }}, ${bulkDeleteFolderIds.length} {{ __('carpetas') }})`"></span>
                 </p>
             </template>
 
@@ -575,8 +583,8 @@
                 </form>
             </template>
 
-            {{-- Formulario para eliminar documento individual --}}
-            <template x-if="!deleteIsBulk && deleteType === 'document'">
+            {{-- Formulario para eliminar documento o enlace individual --}}
+            <template x-if="!deleteIsBulk && (deleteType === 'document' || deleteType === 'link')">
                 <form :action="'{{ route('teams.activities.destroy', [$team, 'DOC_ID']) }}'.replace('DOC_ID', deleteId)"
                       method="POST">
                     @csrf

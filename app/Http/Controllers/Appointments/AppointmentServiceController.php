@@ -22,21 +22,26 @@ use Illuminate\Http\Request;
  *   - PUT/PATCH /teams/{team}/appointments/services/{service}
  *   - DELETE /teams/{team}/appointments/services/{service}
  */
+use App\Http\Controllers\Appointments\Concerns\ResolvesAppointmentAgendaUser;
+
 class AppointmentServiceController extends Controller
 {
+    use ResolvesAppointmentAgendaUser;
+
     /**
-     * Muestra la lista de servicios de citas del usuario dentro de un equipo.
+     * Muestra la lista de servicios de citas del usuario o de la agenda delegada dentro de un equipo.
      *
      * @param Team $team
      * @return \Illuminate\View\View
      */
     public function index(Team $team)
     {
-        $services = auth()->user()->appointmentServices()
+        $agendaUser = $this->resolveAgendaUser($team, request());
+        $services = $agendaUser->appointmentServices()
             ->where('team_id', $team->id)
             ->orderBy('sort_order')
             ->get();
-        return view('appointments.services.index', compact('services', 'team'));
+        return view('appointments.services.index', compact('services', 'team', 'agendaUser'));
     }
 
     /**
@@ -242,7 +247,7 @@ class AppointmentServiceController extends Controller
                 if (isset($sched['tramos']) && is_array($sched['tramos'])) {
                     foreach ($sched['tramos'] as $tramo) {
                         $service->schedules()->create([
-                            'user_id' => auth()->id(),
+                            'user_id' => $service->user_id,
                             'day_of_week' => $dayOfWeek,
                             'start_time' => $tramo['start_time'] ?? '09:00',
                             'end_time' => $tramo['end_time'] ?? '14:00',
@@ -253,7 +258,7 @@ class AppointmentServiceController extends Controller
                     }
                 } else {
                     $service->schedules()->create([
-                        'user_id' => auth()->id(),
+                        'user_id' => $service->user_id,
                         'day_of_week' => $dayOfWeek,
                         'start_time' => $sched['start_time'] ?? '09:00',
                         'end_time' => $sched['end_time'] ?? '14:00',
@@ -293,7 +298,7 @@ class AppointmentServiceController extends Controller
     }
 
     /**
-     * Verifica que el servicio pertenezca al usuario autenticado y al equipo especificado.
+     * Verifica que el servicio pertenezca al usuario autenticado (o a un titular que le haya delegado) y al equipo especificado.
      *
      * @param AppointmentService $service
      * @param Team $team
@@ -302,7 +307,11 @@ class AppointmentServiceController extends Controller
      */
     private function authorizeService(AppointmentService $service, Team $team): void
     {
-        if ($service->user_id !== auth()->id() || $service->team_id !== $team->id) {
+        if ($service->team_id !== $team->id) {
+            abort(403);
+        }
+
+        if ($service->user_id !== auth()->id() && !auth()->user()->isSecretaryOf($service->user_id, $team->id)) {
             abort(403);
         }
     }

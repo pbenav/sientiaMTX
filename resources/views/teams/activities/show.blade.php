@@ -10,7 +10,8 @@
         // 2. Si no es plantilla, la tarea en sí es la instancia de ejecución.
         // 2. Si la tarea es una plantilla (is_template), buscamos si el usuario tiene una instancia propia.
         // Si no la tiene, o si no es plantilla, la instancia personal para notas es la propia tarea.
-        $personalInstance = $activity;
+        $canExecute = $isAssigned || $activity->created_by_id === auth()->id() || $team->isCoordinator(auth()->user()) || auth()->user()->can('update', $activity);
+        $personalInstance = null;
         if ($activity->is_template) {
             $instance = $activity->instances()
                 ->whereHas('assignedTo', fn($q) => $q->where('users.id', auth()->id()))
@@ -18,7 +19,11 @@
 
             if ($instance) {
                 $personalInstance = $instance;
+            } elseif ($canExecute) {
+                $personalInstance = $activity;
             }
+        } elseif ($canExecute) {
+            $personalInstance = $activity;
         }
 
         // Get private notes
@@ -1032,7 +1037,7 @@
         button.disabled = true;
         button.innerHTML = '<svg class="animate-spin h-3 w-3 mr-2 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> GUARDANDO...';
 
-        fetch("{{ route('teams.activities.private-notes.update', [$team, $personalInstance], false) }}", {
+        fetch("{{ route('teams.activities.private-notes.update', [$team, $personalInstance ?? $activity], false) }}", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

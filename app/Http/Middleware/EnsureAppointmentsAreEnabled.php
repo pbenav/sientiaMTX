@@ -18,12 +18,12 @@ class EnsureAppointmentsAreEnabled
         if ($request->user()) {
             $team = $request->route('team');
             if ($team) {
-                $teamId = $team instanceof \App\Models\Team ? $team->id : $team;
-                if (!$request->user()->hasAppointmentsEnabledForTeam($teamId)) {
-                    return redirect()->route('dashboard')->with('warning', 'No tienes habilitada la gestión de citas en este equipo.');
+                $teamId = (int) ($team instanceof \App\Models\Team ? $team->id : $team);
+                if (!$request->user()->canAccessAppointmentsForTeam($teamId)) {
+                    return redirect()->route('dashboard')->with('warning', 'No tienes habilitada la gestión de citas ni agendas delegadas en este equipo.');
                 }
             } else {
-                if (!$request->user()->hasAppointmentsEnabled()) {
+                if (!$request->user()->canAccessAnyAppointments()) {
                     return redirect()->route('dashboard')->with('warning', 'La funcionalidad de Citas Previas no está habilitada para tu cuenta. Por favor, solicita a un administrador global que la active para tu perfil.');
                 }
             }

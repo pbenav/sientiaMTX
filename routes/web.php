@@ -702,6 +702,10 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureAppointmentsAreEnabled::cl
     Route::get('/configuracion', [\App\Http\Controllers\Appointments\AppointmentSettingsController::class, 'edit'])->name('settings');
     Route::patch('/configuracion', [\App\Http\Controllers\Appointments\AppointmentSettingsController::class, 'update'])->name('settings.update');
 
+    // Secretarías y Delegación de agenda
+    Route::post('/secretarias', [\App\Http\Controllers\Appointments\AppointmentDelegationController::class, 'store'])->name('delegations.store');
+    Route::delete('/secretarias/{delegation}', [\App\Http\Controllers\Appointments\AppointmentDelegationController::class, 'destroy'])->name('delegations.destroy');
+
     // Detalle y acciones de Citas (Wildcard al final para evitar capturar rutas estáticas)
     Route::post('/{appointment}/start-attention', [\App\Http\Controllers\Appointments\AppointmentController::class, 'startAttention'])->name('start-attention');
     Route::post('/{appointment}/attend-now', [\App\Http\Controllers\Appointments\AppointmentController::class, 'attendNow'])->name('attend-now');

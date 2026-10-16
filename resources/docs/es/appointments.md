@@ -91,3 +91,37 @@ SientiaMTX implementa herramientas estrictas para cumplir con el Reglamento Gene
 - **Registro Aislado de Visitantes (`AppointmentVisitor`)**: Los datos identificativos del ciudadano se gestionan de forma estructurada e independiente.
 - **Anonimización Definitiva**: El sistema permite procesar solicitudes del Derecho al Olvido (Art. 17 RGPD), anonimizando irreversiblemente los datos de carácter personal del visitante (nombre, DNI, teléfono, email) mientras preserva los datos numéricos y estadísticos para auditorías de servicio público.
 
+---
+
+## 👥 7. Secretarías y Delegación de Gestión de Agendas
+
+En organizaciones, despachos y administraciones públicas es habitual que un profesional cuente con personal de apoyo o secretaría para gestionar su calendario, o que varios compañeros compartan la atención de citas. SientiaMTX incorpora un sistema completo de **Gestión Delegada de Agendas**:
+
+### Principios del Modelo de Secretaría
+- **Control Exclusivo del Titular**: Cada profesional con Cita Previa habilitada es el titular exclusivo de su agenda y decide directamente qué compañeros de equipo tienen permiso para gestionarla.
+- **Relación Muchos a Muchos ($M:N$)**:
+  - Un titular puede autorizar a **uno o varios secretarios** simultáneamente.
+  - Un secretario puede gestionar las agendas de **múltiples titulares**, alternando entre ellas con total agilidad.
+- **Secretarios sin Portal Propio**:
+  - Un miembro del equipo **no necesita tener habilitado su propio portal de citas** para actuar como secretario.
+  - Al ser nombrado secretario por un titular, el sistema le concede automáticamente acceso al módulo de citas del equipo en **Modo Secretaría**, permitiéndole atender y coordinar la agenda delegada sin necesidad de publicar servicios propios.
+
+### Configuración y Asignación de Secretarios
+1. El titular accede a su panel de citas y pulsa en la pestaña **Configuración** (`/mis-citas/configuracion`).
+2. En la sección **"Secretarías y Gestión Delegada"**, selecciona al miembro del equipo deseado en el desplegable y hace clic en **"Asignar Secretaría"**.
+3. El nuevo secretario aparece listado de inmediato. El titular puede **revocar el acceso en cualquier momento** pulsando el botón de eliminar junto al nombre del delegado.
+4. Asimismo, en este mismo panel se informa si otros compañeros le han delegado la gestión de sus agendas.
+
+### Operativa en "Modo Secretaría"
+Cuando un usuario autorizado accede al panel de Cita Previa:
+- **Selector de Agenda Activa**: En la barra de navegación superior aparece un selector desplegable (`Agenda activa`) que permite conmutar entre su propia agenda (si tiene citas habilitadas) y cualquiera de las agendas que le han sido delegadas.
+- **Indicador Visual de Modo Secretaría**: Al seleccionar una agenda ajena, la cabecera muestra un aviso destacado informando del nombre del titular de la agenda activa.
+- **Capacidades Operativas del Secretario**:
+  - Visualizar citas del día y del mes del titular.
+  - Filtrar citas por estado, servicio, rango de fechas y texto.
+  - Concertar citas manuales en nombre del titular.
+  - Reprogramar, editar notas de atención y cancelar citas existentes.
+  - Acceder a la mesa de atención y utilizar el **cronómetro de consulta en vivo** ("Atender Ahora").
+  - Gestionar **bloqueos extraordinarios** de calendario (festivos, ausencias o guardias del titular).
+- **Sincronización Cloud**: Todas las citas gestionadas o creadas bajo la agenda delegada se sincronizan automáticamente con el **Google Calendar** y **Google Tasks** del titular, preservando su agenda personal y corporativa sin duplicidades.
+

@@ -77,6 +77,7 @@ The command center where team effort and service pulse converge.
 *   **Unique Locator**: Simplified code (e.g., `25C-B4A1`) for appointment verification or self-service cancellation.
 *   **Attention Desk**: "Attend Now" button shifts appointments to the current moment, launches the consultation stopwatch, and records session notes.
 *   **Duration Analytics**: 30-day KPI cards tracking minimum, average, mode, and maximum consultation lengths.
+*   **Secretaries & Delegated Agendas**: Flexible M:N delegation allowing one or multiple secretaries to operate delegated agendas in "Secretary Mode" (even without a personal portal), equipped with active agenda switching and automatic Google Calendar/Tasks sync.
 
 ---
 

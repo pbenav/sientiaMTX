@@ -155,6 +155,8 @@
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest',
                                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
                                         'content')
                                 },
@@ -177,6 +179,14 @@
                                             '#fff' : '#111827'
                                     }).then(() => {
                                         window.location.reload();
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        title: 'Error',
+                                        text: data.error || data.message || 'No se pudo actualizar el estado',
+                                        icon: 'error',
+                                        background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
+                                        color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
                                     });
                                 }
                             })

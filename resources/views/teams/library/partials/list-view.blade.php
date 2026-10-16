@@ -1,8 +1,14 @@
-@props(['team', 'subfolders', 'documents', 'currentFolder' => null])
+@props(['team', 'subfolders', 'documents', 'links' => collect([]), 'currentFolder' => null])
 
 <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden">
-    <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs">
+    <div x-data="tableScrollDrag"
+        @mousedown="handleMouseDown($event)"
+        @mousemove.window="handleMouseMove($event)"
+        @mouseup.window="handleMouseUp()"
+        @click.capture="if (hasMoved) { $event.preventDefault(); $event.stopPropagation(); $event.stopImmediatePropagation(); }"
+        class="overflow-x-auto custom-scrollbar"
+        :class="{ 'cursor-grab': hasOverflow && !isDown, 'cursor-grabbing select-none': isDown && hasMoved }">
+        <table class="w-full text-left text-xs min-w-[650px]">
             <thead class="bg-gray-50/75 dark:bg-gray-800/40 border-b border-gray-100 dark:border-gray-800 text-[11px] font-bold text-gray-500 uppercase tracking-wider select-none">
                 <tr>
                     <th scope="col" class="py-3 px-3 w-10 text-center">
@@ -297,7 +303,121 @@
                     </tr>
                 @endforeach
 
-                @if($subfolders->isEmpty() && $documents->isEmpty())
+                {{-- Enlaces --}}
+                @foreach($links as $link)
+                    @php
+                        $meta = $link->metadata ?? [];
+                        $url = method_exists($link, 'getUrl') ? ($link->getUrl() ?? '') : ($meta['url'] ?? ($meta['links'][0]['url'] ?? ''));
+                        $parsedHost = $url ? parse_url($url, PHP_URL_HOST) : null;
+                        $statusValue = $link->status_value ?? ($meta['status'] ?? 'active');
+                    @endphp
+                    <tr draggable="true"
+                        @dragstart="startDrag($event, 'link', {{ $link->id }})"
+                        :class="selectedLinks.includes({{ $link->id }}) ? 'bg-purple-50/50 dark:bg-purple-950/20' : 'hover:bg-gray-50/60 dark:hover:bg-gray-800/30'"
+                        class="transition-colors group">
+
+                        <td class="py-3 px-3 text-center">
+                            <label class="relative inline-flex items-center cursor-pointer" @click.stop title="{{ __('Seleccionar enlace') }}">
+                                <input type="checkbox"
+                                       :value="{{ $link->id }}"
+                                       x-model.number="selectedLinks"
+                                       class="rounded-md border-gray-300 dark:border-gray-700 text-purple-600 focus:ring-purple-500 dark:bg-gray-800 w-4 h-4 transition-colors">
+                            </label>
+                        </td>
+
+                        <td class="py-3 px-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-900/30 text-purple-500 dark:text-purple-400 flex items-center justify-center shrink-0 border border-purple-100 dark:border-purple-800/50">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                    </svg>
+                                </div>
+                                <div class="min-w-0">
+                                    <a href="{{ $url ?: route('teams.activities.show', [$team, $link]) }}"
+                                       @if($url) target="_blank" rel="noopener noreferrer" @endif
+                                       class="text-gray-900 dark:text-white font-bold group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors truncate block max-w-xs md:max-w-md">
+                                        {{ $link->title }}
+                                    </a>
+                                    @if(request('q') && $link->folder)
+                                        <span class="text-[10px] text-gray-400 font-normal flex items-center gap-1">
+                                            📁 {{ $link->folder->name }}
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="py-3 px-4 hidden sm:table-cell text-purple-600 dark:text-purple-400 font-semibold">
+                            {{ __('Enlace') }}
+                        </td>
+
+                        <td class="py-3 px-4 hidden md:table-cell">
+                            <span class="px-2 py-0.5 text-[10px] font-bold rounded-lg uppercase tracking-wider border {{ $statusValue === 'active' || $statusValue === 'approved' || $statusValue === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800' : ($statusValue === 'draft' ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800' : ($statusValue === 'broken' ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800' : 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700')) }}">
+                                {{ __("activities.statuses.{$statusValue}") }}
+                            </span>
+                        </td>
+
+                        <td class="py-3 px-4 hidden lg:table-cell text-gray-500 dark:text-gray-400">
+                            @if($parsedHost)
+                                <a href="{{ $url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-purple-600 dark:text-purple-400 hover:underline max-w-[180px] truncate" title="{{ $url }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                    <span class="truncate">{{ $parsedHost }}</span>
+                                </a>
+                            @else
+                                <span class="text-gray-400">—</span>
+                            @endif
+                        </td>
+
+                        <td class="py-3 px-4 hidden sm:table-cell text-gray-400">
+                            {{ $link->created_at->format('d/m/Y') }}
+                        </td>
+
+                        <td class="py-3 px-4 text-right">
+                            <div class="flex items-center justify-end gap-1">
+                                @if($url)
+                                    <a href="{{ $url }}" target="_blank" rel="noopener noreferrer"
+                                       class="p-1.5 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                       title="{{ __('Abrir enlace externo') }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                        </svg>
+                                    </a>
+                                @endif
+
+                                <a href="{{ route('teams.activities.show', [$team, $link]) }}"
+                                   class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                   title="{{ __('Ver Ficha de Actividad') }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </a>
+
+                                <button type="button"
+                                        @click="selectedLinks.includes({{ $link->id }}) && totalSelected > 1 ? $dispatch('open-bulk-move-modal', { docIds: [...selectedDocs, ...selectedLinks], folderIds: selectedFolders }) : $dispatch('open-move-modal', { type: 'link', id: {{ $link->id }}, name: '{{ addslashes($link->title) }}', current_folder_id: {{ $link->folder_id ?? 'null' }} })"
+                                        class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                        :title="selectedLinks.includes({{ $link->id }}) && totalSelected > 1 ? '{{ __('Mover seleccionados') }} (' + totalSelected + ')...' : '{{ __('Mover') }}'">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                                    </svg>
+                                </button>
+
+                                <button type="button"
+                                        @click="selectedLinks.includes({{ $link->id }}) && totalSelected > 1 ? $dispatch('open-bulk-delete-modal', { docIds: [...selectedDocs, ...selectedLinks], folderIds: selectedFolders }) : $dispatch('open-delete-link-modal', { id: {{ $link->id }}, title: '{{ addslashes($link->title) }}' })"
+                                        class="p-1.5 text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                        :title="selectedLinks.includes({{ $link->id }}) && totalSelected > 1 ? '{{ __('Eliminar seleccionados') }} (' + totalSelected + ')' : '{{ __('Eliminar') }}'">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                @endforeach
+
+                @if($subfolders->isEmpty() && $documents->isEmpty() && $links->isEmpty())
                     <tr>
                         <td colspan="7" class="py-12 text-center text-gray-400 text-xs">
                             {{ __('Esta carpeta está vacía.') }}

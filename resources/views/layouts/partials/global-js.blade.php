@@ -214,6 +214,74 @@
             }
         })();
     </script>
+    <!-- 🚀 Sientia Table Horizontal Drag Scroll 🚀 -->
+    <script>
+        (function() {
+            function registerTableScrollDrag() {
+                if (typeof window.Alpine === 'undefined') return;
+                if (window.Alpine.data && window.Alpine.data('tableScrollDrag')) return;
+
+                window.Alpine.data('tableScrollDrag', () => ({
+                    isDown: false,
+                    startX: 0,
+                    scrollLeft: 0,
+                    hasMoved: false,
+                    hasOverflow: false,
+
+                    init() {
+                        this.checkOverflow();
+                        const check = () => this.checkOverflow();
+                        window.addEventListener('resize', check, { passive: true });
+                        if (window.ResizeObserver) {
+                            new ResizeObserver(check).observe(this.$el);
+                        }
+                    },
+
+                    checkOverflow() {
+                        this.hasOverflow = this.$el.scrollWidth > this.$el.clientWidth;
+                    },
+
+                    handleMouseDown(e) {
+                        if (e.button !== 0) return;
+                        if (e.target.closest('input, select, button, a, label, textarea, [role="button"], [contenteditable="true"]')) {
+                            return;
+                        }
+
+                        this.isDown = true;
+                        this.hasMoved = false;
+                        this.startX = e.pageX - this.$el.offsetLeft;
+                        this.scrollLeft = this.$el.scrollLeft;
+                    },
+
+                    handleMouseMove(e) {
+                        if (!this.isDown) return;
+                        const x = e.pageX - this.$el.offsetLeft;
+                        const walk = (x - this.startX);
+
+                        if (Math.abs(walk) > 4) {
+                            this.hasMoved = true;
+                            e.preventDefault();
+                            this.$el.scrollLeft = this.scrollLeft - walk;
+                        }
+                    },
+
+                    handleMouseUp() {
+                        if (!this.isDown) return;
+                        this.isDown = false;
+                        setTimeout(() => {
+                            this.hasMoved = false;
+                        }, 60);
+                    }
+                }));
+            }
+
+            if (window.Alpine) {
+                registerTableScrollDrag();
+            } else {
+                document.addEventListener('alpine:init', registerTableScrollDrag);
+            }
+        })();
+    </script>
 
     <!-- Letrero Flotante de Celebración (Tipo Banner de Feria/Fiesta) -->
     <div x-data="{

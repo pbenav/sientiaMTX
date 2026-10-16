@@ -202,6 +202,7 @@
                         {{ $isCollaborativeSidebar ? __('ACCIONES DE TAREA COLABORATIVA') : __('ACCIONES DEL PLAN MAESTRO') }}
                     </p>
                     
+                    @can('changeStatus', $activity)
                     <div class="space-y-2">
                         @if ($activity->status_value !== 'completed')
                             <button onclick="updateTaskStatus('completed')"
@@ -239,6 +240,7 @@
                             </button>
                         @endif
                     </div>
+                    @endcan
 
                     <div class="pt-2 border-t {{ $isCollaborativeSidebar ? 'border-blue-100 dark:border-blue-900/20' : 'border-violet-100 dark:border-violet-900/20' }}">
                         <div class="flex items-center justify-between text-[9px] font-black uppercase tracking-widest {{ $isCollaborativeSidebar ? 'text-blue-400' : 'text-violet-400' }} mb-1">
@@ -442,15 +444,21 @@
                     <div>
                         <span class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide font-bold block mb-1.5">{{ __('activities.status') }}</span>
                         @if ($activity->type === 'reminder')
-                            <button onclick="updateTaskStatus('{{ $activity->status_value === 'dismissed' ? 'pending' : 'dismissed' }}')" class="flex items-center gap-2 group transition-opacity hover:opacity-80" title="{{ __('Marcar como ' . ($activity->status_value === 'dismissed' ? 'pendiente' : 'descartada')) }}">
-                                <span class="text-[11px] font-bold px-3 py-1 rounded-full border {{ $statusColor }} uppercase tracking-wider transition-colors">
+                            @can('changeStatus', $activity)
+                                <button onclick="updateTaskStatus('{{ $activity->status_value === 'dismissed' ? 'pending' : 'dismissed' }}')" class="flex items-center gap-2 group transition-opacity hover:opacity-80" title="{{ __('Marcar como ' . ($activity->status_value === 'dismissed' ? 'pendiente' : 'descartada')) }}">
+                                    <span class="text-[11px] font-bold px-3 py-1 rounded-full border {{ $statusColor }} uppercase tracking-wider transition-colors">
+                                        {{ __('activities.statuses.' . $activity->status_value) }}
+                                    </span>
+                                    <!-- switch icon -->
+                                    <div class="relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out {{ $activity->status_value === 'dismissed' ? 'bg-emerald-500' : 'bg-gray-200 dark:bg-gray-700' }}">
+                                        <span class="pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ $activity->status_value === 'dismissed' ? 'translate-x-3' : 'translate-x-0' }}"></span>
+                                    </div>
+                                </button>
+                            @else
+                                <span class="text-[11px] font-bold px-3 py-1 rounded-full border {{ $statusColor }} uppercase tracking-wider">
                                     {{ __('activities.statuses.' . $activity->status_value) }}
                                 </span>
-                                <!-- switch icon -->
-                                <div class="relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out {{ $activity->status_value === 'dismissed' ? 'bg-emerald-500' : 'bg-gray-200 dark:bg-gray-700' }}">
-                                    <span class="pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ $activity->status_value === 'dismissed' ? 'translate-x-3' : 'translate-x-0' }}"></span>
-                                </div>
-                            </button>
+                            @endcan
                         @else
                             <span class="text-[11px] font-bold px-3 py-1 rounded-full border {{ $statusColor }} uppercase tracking-wider">
                                 {{ __('activities.statuses.' . $activity->status_value) }}
@@ -982,6 +990,8 @@
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest',
                                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
                                         'content')
                                 },
@@ -1037,6 +1047,8 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
                                 'content')
                         },

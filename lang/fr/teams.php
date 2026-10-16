@@ -98,6 +98,7 @@ return [
     'mark_favorite' => 'Marquer comme favori',
     'revoke_all_modules' => 'Désactivez complètement tous les modules',
     'team' => 'Équipe',
+    'trash' => 'Corbeille',
     'trash_team' => 'Corbeille d\'équipe',
     'team_limit' => 'Limite d\'équipe',
     'email_list' => 'Liste de diffusion',
