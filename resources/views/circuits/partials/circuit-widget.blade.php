@@ -29,7 +29,7 @@
             </div>
             <div>
                 <h3 class="text-xs font-black uppercase tracking-wider text-gray-900 dark:text-white">
-                    {{ __('circuits.circuit') ?? 'Circuito de Tramitación' }}
+                    {{ __('circuits.circuit') }}
                 </h3>
                 <span class="text-[10px] text-gray-400 font-medium">Visto Bueno • Justificación • Aprobación</span>
             </div>
@@ -38,11 +38,11 @@
         @if($activeCircuit)
             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40 animate-pulse">
                 <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                {{ __('circuits.in_progress') ?? 'En Tramitación' }}
+                {{ __('circuits.statuses.in_progress') }}
             </span>
         @else
             <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-                {{ __('circuits.idle') ?? 'Sin Tramitación Activa' }}
+                {{ __('circuits.idle') }}
             </span>
         @endif
     </div>

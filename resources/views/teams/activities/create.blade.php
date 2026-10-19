@@ -1085,7 +1085,7 @@
                     <div class="pt-4 border-t border-gray-100 dark:border-gray-800">
                         <div class="flex items-center justify-between mb-2">
                             <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400">
-                                {{ __('circuits.circuit_template') ?? 'Plantilla de Circuito de Tramitación' }}
+                                {{ __('circuits.circuit_template') }}
                             </label>
                             @if(Route::has('teams.circuits.templates.create'))
                                 <a href="{{ route('teams.circuits.templates.create', $team) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-violet-600 dark:text-violet-400 hover:underline">
@@ -1096,7 +1096,7 @@
                         </div>
                         <select name="circuit_template_id" id="circuit_template_id_select"
                             class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 focus:ring focus:ring-violet-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer">
-                            <option value="">{{ __('(Sin circuito asignado)') }}</option>
+                            <option value="">{{ __('circuits.no_circuit') }}</option>
                             @foreach ($templatesList as $tmpl)
                                 <option value="{{ $tmpl->id }}" {{ old('circuit_template_id') == $tmpl->id ? 'selected' : '' }}>
                                     ⚡ {{ $tmpl->name }} ({{ $tmpl->steps->count() }} pasos: {{ $tmpl->steps->pluck('name')->take(3)->implode(' → ') }})
@@ -1104,7 +1104,7 @@
                             @endforeach
                         </select>
                         <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1.5">
-                            Asocia el flujo de firmas, justificaciones y vistos buenos colegiados que debe seguir este documento.
+                            {{ __('circuits.auto_start_desc') }}
                         </p>
 
                         <div class="mt-3 flex items-center gap-2">
@@ -1112,7 +1112,7 @@
                                 <input type="checkbox" name="start_circuit_now" value="1" {{ old('start_circuit_now') ? 'checked' : '' }} class="sr-only peer">
                                 <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-violet-600"></div>
                                 <span class="ml-2.5 text-xs font-bold text-gray-700 dark:text-gray-300">
-                                    Iniciar tramitación del circuito automáticamente al guardar
+                                    {{ __('circuits.auto_start') }}
                                 </span>
                             </label>
                         </div>

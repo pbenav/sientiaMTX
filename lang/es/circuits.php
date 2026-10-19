@@ -6,8 +6,15 @@
 return [
     'title' => 'Circuitos de Tramitación',
     'singular' => 'Circuito de Tramitación',
+    'circuit' => 'Circuito de Tramitación',
+    'active_circuit' => 'Circuito Activo',
     'template' => 'Plantilla de Circuito',
     'templates' => 'Plantillas de Circuitos',
+    'circuit_template' => 'Plantilla de Circuito de Tramitación',
+    'no_circuit' => '(Sin circuito asignado)',
+    'idle' => 'Sin Tramitación Activa',
+    'auto_start' => 'Iniciar tramitación del circuito automáticamente al guardar cambios',
+    'auto_start_desc' => 'Asocia el flujo de firmas, justificaciones y vistos buenos colegiados que debe seguir este documento.',
     'execution' => 'Tramitación',
     'executions' => 'Tramitaciones',
     'pending_my_approval' => 'Pendientes de mi Visto Bueno / Firma',
@@ -41,4 +48,3 @@ return [
         'dynamic' => 'A designar en tramitación',
     ],
 ];
-
