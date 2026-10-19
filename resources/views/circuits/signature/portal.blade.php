@@ -30,7 +30,7 @@
         </div>
 
         <div class="flex items-center gap-3">
-            <a href="{{ route('teams.circuits.show', [$team, $circuit]) }}" 
+            <a href="{{ route('teams.circuits.show', [$team, $circuit]) }}"
                class="flex items-center gap-1.5 px-3.5 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-black uppercase tracking-wider rounded-xl transition-all active:scale-95 border border-gray-200 dark:border-gray-700">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -167,6 +167,7 @@
         const DOWNLOAD_URL  = '{{ route('teams.circuits.document', [$team, $circuit]) }}';
         const PROCESS_URL   = '{{ route('teams.circuits.steps.process', [$team, $circuit, $step]) }}';
         const CSRF_TOKEN    = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        const STEP_POSITION = {{ $stepIndex ?? max(0, $step->order - 1) }};
         const EXISTING_SIGNATURES = {{ $existingSignaturesCount }};
 
         // Inicialización de AutoFirma / AutoScript
@@ -193,7 +194,7 @@
         document.getElementById('btn-internal-sign').addEventListener('click', function() {
             const comments = document.getElementById('step-comments').value;
             document.getElementById('internal-comments-input').value = comments;
-            
+
             Swal.fire({
                 title: '¿Firmar con acreditación digital Sientia.MTX?',
                 text: 'Se estampará tu firma electrónica acreditada con Código Seguro de Verificación (CSV) y registro de auditoría.',
@@ -248,13 +249,17 @@
                 return;
             }
 
-            // Coordenadas PAdES en la última página
-            const rowIndex = Math.floor(EXISTING_SIGNATURES / 2);
-            const colIndex = EXISTING_SIGNATURES % 2;
-            const startX = colIndex === 0 ? 65 : 305;
-            const endX = startX + 225;
-            const yEnd = 645 - (rowIndex * 105);
-            const yStart = yEnd - 75;
+            // Calculamos la posición en formato grid (2 columnas) en la página dedicada de firmas
+            const rowIndex = Math.floor(STEP_POSITION / 2);
+            const colIndex = STEP_POSITION % 2;
+
+            // Coordenadas X: Columna izquierda y Columna derecha ajustadas a los márgenes del PDF
+            const startX = colIndex === 0 ? 67 : 305;
+            const endX = startX + 223;
+
+            // Coordenadas Y: Empezamos en la altura del cajetín correspondiente a la etapa en la página dedicada
+            const yEnd = 640 - (rowIndex * 105);
+            const yStart = yEnd - 50;
 
             const extraParams = "signatureFormat=PADES-BES\n" +
                                 "signaturePage=-1\n" +
@@ -334,7 +339,7 @@
 
                 const response = await fetch(PROCESS_URL, {
                     method: 'POST',
-                    headers: { 
+                    headers: {
                         'X-CSRF-TOKEN': CSRF_TOKEN,
                         'Accept': 'application/json'
                     },
@@ -379,3 +384,4 @@
     </script>
 </body>
 </html>
+

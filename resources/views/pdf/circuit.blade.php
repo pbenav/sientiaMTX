@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Diligencia de Tramitación - {{ $execution->title }}</title>
     <style>
-        @page { size: A4; margin: 2.2cm 2cm 2.5cm 2cm; }
+        @page { size: A4; margin: 2.5cm 2cm 3.5cm 2cm; }
         body { font-family: 'Helvetica', 'Arial', sans-serif; color: #1e293b; line-height: 1.5; margin: 0; padding: 0; font-size: 12px; }
 
         .header { border-bottom: 2px solid #7c3aed; padding-bottom: 12px; margin-bottom: 24px; }
@@ -38,16 +38,19 @@
         .status-pending { background: #f1f5f9; color: #64748b; }
 
         /* ── Cajetines de firmas ── */
-        .signatures-section { margin-top: 25px; page-break-inside: avoid; }
-        .signatures-grid { width: 100%; border-collapse: separate; border-spacing: 8px; margin-left: -8px; margin-right: -8px; }
-        .signature-cell { width: 50%; vertical-align: top; padding: 0; }
+        .signatures-section { margin-top: 0; page-break-inside: avoid; }
+        .signatures-grid { width: 100%; border-collapse: separate; border-spacing: 8px; }
+        .signature-cell { width: 50%; vertical-align: top; height: 100px; }
 
         .sig-box {
             border: 1.5px solid #e2e8f0;
             border-radius: 6px;
-            padding: 10px 12px;
-            min-height: 100px;
+            padding: 8px 12px;
+            height: 92px;
+            min-height: 92px;
+            position: relative;
             background: #ffffff;
+            box-sizing: border-box;
         }
         .sig-box.signed {
             border-color: #10b981;
@@ -70,7 +73,7 @@
         .sig-hash { font-size: 7.5px; color: #64748b; font-family: monospace; word-break: break-all; margin-top: 4px; }
         .sig-comment { font-size: 9px; font-style: italic; color: #334155; margin-top: 4px; padding-top: 4px; border-top: 1px dotted #cbd5e1; }
 
-        .footer { position: fixed; bottom: -1.8cm; left: 0; right: 0; font-size: 8px; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 6px; }
+        .footer { position: fixed; bottom: -2.5cm; left: 0; right: 0; font-size: 8px; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 6px; }
     </style>
 </head>
 <body>
@@ -205,71 +208,74 @@
         </tbody>
     </table>
 
-    {{-- Cajetines de Firmas Electrónicas Colegiadas --}}
-    <div class="signatures-section">
-        <div class="section-title">Diligencia de Firmas Electrónicas y Conformidades</div>
+    {{-- Diligencia Oficial de Firmas Electrónicas y Conformidades en página dedicada --}}
+    <div style="page-break-before: always; padding-top: 20px;">
+        <div class="section-title" style="margin-top: 0;">Diligencia de Firmas Electrónicas y Conformidades</div>
+        <p style="font-size: 11px; color: #64748b; margin-bottom: 15px;">
+            A continuación se recogen las firmas y conformidades electrónicas reconocidas de los intervinientes en esta tramitación. El documento oficial consolidado incorpora firmas reconocidas con plena validez jurídica según la Ley 39/2015 y Reglamento eIDAS (UE 910/2014).
+        </p>
 
-        @php
-            $signedSteps = $steps->filter(fn($s) => $s->requires_signature || $s->signed_at || $s->status === 'approved');
-            $stepChunks = $signedSteps->chunk(2);
-        @endphp
+        <div class="signatures-section">
+            @php
+                $stepChunks = $steps->chunk(2);
+            @endphp
 
-        @if($stepChunks->isEmpty())
-            <div style="color: #94a3b8; font-style: italic; font-size: 10px;">
-                No hay firmas registradas todavía en esta tramitación.
-            </div>
-        @else
-            <table class="signatures-grid">
-                @foreach($stepChunks as $row)
-                    <tr>
-                        @foreach($row as $step)
-                            <td class="signature-cell">
-                                <div class="sig-box {{ $step->signed_at ? 'signed' : 'pending' }}">
-                                    @if($step->signed_at)
-                                        <div class="sig-header signed">
-                                            <span class="sig-check">✓</span>
-                                            Etapa {{ $step->order }}: Firma Electrónica Reconocida
-                                        </div>
-                                        <div class="sig-name">{{ $step->signature_data['signer_name'] ?? $step->actionUser?->name ?? 'Usuario Certificado' }}</div>
-                                        <div class="sig-meta">
-                                            {{ $step->name }} — {{ $step->signature_data['signer_email'] ?? $step->actionUser?->email ?? '' }}
-                                        </div>
-                                        <div class="sig-date">
-                                            Firmado el {{ $step->signed_at->format('d/m/Y \a \l\a\s H:i:s') }}
-                                        </div>
-                                        <div class="sig-hash">
-                                            Método: {{ strtoupper($step->signature_data['method'] ?? 'Certificado Digital') }}
-                                            | Algoritmo: {{ $step->signature_data['algorithm'] ?? 'SHA-256 / RSA' }}
-                                        </div>
-                                        @if($step->comments)
-                                            <div class="sig-comment">
-                                                "{{ $step->comments }}"
+            @if($stepChunks->isEmpty())
+                <div style="color: #94a3b8; font-style: italic; font-size: 10px;">
+                    No hay firmas registradas todavía en esta tramitación.
+                </div>
+            @else
+                <table class="signatures-grid">
+                    @foreach($stepChunks as $row)
+                        <tr>
+                            @foreach($row as $step)
+                                <td class="signature-cell">
+                                    <div class="sig-box {{ $step->signed_at ? 'signed' : 'pending' }}">
+                                        @if($step->signed_at)
+                                            <div class="sig-header signed">
+                                                <span class="sig-check">✓</span>
+                                                Etapa {{ $step->order }}: Firma Electrónica Reconocida
                                             </div>
+                                            <div class="sig-name">{{ $step->signature_data['signer_name'] ?? $step->actionUser?->name ?? 'Usuario Certificado' }}</div>
+                                            <div class="sig-meta">
+                                                {{ $step->name }} — {{ $step->signature_data['signer_email'] ?? $step->actionUser?->email ?? '' }}
+                                            </div>
+                                            <div class="sig-date">
+                                                Firmado el {{ $step->signed_at->format('d/m/Y \a \l\a\s H:i:s') }}
+                                            </div>
+                                            <div class="sig-hash">
+                                                Método: {{ strtoupper($step->signature_data['method'] ?? 'Certificado Digital') }}
+                                                | Algoritmo: {{ $step->signature_data['algorithm'] ?? 'SHA-256 / RSA' }}
+                                            </div>
+                                            @if($step->comments)
+                                                <div class="sig-comment">
+                                                    "{{ \Illuminate\Support\Str::limit($step->comments, 90) }}"
+                                                </div>
+                                            @endif
+                                        @else
+                                            <div class="sig-header pending">
+                                                Etapa {{ $step->order }}: {{ $step->requires_signature ? 'Firma Electrónica' : 'Conformidad' }}
+                                            </div>
+                                            <div class="sig-name" style="color: #64748b;">
+                                                {{ $step->assignedUser?->name ?? ($step->assignedRole ? 'Rol: ' . $step->assignedRole->name : 'Pendiente de asignación') }}
+                                            </div>
+                                            <div class="sig-meta">
+                                                {{ $step->name }} ({{ $step->action_type_label }})
+                                            </div>
+                                            <!-- Espacio restante para que el sello de Autofirma encaje perfecto -->
+                                            <div style="height: 50px;"></div>
                                         @endif
-                                    @else
-                                        <div class="sig-header pending">
-                                            Etapa {{ $step->order }}: Pendiente de Firma
-                                        </div>
-                                        <div class="sig-name" style="color: #64748b;">
-                                            {{ $step->assignedUser?->name ?? ($step->assignedRole ? 'Rol: ' . $step->assignedRole->name : 'Pendiente de asignación') }}
-                                        </div>
-                                        <div class="sig-meta">
-                                            {{ $step->name }} ({{ $step->action_type_label }})
-                                        </div>
-                                        <div style="margin-top: 14px; font-size: 8px; color: #94a3b8; font-style: italic;">
-                                            En espera de tramitación y firma colegiada
-                                        </div>
-                                    @endif
-                                </div>
-                            </td>
-                        @endforeach
-                        @if($row->count() < 2)
-                            <td class="signature-cell" style="border:none;"></td>
-                        @endif
-                    </tr>
-                @endforeach
-            </table>
-        @endif
+                                    </div>
+                                </td>
+                            @endforeach
+                            @if($row->count() < 2)
+                                <td class="signature-cell" style="border:none;"></td>
+                            @endif
+                        </tr>
+                    @endforeach
+                </table>
+            @endif
+        </div>
     </div>
 
     {{-- Pie de página legal con CSV --}}

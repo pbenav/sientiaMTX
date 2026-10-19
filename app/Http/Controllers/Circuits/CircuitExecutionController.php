@@ -194,12 +194,19 @@ class CircuitExecutionController extends Controller
             $pdfPath = $pdfService->generateAndAttach($circuit);
         }
 
+        $allSteps = $circuit->steps()->orderBy('order', 'asc')->get();
+        $stepIndex = $allSteps->search(fn($s) => $s->id === $step->id);
+        if ($stepIndex === false) {
+            $stepIndex = max(0, $step->order - 1);
+        }
+
         $existingSignaturesCount = $circuit->steps()->whereNotNull('signed_at')->count();
 
         return view('circuits.signature.portal', [
             'team' => $team,
             'circuit' => $circuit,
             'step' => $step,
+            'stepIndex' => $stepIndex,
             'signerUser' => Auth::user(),
             'existingSignaturesCount' => $existingSignaturesCount,
         ]);
