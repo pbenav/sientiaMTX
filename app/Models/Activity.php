@@ -176,6 +176,7 @@ class Activity extends Model
         'parent_id',
         'expediente_id',
         'folder_id',
+        'circuit_template_id',
         'type',
         'title',
         'description',
@@ -563,6 +564,16 @@ class Activity extends Model
     public function getIsInCircuitAttribute(): bool
     {
         return $this->activeCircuitExecution()->exists();
+    }
+
+    /**
+     * Plantilla de circuito asociada o asignada a esta actividad.
+     *
+     * @return BelongsTo<\App\Models\CircuitTemplate, $this>
+     */
+    public function circuitTemplate(): BelongsTo
+    {
+        return $this->belongsTo(CircuitTemplate::class, 'circuit_template_id');
     }
 
     // ─── Relaciones de especialidades y servicios (Task compat layer) ─────────

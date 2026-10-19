@@ -76,6 +76,7 @@ class ActivityService
                 'parent_id'           => $data['parent_id'] ?? null,
                 'expediente_id'       => $data['expediente_id'] ?? null,
                 'folder_id'           => $data['folder_id'] ?? null,
+                'circuit_template_id' => $data['circuit_template_id'] ?? null,
                 'is_template'         => $data['is_template'] ?? false,
                 'kanban_column_id'    => $data['kanban_column_id'] ?? null,
                 'kanban_order'        => $data['kanban_order'] ?? null,
@@ -84,6 +85,23 @@ class ActivityService
             $activity->team_id = $team->id;
             $activity->created_by_id = auth()->id();
             $activity->save();
+
+            // Si se solicitó iniciar tramitación de circuito inmediatamente
+            if (!empty($data['start_circuit_now'])) {
+                $circuitTemplate = !empty($activity->circuit_template_id)
+                    ? \App\Models\CircuitTemplate::where('team_id', $team->id)->find($activity->circuit_template_id)
+                    : null;
+                try {
+                    app(\App\Services\Circuits\CircuitExecutionService::class)->startCircuit(
+                        $activity,
+                        $circuitTemplate,
+                        auth()->user(),
+                        ['title' => 'Tramitación: ' . $activity->title]
+                    );
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning("No se pudo iniciar circuito automáticamente: " . $e->getMessage());
+                }
+            }
 
             // Determinar si es Plan Maestro a partir de properties dinámicas o datos directos
             $assignmentMode = $data['assignment_mode'] ?? data_get($activity->metadata, 'assignment_mode', 'shared');
@@ -143,7 +161,7 @@ class ActivityService
             $fillable = [
                 'title', 'description', 'visibility', 'due_date', 'scheduled_date',
                 'priority', 'auto_priority', 'progress_percentage',
-                'parent_id', 'expediente_id', 'folder_id', 'is_template',
+                'parent_id', 'expediente_id', 'folder_id', 'circuit_template_id', 'is_template',
                 'kanban_column_id', 'kanban_order', 'matrix_order',
             ];
 
@@ -236,6 +254,23 @@ class ActivityService
 
             if ($activity->auto_priority && method_exists($activity, 'updateAutoPriority')) {
                 $activity->updateAutoPriority();
+            }
+
+            // Si se solicitó iniciar tramitación de circuito inmediatamente
+            if (!empty($data['start_circuit_now']) && !$activity->isInCircuit) {
+                $circuitTemplate = !empty($activity->circuit_template_id)
+                    ? \App\Models\CircuitTemplate::where('team_id', $activity->team_id)->find($activity->circuit_template_id)
+                    : null;
+                try {
+                    app(\App\Services\Circuits\CircuitExecutionService::class)->startCircuit(
+                        $activity,
+                        $circuitTemplate,
+                        auth()->user(),
+                        ['title' => 'Tramitación: ' . $activity->title]
+                    );
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning("No se pudo iniciar circuito en update: " . $e->getMessage());
+                }
             }
 
             $this->notifyGuests($activity);

@@ -111,3 +111,4 @@ class CircuitPublicationService
         return $publication;
     }
 }
+

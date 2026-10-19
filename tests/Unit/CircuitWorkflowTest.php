@@ -199,9 +199,14 @@ class CircuitWorkflowTest extends TestCase
         $activity = new Activity();
         $this->assertInstanceOf(MorphMany::class, $activity->circuitExecutions());
         $this->assertInstanceOf(MorphOne::class, $activity->activeCircuitExecution());
+        $this->assertInstanceOf(BelongsTo::class, $activity->circuitTemplate());
+        $this->assertContains('circuit_template_id', $activity->getFillable());
 
         $expediente = new Expediente();
         $this->assertInstanceOf(MorphMany::class, $expediente->circuitExecutions());
         $this->assertInstanceOf(MorphOne::class, $expediente->activeCircuitExecution());
+        $this->assertInstanceOf(BelongsTo::class, $expediente->circuitTemplate());
+        $this->assertContains('circuit_template_id', $expediente->getFillable());
     }
 }
+

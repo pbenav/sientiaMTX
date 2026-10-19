@@ -205,3 +205,4 @@ class CircuitTemplateController extends Controller
             ->with('success', 'Plantilla eliminada correctamente.');
     }
 }
+

@@ -48,7 +48,7 @@
 
         <!-- Document Sheet Card -->
         <div class="bg-white rounded-3xl p-8 sm:p-12 border border-gray-200 shadow-sm print-border">
-            
+
             <!-- Document Header -->
             <div class="border-b-2 border-gray-900 pb-6 mb-8 flex flex-col sm:flex-row justify-between items-start gap-4">
                 <div>
@@ -165,3 +165,4 @@
     </footer>
 </body>
 </html>
+

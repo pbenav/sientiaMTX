@@ -134,3 +134,4 @@ return new class extends Migration
         Schema::dropIfExists('circuit_templates');
     }
 };
+

@@ -121,3 +121,4 @@ class CircuitPublicBoardController extends Controller
         return view('circuits.public.show', compact('publication'));
     }
 }
+

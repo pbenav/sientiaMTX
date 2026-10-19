@@ -160,7 +160,7 @@
         @if($currentUserCanAct && $circuit->currentStep)
             <div class="bg-gradient-to-br from-violet-600 via-indigo-600 to-purple-700 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-indigo-600/20 relative overflow-hidden"
                 x-data="{ decision: 'approved' }">
-                
+
                 <!-- Background decorative glow -->
                 <div class="absolute -right-12 -top-12 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
 
@@ -306,3 +306,4 @@
         </div>
     </div>
 </x-app-layout>
+

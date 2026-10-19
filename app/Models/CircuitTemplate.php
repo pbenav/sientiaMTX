@@ -102,3 +102,4 @@ class CircuitTemplate extends Model
         return $query->whereIn('target_type', [$targetType, 'both']);
     }
 }
+

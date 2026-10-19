@@ -1198,6 +1198,70 @@
                             </select>
                         </div>
                     </div>
+
+                    <!-- Circuito de Tramitación y Aprobación -->
+                    @php
+                        $templatesList = $circuitTemplates ?? $team->circuitTemplates()->active()->forTarget('activity')->get();
+                    @endphp
+                    <div class="pt-4 border-t border-gray-100 dark:border-gray-800">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400">
+                                {{ __('circuits.circuit_template') ?? 'Circuito de Tramitación / Aprobación' }}
+                            </label>
+                            @if(Route::has('teams.circuits.templates.create'))
+                                <a href="{{ route('teams.circuits.templates.create', $team) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-violet-600 dark:text-violet-400 hover:underline">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                    <span>Nueva plantilla</span>
+                                </a>
+                            @endif
+                        </div>
+
+                        @if($activity->activeCircuitExecution)
+                            <div class="p-4 rounded-2xl bg-violet-50 dark:bg-violet-950/30 border border-violet-200 dark:border-violet-800/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                                <div>
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-violet-100 dark:bg-violet-900/50 text-violet-700 dark:text-violet-300">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse"></span>
+                                            Circuito Activo
+                                        </span>
+                                        <span class="text-xs font-bold text-gray-700 dark:text-gray-300">
+                                            {{ $activity->activeCircuitExecution->title }}
+                                        </span>
+                                    </div>
+                                    <p class="text-[11px] text-gray-500 dark:text-gray-400">
+                                        Paso actual: <strong>{{ $activity->activeCircuitExecution->currentStep?->name ?? 'En curso' }}</strong> ({{ $activity->activeCircuitExecution->progress_percentage }}% completado)
+                                    </p>
+                                </div>
+                                <a href="{{ route('teams.circuits.show', [$team, $activity->activeCircuitExecution]) }}" target="_blank" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-black uppercase bg-violet-600 text-white hover:bg-violet-700 shadow-sm transition">
+                                    <span>Ver Tramitación</span>
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                </a>
+                            </div>
+                            <input type="hidden" name="circuit_template_id" value="{{ $activity->circuit_template_id }}">
+                        @else
+                            <select name="circuit_template_id" id="circuit_template_id_select" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-violet-500 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none transition-all cursor-pointer font-medium font-sans">
+                                <option value="">{{ __('(Sin circuito asignado)') }}</option>
+                                @foreach ($templatesList as $tmpl)
+                                    <option value="{{ $tmpl->id }}" {{ old('circuit_template_id', $activity->circuit_template_id) == $tmpl->id ? 'selected' : '' }}>
+                                        ⚡ {{ $tmpl->name }} ({{ $tmpl->steps->count() }} pasos: {{ $tmpl->steps->pluck('name')->take(3)->implode(' → ') }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1.5">
+                                Asocia el flujo de firmas, justificaciones y vistos buenos colegiados que debe seguir este documento.
+                            </p>
+
+                            <div class="mt-3 flex items-center gap-2">
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="start_circuit_now" value="1" {{ old('start_circuit_now') ? 'checked' : '' }} class="sr-only peer">
+                                    <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-violet-600"></div>
+                                    <span class="ml-2.5 text-xs font-bold text-gray-700 dark:text-gray-300">
+                                        Iniciar tramitación del circuito automáticamente al guardar cambios
+                                    </span>
+                                </label>
+                            </div>
+                        @endif
+                    </div>
         </div>
     </div>
 

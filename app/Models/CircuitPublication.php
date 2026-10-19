@@ -155,3 +155,4 @@ class CircuitPublication extends Model
         return true;
     }
 }
+

@@ -194,8 +194,9 @@ class TaskController extends Controller
 
         $expedientes = $team->expedientes()->orderBy('code', 'desc')->get();
         $selectedExpedienteId = request('expediente_id');
+        $circuitTemplates = $team->circuitTemplates()->active()->forTarget('activity')->get();
 
-        return view('tasks.create', compact('team', 'users', 'allMembers', 'groups', 'priorities', 'tasks', 'backUrl', 'skills', 'services', 'expedientes', 'selectedExpedienteId'));
+        return view('tasks.create', compact('team', 'users', 'allMembers', 'groups', 'priorities', 'tasks', 'backUrl', 'skills', 'services', 'expedientes', 'selectedExpedienteId', 'circuitTemplates'));
     }
 
     /**

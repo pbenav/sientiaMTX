@@ -58,6 +58,11 @@ class UpdateTaskRequest extends FormRequest
                 'nullable',
                 Rule::exists('expedientes', 'id')->where('team_id', $team->id),
             ],
+            'circuit_template_id' => [
+                'nullable',
+                Rule::exists('circuit_templates', 'id')->where('team_id', $team->id),
+            ],
+            'start_circuit_now' => 'nullable|boolean',
             'is_timeline_locked' => 'nullable|boolean',
         ];
     }

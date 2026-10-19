@@ -32,6 +32,7 @@ class Expediente extends Model
         'team_id',
         'created_by_id',
         'assigned_user_id',
+        'circuit_template_id',
         'code',
         'title',
         'description',
@@ -177,6 +178,16 @@ class Expediente extends Model
     public function getIsInCircuitAttribute(): bool
     {
         return $this->activeCircuitExecution()->exists();
+    }
+
+    /**
+     * Plantilla de circuito asociada a este expediente.
+     *
+     * @return BelongsTo<\App\Models\CircuitTemplate, $this>
+     */
+    public function circuitTemplate(): BelongsTo
+    {
+        return $this->belongsTo(CircuitTemplate::class, 'circuit_template_id');
     }
 
     /**

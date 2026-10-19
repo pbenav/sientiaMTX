@@ -90,6 +90,11 @@ class StoreActivityRequest extends FormRequest
                 'nullable',
                 Rule::exists('team_folders', 'id')->where('team_id', $team->id),
             ],
+            'circuit_template_id' => [
+                'nullable',
+                Rule::exists('circuit_templates', 'id')->where('team_id', $team->id),
+            ],
+            'start_circuit_now' => 'nullable|boolean',
             'is_template' => 'nullable|boolean',
             'kanban_column_id' => [
                 'nullable',

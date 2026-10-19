@@ -41,3 +41,4 @@ return [
         'dynamic' => 'A designar en tramitación',
     ],
 ];
+
