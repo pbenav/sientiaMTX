@@ -2,33 +2,41 @@
     @section('title', 'Plantillas de Circuitos — ' . $team->name)
 
     <x-slot name="header">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div class="flex items-center gap-4">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+            <div class="flex items-center gap-2 min-w-0">
                 <a href="{{ route('teams.circuits.index', $team) }}"
-                    class="p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0"
+                    title="{{ __('Back') }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                 </a>
-                <div>
-                    <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading tracking-tight">
-                        Plantillas de Circuitos
-                    </h1>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                        Define flujos preconfigurados de visto bueno, justificación y aprobación para tu equipo
-                    </p>
-                </div>
+                @include('teams.partials.breadcrumb')
+                <span class="text-gray-300 dark:text-gray-700 mx-1">/</span>
+                <h1 class="text-base font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-1.5">
+                    <svg class="h-4 w-4 text-violet-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <span class="truncate">Plantillas de Circuitos</span>
+                </h1>
             </div>
-
-            <a href="{{ route('teams.circuits.templates.create', $team) }}"
-                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black bg-violet-600 hover:bg-violet-700 text-white shadow-md shadow-violet-600/20 transition-all hover:scale-105 active:scale-95">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
-                <span>Nueva Plantilla</span>
-            </a>
+            <div class="flex items-center gap-2 shrink-0">
+                @include('teams.partials.header-toolbar')
+            </div>
         </div>
+
+        <div class="mt-2">
+            <x-demo-hint>
+                Plantillas preconfiguradas con secuencias ordenadas de pasos (visto bueno, justificación, resolución y publicación opcional) aplicables a actividades y expedientes.
+            </x-demo-hint>
+        </div>
+
+        @include('teams.partials.team-view-nav')
+
+        @include('circuits.partials.circuits-nav')
     </x-slot>
 
-    <div class="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    <div class="space-y-6">
         @if($templates->isEmpty())
             <div class="bg-white dark:bg-gray-800 rounded-3xl p-12 text-center border border-gray-100 dark:border-gray-700 shadow-sm max-w-lg mx-auto">
                 <div class="w-16 h-16 rounded-3xl bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 flex items-center justify-center mx-auto mb-4">

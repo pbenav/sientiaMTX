@@ -1,35 +1,47 @@
 <x-app-layout>
-    @section('title', 'Pendientes de Firma y Visto Bueno — ' . $team->name)
+    @section('title', 'Mis Pendientes de Visto Bueno y Firma — ' . $team->name)
 
     <x-slot name="header">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="text-xs font-black uppercase tracking-widest text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 border border-violet-100 dark:border-violet-800/50 px-2.5 py-0.5 rounded-lg">
-                        Bandeja de Despacho
-                    </span>
-                    <span class="px-2 py-0.5 text-xs font-black rounded-full bg-violet-600 text-white">
-                        {{ $executions->total() }}
-                    </span>
-                </div>
-                <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading tracking-tight">
-                    Pendientes de mi Visto Bueno / Firma
-                </h1>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Trámites de actividades y expedientes que requieren tu validación, justificación o aprobación
-                </p>
-            </div>
-
-            <div class="flex items-center gap-2.5">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+            <div class="flex items-center gap-2 min-w-0">
                 <a href="{{ route('teams.circuits.index', $team) }}"
-                    class="px-4 py-2.5 text-xs font-bold rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                    Ver Todas las Tramitaciones
+                    class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0"
+                    title="{{ __('Back') }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
                 </a>
+                @include('teams.partials.breadcrumb')
+                <span class="text-gray-300 dark:text-gray-700 mx-1">/</span>
+                <h1 class="text-base font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-1.5">
+                    <svg class="h-4 w-4 text-violet-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                    <span class="truncate">Mis Pendientes de Visto Bueno / Firma</span>
+                    @if($executions->total() > 0)
+                        <span class="px-2 py-0.5 text-xs font-black rounded-full bg-violet-600 text-white ml-1">
+                            {{ $executions->total() }}
+                        </span>
+                    @endif
+                </h1>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                @include('teams.partials.header-toolbar')
             </div>
         </div>
+
+        <div class="mt-2">
+            <x-demo-hint>
+                Bandeja de despacho personal: pasos de circuitos de tramitación asignados a ti o a tus roles que requieren tu visto bueno, justificación o firma colegiada.
+            </x-demo-hint>
+        </div>
+
+        @include('teams.partials.team-view-nav')
+
+        @include('circuits.partials.circuits-nav')
     </x-slot>
 
-    <div class="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="space-y-6">
         @if($executions->isEmpty())
             <div class="bg-white dark:bg-gray-800 rounded-3xl p-12 text-center border border-gray-100 dark:border-gray-700 shadow-sm max-w-xl mx-auto my-8">
                 <div class="w-16 h-16 rounded-3xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/10">

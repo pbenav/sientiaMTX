@@ -2,93 +2,112 @@
     @section('title', $circuit->title . ' — ' . $team->name)
 
     <x-slot name="header">
-        <div class="flex flex-col lg:flex-row justify-between items-start gap-4">
-            <div class="flex items-start gap-4">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+            <div class="flex items-center gap-2 min-w-0">
                 <a href="{{ route('teams.circuits.index', $team) }}"
-                    class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0"
+                    title="{{ __('Back') }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                 </a>
-                <div>
-                    <div class="flex items-center gap-3 mb-1.5 flex-wrap">
-                        <span class="text-xs font-black uppercase tracking-widest text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 border border-violet-100 dark:border-violet-800/50 px-2.5 py-0.5 rounded-lg">
-                            Tramitación #{{ $circuit->id }}
-                        </span>
-
-                        @php
-                            $statusClasses = match($circuit->status) {
-                                'approved' => 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300',
-                                'in_progress' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 animate-pulse',
-                                'returned' => 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
-                                'rejected' => 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300',
-                                'published' => 'bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300',
-                                'cancelled' => 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300',
-                                default => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
-                            };
-                            $statusLabel = match($circuit->status) {
-                                'approved' => 'Aprobado Definitivo',
-                                'in_progress' => 'En Tramitación',
-                                'returned' => 'Devuelto (En subsanación)',
-                                'rejected' => 'Rechazado / Denegado',
-                                'published' => 'Publicado en Tablón Edictal',
-                                'cancelled' => 'Cancelado',
-                                default => ucfirst($circuit->status),
-                            };
-                        @endphp
-
-                        <span class="px-2.5 py-0.5 text-xs font-black uppercase tracking-wider rounded-lg {{ $statusClasses }}">
-                            {{ $statusLabel }}
-                        </span>
-
-                        @if($circuit->template)
-                            <span class="text-xs font-bold text-gray-500 dark:text-gray-400">
-                                Plantilla: <span class="text-gray-800 dark:text-gray-200">{{ $circuit->template->name }}</span>
-                            </span>
-                        @endif
-                    </div>
-
-                    <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading tracking-tight">
-                        {{ $circuit->title }}
-                    </h1>
-
-                    <div class="flex flex-wrap items-center gap-x-6 gap-y-2 mt-2 text-xs font-medium text-gray-500 dark:text-gray-400">
-                        <span>Iniciado por: <strong class="text-gray-700 dark:text-gray-300">{{ $circuit->initiator?->name }}</strong></span>
-                        <span>Fecha: <strong class="text-gray-700 dark:text-gray-300">{{ $circuit->started_at?->format('d/m/Y H:i') ?? $circuit->created_at->format('d/m/Y H:i') }}</strong></span>
-
-                        @if($circuit->circuitable)
-                            <div class="flex items-center gap-1.5 font-bold">
-                                <span>Elemento vinculado:</span>
-                                @if($circuit->circuitable instanceof \App\Models\Activity)
-                                    <a href="{{ route('activities.show', $circuit->circuitable) }}" class="text-violet-600 dark:text-violet-400 hover:underline inline-flex items-center gap-1">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                        Actividad: {{ $circuit->circuitable->title }}
-                                    </a>
-                                @elseif($circuit->circuitable instanceof \App\Models\Expediente)
-                                    <a href="{{ route('teams.expedientes.show', [$team, $circuit->circuitable]) }}" class="text-violet-600 dark:text-violet-400 hover:underline inline-flex items-center gap-1">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
-                                        Expediente: {{ $circuit->circuitable->code }} — {{ $circuit->circuitable->title }}
-                                    </a>
-                                @endif
-                            </div>
-                        @endif
-                    </div>
-                </div>
+                @include('teams.partials.breadcrumb')
+                <span class="text-gray-300 dark:text-gray-700 mx-1">/</span>
+                <h1 class="text-base font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-1.5">
+                    <svg class="h-4 w-4 text-violet-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span class="truncate">{{ $circuit->title }}</span>
+                </h1>
+                <span class="text-xs font-mono font-bold text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">#{{ $circuit->id }}</span>
             </div>
-
-            <!-- Action buttons header -->
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 shrink-0">
                 @if($circuit->is_active && ($circuit->initiated_by_id === auth()->id() || $team->owner_id === auth()->id() || $team->isCoordinator(auth()->user())))
                     <button type="button" onclick="document.getElementById('modal-cancel-circuit').classList.remove('hidden')"
-                        class="px-3.5 py-2 text-xs font-bold rounded-xl text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 border border-rose-200 dark:border-rose-800 transition-colors">
+                        class="px-2.5 py-1 text-xs font-bold rounded-lg text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 border border-rose-200 dark:border-rose-800 transition-colors">
                         Cancelar Tramitación
                     </button>
                 @endif
+                @include('teams.partials.header-toolbar')
             </div>
         </div>
+
+        @include('teams.partials.team-view-nav')
+        @include('circuits.partials.circuits-nav')
     </x-slot>
 
-    <div class="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    <div class="space-y-6">
+
+        {{-- Circuit Metadata Card --}}
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="space-y-2 flex-1 min-w-0">
+                <div class="flex items-center gap-2.5 flex-wrap">
+                    @php
+                        $statusClasses = match($circuit->status) {
+                            'approved' => 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300',
+                            'in_progress' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 animate-pulse',
+                            'returned' => 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
+                            'rejected' => 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300',
+                            'published' => 'bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300',
+                            'cancelled' => 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300',
+                            default => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
+                        };
+                        $statusLabel = match($circuit->status) {
+                            'approved' => 'Aprobado Definitivo',
+                            'in_progress' => 'En Tramitación',
+                            'returned' => 'Devuelto (En subsanación)',
+                            'rejected' => 'Rechazado / Denegado',
+                            'published' => 'Publicado en Tablón Edictal',
+                            'cancelled' => 'Cancelado',
+                            default => ucfirst($circuit->status),
+                        };
+                    @endphp
+
+                    <span class="px-2.5 py-0.5 text-xs font-black uppercase tracking-wider rounded-lg {{ $statusClasses }}">
+                        {{ $statusLabel }}
+                    </span>
+
+                    @if($circuit->template)
+                        <span class="text-xs font-bold text-gray-500 dark:text-gray-400">
+                            Plantilla: <strong class="text-gray-800 dark:text-gray-200">{{ $circuit->template->name }}</strong>
+                        </span>
+                    @endif
+                </div>
+
+                <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+                    <span>Iniciado por: <strong class="text-gray-700 dark:text-gray-300">{{ $circuit->initiator?->name }}</strong></span>
+                    <span>Fecha: <strong class="text-gray-700 dark:text-gray-300">{{ $circuit->started_at?->format('d/m/Y H:i') ?? $circuit->created_at->format('d/m/Y H:i') }}</strong></span>
+
+                    @if($circuit->circuitable)
+                        <div class="flex items-center gap-1.5 font-bold">
+                            <span>Elemento vinculado:</span>
+                            @if($circuit->circuitable instanceof \App\Models\Activity)
+                                <a href="{{ route('activities.show', $circuit->circuitable) }}" class="text-violet-600 dark:text-violet-400 hover:underline inline-flex items-center gap-1">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                    Actividad: {{ $circuit->circuitable->title }}
+                                </a>
+                            @elseif($circuit->circuitable instanceof \App\Models\Expediente)
+                                <a href="{{ route('teams.expedientes.show', [$team, $circuit->circuitable]) }}" class="text-violet-600 dark:text-violet-400 hover:underline inline-flex items-center gap-1">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                                    Expediente: {{ $circuit->circuitable->code }} — {{ $circuit->circuitable->title }}
+                                </a>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            {{-- Progress indicator --}}
+            <div class="flex flex-col items-end shrink-0">
+                <span class="text-[10px] uppercase font-bold text-gray-400">Progreso Global</span>
+                <div class="flex items-center gap-2 mt-1">
+                    <div class="w-28 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <div class="h-full bg-violet-600 rounded-full" style="width: {{ $circuit->progress_percentage }}%"></div>
+                    </div>
+                    <span class="text-xs font-black text-violet-600 dark:text-violet-400">{{ $circuit->progress_percentage }}%</span>
+                </div>
+            </div>
+        </div>
 
         <!-- Public Board Banner if Published -->
         @if($circuit->publication)

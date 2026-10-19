@@ -2,35 +2,45 @@
     @section('title', 'Gestión del Tablón Edictal — ' . $team->name)
 
     <x-slot name="header">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div class="flex items-center gap-4">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+            <div class="flex items-center gap-2 min-w-0">
                 <a href="{{ route('teams.circuits.index', $team) }}"
-                    class="p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0"
+                    title="{{ __('Back') }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                 </a>
-                <div>
-                    <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading tracking-tight">
-                        Tablón Edictal y Documentos Públicos
-                    </h1>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                        Documentos, bandos y acuerdos tramitados y puestos a disposición de la ciudadanía
-                    </p>
-                </div>
+                @include('teams.partials.breadcrumb')
+                <span class="text-gray-300 dark:text-gray-700 mx-1">/</span>
+                <h1 class="text-base font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-1.5">
+                    <svg class="h-4 w-4 text-teal-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
+                    </svg>
+                    <span class="truncate">Tablón Edictal y Documentos Públicos</span>
+                </h1>
             </div>
-
-            <div class="flex items-center gap-2.5">
+            <div class="flex items-center gap-2 shrink-0">
                 <a href="{{ route('public.circuits.board', $team) }}" target="_blank"
-                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black bg-teal-600 hover:bg-teal-700 text-white shadow-md shadow-teal-600/20 transition-all">
-                    <span>Ver Tablón Público de Ciudadanía</span>
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-teal-600 hover:bg-teal-700 text-white shadow-xs transition-all">
+                    <span>Portal Ciudadano</span>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                 </a>
+                @include('teams.partials.header-toolbar')
             </div>
         </div>
+
+        <div class="mt-2">
+            <x-demo-hint>
+                Gestión de documentos, acuerdos y resoluciones publicados al servicio de la ciudadanía en el portal de transparencia y tablón edictal digital.
+            </x-demo-hint>
+        </div>
+
+        @include('teams.partials.team-view-nav')
+        @include('circuits.partials.circuits-nav')
     </x-slot>
 
-    <div class="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    <div class="space-y-6">
 
         <!-- Public URL Banner -->
         <div class="p-5 bg-gradient-to-r from-teal-500/10 via-emerald-500/10 to-transparent border border-teal-200 dark:border-teal-800/50 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">

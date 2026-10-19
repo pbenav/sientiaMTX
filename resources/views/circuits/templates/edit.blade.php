@@ -2,22 +2,31 @@
     @section('title', 'Editar Plantilla: ' . $template->name . ' — ' . $team->name)
 
     <x-slot name="header">
-        <div class="flex items-center gap-4">
-            <a href="{{ route('teams.circuits.templates.index', $team) }}"
-                class="p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-            </a>
-            <div>
-                <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading tracking-tight">
-                    Editar Plantilla de Circuito
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+            <div class="flex items-center gap-2 min-w-0">
+                <a href="{{ route('teams.circuits.templates.index', $team) }}"
+                    class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0"
+                    title="{{ __('Back') }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </a>
+                @include('teams.partials.breadcrumb')
+                <span class="text-gray-300 dark:text-gray-700 mx-1">/</span>
+                <h1 class="text-base font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-1.5">
+                    <svg class="h-4 w-4 text-violet-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                    <span class="truncate">Editar: {{ $template->name }}</span>
                 </h1>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    Modifica los parámetros y las etapas del flujo de aprobación
-                </p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                @include('teams.partials.header-toolbar')
             </div>
         </div>
+
+        @include('teams.partials.team-view-nav')
+        @include('circuits.partials.circuits-nav')
     </x-slot>
 
     @php
@@ -32,7 +41,7 @@
         })->values()->all();
     @endphp
 
-    <div class="py-6 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8"
+    <div class="space-y-6 max-w-5xl mx-auto"
         x-data="{
             steps: {{ json_encode($initialSteps) }},
             addStep() {

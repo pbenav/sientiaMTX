@@ -2,43 +2,41 @@
     @section('title', 'Circuitos de Tramitación — ' . $team->name)
 
     <x-slot name="header">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-                <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white heading tracking-tight">
-                    Circuitos de Tramitación y Aprobación
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+            <div class="flex items-center gap-2 min-w-0">
+                <a href="{{ route('teams.dashboard', $team) }}"
+                    class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0"
+                    title="{{ __('Back') }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </a>
+                @include('teams.partials.breadcrumb')
+                <span class="text-gray-300 dark:text-gray-700 mx-1">/</span>
+                <h1 class="text-base font-black text-gray-900 dark:text-white heading truncate select-none tracking-tight flex items-center gap-1.5">
+                    <svg class="h-4 w-4 text-violet-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span class="truncate">Circuitos de Tramitación</span>
                 </h1>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Control de vistos buenos, justificaciones técnicas y firmas para actividades y expedientes
-                </p>
             </div>
-
-            <div class="flex items-center gap-2.5 flex-wrap">
-                <a href="{{ route('teams.circuits.pending', $team) }}"
-                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-violet-600 hover:bg-violet-700 text-white shadow-md shadow-violet-600/20 transition-all">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                    <span>Mis Pendientes</span>
-                    @php $myPending = auth()->user()->pendingCircuitExecutionsCount($team->id); @endphp
-                    @if($myPending > 0)
-                        <span class="px-1.5 py-0.5 text-[10px] font-black rounded-full bg-white text-violet-700">
-                            {{ $myPending }}
-                        </span>
-                    @endif
-                </a>
-
-                <a href="{{ route('teams.circuits.templates.index', $team) }}"
-                    class="px-4 py-2.5 text-xs font-bold rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                    Plantillas
-                </a>
-
-                <a href="{{ route('teams.circuits.board.index', $team) }}"
-                    class="px-4 py-2.5 text-xs font-bold rounded-xl bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/50 border border-teal-200 dark:border-teal-800 transition-colors">
-                    Tablón Edictal
-                </a>
+            <div class="flex items-center gap-2 shrink-0">
+                @include('teams.partials.header-toolbar')
             </div>
         </div>
+
+        <div class="mt-2">
+            <x-demo-hint>
+                Los circuitos de tramitación permiten canalizar flujos formales de visto bueno, justificación colegiada, resolución y publicación de expedientes y actividades del equipo.
+            </x-demo-hint>
+        </div>
+
+        @include('teams.partials.team-view-nav')
+
+        @include('circuits.partials.circuits-nav')
     </x-slot>
 
-    <div class="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    <div class="space-y-6">
 
         <!-- Filters and search bar -->
         <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col md:flex-row items-center justify-between gap-4">
