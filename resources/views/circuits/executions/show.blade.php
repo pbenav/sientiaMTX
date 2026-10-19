@@ -196,6 +196,38 @@
             </div>
         @endif
 
+        <!-- Notice if current user cannot act but circuit is active -->
+        @if(!$currentUserCanAct && $circuit->is_active && $circuit->currentStep)
+            <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-5 flex items-start sm:items-center gap-4">
+                <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 shadow-xs">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100">
+                            Paso en curso ({{ $circuit->currentStep->order }}/{{ $circuit->steps->count() }})
+                        </span>
+                        <h4 class="text-sm font-black text-amber-900 dark:text-amber-200">
+                            {{ $circuit->currentStep->name }} ({{ $circuit->currentStep->action_type_label }})
+                        </h4>
+                        @if($circuit->currentStep->requires_signature)
+                            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/50 px-2 py-0.5 rounded-md">
+                                <svg class="w-3 h-3 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                Requiere Firma Digital
+                            </span>
+                        @endif
+                    </div>
+                    <p class="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                        Esta etapa está asignada a: 
+                        <strong class="font-bold text-amber-900 dark:text-amber-100">
+                            {{ $circuit->currentStep->assignedUser?->name ?? ($circuit->currentStep->assignedRole?->name ? 'Rol: ' . ucfirst($circuit->currentStep->assignedRole->name) : 'Cualquier responsable del equipo') }}
+                        </strong>.
+                        Se notificará automáticamente cuando se complete su resolución.
+                    </p>
+                </div>
+            </div>
+        @endif
+
         <!-- Action Card for Current Assignee -->
         @if($currentUserCanAct && $circuit->currentStep)
             <div class="bg-gradient-to-br from-violet-600 via-indigo-600 to-purple-700 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-indigo-600/20 relative overflow-hidden"
@@ -222,6 +254,31 @@
                         <p class="text-sm text-violet-100 mt-1 max-w-3xl">
                             {{ $circuit->currentStep->description }}
                         </p>
+                    @endif
+
+                    @if($circuit->currentStep->requires_signature)
+                        <!-- Callout de Asistente de Firma AutoFirma -->
+                        <div class="mt-4 p-4 rounded-2xl bg-amber-500/20 border-2 border-amber-300/40 backdrop-blur-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-amber-400 text-amber-950 flex items-center justify-center shrink-0 font-black shadow-sm">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-2 py-0.5 rounded-full bg-amber-400 text-amber-950 font-black text-[10px] uppercase">Firma Digital Requerida</span>
+                                        <span class="text-xs text-amber-200 font-bold">AutoFirma / Certificado FNMT o DNIe</span>
+                                    </div>
+                                    <p class="text-xs text-white mt-0.5">
+                                        Se recomienda utilizar el asistente interactivo de firma con AutoFirma para estampar la diligencia formal.
+                                    </p>
+                                </div>
+                            </div>
+                            <a href="{{ route('teams.circuits.signature-portal', [$team, $circuit]) }}"
+                                class="px-4 py-2.5 rounded-xl font-black text-xs bg-white text-violet-900 hover:bg-violet-50 shadow-lg shadow-black/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 shrink-0">
+                                <svg class="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                <span>Abrir Asistente AutoFirma</span>
+                            </a>
+                        </div>
                     @endif
 
                     <!-- Decision Form -->
@@ -382,18 +439,143 @@
 
         <!-- Content details of the underlying item -->
         @if($circuit->circuitable)
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                <h3 class="text-base font-black text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
-                    Contenido del Documento / Propuesta
-                </h3>
-                <div class="prose dark:prose-invert max-w-none text-sm text-gray-700 dark:text-gray-300">
-                    @if($circuit->circuitable->description)
-                        {!! $circuit->circuitable->description !!}
+            @php
+                $rawDescription = $circuit->circuitable->description ?? $circuit->circuitable->notes ?? '';
+                $terms = ($circuit->circuitable instanceof \App\Models\Activity && isset($circuit->circuitable->metadata['terms']))
+                    ? $circuit->circuitable->metadata['terms']
+                    : null;
+                $attachments = $circuit->circuitable->attachments ?? collect();
+            @endphp
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 space-y-6">
+                <div class="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-700 flex-wrap gap-2">
+                    <h3 class="text-base font-black text-gray-900 dark:text-white flex items-center gap-2">
+                        <svg class="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        <span>Contenido del Documento / Propuesta</span>
+                    </h3>
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                        {{ class_basename($circuit->circuitable_type) }}: {{ $circuit->circuitable->title ?? $circuit->circuitable->name ?? $circuit->circuitable->code }}
+                    </span>
+                </div>
+
+                <!-- Markdown Content Rendered -->
+                <div class="prose dark:prose-invert max-w-none text-sm text-gray-800 dark:text-gray-200 leading-relaxed">
+                    @if(!empty($rawDescription))
+                        {!! str($rawDescription)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
                     @else
-                        <p class="text-gray-400 italic">Sin descripción detallada.</p>
+                        <p class="text-gray-400 italic">Sin descripción registrada.</p>
                     @endif
                 </div>
+
+                @if(!empty($terms))
+                    <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                        <h4 class="text-xs font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 mb-2">Términos del Acuerdo</h4>
+                        <div class="prose dark:prose-invert max-w-none text-sm text-gray-800 dark:text-gray-200 leading-relaxed">
+                            {!! str($terms)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
+                        </div>
+                    </div>
+                @endif
+
+                <!-- Attachments and PDFs -->
+                @if($attachments->isNotEmpty())
+                    <div class="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700 space-y-4">
+                        <h4 class="text-xs font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                            <span>Documentos y Archivos Adjuntos a Verificar ({{ $attachments->count() }})</span>
+                        </h4>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            @foreach($attachments as $att)
+                                @php
+                                    $isPdf = str_contains($att->mime_type ?? '', 'pdf') || str_ends_with(strtolower($att->file_name ?? ''), '.pdf');
+                                    $downloadUrl = $circuit->circuitable instanceof \App\Models\Activity
+                                        ? route('teams.activities.attachments.download', [$team, $circuit->circuitable, $att])
+                                        : route('teams.attachments.download', [$team, $att]);
+                                    $viewUrl = $circuit->circuitable instanceof \App\Models\Activity
+                                        ? route('teams.activities.attachments.view', [$team, $circuit->circuitable, $att])
+                                        : route('teams.attachments.view', [$team, $att]);
+                                @endphp
+                                <div class="flex items-center justify-between p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-750/50 hover:bg-white dark:hover:bg-gray-750 transition-colors gap-3">
+                                    <div class="flex items-center gap-2.5 min-w-0">
+                                        <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 {{ $isPdf ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-600' : 'bg-violet-100 dark:bg-violet-900/30 text-violet-600' }}">
+                                            @if($isPdf)
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                                            @else
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                            @endif
+                                        </div>
+                                        <div class="min-w-0">
+                                            <a href="{{ $viewUrl }}" target="_blank" class="text-xs font-bold text-gray-900 dark:text-white truncate block hover:text-violet-600 dark:hover:text-violet-400">
+                                                {{ $att->file_name }}
+                                            </a>
+                                            <div class="text-[10px] text-gray-400">
+                                                {{ $att->file_size_human ?? (round(($att->file_size ?? 0)/1024, 1) . ' KB') }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center gap-1 shrink-0">
+                                        <a href="{{ $viewUrl }}" target="_blank"
+                                            class="p-1.5 rounded-lg text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors"
+                                            title="Visualizar documento">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        </a>
+                                        <a href="{{ $downloadUrl }}" download
+                                            class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                            title="Descargar">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                        </a>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        {{-- Previsualizador incrustado si hay PDFs --}}
+                        @php
+                            $pdfAttachments = $attachments->filter(fn($a) => str_contains($a->mime_type ?? '', 'pdf') || str_ends_with(strtolower($a->file_name ?? ''), '.pdf'));
+                        @endphp
+                        @if($pdfAttachments->isNotEmpty())
+                            @php
+                                $firstPdf = $pdfAttachments->first();
+                                $firstPdfUrl = $circuit->circuitable instanceof \App\Models\Activity
+                                    ? route('teams.activities.attachments.view', [$team, $circuit->circuitable, $firstPdf])
+                                    : route('teams.attachments.view', [$team, $firstPdf]);
+                            @endphp
+                            <div x-data="{ openPdf: true, selectedPdfUrl: '{{ $firstPdfUrl }}', selectedPdfName: '{{ addslashes($firstPdf->file_name) }}' }" class="mt-4">
+                                <button type="button" @click="openPdf = !openPdf"
+                                    class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 hover:bg-violet-100 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                    <span x-text="openPdf ? 'Ocultar visor de PDF adjunto' : 'Previsualizar PDF adjunto aquí'"></span>
+                                    <svg class="w-3.5 h-3.5 transition-transform" :class="openPdf ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                </button>
+
+                                <div x-show="openPdf" class="mt-3 bg-gray-100 dark:bg-gray-900 rounded-2xl p-3 border border-gray-200 dark:border-gray-700">
+                                    <div class="flex items-center justify-between pb-2 mb-2 border-b border-gray-200 dark:border-gray-800 text-xs">
+                                        <span class="font-bold text-gray-700 dark:text-gray-300" x-text="'Visualizando: ' + selectedPdfName"></span>
+                                        @if($pdfAttachments->count() > 1)
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-gray-400 text-[11px]">Cambiar PDF:</span>
+                                                <select @change="selectedPdfUrl = $event.target.value; selectedPdfName = $event.target.options[$event.target.selectedIndex].text"
+                                                    class="text-xs rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 py-1 pl-2 pr-6">
+                                                    @foreach($pdfAttachments as $pAtt)
+                                                        @php
+                                                            $pUrl = $circuit->circuitable instanceof \App\Models\Activity
+                                                                ? route('teams.activities.attachments.view', [$team, $circuit->circuitable, $pAtt])
+                                                                : route('teams.attachments.view', [$team, $pAtt]);
+                                                        @endphp
+                                                        <option value="{{ $pUrl }}">
+                                                            {{ $pAtt->file_name }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <iframe :src="selectedPdfUrl" class="w-full rounded-xl bg-white border border-gray-200 dark:border-gray-800" style="height: 520px;" title="Previsualizador de PDF adjunto"></iframe>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                @endif
             </div>
         @endif
 

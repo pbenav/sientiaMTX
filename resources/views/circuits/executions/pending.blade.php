@@ -152,11 +152,21 @@
                                 </div>
                             </div>
 
-                            <a href="{{ route('teams.circuits.show', [$team, $execution]) }}"
-                                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black bg-violet-600 hover:bg-violet-700 text-white shadow-md shadow-violet-600/20 transition-all hover:scale-105 active:scale-95">
-                                <span>Resolver Trámite</span>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                            </a>
+                            <div class="flex items-center gap-2">
+                                @if($execution->currentStep?->requires_signature)
+                                    <a href="{{ route('teams.circuits.signature-portal', [$team, $execution]) }}"
+                                        class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-black bg-amber-500 hover:bg-amber-600 text-white shadow-md shadow-amber-500/20 transition-all hover:scale-105 active:scale-95"
+                                        title="Abrir Asistente de Firma Electrónica con AutoFirma">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                        <span>Firmar (AutoFirma)</span>
+                                    </a>
+                                @endif
+                                <a href="{{ route('teams.circuits.show', [$team, $execution]) }}"
+                                    class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black bg-violet-600 hover:bg-violet-700 text-white shadow-md shadow-violet-600/20 transition-all hover:scale-105 active:scale-95">
+                                    <span>Resolver Trámite</span>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 @endforeach

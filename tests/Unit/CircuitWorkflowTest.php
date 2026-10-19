@@ -163,6 +163,11 @@ class CircuitWorkflowTest extends TestCase
 
         // El propietario del equipo siempre tiene facultades de actuación/supervisión
         $this->assertTrue($step->canUserAct($owner));
+
+        // Los administradores de la plataforma siempre tienen facultades de supervisión y firma
+        $admin = new User(['name' => 'Admin']);
+        $admin->is_admin = true;
+        $this->assertTrue($step->canUserAct($admin));
     }
 
     public function test_circuit_publication_attributes_and_active_window(): void

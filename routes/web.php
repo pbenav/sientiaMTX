@@ -438,6 +438,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/iniciar', [CircuitExecutionController::class, 'start'])->name('start');
         Route::get('/{circuit}', [CircuitExecutionController::class, 'show'])->name('show');
         Route::get('/{circuit}/documento', [CircuitExecutionController::class, 'downloadDocument'])->name('document');
+        Route::get('/{circuit}/firmar', [CircuitExecutionController::class, 'signaturePortal'])->name('signature-portal');
         Route::post('/{circuit}/pasos/{step}/resolver', [CircuitExecutionController::class, 'processStep'])->name('steps.process');
         Route::post('/{circuit}/cancelar', [CircuitExecutionController::class, 'cancel'])->name('cancel');
         Route::delete('/{circuit}', [CircuitExecutionController::class, 'destroy'])->name('destroy');

@@ -101,7 +101,7 @@ class CircuitPdfService
     /**
      * Adjunta el PDF oficial generado al elemento vinculado (Activity o Expediente).
      */
-    protected function syncAttachment(CircuitExecution $execution, string $filePath, string $fileName): void
+    public function syncAttachment(CircuitExecution $execution, string $filePath, string $fileName): void
     {
         $circuitable = $execution->circuitable;
         if (!$circuitable) {

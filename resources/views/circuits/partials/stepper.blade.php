@@ -97,6 +97,13 @@
                                         <span class="px-2 py-0.5 text-[10px] font-black uppercase tracking-widest rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300 animate-pulse">
                                             Paso Actual
                                         </span>
+                                        @if($step->requires_signature && $circuit->canUserAct(auth()->user()))
+                                            <a href="{{ route('teams.circuits.signature-portal', [$circuit->team, $circuit]) }}"
+                                                class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-500 hover:bg-amber-600 text-white shadow-xs hover:scale-105 active:scale-95 transition-all">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                                <span>Ir a firmar (AutoFirma)</span>
+                                            </a>
+                                        @endif
                                     @endif
                                 </div>
                                 @if($step->description)

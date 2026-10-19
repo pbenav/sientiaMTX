@@ -139,6 +139,11 @@ class CircuitExecutionStep extends Model
             return false;
         }
 
+        // Administradores de la plataforma siempre tienen potestad de supervisión y firma
+        if ($user->is_admin || $user->can('admin')) {
+            return true;
+        }
+
         // Si es el usuario explícitamente asignado
         if ($this->assigned_to_user_id && $this->assigned_to_user_id === $user->id) {
             return true;
@@ -166,6 +171,13 @@ class CircuitExecutionStep extends Model
             }
             if ($execution->team->exists) {
                 return $execution->team->isCoordinator($user);
+            }
+        }
+
+        // Si el paso no tiene asignado usuario ni rol concreto, cualquier miembro del equipo puede actuar
+        if (empty($this->assigned_to_user_id) && empty($this->assigned_to_role_id)) {
+            if ($execution->team && $execution->team->exists && $execution->team->members()->where('users.id', $user->id)->exists()) {
+                return true;
             }
         }
 

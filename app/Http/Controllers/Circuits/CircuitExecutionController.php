@@ -164,6 +164,48 @@ class CircuitExecutionController extends Controller
     }
 
     /**
+     * Muestra el portal / asistente interactivo de firma electrónica con AutoFirma para el paso actual.
+     */
+    public function signaturePortal(Request $request, Team $team, CircuitExecution $circuit)
+    {
+        if (Auth::user()->cannot('view', $team)) {
+            abort(403);
+        }
+
+        if ($circuit->team_id !== $team->id) {
+            abort(404);
+        }
+
+        if (!$circuit->is_active || !$circuit->currentStep) {
+            return redirect()->route('teams.circuits.show', [$team, $circuit])
+                ->with('warning', 'Esta tramitación no tiene ningún paso activo pendiente de resolución.');
+        }
+
+        $step = $circuit->currentStep;
+        if (!$step->canUserAct(Auth::user(), $circuit)) {
+            return redirect()->route('teams.circuits.show', [$team, $circuit])
+                ->with('error', 'No tienes permisos asignados para firmar o resolver este paso.');
+        }
+
+        // Asegurar que el PDF base de la tramitación está generado
+        $pdfService = app(\App\Services\Circuits\CircuitPdfService::class);
+        $pdfPath = $circuit->signed_document_path;
+        if (!$pdfPath || !\Illuminate\Support\Facades\Storage::disk('local')->exists($pdfPath)) {
+            $pdfPath = $pdfService->generateAndAttach($circuit);
+        }
+
+        $existingSignaturesCount = $circuit->steps()->whereNotNull('signed_at')->count();
+
+        return view('circuits.signature.portal', [
+            'team' => $team,
+            'circuit' => $circuit,
+            'step' => $step,
+            'signerUser' => Auth::user(),
+            'existingSignaturesCount' => $existingSignaturesCount,
+        ]);
+    }
+
+    /**
      * Resuelve el paso actual de la tramitación (Aprobar, Devolver o Rechazar).
      */
     public function processStep(Request $request, Team $team, CircuitExecution $circuit, CircuitExecutionStep $step)
@@ -209,12 +251,18 @@ class CircuitExecutionController extends Controller
             if ($request->hasFile('signed_file')) {
                 $file = $request->file('signed_file');
                 $path = $file->store("circuits/{$circuit->id}/firmas", 'local');
-                $additionalData['signature_method'] = 'manual_upload';
+                $sigMethod = $request->input('signature_method', 'autofirma');
+                $additionalData['signature_method'] = $sigMethod;
                 $additionalData['signature_data'] = [
                     'signed_file_path' => $path,
                     'file_name' => $file->getClientOriginalName(),
                     'file_size' => $file->getSize(),
+                    'method' => $sigMethod,
+                    'signer_name' => Auth::user()->name,
+                    'signer_email' => Auth::user()->email,
                 ];
+
+                $circuit->updateQuietly(['signed_document_path' => $path]);
             }
 
             if ($request->filled('signature_data_json')) {
