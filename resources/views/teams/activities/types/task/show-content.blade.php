@@ -442,7 +442,7 @@
                                                         class="w-1.5 h-1.5 rounded-full {{ str_contains($instStatusColor, 'text-') ? str_replace('text-', 'bg-', explode(' ', $instStatusColor)[0]) : 'bg-gray-400' }}">
                                                     </div>
                                                     <span
-                                                        class="text-xs font-bold uppercase tracking-tight">{{ __('activities.statuses.' . $inst->status_value) }}</span>
+                                                        class="text-xs font-bold uppercase tracking-tight">{{ $inst->status_label }}</span>
                                                 </div>
                                                 <div class="flex items-center gap-2 w-28">
                                                     <div class="flex-1 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">

@@ -671,7 +671,7 @@
 
                     const taskTitle  = @json($activity->title);
                     const taskUuid   = @json($activity->uuid ?? $activity->id);
-                    const status     = @json(__('activities.statuses.' . $activity->status_value));
+                    const status     = @json($activity->status_label);
                     const progress   = @json($activity->progress_percentage);
                     const priorityLabel = @json(__('activities.priorities.' . $activity->priority));
                     const urgencyLabel  = @json(__('activities.urgencies.' . $activity->urgency));

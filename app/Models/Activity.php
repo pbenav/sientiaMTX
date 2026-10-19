@@ -220,6 +220,30 @@ class Activity extends Model
     ];
 
     /**
+     * The "booted" method of the model.
+     * Garantiza que cualquier actividad creada sin estado tenga su estado inicial por defecto.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (Activity $activity) {
+            if (empty($activity->status)) {
+                $type = $activity->type ?? 'task';
+                $defaultValue = match ($type) {
+                    'task'      => 'pending',
+                    'document'  => 'draft',
+                    'note'      => 'draft',
+                    'link'      => 'active',
+                    'agreement' => 'proposed',
+                    'meeting'   => 'scheduled',
+                    'reminder'  => 'pending',
+                    default     => 'pending',
+                };
+                $activity->status = ['value' => $defaultValue];
+            }
+        });
+    }
+
+    /**
      * Accessor para el bloqueo del Gantt, almacenado en metadata.
      */
     public function getIsTimelineLockedAttribute(): bool

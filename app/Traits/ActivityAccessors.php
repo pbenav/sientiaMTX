@@ -77,14 +77,41 @@ trait ActivityAccessors
     /**
      * Extrae el valor de estado desde el atributo status (soporta array o string).
      * Si status es un array, retorna status['value']; si es string, lo retorna directo;
-     * si es null o no es string, retorna null.
+     * si es null o no es string, aplica fallback inteligente al estado por defecto según el tipo.
      */
-    public function getStatusValueAttribute(): ?string
+    public function getStatusValueAttribute(): string
     {
-        if (is_array($this->status)) {
-            return $this->status['value'] ?? null;
+        if (is_array($this->status) && !empty($this->status['value']) && is_string($this->status['value'])) {
+            return $this->status['value'];
         }
-        return is_string($this->status) ? $this->status : null;
+        if (is_string($this->status) && $this->status !== '') {
+            return $this->status;
+        }
+
+        // Fallback robusto al estado por defecto según el tipo de actividad
+        return match ($this->type ?? null) {
+            'task'      => 'pending',
+            'document'  => 'draft',
+            'note'      => 'draft',
+            'link'      => 'active',
+            'agreement' => 'proposed',
+            'meeting'   => 'scheduled',
+            'reminder'  => 'pending',
+            default     => 'pending',
+        };
+    }
+
+    /**
+     * Devuelve la etiqueta traducida y formateada del estado.
+     * Garantiza que nunca se muestre una clave rota como 'activities.statuses.'.
+     */
+    public function getStatusLabelAttribute(): string
+    {
+        $val = $this->status_value ?: 'pending';
+        $transKey = "activities.statuses.{$val}";
+        $label = __($transKey);
+
+        return ($label === $transKey) ? ucfirst($val) : $label;
     }
 
     /**

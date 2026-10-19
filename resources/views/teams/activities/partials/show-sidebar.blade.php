@@ -450,7 +450,7 @@
                             @can('changeStatus', $activity)
                                 <button onclick="updateTaskStatus('{{ $activity->status_value === 'dismissed' ? 'pending' : 'dismissed' }}')" class="flex items-center gap-2 group transition-opacity hover:opacity-80" title="{{ __('Marcar como ' . ($activity->status_value === 'dismissed' ? 'pendiente' : 'descartada')) }}">
                                     <span class="text-[11px] font-bold px-3 py-1 rounded-full border {{ $statusColor }} uppercase tracking-wider transition-colors">
-                                        {{ __('activities.statuses.' . $activity->status_value) }}
+                                        {{ $activity->status_label }}
                                     </span>
                                     <!-- switch icon -->
                                     <div class="relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out {{ $activity->status_value === 'dismissed' ? 'bg-emerald-500' : 'bg-gray-200 dark:bg-gray-700' }}">
@@ -459,12 +459,12 @@
                                 </button>
                             @else
                                 <span class="text-[11px] font-bold px-3 py-1 rounded-full border {{ $statusColor }} uppercase tracking-wider">
-                                    {{ __('activities.statuses.' . $activity->status_value) }}
+                                    {{ $activity->status_label }}
                                 </span>
                             @endcan
                         @else
                             <span class="text-[11px] font-bold px-3 py-1 rounded-full border {{ $statusColor }} uppercase tracking-wider">
-                                {{ __('activities.statuses.' . $activity->status_value) }}
+                                {{ $activity->status_label }}
                             </span>
                         @endif
                     </div>
