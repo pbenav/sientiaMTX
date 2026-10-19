@@ -82,7 +82,7 @@
                         <div class="flex items-center gap-1.5 font-bold">
                             <span>Elemento vinculado:</span>
                             @if($circuit->circuitable instanceof \App\Models\Activity)
-                                <a href="{{ route('activities.show', $circuit->circuitable) }}" class="text-violet-600 dark:text-violet-400 hover:underline inline-flex items-center gap-1">
+                                <a href="{{ route('teams.activities.show', [$team, $circuit->circuitable]) }}" class="text-violet-600 dark:text-violet-400 hover:underline inline-flex items-center gap-1">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                     Actividad: {{ $circuit->circuitable->title }}
                                 </a>
