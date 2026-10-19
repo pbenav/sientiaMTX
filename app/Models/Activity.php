@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -532,6 +534,35 @@ class Activity extends Model
     public function attachments(): HasMany
     {
         return $this->hasMany(ActivityAttachment::class, 'activity_id');
+    }
+
+    /**
+     * Historial de tramitaciones/circuitos de esta actividad.
+     *
+     * @return MorphMany<\App\Models\CircuitExecution, $this>
+     */
+    public function circuitExecutions(): MorphMany
+    {
+        return $this->morphMany(CircuitExecution::class, 'circuitable')->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Tramitación/circuito actualmente activo para esta actividad.
+     *
+     * @return MorphOne<\App\Models\CircuitExecution, $this>
+     */
+    public function activeCircuitExecution(): MorphOne
+    {
+        return $this->morphOne(CircuitExecution::class, 'circuitable')
+            ->whereIn('status', [CircuitExecution::STATUS_IN_PROGRESS, CircuitExecution::STATUS_RETURNED]);
+    }
+
+    /**
+     * Determina si la actividad está actualmente inmersa en un circuito de tramitación.
+     */
+    public function getIsInCircuitAttribute(): bool
+    {
+        return $this->activeCircuitExecution()->exists();
     }
 
     // ─── Relaciones de especialidades y servicios (Task compat layer) ─────────

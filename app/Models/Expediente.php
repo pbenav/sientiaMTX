@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
@@ -147,6 +148,35 @@ class Expediente extends Model
     public function attachments(): MorphMany
     {
         return $this->morphMany(TaskAttachment::class, 'attachable');
+    }
+
+    /**
+     * Historial de tramitaciones/circuitos de este expediente.
+     *
+     * @return MorphMany<\App\Models\CircuitExecution, $this>
+     */
+    public function circuitExecutions(): MorphMany
+    {
+        return $this->morphMany(CircuitExecution::class, 'circuitable')->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Tramitación/circuito actualmente activo para este expediente.
+     *
+     * @return MorphOne<\App\Models\CircuitExecution, $this>
+     */
+    public function activeCircuitExecution(): MorphOne
+    {
+        return $this->morphOne(CircuitExecution::class, 'circuitable')
+            ->whereIn('status', [CircuitExecution::STATUS_IN_PROGRESS, CircuitExecution::STATUS_RETURNED]);
+    }
+
+    /**
+     * Determina si el expediente está actualmente en circuito de tramitación.
+     */
+    public function getIsInCircuitAttribute(): bool
+    {
+        return $this->activeCircuitExecution()->exists();
     }
 
     /**

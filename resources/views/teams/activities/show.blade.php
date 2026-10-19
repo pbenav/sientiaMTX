@@ -96,6 +96,14 @@
                 </a>
             @endif
 
+            @if($activity->activeCircuitExecution)
+                <a href="{{ route('teams.circuits.show', [$team, $activity->activeCircuitExecution]) }}"
+                    class="shrink-0 flex items-center gap-1.5 text-xs bg-violet-600 hover:bg-violet-700 text-white px-4 py-2.5 rounded-xl transition-all font-bold active:scale-95 shadow-sm shadow-violet-500/20">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                    <span>{{ __('circuits.circuit') ?? 'Circuito Activo' }} ({{ $activity->activeCircuitExecution->progress_percentage }}%)</span>
+                </a>
+            @endif
+
             @if(!$activity->trashed())
                 @can('update', $activity)
                     <a href="{{ route('teams.activities.edit', [$team, $activity]) }}"
@@ -891,6 +899,8 @@
         @php $allAttachments = $activity->all_attachments; @endphp
 
         <div class="lg:col-span-2 space-y-5">
+            @include('circuits.partials.active-circuit-banner', ['circuitable' => $activity, 'team' => $team])
+
             <!-- Activity Name Card (Unified for all types) -->
             <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm dark:shadow-none transition-colors">
                 <div class="flex flex-wrap items-center gap-2 mb-2">

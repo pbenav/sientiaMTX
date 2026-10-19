@@ -238,6 +238,30 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
     }
 
     /**
+     * Pasos de circuito asignados directamente a este usuario.
+     */
+    public function assignedCircuitSteps(): HasMany
+    {
+        return $this->hasMany(CircuitExecutionStep::class, 'assigned_to_user_id');
+    }
+
+    /**
+     * Tramitaciones iniciadas por este usuario.
+     */
+    public function initiatedCircuitExecutions(): HasMany
+    {
+        return $this->hasMany(CircuitExecution::class, 'initiated_by_id');
+    }
+
+    /**
+     * Número de tramitaciones activas pendientes de la acción de este usuario.
+     */
+    public function pendingCircuitExecutionsCount(?int $teamId = null): int
+    {
+        return CircuitExecution::pendingForUser($this, $teamId)->count();
+    }
+
+    /**
      * Obtiene la configuración de citas del usuario para un equipo específico.
      *
      * @param  Team|int  $team  Equipo o su ID

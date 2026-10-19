@@ -153,6 +153,30 @@ class Team extends Model
     }
 
     /**
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CircuitTemplate> $circuitTemplates
+     */
+    public function circuitTemplates(): HasMany
+    {
+        return $this->hasMany(CircuitTemplate::class);
+    }
+
+    /**
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CircuitExecution> $circuitExecutions
+     */
+    public function circuitExecutions(): HasMany
+    {
+        return $this->hasMany(CircuitExecution::class);
+    }
+
+    /**
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CircuitPublication> $circuitPublications
+     */
+    public function circuitPublications(): HasMany
+    {
+        return $this->hasMany(CircuitPublication::class);
+    }
+
+    /**
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\TelegramGroupMember> $telegramGroupMembers
      */
     public function telegramGroupMembers(): HasMany

@@ -1,6 +1,9 @@
         <!-- Sidebar -->
         <div class="space-y-4 lg:col-span-1">
 
+            {{-- Circuit Widget --}}
+            @include('circuits.partials.circuit-widget', ['circuitable' => $activity, 'team' => $team, 'type' => 'activity'])
+
             <!-- Quality Rating Widget -->
             @php
                 $canRate = $activity->assignedTo()->where('users.id', auth()->id())->exists() || $activity->assigned_user_id === auth()->id() || $team->isManager(auth()->user());

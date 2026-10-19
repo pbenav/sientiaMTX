@@ -112,6 +112,7 @@
                                 request()->routeIs('teams.kanban') ||
                                 request()->routeIs('teams.forum.*') ||
                                 request()->routeIs('teams.expedientes.*') ||
+                                request()->routeIs('teams.circuits.*') ||
                                 request()->routeIs('teams.members') ||
                                 request()->routeIs('teams.surveys.*') ||
                                 request()->routeIs('teams.microsites.*') ||
@@ -175,6 +176,21 @@
                                                 d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                                         </svg>
                                         <span class="truncate">{{ __('navigation.expedientes') }}</span>
+                                    </a>
+                                    <a href="{{ route('teams.circuits.index', $currentTeamId) }}"
+                                        class="flex items-center gap-2 px-3 py-2 text-xs rounded-xl transition-all {{ request()->routeIs('teams.circuits.*') ? 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 font-bold' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                        </svg>
+                                        <span class="truncate flex-1">Circuitos</span>
+                                        @php $pCount = auth()->user()->pendingCircuitExecutionsCount($currentTeamId); @endphp
+                                        @if($pCount > 0)
+                                            <span class="px-1.5 py-0.2 text-[10px] font-black rounded-full bg-violet-600 text-white shrink-0">
+                                                {{ $pCount }}
+                                            </span>
+                                        @endif
                                     </a>
                                     <a href="{{ route('teams.activities.index', $currentTeamId) }}"
                                         class="flex items-center gap-2 px-3 py-2 text-xs rounded-xl transition-all {{ request()->routeIs('teams.activities.*') || request()->routeIs('teams.tasks.*') ? 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 font-bold' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">

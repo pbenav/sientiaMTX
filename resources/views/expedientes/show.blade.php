@@ -71,6 +71,14 @@
 
         <!-- Expediente Actions Footer Row -->
         <div class="flex items-center gap-2 flex-wrap shrink-0 mt-4 border-t border-gray-100 dark:border-gray-800 pt-6">
+            @if($expediente->activeCircuitExecution)
+                <a href="{{ route('teams.circuits.show', [$team, $expediente->activeCircuitExecution]) }}"
+                    class="shrink-0 flex items-center gap-1.5 text-xs bg-violet-600 hover:bg-violet-700 text-white px-4 py-2.5 rounded-xl transition-all font-bold active:scale-95 shadow-sm shadow-violet-500/20">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                    <span>{{ __('circuits.circuit') ?? 'Circuito Activo' }} ({{ $expediente->activeCircuitExecution->progress_percentage }}%)</span>
+                </a>
+            @endif
+
             <a href="{{ route('teams.expedientes.edit', [$team, $expediente]) }}"
                 class="shrink-0 flex items-center gap-1.5 text-xs bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl transition-all font-bold hover:bg-gray-50 dark:hover:bg-white/10 active:scale-95 shadow-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -96,6 +104,8 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Main Info -->
         <div class="lg:col-span-2 space-y-6">
+            @include('circuits.partials.active-circuit-banner', ['circuitable' => $expediente, 'team' => $team])
+
             <!-- Card: Details -->
             <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm">
                 <h3 class="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-4 flex items-center gap-2">
@@ -759,6 +769,9 @@
 
         <!-- Sidebar Meta -->
         <div class="space-y-6">
+            {{-- Circuit Widget --}}
+            @include('circuits.partials.circuit-widget', ['circuitable' => $expediente, 'team' => $team, 'type' => 'expediente'])
+
             <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm">
                 <h3 class="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-4">{{ __('Summary') }}</h3>
                 
