@@ -97,14 +97,27 @@
                 </div>
             </div>
 
-            {{-- Progress indicator --}}
-            <div class="flex flex-col items-end shrink-0">
-                <span class="text-[10px] uppercase font-bold text-gray-400">Progreso Global</span>
-                <div class="flex items-center gap-2 mt-1">
-                    <div class="w-28 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                        <div class="h-full bg-violet-600 rounded-full" style="width: {{ $circuit->progress_percentage }}%"></div>
+            {{-- Documento Oficial Firmado & Progress indicator --}}
+            <div class="flex items-center gap-3 shrink-0 flex-wrap">
+                <a href="{{ route('teams.circuits.document', [$team, $circuit]) }}" target="_blank"
+                    class="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-black bg-violet-50 hover:bg-violet-100 dark:bg-violet-900/30 dark:hover:bg-violet-900/50 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-700 transition-all shadow-2xs group">
+                    <svg class="w-4 h-4 text-violet-600 dark:text-violet-400 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <span>Diligencia / PDF Oficial</span>
+                    @if($circuit->signatures_count > 0)
+                        <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[10px] font-black bg-emerald-500 text-white">
+                            {{ $circuit->signatures_count }} {{ $circuit->signatures_count === 1 ? 'firma' : 'firmas' }}
+                        </span>
+                    @endif
+                </a>
+
+                <div class="flex flex-col items-end">
+                    <span class="text-[10px] uppercase font-bold text-gray-400">Progreso Global</span>
+                    <div class="flex items-center gap-2 mt-1">
+                        <div class="w-28 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                            <div class="h-full bg-violet-600 rounded-full" style="width: {{ $circuit->progress_percentage }}%"></div>
+                        </div>
+                        <span class="text-xs font-black text-violet-600 dark:text-violet-400">{{ $circuit->progress_percentage }}%</span>
                     </div>
-                    <span class="text-xs font-black text-violet-600 dark:text-violet-400">{{ $circuit->progress_percentage }}%</span>
                 </div>
             </div>
         </div>
@@ -178,7 +191,11 @@
         <!-- Action Card for Current Assignee -->
         @if($currentUserCanAct && $circuit->currentStep)
             <div class="bg-gradient-to-br from-violet-600 via-indigo-600 to-purple-700 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-indigo-600/20 relative overflow-hidden"
-                x-data="{ decision: 'approved' }">
+                x-data="{ 
+                    decision: 'approved', 
+                    sigMethod: 'internal_certificate', 
+                    signNow: {{ $circuit->currentStep->requires_signature ? 'true' : 'true' }} 
+                }">
 
                 <!-- Background decorative glow -->
                 <div class="absolute -right-12 -top-12 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
@@ -200,7 +217,7 @@
                     @endif
 
                     <!-- Decision Form -->
-                    <form action="{{ route('teams.circuits.steps.process', [$team, $circuit, $circuit->currentStep]) }}" method="POST" class="mt-6 space-y-4">
+                    <form action="{{ route('teams.circuits.steps.process', [$team, $circuit, $circuit->currentStep]) }}" method="POST" enctype="multipart/form-data" class="mt-6 space-y-4">
                         @csrf
 
                         <!-- Decision Mode Selector -->
@@ -251,20 +268,97 @@
                         <!-- Comments / Justification Input -->
                         <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
                             <label for="comments" class="block text-xs font-bold uppercase tracking-wider text-violet-100 mb-1.5">
-                                <span x-show="decision === 'approved'">Observaciones o Justificación (Opcional)</span>
+                                <span x-show="decision === 'approved'">Observaciones o Justificación del Dictamen (Opcional)</span>
                                 <span x-show="decision === 'returned'" class="text-amber-200">Motivo de devolución y aspectos a subsanar (Obligatorio)</span>
                                 <span x-show="decision === 'rejected'" class="text-rose-200">Motivo formal de la denegación (Obligatorio)</span>
                             </label>
-                            <textarea id="comments" name="comments" rows="3"
+                            <textarea id="comments" name="comments" rows="2"
                                 placeholder="Indica observaciones, motivación o diligencia de visto bueno..."
                                 class="w-full rounded-xl bg-white/20 border-white/30 text-white placeholder-violet-200/60 focus:bg-white focus:text-gray-900 focus:border-white focus:ring-2 focus:ring-white text-sm transition-all"
                                 :required="decision !== 'approved'"></textarea>
                         </div>
 
+                        <!-- Panel de Firma Digital Electrónica -->
+                        <div x-show="decision === 'approved'" class="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 space-y-3">
+                            <div class="flex items-center justify-between flex-wrap gap-2">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs font-black uppercase tracking-wider text-white flex items-center gap-2">
+                                            <span>Diligencia de Firma Digital</span>
+                                            @if($circuit->currentStep->requires_signature)
+                                                <span class="px-2 py-0.2 rounded-full bg-amber-400 text-amber-950 font-black text-[9px] tracking-normal uppercase">Requerida</span>
+                                            @endif
+                                        </div>
+                                        <div class="text-[11px] text-violet-200">
+                                            @if($circuit->currentStep->requires_signature)
+                                                Esta etapa exige la firma digital formal del revisor antes de concluir.
+                                            @else
+                                                Puedes registrar tu firma en el documento oficial generado.
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="sign_now" value="1" x-model="signNow"
+                                        {{ $circuit->currentStep->requires_signature ? 'checked disabled' : '' }}
+                                        class="sr-only peer">
+                                    @if($circuit->currentStep->requires_signature)
+                                        <input type="hidden" name="sign_now" value="1">
+                                    @endif
+                                    <div class="w-9 h-5 bg-white/30 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-white after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-400"></div>
+                                    <span class="ml-2.5 text-xs font-bold text-white">Estampar Firma Digital</span>
+                                </label>
+                            </div>
+
+                            <div x-show="signNow" class="space-y-3 pt-2 border-t border-white/15">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-[10px] font-bold uppercase tracking-wider text-violet-200 mb-1">Método de Firma Digital</label>
+                                        <select name="signature_method" x-model="sigMethod"
+                                            class="w-full text-xs rounded-xl bg-white/20 border-white/30 text-white focus:bg-white focus:text-gray-900 focus:ring-white">
+                                            <option value="internal_certificate" class="text-gray-900">Firma Electrónica Acreditada (Sientia.MTX)</option>
+                                            <option value="autofirma" class="text-gray-900">Certificado Digital (AutoFirma / DNIe)</option>
+                                            <option value="manual_upload" class="text-gray-900">Subir PDF firmado externamente</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-[10px] font-bold uppercase tracking-wider text-violet-200 mb-1">Firmante Certificado</label>
+                                        <input type="text" readonly value="{{ auth()->user()->name }} ({{ auth()->user()->email }})"
+                                            class="w-full text-xs rounded-xl bg-white/10 border-white/20 text-violet-100 cursor-not-allowed">
+                                    </div>
+                                </div>
+
+                                <!-- Subida de archivo firmado si es manual -->
+                                <div x-show="sigMethod === 'manual_upload'" class="p-3 bg-black/20 rounded-xl space-y-2">
+                                    <label class="block text-[10px] font-bold uppercase tracking-wider text-violet-200">
+                                        Selecciona el archivo PDF firmado con tu software externo:
+                                    </label>
+                                    <input type="file" name="signed_file" accept=".pdf,application/pdf"
+                                        class="w-full text-xs text-violet-200 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-white file:text-violet-900 hover:file:bg-violet-100 cursor-pointer">
+                                </div>
+
+                                <!-- Aviso AutoFirma -->
+                                <div x-show="sigMethod === 'autofirma'" class="p-3 bg-black/20 rounded-xl flex items-center justify-between text-[11px] text-violet-100 gap-2">
+                                    <span>Se invocará el certificado de firma reconocido en tu estación de trabajo (FNMT / DNIe).</span>
+                                    <a href="https://firmaelectronica.gob.es/Home/Descargas.html" target="_blank" class="underline text-emerald-300 font-bold shrink-0">Descargar AutoFirma</a>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="flex items-center justify-end gap-3 pt-2">
                             <button type="submit"
                                 class="px-6 py-3 rounded-xl font-black text-sm bg-white text-violet-900 hover:bg-violet-50 shadow-lg shadow-black/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2">
-                                <span x-show="decision === 'approved'">Confirmar Visto Bueno / Aprobación</span>
+                                <template x-if="decision === 'approved'">
+                                    <span class="flex items-center gap-2">
+                                        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                        <span x-text="signNow ? 'Firmar Digitalmente y Aprobar' : 'Aprobar y Concluir Etapa'"></span>
+                                    </span>
+                                </template>
                                 <span x-show="decision === 'returned'">Enviar para Subsanación</span>
                                 <span x-show="decision === 'rejected'">Confirmar Rechazo</span>
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>

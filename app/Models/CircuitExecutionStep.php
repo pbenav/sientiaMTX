@@ -62,18 +62,32 @@ class CircuitExecutionStep extends Model
         'assigned_to_user_id',
         'assigned_to_role_id',
         'status',
+        'requires_signature',
         'action_taken_by_id',
         'decision',
         'comments',
         'action_data',
         'completed_at',
+        'signed_at',
+        'signature_data',
     ];
 
     protected $casts = [
         'order' => 'integer',
+        'requires_signature' => 'boolean',
         'action_data' => 'array',
         'completed_at' => 'datetime',
+        'signed_at' => 'datetime',
+        'signature_data' => 'array',
     ];
+
+    /**
+     * Determina si este paso ha sido firmado digitalmente.
+     */
+    public function getIsSignedAttribute(): bool
+    {
+        return !empty($this->signed_at);
+    }
 
     /**
      * Tramitación a la que pertenece este paso.

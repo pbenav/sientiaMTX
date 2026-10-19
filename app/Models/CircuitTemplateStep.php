@@ -55,6 +55,7 @@ class CircuitTemplateStep extends Model
         'assignee_id',
         'is_mandatory',
         'allow_return',
+        'requires_signature',
         'action_config',
     ];
 
@@ -62,6 +63,7 @@ class CircuitTemplateStep extends Model
         'order' => 'integer',
         'is_mandatory' => 'boolean',
         'allow_return' => 'boolean',
+        'requires_signature' => 'boolean',
         'action_config' => 'array',
     ];
 

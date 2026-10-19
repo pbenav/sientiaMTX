@@ -37,6 +37,7 @@
                 'action_type' => $s->action_type,
                 'assignee_type' => $s->assignee_type,
                 'assignee_id' => $s->assignee_id ? (int)$s->assignee_id : null,
+                'requires_signature' => (bool)$s->requires_signature,
             ];
         })->values()->all();
     @endphp
@@ -50,7 +51,8 @@
                     description: '',
                     action_type: 'approval',
                     assignee_type: 'specific_user',
-                    assignee_id: null
+                    assignee_id: null,
+                    requires_signature: false
                 });
             },
             removeStep(index) {
@@ -195,6 +197,21 @@
                                             <option value="{{ $r->id }}">{{ ucfirst($r->name) }} @if($r->description) - {{ $r->description }} @endif</option>
                                         @endforeach
                                     </select>
+                                </div>
+
+                                <!-- Requiere Firma Digital Toggle -->
+                                <div class="md:col-span-4 pt-2 border-t border-gray-200/60 dark:border-gray-700/60 flex items-center justify-between">
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" :name="`steps[${index}][requires_signature]`" value="1" x-model="step.requires_signature" class="sr-only peer">
+                                        <div class="w-8 h-4 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all dark:border-gray-600 peer-checked:bg-violet-600"></div>
+                                        <span class="ml-2.5 text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                                            <svg class="w-3.5 h-3.5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                            Requiere Firma Digital / Certificado Electrónico en esta etapa
+                                        </span>
+                                    </label>
+                                    <span class="text-[10px] text-gray-400 italic" x-show="step.requires_signature">
+                                        Exige firma formal reconocida antes de dar por aprobado el paso
+                                    </span>
                                 </div>
                             </div>
                         </div>

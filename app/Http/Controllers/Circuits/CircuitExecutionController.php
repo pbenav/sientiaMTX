@@ -145,6 +145,9 @@ class CircuitExecutionController extends Controller
     public function processStep(Request $request, Team $team, CircuitExecution $circuit, CircuitExecutionStep $step)
     {
         if (Auth::user()->cannot('view', $team)) {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => __('teams.unauthorized_access')], 403);
+            }
             return redirect()->back()->with('warning', __('teams.unauthorized_access'));
         }
 
@@ -156,31 +159,109 @@ class CircuitExecutionController extends Controller
             'decision' => 'required|in:approved,returned,rejected',
             'comments' => 'nullable|string|max:2000',
             'return_to_order' => 'nullable|integer',
+            'sign_now' => 'nullable',
+            'signature_method' => 'nullable|string|in:internal_certificate,autofirma,manual_upload',
+            'certificate_subject' => 'nullable|string|max:255',
+            'signature_algorithm' => 'nullable|string|max:50',
+            'signed_file' => 'nullable|file|mimes:pdf',
         ]);
 
         if (in_array($request->decision, ['returned', 'rejected']) && empty($request->comments)) {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'Es obligatorio justificar el motivo al devolver o rechazar.'], 422);
+            }
             return redirect()->back()->with('error', 'Es obligatorio justificar el motivo al devolver o rechazar.');
         }
 
         try {
+            $additionalData = $request->only([
+                'return_to_order',
+                'sign_now',
+                'signature_method',
+                'certificate_subject',
+                'signature_algorithm'
+            ]);
+
+            if ($request->hasFile('signed_file')) {
+                $file = $request->file('signed_file');
+                $path = $file->store("circuits/{$circuit->id}/firmas", 'local');
+                $additionalData['signature_method'] = 'manual_upload';
+                $additionalData['signature_data'] = [
+                    'signed_file_path' => $path,
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_size' => $file->getSize(),
+                ];
+            }
+
+            if ($request->filled('signature_data_json')) {
+                $decoded = json_decode($request->input('signature_data_json'), true);
+                if (is_array($decoded)) {
+                    $additionalData['signature_data'] = array_merge($additionalData['signature_data'] ?? [], $decoded);
+                }
+            }
+
             $this->executionService->processStep(
                 $step,
                 Auth::user(),
                 $request->decision,
                 $request->comments,
-                $request->only(['return_to_order'])
+                $additionalData
             );
 
             $msg = match ($request->decision) {
-                'approved' => 'Paso aprobado y conforme.',
+                'approved' => 'Paso aprobado y conforme.' . ($step->requires_signature || !empty($additionalData['sign_now']) ? ' Firma digital registrada en la diligencia oficial.' : ''),
                 'returned' => 'Trámite devuelto para subsanación con las observaciones indicadas.',
                 'rejected' => 'Trámite rechazado.',
             };
 
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $msg,
+                    'redirect' => route('teams.circuits.show', [$team, $circuit]),
+                ]);
+            }
+
             return redirect()->route('teams.circuits.show', [$team, $circuit])->with('success', $msg);
         } catch (\Exception $e) {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => $e->getMessage()], 422);
+            }
             return redirect()->back()->with('error', $e->getMessage());
         }
+    }
+
+    /**
+     * Sirve o descarga el documento PDF oficial consolidado con todas las firmas del circuito.
+     */
+    public function downloadDocument(Request $request, Team $team, CircuitExecution $circuit)
+    {
+        if (Auth::user()->cannot('view', $team)) {
+            abort(403);
+        }
+
+        if ($circuit->team_id !== $team->id) {
+            abort(404);
+        }
+
+        $pdfService = app(\App\Services\Circuits\CircuitPdfService::class);
+        $filePath = $circuit->signed_document_path;
+
+        if (!$filePath || !\Illuminate\Support\Facades\Storage::disk('local')->exists($filePath)) {
+            $filePath = $pdfService->generateAndAttach($circuit);
+        }
+
+        $fileName = basename($filePath);
+        $disposition = $request->query('download') ? 'attachment' : 'inline';
+
+        return \Illuminate\Support\Facades\Storage::disk('local')->response(
+            $filePath,
+            $fileName,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => "{$disposition}; filename=\"{$fileName}\"",
+            ]
+        );
     }
 
     /**

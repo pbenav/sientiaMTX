@@ -194,6 +194,52 @@ class CircuitWorkflowTest extends TestCase
         $this->assertFalse($pub->is_currently_active);
     }
 
+    public function test_circuit_digital_signature_attributes_and_accessors(): void
+    {
+        $tmplStep = new CircuitTemplateStep([
+            'name' => 'Firma de Intervención',
+            'action_type' => CircuitTemplateStep::ACTION_APPROVAL,
+            'requires_signature' => true,
+        ]);
+        $this->assertTrue($tmplStep->requires_signature);
+
+        $execStep1 = new CircuitExecutionStep([
+            'order' => 1,
+            'name' => 'Visto Bueno',
+            'requires_signature' => false,
+            'status' => CircuitExecutionStep::STATUS_APPROVED,
+        ]);
+
+        $execStep2 = new CircuitExecutionStep([
+            'order' => 2,
+            'name' => 'Firma y Aprobación',
+            'requires_signature' => true,
+            'status' => CircuitExecutionStep::STATUS_APPROVED,
+            'signed_at' => now(),
+            'signature_data' => [
+                'method' => 'internal_certificate',
+                'signer_name' => 'Directora General',
+                'signer_email' => 'directora@sientia.com',
+            ],
+        ]);
+
+        $this->assertFalse($execStep1->is_signed);
+        $this->assertTrue($execStep2->is_signed);
+        $this->assertEquals('Directora General', $execStep2->signature_data['signer_name']);
+
+        $execution = new CircuitExecution([
+            'title' => 'Circuito con Firmas',
+            'status' => CircuitExecution::STATUS_IN_PROGRESS,
+            'signed_document_path' => 'circuits/1/doc_firmado.pdf',
+        ]);
+        $execution->setRelation('steps', collect([$execStep1, $execStep2]));
+
+        $this->assertTrue($execution->has_signatures);
+        $this->assertEquals(1, $execution->signatures_count);
+        $this->assertEquals(1, $execution->required_signatures_count);
+        $this->assertTrue($execution->all_signatures_completed);
+    }
+
     public function test_activity_and_expediente_have_circuit_relationships(): void
     {
         $activity = new Activity();

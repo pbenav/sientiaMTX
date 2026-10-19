@@ -47,4 +47,8 @@ return [
         'creator' => 'Author / Creator',
         'dynamic' => 'Dynamic',
     ],
+    'digital_signature' => 'Digital Signature',
+    'requires_signature' => 'Requires Digital Signature',
+    'official_document' => 'Official Signed Document (PDF)',
+    'signed_electronically' => 'Electronically Signed',
 ];

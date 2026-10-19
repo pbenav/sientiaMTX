@@ -87,6 +87,12 @@
                                     <h3 class="text-sm font-black text-gray-900 dark:text-white">
                                         {{ $step->name }}
                                     </h3>
+                                    @if($step->requires_signature)
+                                        <span class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800/50 px-2 py-0.5 rounded-md">
+                                            <svg class="w-3 h-3 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                            Firma Digital Requerida
+                                        </span>
+                                    @endif
                                     @if($isCurrent)
                                         <span class="px-2 py-0.5 text-[10px] font-black uppercase tracking-widest rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300 animate-pulse">
                                             Paso Actual
@@ -141,6 +147,28 @@
                                 @if($step->comments)
                                     <div class="mt-1 p-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-gray-700 dark:text-gray-300 italic">
                                         “{{ $step->comments }}”
+                                    </div>
+                                @endif
+
+                                @if($step->signed_at)
+                                    <div class="mt-2.5 flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-xs">
+                                        <div class="flex items-center gap-2 text-emerald-800 dark:text-emerald-300">
+                                            <div class="w-6 h-6 rounded-lg bg-emerald-500 text-white flex items-center justify-center shrink-0">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                            </div>
+                                            <div>
+                                                <div class="font-bold flex items-center gap-1.5">
+                                                    <span>Firmado Electrónicamente</span>
+                                                    <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 font-semibold">{{ strtoupper($step->signature_data['method'] ?? 'Certificado PAdES') }}</span>
+                                                </div>
+                                                <div class="text-[11px] text-emerald-700 dark:text-emerald-400">
+                                                    Por {{ $step->signature_data['signer_name'] ?? $step->actionUser?->name }} ({{ $step->signature_data['signer_email'] ?? $step->actionUser?->email }})
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 shrink-0">
+                                            {{ $step->signed_at->format('d/m/Y H:i:s') }}
+                                        </div>
                                     </div>
                                 @endif
                             </div>

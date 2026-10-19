@@ -47,4 +47,8 @@ return [
         'creator' => 'Autor / Creador',
         'dynamic' => 'A designar en tramitación',
     ],
+    'digital_signature' => 'Firma Digital',
+    'requires_signature' => 'Requiere Firma Digital',
+    'official_document' => 'Diligencia / Documento Oficial Firmado (PDF)',
+    'signed_electronically' => 'Firmado Electrónicamente',
 ];

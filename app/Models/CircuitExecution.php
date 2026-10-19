@@ -67,6 +67,7 @@ class CircuitExecution extends Model
         'status',
         'notes',
         'metadata',
+        'signed_document_path',
         'started_at',
         'completed_at',
     ];
@@ -145,6 +146,39 @@ class CircuitExecution extends Model
 
         $completed = $this->steps->whereIn('status', [CircuitExecutionStep::STATUS_APPROVED, CircuitExecutionStep::STATUS_SKIPPED])->count();
         return (int) round(($completed / $total) * 100);
+    }
+
+    /**
+     * Determina si la tramitación cuenta con alguna firma digital registrada.
+     */
+    public function getHasSignaturesAttribute(): bool
+    {
+        return $this->steps->contains(fn($s) => !empty($s->signed_at));
+    }
+
+    /**
+     * Número de firmas electrónicas registradas hasta el momento.
+     */
+    public function getSignaturesCountAttribute(): int
+    {
+        return $this->steps->filter(fn($s) => !empty($s->signed_at))->count();
+    }
+
+    /**
+     * Número de etapas que requieren firma digital obligatoria.
+     */
+    public function getRequiredSignaturesCountAttribute(): int
+    {
+        return $this->steps->where('requires_signature', true)->count();
+    }
+
+    /**
+     * Determina si todas las firmas requeridas han sido estampadas.
+     */
+    public function getAllSignaturesCompletedAttribute(): bool
+    {
+        $required = $this->required_signatures_count;
+        return $required > 0 && $this->signatures_count >= $required;
     }
 
     /**

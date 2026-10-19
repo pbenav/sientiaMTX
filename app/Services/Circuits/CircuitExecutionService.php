@@ -22,7 +22,8 @@ use InvalidArgumentException;
 class CircuitExecutionService
 {
     public function __construct(
-        protected CircuitPublicationService $publicationService
+        protected CircuitPublicationService $publicationService,
+        protected CircuitPdfService $pdfService
     ) {}
 
     /**
@@ -100,6 +101,7 @@ class CircuitExecutionService
                         'assigned_to_user_id' => $assignedUserId,
                         'assigned_to_role_id' => $assignedRoleId,
                         'status' => CircuitExecutionStep::STATUS_PENDING,
+                        'requires_signature' => $tStep->requires_signature ?? false,
                         'action_data' => $tStep->action_config ?? [],
                     ]);
                 }
@@ -117,6 +119,7 @@ class CircuitExecutionService
                         'assigned_to_user_id' => $stepData['assigned_to_user_id'] ?? null,
                         'assigned_to_role_id' => $stepData['assigned_to_role_id'] ?? null,
                         'status' => CircuitExecutionStep::STATUS_PENDING,
+                        'requires_signature' => $stepData['requires_signature'] ?? false,
                         'action_data' => $stepData['action_config'] ?? [],
                     ]);
                 }
@@ -130,6 +133,7 @@ class CircuitExecutionService
                         'action_type' => CircuitTemplateStep::ACTION_ENDORSEMENT,
                         'assignee_type' => CircuitTemplateStep::ASSIGNEE_CREATOR,
                         'assigned_to_user_id' => $circuitable->created_by_id ?? $initiator->id,
+                        'requires_signature' => false,
                     ],
                     [
                         'order' => 2,
@@ -138,6 +142,7 @@ class CircuitExecutionService
                         'action_type' => CircuitTemplateStep::ACTION_JUSTIFICATION,
                         'assignee_type' => CircuitTemplateStep::ASSIGNEE_RESPONSIBLE,
                         'assigned_to_user_id' => $circuitable instanceof Activity ? ($circuitable->assignedTo->first()?->id ?? $initiator->id) : ($circuitable->assigned_user_id ?? $initiator->id),
+                        'requires_signature' => false,
                     ],
                     [
                         'order' => 3,
@@ -146,6 +151,7 @@ class CircuitExecutionService
                         'action_type' => CircuitTemplateStep::ACTION_APPROVAL,
                         'assignee_type' => CircuitTemplateStep::ASSIGNEE_SPECIFIC_USER,
                         'assigned_to_user_id' => null,
+                        'requires_signature' => true,
                     ],
                 ];
 
@@ -216,6 +222,27 @@ class CircuitExecutionService
             ]);
 
             if ($decision === CircuitExecutionStep::DECISION_APPROVED) {
+                // Registrar firma digital si el paso la requiere o si el usuario firma en este paso
+                $isSigning = $step->requires_signature || !empty($additionalData['sign_now']) || !empty($additionalData['signature_data']);
+                if ($isSigning) {
+                    $sigMethod = $additionalData['signature_method'] ?? 'internal_certificate';
+                    $sigData = array_merge([
+                        'method' => $sigMethod,
+                        'signer_name' => $user->name,
+                        'signer_email' => $user->email,
+                        'algorithm' => $additionalData['signature_algorithm'] ?? 'SHA256withRSA',
+                        'certificate_subject' => $additionalData['certificate_subject'] ?? $user->name,
+                        'ip' => request()->ip() ?? '127.0.0.1',
+                        'user_agent' => request()->userAgent() ?? 'System',
+                        'timestamp' => now()->toIso8601String(),
+                    ], $additionalData['signature_data'] ?? []);
+
+                    $step->update([
+                        'signed_at' => now(),
+                        'signature_data' => $sigData,
+                    ]);
+                }
+
                 $step->update(['status' => CircuitExecutionStep::STATUS_APPROVED]);
 
                 // Si este paso era de tipo publicación y tiene auto-publicar activado
@@ -249,6 +276,13 @@ class CircuitExecutionService
                     if (!$hasPublicationStep && ($execution->template?->settings['auto_publish'] ?? false)) {
                         $this->publicationService->publish($execution, $user);
                     }
+                }
+
+                // Generar o actualizar el documento consolidado en PDF con la nueva firma
+                try {
+                    $this->pdfService->generateAndAttach($execution);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('Circuit PDF generation failed: ' . $e->getMessage());
                 }
             } elseif ($decision === CircuitExecutionStep::DECISION_RETURNED) {
                 // Devolver para subsanación

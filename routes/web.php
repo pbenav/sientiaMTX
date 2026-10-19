@@ -437,6 +437,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [CircuitExecutionController::class, 'index'])->name('index');
         Route::post('/iniciar', [CircuitExecutionController::class, 'start'])->name('start');
         Route::get('/{circuit}', [CircuitExecutionController::class, 'show'])->name('show');
+        Route::get('/{circuit}/documento', [CircuitExecutionController::class, 'downloadDocument'])->name('document');
         Route::post('/{circuit}/pasos/{step}/resolver', [CircuitExecutionController::class, 'processStep'])->name('steps.process');
         Route::post('/{circuit}/cancelar', [CircuitExecutionController::class, 'cancel'])->name('cancel');
         Route::post('/{circuit}/publicar', [CircuitPublicBoardController::class, 'publishDirectly'])->name('publish');

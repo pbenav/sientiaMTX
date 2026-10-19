@@ -68,6 +68,7 @@ class CircuitTemplateController extends Controller
             'steps.*.action_type' => 'required|in:endorsement,justification,approval,publication',
             'steps.*.assignee_type' => 'required|in:specific_user,team_role,activity_responsible,creator,dynamic',
             'steps.*.assignee_id' => 'nullable|integer',
+            'steps.*.requires_signature' => 'nullable|boolean',
         ]);
 
         DB::transaction(function () use ($request, $team) {
@@ -94,6 +95,7 @@ class CircuitTemplateController extends Controller
                     'assignee_id' => $stepData['assignee_id'] ?? null,
                     'is_mandatory' => true,
                     'allow_return' => true,
+                    'requires_signature' => !empty($stepData['requires_signature']),
                     'action_config' => [
                         'auto_publish' => $stepData['action_type'] === CircuitTemplateStep::ACTION_PUBLICATION,
                     ],
@@ -148,6 +150,7 @@ class CircuitTemplateController extends Controller
             'steps.*.action_type' => 'required|in:endorsement,justification,approval,publication',
             'steps.*.assignee_type' => 'required|in:specific_user,team_role,activity_responsible,creator,dynamic',
             'steps.*.assignee_id' => 'nullable|integer',
+            'steps.*.requires_signature' => 'nullable|boolean',
         ]);
 
         DB::transaction(function () use ($request, $template) {
@@ -175,6 +178,7 @@ class CircuitTemplateController extends Controller
                     'assignee_id' => $stepData['assignee_id'] ?? null,
                     'is_mandatory' => true,
                     'allow_return' => true,
+                    'requires_signature' => !empty($stepData['requires_signature']),
                     'action_config' => [
                         'auto_publish' => $stepData['action_type'] === CircuitTemplateStep::ACTION_PUBLICATION,
                     ],
