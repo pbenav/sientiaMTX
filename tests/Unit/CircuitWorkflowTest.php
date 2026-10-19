@@ -254,5 +254,13 @@ class CircuitWorkflowTest extends TestCase
         $this->assertInstanceOf(BelongsTo::class, $expediente->circuitTemplate());
         $this->assertContains('circuit_template_id', $expediente->getFillable());
     }
+
+    public function test_circuit_execution_supports_soft_deletes(): void
+    {
+        $execution = new CircuitExecution();
+        $traits = class_uses_recursive($execution);
+        $this->assertContains(\Illuminate\Database\Eloquent\SoftDeletes::class, $traits);
+        $this->assertNull($execution->deleted_at);
+    }
 }
 

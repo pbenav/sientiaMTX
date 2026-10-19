@@ -42,19 +42,62 @@
     </x-slot>
 
     <div class="space-y-6">
+        <!-- Search bar -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                @if($search)
+                    Resultados para: <strong class="text-gray-900 dark:text-white">"{{ $search }}"</strong>
+                    <span class="text-gray-400">({{ $executions->total() }} {{ $executions->total() === 1 ? 'trámite' : 'trámites' }})</span>
+                @else
+                    Trámites asignados que esperan tu resolución
+                @endif
+            </div>
+
+            <form action="{{ route('teams.circuits.pending', $team) }}" method="GET" class="w-full sm:w-80">
+                <div class="relative flex items-center">
+                    <input type="text" name="search" value="{{ $search }}" placeholder="Buscar por título, #ID, paso o autor..."
+                        class="w-full text-xs rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 text-gray-900 dark:text-white pl-9 pr-8 py-2 focus:ring-violet-500 focus:border-violet-500">
+                    <svg class="w-4 h-4 text-gray-400 absolute left-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    @if($search)
+                        <a href="{{ route('teams.circuits.pending', $team) }}"
+                            class="absolute right-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                            title="Limpiar búsqueda">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </a>
+                    @endif
+                </div>
+            </form>
+        </div>
+
         @if($executions->isEmpty())
             <div class="bg-white dark:bg-gray-800 rounded-3xl p-12 text-center border border-gray-100 dark:border-gray-700 shadow-sm max-w-xl mx-auto my-8">
-                <div class="w-16 h-16 rounded-3xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/10">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-                    </svg>
-                </div>
-                <h3 class="text-lg font-black text-gray-900 dark:text-white mb-1">
-                    ¡Tu mesa de despacho está al día!
-                </h3>
-                <p class="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
-                    No tienes ningún visto bueno, justificación técnica o aprobación pendiente en este momento.
-                </p>
+                @if($search)
+                    <div class="w-16 h-16 rounded-3xl bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </div>
+                    <h3 class="text-lg font-black text-gray-900 dark:text-white mb-1">
+                        No se encontraron trámites pendientes
+                    </h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto mb-4">
+                        Ningún trámite pendiente coincide con los términos de búsqueda especificados.
+                    </p>
+                    <a href="{{ route('teams.circuits.pending', $team) }}"
+                        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-colors">
+                        <span>Limpiar búsqueda</span>
+                    </a>
+                @else
+                    <div class="w-16 h-16 rounded-3xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/10">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-black text-gray-900 dark:text-white mb-1">
+                        ¡Tu mesa de despacho está al día!
+                    </h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+                        No tienes ningún visto bueno, justificación técnica o aprobación pendiente en este momento.
+                    </p>
+                @endif
             </div>
         @else
             <div class="grid grid-cols-1 gap-4">

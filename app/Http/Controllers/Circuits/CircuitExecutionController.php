@@ -32,17 +32,29 @@ class CircuitExecutionController extends Controller
         }
 
         $user = Auth::user();
+        $search = trim((string) $request->query('search', ''));
 
-        $executions = CircuitExecution::pendingForUser($user, $team->id)
+        $query = CircuitExecution::pendingForUser($user, $team->id)
             ->with(['circuitable', 'currentStep', 'initiator', 'template'])
-            ->latest()
-            ->paginate(15);
+            ->when($search !== '', function ($q) use ($search) {
+                $cleanSearch = ltrim($search, '#');
+                $q->where(function ($sub) use ($search, $cleanSearch) {
+                    $sub->where('circuit_executions.title', 'like', "%{$search}%")
+                        ->orWhere('circuit_executions.id', $cleanSearch)
+                        ->orWhereHas('initiator', fn($i) => $i->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%"))
+                        ->orWhereHas('template', fn($t) => $t->where('name', 'like', "%{$search}%"))
+                        ->orWhereHas('currentStep', fn($s) => $s->where('name', 'like', "%{$search}%"));
+                });
+            })
+            ->latest();
 
-        return view('circuits.executions.pending', compact('team', 'executions'));
+        $executions = $query->paginate(15)->withQueryString();
+
+        return view('circuits.executions.pending', compact('team', 'executions', 'search'));
     }
 
     /**
-     * Listado general de tramitaciones del equipo.
+     * Listado general de tramitaciones del equipo con buscador multi-criterio.
      */
     public function index(Request $request, Team $team)
     {
@@ -51,18 +63,29 @@ class CircuitExecutionController extends Controller
         }
 
         $status = $request->query('status');
-        $search = $request->query('search');
+        $search = trim((string) $request->query('search', ''));
 
         $query = $team->circuitExecutions()
             ->with(['circuitable', 'currentStep', 'initiator', 'template'])
             ->when($status, fn($q) => $q->where('status', $status))
-            ->when($search, fn($q) => $q->where('title', 'like', "%{$search}%"))
+            ->when($search !== '', function ($q) use ($search) {
+                $cleanSearch = ltrim($search, '#');
+                $q->where(function ($sub) use ($search, $cleanSearch) {
+                    $sub->where('circuit_executions.title', 'like', "%{$search}%")
+                        ->orWhere('circuit_executions.id', $cleanSearch)
+                        ->orWhere('circuit_executions.notes', 'like', "%{$search}%")
+                        ->orWhereHas('initiator', fn($i) => $i->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%"))
+                        ->orWhereHas('template', fn($t) => $t->where('name', 'like', "%{$search}%"))
+                        ->orWhereHas('steps', fn($s) => $s->where('name', 'like', "%{$search}%"));
+                });
+            })
             ->latest();
 
         $executions = $query->paginate(15)->withQueryString();
         $templates = $team->circuitTemplates()->active()->get();
+        $isOwnerOrAdmin = Auth::user()->is_admin || $team->owner_id === Auth::id() || Auth::user()->can('admin');
 
-        return view('circuits.executions.index', compact('team', 'executions', 'templates', 'status', 'search'));
+        return view('circuits.executions.index', compact('team', 'executions', 'templates', 'status', 'search', 'isOwnerOrAdmin'));
     }
 
     /**
@@ -135,8 +158,9 @@ class CircuitExecutionController extends Controller
         ]);
 
         $currentUserCanAct = $circuit->canUserAct(Auth::user());
+        $isOwnerOrAdmin = Auth::user()->is_admin || $team->owner_id === Auth::id() || Auth::user()->can('admin');
 
-        return view('circuits.executions.show', compact('team', 'circuit', 'currentUserCanAct'));
+        return view('circuits.executions.show', compact('team', 'circuit', 'currentUserCanAct', 'isOwnerOrAdmin'));
     }
 
     /**
@@ -285,6 +309,31 @@ class CircuitExecutionController extends Controller
             $this->executionService->cancelCircuit($circuit, Auth::user(), $request->reason);
             return redirect()->route('teams.circuits.show', [$team, $circuit])
                 ->with('warning', 'La tramitación ha sido cancelada.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Elimina definitivamente / purga una tramitación de prueba (solo Administradores o Propietario del equipo).
+     */
+    public function destroy(Request $request, Team $team, CircuitExecution $circuit)
+    {
+        $user = Auth::user();
+        $isOwnerOrAdmin = $user->is_admin || $team->owner_id === $user->id || $user->can('admin');
+
+        if (!$isOwnerOrAdmin) {
+            abort(403, 'Solo un administrador o el propietario del equipo puede eliminar tramitaciones.');
+        }
+
+        if ($circuit->team_id !== $team->id) {
+            abort(404);
+        }
+
+        try {
+            $this->executionService->deleteCircuit($circuit, $user);
+            return redirect()->route('teams.circuits.index', $team)
+                ->with('success', 'La tramitación ha sido eliminada del sistema.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }

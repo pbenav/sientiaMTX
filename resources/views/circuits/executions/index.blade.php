@@ -65,12 +65,19 @@
             </div>
 
             <!-- Search input -->
-            <form action="{{ route('teams.circuits.index', $team) }}" method="GET" class="w-full md:w-72">
+            <form action="{{ route('teams.circuits.index', $team) }}" method="GET" class="w-full md:w-80">
                 @if($status) <input type="hidden" name="status" value="{{ $status }}"> @endif
-                <div class="relative">
-                    <input type="text" name="search" value="{{ $search }}" placeholder="Buscar por título..."
-                        class="w-full text-xs rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 text-gray-900 dark:text-white pl-9 pr-4 py-2 focus:ring-violet-500 focus:border-violet-500">
-                    <svg class="w-4 h-4 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <div class="relative flex items-center">
+                    <input type="text" name="search" value="{{ $search }}" placeholder="Buscar por título, #ID, plantilla o autor..."
+                        class="w-full text-xs rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 text-gray-900 dark:text-white pl-9 pr-8 py-2 focus:ring-violet-500 focus:border-violet-500">
+                    <svg class="w-4 h-4 text-gray-400 absolute left-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    @if($search)
+                        <a href="{{ route('teams.circuits.index', array_filter(['team' => $team, 'status' => $status])) }}"
+                            class="absolute right-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                            title="Limpiar búsqueda">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </a>
+                    @endif
                 </div>
             </form>
         </div>
@@ -79,14 +86,26 @@
         @if($executions->isEmpty())
             <div class="bg-white dark:bg-gray-800 rounded-3xl p-12 text-center border border-gray-100 dark:border-gray-700 shadow-sm max-w-lg mx-auto">
                 <div class="w-16 h-16 rounded-3xl bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        @if($search)
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        @else
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        @endif
+                    </svg>
                 </div>
                 <h3 class="text-lg font-black text-gray-900 dark:text-white mb-1">
-                    No hay tramitaciones registradas
+                    {{ $search ? 'No se encontraron resultados' : 'No hay tramitaciones registradas' }}
                 </h3>
-                <p class="text-xs text-gray-500 dark:text-gray-400">
-                    Puedes iniciar un circuito de tramitación desde la vista de cualquier Actividad o Expediente del equipo.
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                    {{ $search ? 'No existe ninguna tramitación que coincida con los criterios de búsqueda.' : 'Puedes iniciar un circuito de tramitación desde la vista de cualquier Actividad o Expediente del equipo.' }}
                 </p>
+                @if($search)
+                    <a href="{{ route('teams.circuits.index', array_filter(['team' => $team, 'status' => $status])) }}"
+                        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-colors">
+                        <span>Limpiar búsqueda</span>
+                    </a>
+                @endif
             </div>
         @else
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
@@ -173,12 +192,22 @@
                                         <div>{{ $exec->initiator?->name }}</div>
                                         <div class="text-[10px] text-gray-400">{{ $exec->created_at->format('d/m/Y') }}</div>
                                     </td>
-                                    <td class="py-3.5 px-4 text-right">
-                                        <a href="{{ route('teams.circuits.show', [$team, $exec]) }}"
-                                            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors">
-                                            <span>Ver detalle</span>
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                                        </a>
+                                    <td class="py-3.5 px-4 text-right whitespace-nowrap">
+                                        <div class="inline-flex items-center gap-1.5 justify-end">
+                                            <a href="{{ route('teams.circuits.show', [$team, $exec]) }}"
+                                                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors">
+                                                <span>Ver detalle</span>
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                            </a>
+                                            @if($isOwnerOrAdmin)
+                                                <button type="button"
+                                                    @click="$dispatch('open-delete-circuit-modal', { id: {{ $exec->id }}, title: '{{ addslashes($exec->title) }}', action: '{{ route('teams.circuits.destroy', [$team, $exec]) }}' })"
+                                                    class="p-1.5 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
+                                                    title="Eliminar tramitación de prueba (Admin)">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                </button>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -193,5 +222,42 @@
         @endif
 
     </div>
+
+    @if($isOwnerOrAdmin)
+        <!-- Modal Confirmación Eliminación (Admin) -->
+        <div x-data="{ open: false, circuitId: null, circuitTitle: '', formAction: '' }"
+             @open-delete-circuit-modal.window="open = true; circuitId = $event.detail.id; circuitTitle = $event.detail.title; formAction = $event.detail.action"
+             x-show="open"
+             x-cloak
+             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+            <div @click.away="open = false"
+                 class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100 dark:border-gray-700">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-black text-gray-900 dark:text-white">¿Eliminar tramitación?</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Acción reservada para administradores</p>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
+                    Estás a punto de eliminar la tramitación <strong class="text-gray-900 dark:text-white" x-text="'#' + circuitId + ' — ' + circuitTitle"></strong>. Esta opción está destinada a purgar pruebas o tramitaciones creadas por error.
+                </p>
+                <form :action="formAction" method="POST" class="flex justify-end gap-2">
+                    @csrf
+                    @method('DELETE')
+                    <button type="button" @click="open = false"
+                        class="px-4 py-2 text-xs font-bold rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                        class="px-4 py-2 text-xs font-black rounded-xl bg-rose-600 text-white hover:bg-rose-700 shadow-md shadow-rose-600/20 transition-all">
+                        Eliminar Definitivamente
+                    </button>
+                </form>
+            </div>
+        </div>
+    @endif
 </x-app-layout>
 

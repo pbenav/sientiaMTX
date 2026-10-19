@@ -48,8 +48,8 @@ class CircuitPdfService
             $rawContent = $circuitable->description ?? $circuitable->notes ?? '';
         }
 
-        $contentHtml = $rawContent 
-            ? (string) str($rawContent)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) 
+        $contentHtml = $rawContent
+            ? (string) str($rawContent)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false])
             : '';
 
         // 2. Generar Código Seguro de Verificación (CSV) si no existe
@@ -163,3 +163,4 @@ class CircuitPdfService
         }
     }
 }
+

@@ -333,4 +333,31 @@ class CircuitExecutionService
 
         return $execution->fresh();
     }
+
+    /**
+     * Elimina definitivamente / purga una tramitación de prueba o errónea (Soft Delete).
+     * Esta acción está restringida exclusivamente a Administradores.
+     */
+    public function deleteCircuit(CircuitExecution $execution, User $user): void
+    {
+        DB::transaction(function () use ($execution, $user) {
+            // Retirar publicación en tablón si la hubiera
+            if ($execution->publication) {
+                $execution->publication->delete();
+            }
+
+            // Eliminar etapas del circuito
+            $execution->steps()->delete();
+
+            // Eliminar archivo PDF generado en disco si existe
+            if ($execution->signed_document_path && \Illuminate\Support\Facades\Storage::disk('local')->exists($execution->signed_document_path)) {
+                \Illuminate\Support\Facades\Storage::disk('local')->delete($execution->signed_document_path);
+            }
+
+            // Soft-delete de la ejecución
+            $execution->delete();
+
+            \Illuminate\Support\Facades\Log::info("Circuito #{$execution->id} ('{$execution->title}') eliminado por el administrador {$user->name} ({$user->email}).");
+        });
+    }
 }

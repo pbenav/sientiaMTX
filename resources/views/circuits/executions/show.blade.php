@@ -24,8 +24,16 @@
             <div class="flex items-center gap-2 shrink-0">
                 @if($circuit->is_active && ($circuit->initiated_by_id === auth()->id() || $team->owner_id === auth()->id() || $team->isCoordinator(auth()->user())))
                     <button type="button" onclick="document.getElementById('modal-cancel-circuit').classList.remove('hidden')"
-                        class="px-2.5 py-1 text-xs font-bold rounded-lg text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 border border-rose-200 dark:border-rose-800 transition-colors">
+                        class="px-2.5 py-1 text-xs font-bold rounded-lg text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 border border-amber-200 dark:border-amber-800 transition-colors">
                         Cancelar Tramitación
+                    </button>
+                @endif
+                @if($isOwnerOrAdmin)
+                    <button type="button" onclick="document.getElementById('modal-destroy-circuit').classList.remove('hidden')"
+                        class="px-2.5 py-1 text-xs font-bold rounded-lg text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 border border-rose-200 dark:border-rose-800 transition-colors inline-flex items-center gap-1"
+                        title="Eliminar tramitación de prueba (Admin)">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        <span>Eliminar (Admin)</span>
                     </button>
                 @endif
                 @include('teams.partials.header-toolbar')
@@ -411,12 +419,44 @@
                         Cerrar
                     </button>
                     <button type="submit"
-                        class="px-4 py-2 text-xs font-black rounded-xl bg-rose-600 text-white hover:bg-rose-700 shadow-md shadow-rose-600/20">
+                        class="px-4 py-2 text-xs font-black rounded-xl bg-amber-600 text-white hover:bg-amber-700 shadow-md shadow-amber-600/20">
                         Confirmar Cancelación
                     </button>
                 </div>
             </form>
         </div>
     </div>
+
+    @if($isOwnerOrAdmin)
+        <!-- Modal Eliminar Circuit (Admin) -->
+        <div id="modal-destroy-circuit" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs hidden">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100 dark:border-gray-700">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-black text-gray-900 dark:text-white">¿Eliminar esta tramitación?</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Acción reservada para administradores</p>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
+                    Esta acción eliminará de forma completa la tramitación <strong>#{{ $circuit->id }} — {{ $circuit->title }}</strong>, sus firmas y diligencias generadas. Ideal para purgar trámites de prueba.
+                </p>
+                <form action="{{ route('teams.circuits.destroy', [$team, $circuit]) }}" method="POST" class="flex justify-end gap-2">
+                    @csrf
+                    @method('DELETE')
+                    <button type="button" onclick="document.getElementById('modal-destroy-circuit').classList.add('hidden')"
+                        class="px-4 py-2 text-xs font-bold rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                        class="px-4 py-2 text-xs font-black rounded-xl bg-rose-600 text-white hover:bg-rose-700 shadow-md shadow-rose-600/20 transition-all">
+                        Eliminar Definitivamente
+                    </button>
+                </form>
+            </div>
+        </div>
+    @endif
 </x-app-layout>
 

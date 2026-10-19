@@ -440,6 +440,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/{circuit}/documento', [CircuitExecutionController::class, 'downloadDocument'])->name('document');
         Route::post('/{circuit}/pasos/{step}/resolver', [CircuitExecutionController::class, 'processStep'])->name('steps.process');
         Route::post('/{circuit}/cancelar', [CircuitExecutionController::class, 'cancel'])->name('cancel');
+        Route::delete('/{circuit}', [CircuitExecutionController::class, 'destroy'])->name('destroy');
         Route::post('/{circuit}/publicar', [CircuitPublicBoardController::class, 'publishDirectly'])->name('publish');
     });
 
