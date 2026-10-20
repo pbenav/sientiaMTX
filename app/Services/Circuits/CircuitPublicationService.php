@@ -26,6 +26,29 @@ class CircuitPublicationService
      */
     public function publish(CircuitExecution $execution, User $publisher, array $data = []): CircuitPublication
     {
+        $circuitable = $execution->circuitable;
+
+        // 1. Preparar contenido: convertir Markdown a HTML seguro si es necesario
+        $rawContent = $data['content_html'] ?? '';
+        if (empty($rawContent)) {
+            if ($circuitable instanceof \App\Models\Activity) {
+                $rawContent = $circuitable->description ?? $circuitable->observations ?? '';
+            } elseif ($circuitable instanceof \App\Models\Expediente) {
+                $rawContent = $circuitable->description ?? $circuitable->notes ?? '';
+            }
+        }
+
+        $contentHtml = !empty($rawContent)
+            ? (string) str($rawContent)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false])
+            : '';
+
+        // 2. Asegurar que el documento PDF oficial consolidado esté generado con todas sus firmas
+        $pdfService = app(\App\Services\Circuits\CircuitPdfService::class);
+        $pdfPath = $execution->signed_document_path;
+        if (!$pdfPath || !\Illuminate\Support\Facades\Storage::disk('local')->exists($pdfPath)) {
+            $pdfPath = $pdfService->generateAndAttach($execution);
+        }
+
         // Si ya existe una publicación previa, actualizarla
         if ($execution->publication) {
             $execution->publication->update([
@@ -34,6 +57,11 @@ class CircuitPublicationService
                 'status' => CircuitPublication::STATUS_PUBLISHED,
                 'publication_date' => $data['publication_date'] ?? now()->toDateString(),
                 'expiration_date' => $data['expiration_date'] ?? $execution->publication->expiration_date,
+                'content_html' => $contentHtml ?: $execution->publication->content_html,
+                'metadata' => array_merge($execution->publication->metadata ?? [], [
+                    'signed_pdf_path' => $pdfPath,
+                    'csv' => $execution->metadata['csv'] ?? null,
+                ]),
             ]);
 
             return $execution->publication;
@@ -45,9 +73,6 @@ class CircuitPublicationService
             ->whereYear('created_at', $year)
             ->count() + 1;
         $documentCode = sprintf('PUB-%s-%04d', $year, $count);
-
-        $circuitable = $execution->circuitable;
-        $contentHtml = $data['content_html'] ?? ($circuitable?->description ?? '');
 
         // Recopilar diligencia de firmas de los pasos del circuito
         $signatures = $execution->steps()
@@ -85,7 +110,9 @@ class CircuitPublicationService
             'metadata' => [
                 'signatures_audit' => $signatures,
                 'circuitable_type' => $execution->circuitable_type,
-                'circuitable_id' => $execution->circuitable_id,
+                'circuitable_id'   => $execution->circuitable_id,
+                'signed_pdf_path'  => $pdfPath,
+                'csv'              => $execution->metadata['csv'] ?? null,
             ],
         ]);
 

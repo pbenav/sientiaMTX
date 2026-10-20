@@ -267,5 +267,15 @@ class CircuitWorkflowTest extends TestCase
         $this->assertContains(\Illuminate\Database\Eloquent\SoftDeletes::class, $traits);
         $this->assertNull($execution->deleted_at);
     }
+
+    public function test_circuit_publication_markdown_rendering(): void
+    {
+        $rawMd = "# Titulo Oficial\n\nEste es un **decreto de prueba** con lista:\n\n- Punto 1\n- Punto 2";
+        $html = (string) str($rawMd)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]);
+
+        $this->assertStringContainsString('<h1>Titulo Oficial</h1>', $html);
+        $this->assertStringContainsString('<strong>decreto de prueba</strong>', $html);
+        $this->assertStringContainsString('<li>Punto 1</li>', $html);
+    }
 }
 

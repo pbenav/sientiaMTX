@@ -70,6 +70,8 @@ Route::get('/embed/files/{attachment}/{token}', [\App\Http\Controllers\PublicAtt
 // --- Tablón Edictal y Documentos Públicos (Ciudadanía) ---
 Route::get('/tablon/{team}', [CircuitPublicBoardController::class, 'teamBoard'])->name('public.circuits.board');
 Route::get('/tablon/doc/{slug}', [CircuitPublicBoardController::class, 'show'])->name('public.circuits.show');
+Route::get('/tablon/doc/{slug}/pdf', [CircuitPublicBoardController::class, 'pdf'])->name('public.circuits.pdf');
+Route::get('/tablon/doc/{slug}/descargar', [CircuitPublicBoardController::class, 'download'])->name('public.circuits.download');
 
 // --- Verificación Pública y Cotejo de Documentos (CSV / Ley 39/2015) ---
 Route::get('/verificar/{csv?}', [\App\Http\Controllers\Circuits\CircuitVerificationController::class, 'show'])->name('public.circuits.verify');

@@ -144,6 +144,13 @@
                                         @endif
                                     </td>
                                     <td class="py-3.5 px-4 text-right space-x-2">
+                                        <a href="{{ route('public.circuits.pdf', $pub->public_slug) }}" target="_blank"
+                                            class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors"
+                                            title="Ver PDF Oficial Firmado">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                                            <span>PDF</span>
+                                        </a>
+
                                         <a href="{{ route('public.circuits.show', $pub->public_slug) }}" target="_blank"
                                             class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-900/30 hover:bg-teal-100 dark:hover:bg-teal-900/50 transition-colors">
                                             <span>Ver</span>

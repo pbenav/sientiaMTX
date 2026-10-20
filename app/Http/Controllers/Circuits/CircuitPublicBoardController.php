@@ -12,6 +12,7 @@ use App\Models\Team;
 use App\Services\Circuits\CircuitPublicationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class CircuitPublicBoardController extends Controller
 {
@@ -118,7 +119,79 @@ class CircuitPublicBoardController extends Controller
             ->with(['team', 'execution.circuitable', 'execution.steps.actionUser'])
             ->firstOrFail();
 
-        return view('circuits.public.show', compact('publication'));
+        $circuit = $publication->execution;
+        $circuitable = $circuit?->circuitable;
+        $attachments = collect();
+
+        if ($circuitable) {
+            if ($circuitable instanceof \App\Models\Activity) {
+                $attachments = $circuitable->attachments()->get();
+            } elseif ($circuitable instanceof \App\Models\Expediente) {
+                $attachments = \App\Models\TaskAttachment::where('attachable_type', \App\Models\Expediente::class)
+                    ->where('attachable_id', $circuitable->id)
+                    ->get();
+            }
+        }
+
+        $csv = $publication->metadata['csv'] ?? $circuit?->metadata['csv'] ?? null;
+        $hasPdf = !empty($circuit?->signed_document_path) || !empty($publication->metadata['signed_pdf_path']);
+
+        return view('circuits.public.show', compact('publication', 'circuit', 'circuitable', 'attachments', 'csv', 'hasPdf'));
+    }
+
+    /**
+     * VISTA PÚBLICA (Ciudadanía): Previsualización directa en streaming del PDF oficial firmado.
+     */
+    public function pdf(Request $request, string $slug)
+    {
+        $publication = CircuitPublication::where('public_slug', $slug)
+            ->with(['execution.circuitable', 'team'])
+            ->firstOrFail();
+
+        $circuit = $publication->execution;
+        if (!$circuit) {
+            abort(404, 'Tramitación no encontrada.');
+        }
+
+        $filePath = $circuit->signed_document_path ?? ($publication->metadata['signed_pdf_path'] ?? null);
+        if (!$filePath || !Storage::disk('local')->exists($filePath)) {
+            $pdfService = app(\App\Services\Circuits\CircuitPdfService::class);
+            $filePath = $pdfService->generateAndAttach($circuit);
+        }
+
+        $fileName = basename($filePath);
+        return Storage::disk('local')->response(
+            $filePath,
+            $fileName,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . $fileName . '"',
+            ]
+        );
+    }
+
+    /**
+     * VISTA PÚBLICA (Ciudadanía): Descarga directa del archivo PDF oficial consolidado y firmado.
+     */
+    public function download(Request $request, string $slug)
+    {
+        $publication = CircuitPublication::where('public_slug', $slug)
+            ->with(['execution.circuitable', 'team'])
+            ->firstOrFail();
+
+        $circuit = $publication->execution;
+        if (!$circuit) {
+            abort(404, 'Tramitación no encontrada.');
+        }
+
+        $filePath = $circuit->signed_document_path ?? ($publication->metadata['signed_pdf_path'] ?? null);
+        if (!$filePath || !Storage::disk('local')->exists($filePath)) {
+            $pdfService = app(\App\Services\Circuits\CircuitPdfService::class);
+            $filePath = $pdfService->generateAndAttach($circuit);
+        }
+
+        $fileName = basename($filePath);
+        return Storage::disk('local')->download($filePath, $fileName);
     }
 }
 
