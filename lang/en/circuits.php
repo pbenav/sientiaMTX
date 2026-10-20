@@ -20,6 +20,7 @@ return [
     'pending_my_approval' => 'Pending my Review / Signature',
     'start_circuit' => 'Start Approval Circuit',
     'public_board' => 'Notice Board & Public Documents',
+    'official_status' => 'Official Status',
     'action_types' => [
         'endorsement' => 'Endorsement',
         'justification' => 'Justification',
@@ -29,7 +30,7 @@ return [
     'statuses' => [
         'draft' => 'Draft',
         'in_progress' => 'In progress',
-        'approved' => 'Approved',
+        'approved' => 'Approved (Final)',
         'rejected' => 'Rejected',
         'returned' => 'Returned for amendment',
         'cancelled' => 'Cancelled',

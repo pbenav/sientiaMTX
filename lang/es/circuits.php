@@ -20,6 +20,7 @@ return [
     'pending_my_approval' => 'Pendientes de mi Visto Bueno / Firma',
     'start_circuit' => 'Iniciar Circuito de Tramitación',
     'public_board' => 'Tablón Edictal y Documentos Públicos',
+    'official_status' => 'Estado Oficial',
     'action_types' => [
         'endorsement' => 'Visto Bueno',
         'justification' => 'Justificación',
@@ -29,7 +30,7 @@ return [
     'statuses' => [
         'draft' => 'Borrador',
         'in_progress' => 'En tramitación',
-        'approved' => 'Aprobado',
+        'approved' => 'Aprobado Definitivo',
         'rejected' => 'Rechazado',
         'returned' => 'Devuelto para subsanación',
         'cancelled' => 'Cancelado',

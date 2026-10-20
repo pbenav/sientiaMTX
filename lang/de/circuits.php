@@ -20,6 +20,7 @@ return [
     'pending_my_approval' => 'Ausstehend für meine Prüfung / Unterschrift',
     'start_circuit' => 'Genehmigungskreis starten',
     'public_board' => 'Amtliche Bekanntmachungstafel & Öffentliche Dokumente',
+    'official_status' => 'Offizieller Status',
     'action_types' => [
         'endorsement' => 'Sichtung / Freigabe',
         'justification' => 'Begründung',
@@ -29,7 +30,7 @@ return [
     'statuses' => [
         'draft' => 'Entwurf',
         'in_progress' => 'In Bearbeitung',
-        'approved' => 'Genehmigt',
+        'approved' => 'Endgültig genehmigt',
         'rejected' => 'Abgelehnt',
         'returned' => 'Zur Nachbesserung zurückgegeben',
         'cancelled' => 'Abgebrochen',

@@ -109,9 +109,9 @@
                             <span class="font-bold text-gray-900 dark:text-white">{{ $circuit->started_at?->format('d/m/Y H:i') ?? $circuit->created_at->format('d/m/Y H:i') }}</span>
                         </div>
                         <div>
-                            <span class="text-gray-500 dark:text-gray-400 font-medium block mb-0.5">Estado Oficial:</span>
-                            <span class="font-black uppercase {{ $circuit->status === 'approved' ? 'text-emerald-600 dark:text-emerald-400' : 'text-blue-600 dark:text-blue-400' }}">
-                                {{ $circuit->status === 'approved' ? 'Aprobado Definitivo' : ucfirst($circuit->status) }}
+                            <span class="text-gray-500 dark:text-gray-400 font-medium block mb-0.5">{{ __('circuits.official_status') }}:</span>
+                            <span class="font-black uppercase {{ in_array($circuit->status, ['approved', 'published']) ? 'text-emerald-600 dark:text-emerald-400' : 'text-blue-600 dark:text-blue-400' }}">
+                                {{ $circuit->status_label }}
                             </span>
                         </div>
                     </div>

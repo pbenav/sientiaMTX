@@ -137,6 +137,28 @@ class CircuitExecution extends Model
     /**
      * Porcentaje de progreso basado en los pasos aprobados/completados.
      */
+    /**
+     * Etiqueta legible y localizada del estado actual de la tramitación.
+     */
+    public function getStatusLabelAttribute(): string
+    {
+        $key = 'circuits.statuses.' . $this->status;
+        if (\Illuminate\Support\Facades\Lang::has($key)) {
+            return __($key);
+        }
+
+        return match ($this->status) {
+            self::STATUS_APPROVED => 'Aprobado Definitivo',
+            self::STATUS_IN_PROGRESS => 'En Tramitación',
+            self::STATUS_PUBLISHED => 'Publicado',
+            self::STATUS_RETURNED => 'Devuelto para Subsanación',
+            self::STATUS_REJECTED => 'Rechazado',
+            self::STATUS_CANCELLED => 'Cancelado',
+            self::STATUS_DRAFT => 'Borrador',
+            default => ucfirst(str_replace('_', ' ', (string) $this->status)),
+        };
+    }
+
     public function getProgressPercentageAttribute(): int
     {
         $total = $this->steps->count();

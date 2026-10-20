@@ -20,6 +20,7 @@ return [
     'pending_my_approval' => 'Pendentes do meu Visto / Assinatura',
     'start_circuit' => 'Iniciar Circuito de Tramitação',
     'public_board' => 'Quadro de Editais e Documentos Públicos',
+    'official_status' => 'Status Oficial',
     'action_types' => [
         'endorsement' => 'Visto Prévio',
         'justification' => 'Justificação',
@@ -29,7 +30,7 @@ return [
     'statuses' => [
         'draft' => 'Rascunho',
         'in_progress' => 'Em tramitação',
-        'approved' => 'Aprovado',
+        'approved' => 'Aprovado Definitivo',
         'rejected' => 'Rejeitado',
         'returned' => 'Devolvido para correção',
         'cancelled' => 'Cancelado',

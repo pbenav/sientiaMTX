@@ -92,23 +92,33 @@ class CircuitPdfService
             });
         }
 
-        // 3. Renderizar la vista Blade del documento oficial
-        $pdf = Pdf::loadView('pdf.circuit', [
-            'execution'     => $simulatedExecution,
-            'team'          => $team,
-            'circuitable'   => $circuitable,
-            'contentHtml'   => $contentHtml,
-            'steps'         => $allSteps,
-            'csv'           => $csv,
-            'signingStepId' => $signingStep?->id,
-            'signingUser'   => $signingUser,
-        ]);
+        // 3. Renderizar la vista Blade del documento oficial en el idioma de la tramitación
+        $originalLocale = app()->getLocale();
+        $docLocale = $execution->initiator?->locale ?? 'es';
+        app()->setLocale($docLocale);
 
-        $pdf->setPaper('A4', 'portrait');
-        $pdf->setOptions([
-            'isHtml5ParserEnabled' => true,
-            'isRemoteEnabled' => true,
-        ]);
+        try {
+            $pdf = Pdf::loadView('pdf.circuit', [
+                'execution'     => $simulatedExecution,
+                'team'          => $team,
+                'circuitable'   => $circuitable,
+                'contentHtml'   => $contentHtml,
+                'steps'         => $allSteps,
+                'csv'           => $csv,
+                'signingStepId' => $signingStep?->id,
+                'signingUser'   => $signingUser,
+            ]);
+
+            $pdf->setPaper('A4', 'portrait');
+            $pdf->setOptions([
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true,
+            ]);
+
+            $pdfContent = $pdf->output();
+        } finally {
+            app()->setLocale($originalLocale);
+        }
 
         // 4. Guardar archivo en almacenamiento local
         $directory = "circuits/{$execution->id}";
@@ -120,7 +130,7 @@ class CircuitPdfService
         $fileName = "Tramitacion_{$execution->id}_{$slugTitle}_Firmado.pdf";
         $filePath = "{$directory}/{$fileName}";
 
-        Storage::disk('local')->put($filePath, $pdf->output());
+        Storage::disk('local')->put($filePath, $pdfContent);
 
         // 5. Actualizar la referencia en la ejecución
         $execution->updateQuietly(['signed_document_path' => $filePath]);

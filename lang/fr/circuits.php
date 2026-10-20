@@ -20,6 +20,7 @@ return [
     'pending_my_approval' => 'En attente de mon Visa / Signature',
     'start_circuit' => 'Démarrer le Circuit de Validation',
     'public_board' => 'Tableau d’Affichage et Documents Publics',
+    'official_status' => 'Statut officiel',
     'action_types' => [
         'endorsement' => 'Visa préalable',
         'justification' => 'Justification',
@@ -29,7 +30,7 @@ return [
     'statuses' => [
         'draft' => 'Brouillon',
         'in_progress' => 'En cours de traitement',
-        'approved' => 'Approuvé',
+        'approved' => 'Approuvé définitif',
         'rejected' => 'Rejeté',
         'returned' => 'Retourné pour correction',
         'cancelled' => 'Annulé',

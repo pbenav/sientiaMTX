@@ -77,8 +77,8 @@
         .sig-hash code { font-family: monospace; font-size: 5.8px; color: #1e293b; word-break: break-all; }
         .sig-comment { font-size: 7.5px; font-style: italic; color: #334155; margin-top: 2px; padding-top: 2px; border-top: 1px dotted #a7f3d0; }
 
-        .qr-cell { width: 56px; text-align: center; vertical-align: top; padding-left: 6px; padding-top: 2px; }
-        .qr-img { border: 1px solid #a7f3d0; padding: 2px; background: #ffffff; border-radius: 4px; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; }
+        .qr-cell { width: 62px; text-align: center; vertical-align: top; padding-left: 6px; padding-top: 2px; }
+        .qr-img { border: 1px solid #cbd5e1; padding: 2px; background: #ffffff; border-radius: 3px; }
         .qr-label { font-size: 5.5px; color: #059669; font-weight: bold; text-transform: uppercase; margin-top: 2px; letter-spacing: 0.5px; text-align: center; }
 
         .footer { position: fixed; bottom: -2.5cm; left: 0; right: 0; font-size: 8px; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 6px; }
@@ -123,7 +123,7 @@
                 <td style="width:25%; vertical-align:top; padding:0 8px;">
                     <div class="info-label">Estado Actual</div>
                     <div class="info-value" style="font-weight:bold; text-transform:uppercase;">
-                        {{ $execution->status === 'approved' ? 'Aprobado Definitivo' : ($execution->status === 'in_progress' ? 'En Tramitación' : ucfirst($execution->status)) }}
+                        {{ $execution->status_label }}
                     </div>
                 </td>
                 <td style="width:25%; vertical-align:top; padding-left:8px;">
@@ -246,7 +246,7 @@
                                                 $methodLabel = $isAutoFirma ? 'Firma Reconocida (AutoFirma PAdES)' : 'Conformidad Acreditada (CSV)';
                                                 $fullHash = $step->signature_data['sha256_hash'] ?? hash('sha256', 'CIRCUIT:' . $execution->id . '|STEP:' . $step->id . '|ORDER:' . $step->order . '|USER:' . ($step->action_taken_by_id ?? 0) . '|TS:' . ($step->signed_at?->timestamp ?? 0) . '|CSV:' . ($csv ?? ''));
                                                 $verifyUrl = route('public.circuits.verify', ['csv' => $csv ?? '']) . '?hash=' . $fullHash . '&step=' . $step->order;
-                                                $qrPng = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')->size(350)->errorCorrection('M')->margin(1)->generate($verifyUrl));
+                                                $qrSvg = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::size(200)->errorCorrection('M')->margin(2)->generate($verifyUrl));
                                             @endphp
                                             <table class="sig-inner-table">
                                                 <tr>
@@ -276,7 +276,7 @@
                                                         @endif
                                                     </td>
                                                     <td class="qr-cell">
-                                                        <img src="data:image/png;base64,{{ $qrPng }}" width="50" height="50" class="qr-img" alt="QR Verificación">
+                                                        <img src="data:image/svg+xml;base64,{{ $qrSvg }}" width="56" height="56" class="qr-img" alt="QR Verificación">
                                                         <div class="qr-label">Verificar QR</div>
                                                     </td>
                                                 </tr>
@@ -284,7 +284,7 @@
                                         @elseif(isset($signingStepId) && $step->id === $signingStepId)
                                             @php
                                                 $verifyUrl = route('public.circuits.verify', ['csv' => $csv ?? '']) . '?step=' . $step->order;
-                                                $qrPng = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')->size(350)->errorCorrection('M')->margin(1)->generate($verifyUrl));
+                                                $qrSvg = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::size(200)->errorCorrection('M')->margin(2)->generate($verifyUrl));
                                             @endphp
                                             <table class="sig-inner-table">
                                                 <tr>
@@ -301,7 +301,7 @@
                                                         <div style="height: 52px;"></div>
                                                     </td>
                                                     <td class="qr-cell">
-                                                        <img src="data:image/png;base64,{{ $qrPng }}" width="50" height="50" class="qr-img" alt="QR Verificación">
+                                                        <img src="data:image/svg+xml;base64,{{ $qrSvg }}" width="56" height="56" class="qr-img" alt="QR Verificación">
                                                         <div class="qr-label">Cotejo CSV</div>
                                                     </td>
                                                 </tr>
