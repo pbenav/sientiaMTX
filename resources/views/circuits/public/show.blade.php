@@ -23,7 +23,41 @@
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900 font-sans antialiased min-h-screen flex flex-col"
-      x-data="{ activeTab: 'pdf' }">
+      x-data="{
+          activeTab: 'pdf',
+          viewerHeight: parseInt(localStorage.getItem('circuit_viewer_height') || '850'),
+          isExpandedWidth: false,
+          isFullscreen: false,
+          toggleWidth() {
+              this.isExpandedWidth = !this.isExpandedWidth;
+          },
+          setHeight(h) {
+              this.viewerHeight = h;
+              localStorage.setItem('circuit_viewer_height', h);
+              const container = document.getElementById('pdf-viewer-wrapper');
+              const iframe = document.getElementById('pdf-viewer-iframe');
+              if (container) container.style.height = h + 'px';
+              if (iframe) iframe.style.height = (h - 2) + 'px';
+          },
+          stepHeight(delta) {
+              const newH = Math.max(400, Math.min(2000, this.viewerHeight + delta));
+              this.setHeight(newH);
+          },
+          toggleFullscreen() {
+              const el = document.getElementById('pdf-viewer-card');
+              if (!document.fullscreenElement) {
+                  if (el.requestFullscreen) {
+                      el.requestFullscreen();
+                      this.isFullscreen = true;
+                  }
+              } else {
+                  if (document.exitFullscreen) {
+                      document.exitFullscreen();
+                      this.isFullscreen = false;
+                  }
+              }
+          }
+      }">
 
     @php
         $csvCode = $csv ?? ($publication->metadata['csv'] ?? $publication->public_token);
@@ -35,7 +69,8 @@
 
     <!-- Official Navbar -->
     <header class="bg-white border-b border-gray-200 shadow-xs no-print sticky top-0 z-30">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-3 flex-wrap">
+        <div class="w-full px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-3 flex-wrap"
+             :class="isExpandedWidth ? 'max-w-none' : 'max-w-6xl mx-auto'">
             <a href="{{ route('public.circuits.board', $publication->team) }}"
                 class="inline-flex items-center gap-2 text-xs font-bold text-gray-600 hover:text-teal-600 transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
@@ -67,7 +102,8 @@
     </header>
 
     <!-- Main Container -->
-    <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <main :class="isExpandedWidth ? 'w-full px-2 sm:px-6' : 'max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8'"
+          class="flex-1 py-8 space-y-6 transition-all duration-300">
 
         <!-- Document Sheet Card -->
         <div class="bg-white rounded-3xl p-6 sm:p-10 border border-gray-200 shadow-sm print-border space-y-6">
@@ -104,35 +140,50 @@
             @endif
 
             <!-- Navigation Tabs -->
-            <div class="border-b border-gray-200 no-print flex items-center gap-2 overflow-x-auto">
-                <button type="button" @click="activeTab = 'pdf'"
-                    class="flex items-center gap-2 py-3 px-4 text-xs font-black uppercase tracking-wider border-b-2 transition-all shrink-0"
-                    :class="activeTab === 'pdf' ? 'border-teal-600 text-teal-700 bg-teal-50/50 rounded-t-xl' : 'border-transparent text-gray-500 hover:text-gray-900'">
-                    <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-                    <span>Visor PDF Oficial Firmado</span>
-                </button>
-
-                <button type="button" @click="activeTab = 'content'"
-                    class="flex items-center gap-2 py-3 px-4 text-xs font-black uppercase tracking-wider border-b-2 transition-all shrink-0"
-                    :class="activeTab === 'content' ? 'border-teal-600 text-teal-700 bg-teal-50/50 rounded-t-xl' : 'border-transparent text-gray-500 hover:text-gray-900'">
-                    <svg class="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    <span>Transcripción del Documento</span>
-                </button>
-
-                @if($attachmentsList->isNotEmpty())
-                    <button type="button" @click="activeTab = 'attachments'"
+            <div class="border-b border-gray-200 no-print flex items-center justify-between gap-2 overflow-x-auto">
+                <div class="flex items-center gap-2">
+                    <button type="button" @click="activeTab = 'pdf'"
                         class="flex items-center gap-2 py-3 px-4 text-xs font-black uppercase tracking-wider border-b-2 transition-all shrink-0"
-                        :class="activeTab === 'attachments' ? 'border-teal-600 text-teal-700 bg-teal-50/50 rounded-t-xl' : 'border-transparent text-gray-500 hover:text-gray-900'">
-                        <svg class="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
-                        <span>Anexos Adjuntos ({{ $attachmentsList->count() }})</span>
+                        :class="activeTab === 'pdf' ? 'border-teal-600 text-teal-700 bg-teal-50/50 rounded-t-xl' : 'border-transparent text-gray-500 hover:text-gray-900'">
+                        <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                        <span>Visor PDF Oficial Firmado</span>
                     </button>
-                @endif
+
+                    <button type="button" @click="activeTab = 'content'"
+                        class="flex items-center gap-2 py-3 px-4 text-xs font-black uppercase tracking-wider border-b-2 transition-all shrink-0"
+                        :class="activeTab === 'content' ? 'border-teal-600 text-teal-700 bg-teal-50/50 rounded-t-xl' : 'border-transparent text-gray-500 hover:text-gray-900'">
+                        <svg class="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        <span>Transcripción del Documento</span>
+                    </button>
+
+                    @if($attachmentsList->isNotEmpty())
+                        <button type="button" @click="activeTab = 'attachments'"
+                            class="flex items-center gap-2 py-3 px-4 text-xs font-black uppercase tracking-wider border-b-2 transition-all shrink-0"
+                            :class="activeTab === 'attachments' ? 'border-teal-600 text-teal-700 bg-teal-50/50 rounded-t-xl' : 'border-transparent text-gray-500 hover:text-gray-900'">
+                            <svg class="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                            <span>Anexos Adjuntos ({{ $attachmentsList->count() }})</span>
+                        </button>
+                    @endif
+                </div>
+
+                <!-- Width expand helper in tab row -->
+                <div x-show="activeTab === 'pdf'" class="hidden sm:flex items-center gap-1.5 pb-2">
+                    <button type="button" @click="toggleWidth()"
+                        class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold rounded-lg border border-gray-200 hover:bg-gray-100 text-gray-600 transition-colors"
+                        title="Expandir a lo ancho de la pantalla">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                        </svg>
+                        <span x-text="isExpandedWidth ? 'Reducir Ancho' : 'Ancho Completo'"></span>
+                    </button>
+                </div>
             </div>
 
-            <!-- TAB 1: VISOR PDF OFICIAL FIRMADO -->
-            <div x-show="activeTab === 'pdf'" class="space-y-4">
-                <!-- PDF Toolbar -->
-                <div class="p-4 bg-gray-50 rounded-2xl border border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+            <!-- TAB 1: VISOR PDF OFICIAL FIRMADO (REDIMENSIONABLE) -->
+            <div x-show="activeTab === 'pdf'" id="pdf-viewer-card" class="space-y-3">
+                <!-- PDF Toolbar con Controles de Redimensión -->
+                <div class="p-3.5 bg-gray-50 rounded-2xl border border-gray-200 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 text-xs">
+                    <!-- Title & CSV -->
                     <div class="flex items-center gap-2.5">
                         <span class="w-8 h-8 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -143,32 +194,107 @@
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-2 w-full sm:w-auto">
-                        <a href="{{ $pdfStreamUrl }}" target="_blank"
-                            class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 transition-colors">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    <!-- Dimension & Zoom Controls -->
+                    <div class="flex items-center gap-2 flex-wrap w-full lg:w-auto justify-start lg:justify-end">
+                        <!-- Botones de incremento / decremento fino -->
+                        <div class="inline-flex items-center bg-white border border-gray-200 rounded-xl p-0.5 shadow-2xs">
+                            <button type="button" @click="stepHeight(-150)"
+                                class="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                                title="Reducir altura (-150px)">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4"/></svg>
+                            </button>
+                            <span class="px-2 text-[11px] font-mono font-bold text-gray-600 select-none" x-text="viewerHeight + 'px'"></span>
+                            <button type="button" @click="stepHeight(150)"
+                                class="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                                title="Aumentar altura (+150px)">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                            </button>
+                        </div>
+
+                        <!-- Presets de Altura -->
+                        <div class="hidden sm:inline-flex items-center bg-white border border-gray-200 rounded-xl p-0.5 shadow-2xs">
+                            <button type="button" @click="setHeight(650)"
+                                :class="viewerHeight === 650 ? 'bg-teal-600 text-white font-bold' : 'text-gray-600 hover:text-gray-900'"
+                                class="px-2.5 py-1 text-[11px] rounded-lg transition-colors" title="Altura compacta (650px)">
+                                650
+                            </button>
+                            <button type="button" @click="setHeight(850)"
+                                :class="viewerHeight === 850 ? 'bg-teal-600 text-white font-bold' : 'text-gray-600 hover:text-gray-900'"
+                                class="px-2.5 py-1 text-[11px] rounded-lg transition-colors" title="Altura estándar (850px)">
+                                850
+                            </button>
+                            <button type="button" @click="setHeight(1200)"
+                                :class="viewerHeight === 1200 ? 'bg-teal-600 text-white font-bold' : 'text-gray-600 hover:text-gray-900'"
+                                class="px-2.5 py-1 text-[11px] rounded-lg transition-colors" title="Altura extendida (1200px)">
+                                1200
+                            </button>
+                        </div>
+
+                        <!-- Botón de Ancho Completo -->
+                        <button type="button" @click="toggleWidth()"
+                            :class="isExpandedWidth ? 'bg-teal-100 text-teal-800 border-teal-300 font-bold' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'"
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs border transition-all"
+                            title="Alternar entre ancho estándar y ancho completo de pantalla">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                            </svg>
+                            <span x-text="isExpandedWidth ? 'Ancho Estándar' : 'Ancho Completo'"></span>
+                        </button>
+
+                        <!-- Botón Pantalla Completa Nativos -->
+                        <button type="button" @click="toggleFullscreen()"
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 transition-colors"
+                            title="Modo pantalla completa">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
                             <span>Pantalla Completa</span>
+                        </button>
+
+                        <!-- Abrir pestaña / Descargar -->
+                        <a href="{{ $pdfStreamUrl }}" target="_blank"
+                            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 transition-colors"
+                            title="Abrir PDF en pestaña independiente">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                         </a>
+
                         <a href="{{ $pdfDownloadUrl }}"
-                            class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-teal-600 hover:bg-teal-700 text-white transition-all shadow-xs">
+                            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black bg-teal-600 hover:bg-teal-700 text-white transition-all shadow-xs">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                             <span>Descargar</span>
                         </a>
                     </div>
                 </div>
 
-                <!-- Embedded PDF Viewer -->
-                <div class="w-full bg-gray-100 rounded-2xl border border-gray-200 overflow-hidden shadow-inner">
-                    <iframe src="{{ $pdfStreamUrl }}#toolbar=1&navpanes=0"
-                            class="w-full h-[780px] border-0"
-                            title="Visor PDF Documento Oficial Firmado">
-                        <div class="p-8 text-center space-y-4">
-                            <p class="text-sm text-gray-600">Su navegador no soporta la visualización incrustada de PDFs.</p>
-                            <a href="{{ $pdfDownloadUrl }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black bg-teal-600 text-white">
-                                Descargar documento PDF
-                            </a>
+                <!-- Contenedor del Visor PDF Redimensionable con Tirador Inferior -->
+                <div class="relative bg-gray-100 rounded-2xl border border-gray-200 shadow-inner overflow-hidden flex flex-col">
+                    <div id="pdf-viewer-wrapper"
+                         class="w-full relative transition-[height] duration-75"
+                         :style="'height: ' + viewerHeight + 'px;'">
+                        <iframe id="pdf-viewer-iframe"
+                                src="{{ $pdfStreamUrl }}#toolbar=1&navpanes=0"
+                                class="w-full h-full border-0 block"
+                                title="Visor PDF Documento Oficial Firmado">
+                            <div class="p-8 text-center space-y-4">
+                                <p class="text-sm text-gray-600">Su navegador no soporta la visualización incrustada de PDFs.</p>
+                                <a href="{{ $pdfDownloadUrl }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black bg-teal-600 text-white">
+                                    Descargar documento PDF
+                                </a>
+                            </div>
+                        </iframe>
+                    </div>
+
+                    <!-- Tirador de Arrastre Vertical (Draggable Resizer Handle) -->
+                    <div id="pdf-resizer-handle"
+                         class="h-6 bg-gray-100 hover:bg-teal-600 text-gray-400 hover:text-white flex items-center justify-center cursor-row-resize select-none border-t border-gray-200 transition-colors group"
+                         title="Arrastra verticalmente para ajustar la altura del visor a tu medida">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-6 h-0.5 bg-gray-300 group-hover:bg-white rounded-full"></span>
+                            <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-white transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
+                            </svg>
+                            <span class="text-[10px] font-bold tracking-wider uppercase opacity-75 group-hover:opacity-100">Arrastrar para Redimensionar</span>
+                            <span class="w-6 h-0.5 bg-gray-300 group-hover:bg-white rounded-full"></span>
                         </div>
-                    </iframe>
+                    </div>
                 </div>
             </div>
 
@@ -290,5 +416,69 @@
             <p>{{ $publication->team->name }} · Tablón Edictal Oficial y Transparencia</p>
         </div>
     </footer>
+
+    <!-- Script de Arrastre para Redimensionar Visor PDF (Touch + Mouse) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const handle = document.getElementById('pdf-resizer-handle');
+            const wrapper = document.getElementById('pdf-viewer-wrapper');
+            const iframe = document.getElementById('pdf-viewer-iframe');
+            if (!handle || !wrapper || !iframe) return;
+
+            let isResizing = false;
+            let startY = 0;
+            let startHeight = 0;
+
+            function onStart(e) {
+                isResizing = true;
+                startY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+                startHeight = wrapper.offsetHeight;
+
+                // Deshabilitar temporalmente eventos en iframe para evitar que capture el cursor del ratón
+                iframe.style.pointerEvents = 'none';
+                document.body.style.cursor = 'row-resize';
+                document.body.style.userSelect = 'none';
+
+                window.addEventListener('mousemove', onMove);
+                window.addEventListener('mouseup', onEnd);
+                window.addEventListener('touchmove', onMove, { passive: false });
+                window.addEventListener('touchend', onEnd);
+            }
+
+            function onMove(e) {
+                if (!isResizing) return;
+                const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+                const delta = clientY - startY;
+                const newHeight = Math.max(380, Math.min(2400, Math.round(startHeight + delta)));
+
+                wrapper.style.height = newHeight + 'px';
+                localStorage.setItem('circuit_viewer_height', newHeight);
+
+                // Notificar a Alpine para mantener sincronizado el badge de altura
+                if (window.Alpine) {
+                    const bodyEl = document.querySelector('body');
+                    if (bodyEl && bodyEl._x_dataStack && bodyEl._x_dataStack[0]) {
+                        bodyEl._x_dataStack[0].viewerHeight = newHeight;
+                    }
+                }
+            }
+
+            function onEnd() {
+                if (!isResizing) return;
+                isResizing = false;
+                iframe.style.pointerEvents = 'auto';
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+
+                window.removeEventListener('mousemove', onMove);
+                window.removeEventListener('mouseup', onEnd);
+                window.removeEventListener('touchmove', onMove);
+                window.removeEventListener('touchend', onEnd);
+            }
+
+            handle.addEventListener('mousedown', onStart);
+            handle.addEventListener('touchstart', onStart, { passive: true });
+        });
+    </script>
 </body>
 </html>

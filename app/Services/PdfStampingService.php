@@ -30,7 +30,7 @@ class PdfStampingService
 
         // Generar el código QR y guardarlo temporalmente
         // QrCode devuelve un string con el contenido PNG
-        $qrContent = QrCode::format('png')->size(150)->margin(0)->generate($verificationUrl);
+        $qrContent = QrCode::format('png')->size(350)->margin(1)->errorCorrection('M')->generate($verificationUrl);
         $qrFile = tempnam(sys_get_temp_dir(), 'qr_') . '.png';
         file_put_contents($qrFile, $qrContent);
 
