@@ -42,6 +42,11 @@ class CircuitPublicationService
             ? (string) str($rawContent)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false])
             : '';
 
+        $cleanSummary = $data['summary'] ?? null;
+        if (empty($cleanSummary) && !empty($contentHtml)) {
+            $cleanSummary = (string) Str::of(strip_tags($contentHtml))->squish()->limit(280);
+        }
+
         // 2. Asegurar que el documento PDF oficial consolidado esté generado con todas sus firmas
         $pdfService = app(\App\Services\Circuits\CircuitPdfService::class);
         $pdfPath = $execution->signed_document_path;
@@ -98,7 +103,7 @@ class CircuitPublicationService
             'published_by_id' => $publisher->id,
             'title' => $data['title'] ?? $execution->title,
             'document_code' => $documentCode,
-            'summary' => $data['summary'] ?? ($circuitable?->description ? Str::limit(strip_tags($circuitable->description), 280) : null),
+            'summary' => $cleanSummary ?: null,
             'channel' => $data['channel'] ?? CircuitPublication::CHANNEL_INTERNAL,
             'status' => CircuitPublication::STATUS_PUBLISHED,
             'public_slug' => Str::slug($data['title'] ?? $execution->title) . '-' . Str::lower(Str::random(8)),

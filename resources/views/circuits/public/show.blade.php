@@ -132,13 +132,6 @@
                 </div>
             </div>
 
-            <!-- Summary / Extract -->
-            @if($publication->summary)
-                <div class="p-4 bg-teal-50/50 rounded-2xl border border-teal-100 text-sm text-teal-900 font-medium leading-relaxed">
-                    {{ $publication->summary }}
-                </div>
-            @endif
-
             <!-- Navigation Tabs -->
             <div class="border-b border-gray-200 no-print flex items-center justify-between gap-2 overflow-x-auto">
                 <div class="flex items-center gap-2">
