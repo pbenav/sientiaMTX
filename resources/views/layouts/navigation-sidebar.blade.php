@@ -192,6 +192,7 @@
                                             </span>
                                         @endif
                                     </a>
+                                    <div class="h-px bg-gray-100 dark:bg-gray-800/50 my-1.5 mx-3"></div>
                                     <a href="{{ route('teams.activities.index', $currentTeamId) }}"
                                         class="flex items-center gap-2 px-3 py-2 text-xs rounded-xl transition-all {{ request()->routeIs('teams.activities.*') || request()->routeIs('teams.tasks.*') ? 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 font-bold' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none"
