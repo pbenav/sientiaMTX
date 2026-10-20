@@ -39,15 +39,15 @@
 
         /* ── Cajetines de firmas ── */
         .signatures-section { margin-top: 0; page-break-inside: avoid; }
-        .signatures-grid { width: 100%; border-collapse: separate; border-spacing: 8px; }
-        .signature-cell { width: 50%; vertical-align: top; height: 100px; }
+        .signatures-grid { width: 100%; border-collapse: separate; border-spacing: 8px 10px; table-layout: fixed; }
+        .signature-cell { width: 50%; vertical-align: top; }
 
         .sig-box {
             border: 1.5px solid #e2e8f0;
             border-radius: 6px;
-            padding: 8px 12px;
-            height: 98px;
-            min-height: 98px;
+            padding: 8px 10px;
+            height: 124px;
+            min-height: 124px;
             position: relative;
             background: #ffffff;
             box-sizing: border-box;
@@ -62,17 +62,24 @@
             border-style: dashed;
         }
 
-        .sig-header { font-size: 8px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+        .sig-inner-table { width: 100%; border-collapse: collapse; }
+        .sig-inner-table td { vertical-align: top; padding: 0; }
+
+        .sig-header { font-size: 7.5px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
         .sig-header.signed { color: #059669; }
         .sig-header.pending { color: #94a3b8; }
 
-        .sig-check { font-family: 'DejaVu Sans', sans-serif; font-size: 13px; float: right; margin-top: -2px; color: #059669; }
-        .sig-name { font-size: 11px; font-weight: bold; color: #0f172a; margin-bottom: 1px; }
-        .sig-meta { font-size: 8.5px; color: #475569; margin-bottom: 2px; }
-        .sig-date { font-size: 8.5px; color: #059669; font-weight: bold; margin-top: 4px; }
-        .sig-hash { font-size: 7.5px; color: #475569; line-height: 1.25; margin-top: 3px; }
-        .sig-hash code { font-family: monospace; font-size: 6.8px; color: #334155; word-break: break-all; letter-spacing: 0.2px; }
-        .sig-comment { font-size: 8.5px; font-style: italic; color: #334155; margin-top: 3px; padding-top: 3px; border-top: 1px dotted #cbd5e1; }
+        .sig-check { font-family: 'DejaVu Sans', sans-serif; font-size: 10px; color: #059669; }
+        .sig-name { font-size: 10.5px; font-weight: bold; color: #0f172a; margin-bottom: 1px; }
+        .sig-meta { font-size: 8px; color: #475569; margin-bottom: 2px; }
+        .sig-date { font-size: 8px; color: #059669; font-weight: bold; margin-top: 2px; }
+        .sig-hash { font-size: 7px; color: #475569; margin-top: 2px; line-height: 1.2; }
+        .sig-hash code { font-family: monospace; font-size: 5.8px; color: #1e293b; word-break: break-all; }
+        .sig-comment { font-size: 7.5px; font-style: italic; color: #334155; margin-top: 2px; padding-top: 2px; border-top: 1px dotted #a7f3d0; }
+
+        .qr-cell { width: 56px; text-align: center; vertical-align: top; padding-left: 6px; padding-top: 2px; }
+        .qr-img { border: 1px solid #a7f3d0; padding: 2px; background: #ffffff; border-radius: 4px; }
+        .qr-label { font-size: 5.5px; color: #059669; font-weight: bold; text-transform: uppercase; margin-top: 2px; letter-spacing: 0.5px; text-align: center; }
 
         .footer { position: fixed; bottom: -2.5cm; left: 0; right: 0; font-size: 8px; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 6px; }
     </style>
@@ -236,43 +243,69 @@
                                             @php
                                                 $sigMethod = $step->signature_data['method'] ?? 'internal_certificate';
                                                 $isAutoFirma = in_array(strtolower($sigMethod), ['autofirma', 'manual_upload']);
-                                                $methodLabel = $isAutoFirma ? 'Firma Electrónica AutoFirma (PAdES)' : 'Conformidad Acreditada (CSV)';
+                                                $methodLabel = $isAutoFirma ? 'Firma Reconocida (AutoFirma PAdES)' : 'Conformidad Acreditada (CSV)';
                                                 $fullHash = $step->signature_data['sha256_hash'] ?? hash('sha256', 'CIRCUIT:' . $execution->id . '|STEP:' . $step->id . '|ORDER:' . $step->order . '|USER:' . ($step->action_taken_by_id ?? 0) . '|TS:' . ($step->signed_at?->timestamp ?? 0) . '|CSV:' . ($csv ?? ''));
+                                                $verifyUrl = route('public.circuits.verify', ['csv' => $csv ?? '']) . '?hash=' . $fullHash . '&step=' . $step->order;
+                                                $qrPng = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')->size(70)->margin(0)->generate($verifyUrl));
                                             @endphp
-                                            <div class="sig-header signed">
-                                                <span class="sig-check">&#10003;</span>
-                                                Etapa {{ $step->order }}: {{ $isAutoFirma ? 'Firma Electrónica Reconocida' : 'Conformidad Acreditada' }}
-                                            </div>
-                                            <div class="sig-name">{{ $step->signature_data['signer_name'] ?? $step->actionUser?->name ?? 'Usuario Certificado' }}</div>
-                                            <div class="sig-meta">
-                                                {{ $step->name }} — {{ $step->signature_data['signer_email'] ?? $step->actionUser?->email ?? '' }}
-                                            </div>
-                                            <div class="sig-date">
-                                                {{ $isAutoFirma ? 'Firmado' : 'Acreditado' }} el {{ $step->signed_at->format('d/m/Y \a \l\a\s H:i:s') }}
-                                            </div>
-                                            <div class="sig-hash">
-                                                <div><strong>Método:</strong> {{ $methodLabel }}</div>
-                                                <div style="margin-top: 2px;">
-                                                    <strong>Huella SHA-256:</strong><br>
-                                                    <code>{{ strtolower($fullHash) }}</code>
-                                                </div>
-                                            </div>
-                                            @if($step->comments)
-                                                <div class="sig-comment">
-                                                    "{{ \Illuminate\Support\Str::limit($step->comments, 90) }}"
-                                                </div>
-                                            @endif
+                                            <table class="sig-inner-table">
+                                                <tr>
+                                                    <td>
+                                                        <div class="sig-header signed">
+                                                            <span class="sig-check">&#10003;</span>
+                                                            Etapa {{ $step->order }}: {{ $isAutoFirma ? 'Firma Reconocida' : 'Conformidad Acreditada' }}
+                                                        </div>
+                                                        <div class="sig-name">{{ $step->signature_data['signer_name'] ?? $step->actionUser?->name ?? 'Usuario Certificado' }}</div>
+                                                        <div class="sig-meta">
+                                                            {{ $step->name }} — {{ $step->signature_data['signer_email'] ?? $step->actionUser?->email ?? '' }}
+                                                        </div>
+                                                        <div class="sig-date">
+                                                            {{ $isAutoFirma ? 'Firmado' : 'Acreditado' }} el {{ $step->signed_at->format('d/m/Y \a \l\a\s H:i:s') }}
+                                                        </div>
+                                                        <div class="sig-hash">
+                                                            <div><strong>Método:</strong> {{ $methodLabel }}</div>
+                                                            <div style="margin-top: 1px;">
+                                                                <strong>Huella SHA-256:</strong><br>
+                                                                <code>{{ strtolower($fullHash) }}</code>
+                                                            </div>
+                                                        </div>
+                                                        @if($step->comments)
+                                                            <div class="sig-comment">
+                                                                "{{ \Illuminate\Support\Str::limit($step->comments, 75) }}"
+                                                            </div>
+                                                        @endif
+                                                    </td>
+                                                    <td class="qr-cell">
+                                                        <img src="data:image/png;base64,{{ $qrPng }}" width="50" height="50" class="qr-img" alt="QR Verificación">
+                                                        <div class="qr-label">Verificar QR</div>
+                                                    </td>
+                                                </tr>
+                                            </table>
                                         @elseif(isset($signingStepId) && $step->id === $signingStepId)
-                                            <div class="sig-header signed">
-                                                <span class="sig-check">&#10003;</span>
-                                                Etapa {{ $step->order }}: Firma Electrónica Reconocida
-                                            </div>
-                                            <div class="sig-name">{{ $signingUser?->name ?? $step->actionUser?->name ?? $step->assignedUser?->name ?? 'Usuario Firmante' }}</div>
-                                            <div class="sig-meta">
-                                                {{ $step->name }} — {{ $signingUser?->email ?? $step->actionUser?->email ?? $step->assignedUser?->email ?? '' }}
-                                            </div>
-                                            <!-- Espacio reservado para que la rúbrica visual estampada por AutoFirma encaje en el cajetín -->
-                                            <div style="height: 52px;"></div>
+                                            @php
+                                                $verifyUrl = route('public.circuits.verify', ['csv' => $csv ?? '']) . '?step=' . $step->order;
+                                                $qrPng = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')->size(70)->margin(0)->generate($verifyUrl));
+                                            @endphp
+                                            <table class="sig-inner-table">
+                                                <tr>
+                                                    <td>
+                                                        <div class="sig-header signed">
+                                                            <span class="sig-check">&#10003;</span>
+                                                            Etapa {{ $step->order }}: Firma Reconocida
+                                                        </div>
+                                                        <div class="sig-name">{{ $signingUser?->name ?? $step->actionUser?->name ?? $step->assignedUser?->name ?? 'Usuario Firmante' }}</div>
+                                                        <div class="sig-meta">
+                                                            {{ $step->name }} — {{ $signingUser?->email ?? $step->actionUser?->email ?? $step->assignedUser?->email ?? '' }}
+                                                        </div>
+                                                        <!-- Espacio reservado para que la rúbrica visual estampada por AutoFirma encaje en el cajetín -->
+                                                        <div style="height: 52px;"></div>
+                                                    </td>
+                                                    <td class="qr-cell">
+                                                        <img src="data:image/png;base64,{{ $qrPng }}" width="50" height="50" class="qr-img" alt="QR Verificación">
+                                                        <div class="qr-label">Cotejo CSV</div>
+                                                    </td>
+                                                </tr>
+                                            </table>
                                         @else
                                             <div class="sig-header pending">
                                                 Etapa {{ $step->order }}: {{ $step->requires_signature ? 'Firma Electrónica' : 'Conformidad' }}
@@ -284,7 +317,7 @@
                                                 {{ $step->name }} ({{ $step->action_type_label }})
                                             </div>
                                             <!-- Espacio restante para que el sello de Autofirma encaje perfecto -->
-                                            <div style="height: 50px;"></div>
+                                            <div style="height: 52px;"></div>
                                         @endif
                                     </div>
                                 </td>

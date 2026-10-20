@@ -71,6 +71,10 @@ Route::get('/embed/files/{attachment}/{token}', [\App\Http\Controllers\PublicAtt
 Route::get('/tablon/{team}', [CircuitPublicBoardController::class, 'teamBoard'])->name('public.circuits.board');
 Route::get('/tablon/doc/{slug}', [CircuitPublicBoardController::class, 'show'])->name('public.circuits.show');
 
+// --- Verificación Pública y Cotejo de Documentos (CSV / Ley 39/2015) ---
+Route::get('/verificar/{csv?}', [\App\Http\Controllers\Circuits\CircuitVerificationController::class, 'show'])->name('public.circuits.verify');
+Route::get('/verificar/{csv}/descargar', [\App\Http\Controllers\Circuits\CircuitVerificationController::class, 'download'])->name('public.circuits.verify.download');
+
 // --- Firma Digital de Acuerdos ---
 // GET (show + download): protegidas por signed URL (se envían por email)
 Route::prefix('agreements/signature')->name('agreements.signature.')->group(function () {
