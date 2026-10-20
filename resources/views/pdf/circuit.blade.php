@@ -5,7 +5,7 @@
     <title>Diligencia de Tramitación - {{ $execution->title }}</title>
     <style>
         @page { size: A4; margin: 2.5cm 2cm 3.5cm 2cm; }
-        body { font-family: 'Helvetica', 'Arial', sans-serif; color: #1e293b; line-height: 1.5; margin: 0; padding: 0; font-size: 12px; }
+        body { font-family: 'DejaVu Sans', 'Helvetica', 'Arial', sans-serif; color: #1e293b; line-height: 1.5; margin: 0; padding: 0; font-size: 12px; }
 
         .header { border-bottom: 2px solid #7c3aed; padding-bottom: 12px; margin-bottom: 24px; }
         .logo-text { font-weight: 900; font-size: 20px; color: #0f172a; letter-spacing: -0.04em; }
@@ -46,8 +46,8 @@
             border: 1.5px solid #e2e8f0;
             border-radius: 6px;
             padding: 8px 12px;
-            height: 92px;
-            min-height: 92px;
+            height: 98px;
+            min-height: 98px;
             position: relative;
             background: #ffffff;
             box-sizing: border-box;
@@ -66,12 +66,13 @@
         .sig-header.signed { color: #059669; }
         .sig-header.pending { color: #94a3b8; }
 
-        .sig-check { font-size: 13px; float: right; margin-top: -2px; color: #059669; }
+        .sig-check { font-family: 'DejaVu Sans', sans-serif; font-size: 13px; float: right; margin-top: -2px; color: #059669; }
         .sig-name { font-size: 11px; font-weight: bold; color: #0f172a; margin-bottom: 1px; }
         .sig-meta { font-size: 8.5px; color: #475569; margin-bottom: 2px; }
         .sig-date { font-size: 8.5px; color: #059669; font-weight: bold; margin-top: 4px; }
-        .sig-hash { font-size: 7.5px; color: #64748b; font-family: monospace; word-break: break-all; margin-top: 4px; }
-        .sig-comment { font-size: 9px; font-style: italic; color: #334155; margin-top: 4px; padding-top: 4px; border-top: 1px dotted #cbd5e1; }
+        .sig-hash { font-size: 7.5px; color: #475569; line-height: 1.25; margin-top: 3px; }
+        .sig-hash code { font-family: monospace; font-size: 6.8px; color: #334155; word-break: break-all; letter-spacing: 0.2px; }
+        .sig-comment { font-size: 8.5px; font-style: italic; color: #334155; margin-top: 3px; padding-top: 3px; border-top: 1px dotted #cbd5e1; }
 
         .footer { position: fixed; bottom: -2.5cm; left: 0; right: 0; font-size: 8px; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 6px; }
     </style>
@@ -195,8 +196,8 @@
                         <span class="status-badge {{ $stClass }}">{{ $stLabel }}</span>
                     </td>
                     <td style="text-align: center;">
-                        @if($step->signed_at)
-                            <span style="color: #059669; font-weight: bold; font-size: 9px;">✓ Firmado</span>
+                        @if($step->signed_at || (isset($signingStepId) && $step->id === $signingStepId))
+                            <span style="color: #059669; font-weight: bold; font-size: 9px;"><span style="font-family: 'DejaVu Sans', sans-serif;">&#10003;</span> Firmado</span>
                         @elseif($step->requires_signature)
                             <span style="color: #d97706; font-size: 8px; font-weight: bold;">Requerida</span>
                         @else
@@ -232,26 +233,46 @@
                                 <td class="signature-cell">
                                     <div class="sig-box {{ $step->signed_at ? 'signed' : 'pending' }}">
                                         @if($step->signed_at)
+                                            @php
+                                                $sigMethod = $step->signature_data['method'] ?? 'internal_certificate';
+                                                $isAutoFirma = in_array(strtolower($sigMethod), ['autofirma', 'manual_upload']);
+                                                $methodLabel = $isAutoFirma ? 'Firma Electrónica AutoFirma (PAdES)' : 'Conformidad Acreditada (CSV)';
+                                                $fullHash = $step->signature_data['sha256_hash'] ?? hash('sha256', 'CIRCUIT:' . $execution->id . '|STEP:' . $step->id . '|ORDER:' . $step->order . '|USER:' . ($step->action_taken_by_id ?? 0) . '|TS:' . ($step->signed_at?->timestamp ?? 0) . '|CSV:' . ($csv ?? ''));
+                                            @endphp
                                             <div class="sig-header signed">
-                                                <span class="sig-check">✓</span>
-                                                Etapa {{ $step->order }}: Firma Electrónica Reconocida
+                                                <span class="sig-check">&#10003;</span>
+                                                Etapa {{ $step->order }}: {{ $isAutoFirma ? 'Firma Electrónica Reconocida' : 'Conformidad Acreditada' }}
                                             </div>
                                             <div class="sig-name">{{ $step->signature_data['signer_name'] ?? $step->actionUser?->name ?? 'Usuario Certificado' }}</div>
                                             <div class="sig-meta">
                                                 {{ $step->name }} — {{ $step->signature_data['signer_email'] ?? $step->actionUser?->email ?? '' }}
                                             </div>
                                             <div class="sig-date">
-                                                Firmado el {{ $step->signed_at->format('d/m/Y \a \l\a\s H:i:s') }}
+                                                {{ $isAutoFirma ? 'Firmado' : 'Acreditado' }} el {{ $step->signed_at->format('d/m/Y \a \l\a\s H:i:s') }}
                                             </div>
                                             <div class="sig-hash">
-                                                Método: {{ strtoupper($step->signature_data['method'] ?? 'Certificado Digital') }}
-                                                | Algoritmo: {{ $step->signature_data['algorithm'] ?? 'SHA-256 / RSA' }}
+                                                <div><strong>Método:</strong> {{ $methodLabel }}</div>
+                                                <div style="margin-top: 2px;">
+                                                    <strong>Huella SHA-256:</strong><br>
+                                                    <code>{{ strtolower($fullHash) }}</code>
+                                                </div>
                                             </div>
                                             @if($step->comments)
                                                 <div class="sig-comment">
                                                     "{{ \Illuminate\Support\Str::limit($step->comments, 90) }}"
                                                 </div>
                                             @endif
+                                        @elseif(isset($signingStepId) && $step->id === $signingStepId)
+                                            <div class="sig-header signed">
+                                                <span class="sig-check">&#10003;</span>
+                                                Etapa {{ $step->order }}: Firma Electrónica Reconocida
+                                            </div>
+                                            <div class="sig-name">{{ $signingUser?->name ?? $step->actionUser?->name ?? $step->assignedUser?->name ?? 'Usuario Firmante' }}</div>
+                                            <div class="sig-meta">
+                                                {{ $step->name }} — {{ $signingUser?->email ?? $step->actionUser?->email ?? $step->assignedUser?->email ?? '' }}
+                                            </div>
+                                            <!-- Espacio reservado para que la rúbrica visual estampada por AutoFirma encaje en el cajetín -->
+                                            <div style="height: 52px;"></div>
                                         @else
                                             <div class="sig-header pending">
                                                 Etapa {{ $step->order }}: {{ $step->requires_signature ? 'Firma Electrónica' : 'Conformidad' }}

@@ -25,8 +25,11 @@ class CircuitPdfService
     /**
      * Genera o actualiza el documento PDF consolidado con todas las firmas del circuito.
      */
-    public function generateAndAttach(CircuitExecution $execution): string
-    {
+    public function generateAndAttach(
+        CircuitExecution $execution,
+        ?\App\Models\CircuitExecutionStep $signingStep = null,
+        ?\App\Models\User $signingUser = null
+    ): string {
         $execution->loadMissing([
             'steps.assignedUser',
             'steps.assignedRole',
@@ -61,14 +64,44 @@ class CircuitPdfService
             $execution->updateQuietly(['metadata' => $meta]);
         }
 
+        // Si se prepara el documento para la firma del paso actual, reflejarlo aprobado en la diligencia
+        $allSteps = $execution->steps()->orderBy('order', 'asc')->get();
+        $simulatedExecution = $execution;
+
+        if ($signingStep) {
+            $hasRemainingSteps = $execution->steps()
+                ->where('order', '>', $signingStep->order)
+                ->where('status', '!=', \App\Models\CircuitExecutionStep::STATUS_APPROVED)
+                ->exists();
+
+            if (!$hasRemainingSteps) {
+                $simulatedExecution = clone $execution;
+                $simulatedExecution->status = CircuitExecution::STATUS_APPROVED;
+            }
+
+            $allSteps = $allSteps->map(function ($s) use ($signingStep, $signingUser) {
+                if ($s->id === $signingStep->id) {
+                    $clone = clone $s;
+                    $clone->status = \App\Models\CircuitExecutionStep::STATUS_APPROVED;
+                    if ($signingUser) {
+                        $clone->setRelation('actionUser', $signingUser);
+                    }
+                    return $clone;
+                }
+                return $s;
+            });
+        }
+
         // 3. Renderizar la vista Blade del documento oficial
         $pdf = Pdf::loadView('pdf.circuit', [
-            'execution'   => $execution,
-            'team'        => $team,
-            'circuitable' => $circuitable,
-            'contentHtml' => $contentHtml,
-            'steps'       => $execution->steps()->orderBy('order', 'asc')->get(),
-            'csv'         => $csv,
+            'execution'     => $simulatedExecution,
+            'team'          => $team,
+            'circuitable'   => $circuitable,
+            'contentHtml'   => $contentHtml,
+            'steps'         => $allSteps,
+            'csv'           => $csv,
+            'signingStepId' => $signingStep?->id,
+            'signingUser'   => $signingUser,
         ]);
 
         $pdf->setPaper('A4', 'portrait');

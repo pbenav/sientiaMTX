@@ -385,8 +385,8 @@
                                         <label class="block text-[10px] font-bold uppercase tracking-wider text-violet-200 mb-1">Método de Firma Digital</label>
                                         <select name="signature_method" x-model="sigMethod"
                                             class="w-full text-xs rounded-xl bg-white/20 border-white/30 text-white focus:bg-white focus:text-gray-900 focus:ring-white">
-                                            <option value="internal_certificate" class="text-gray-900">Firma Electrónica Acreditada (Sientia.MTX)</option>
-                                            <option value="autofirma" class="text-gray-900">Certificado Digital (AutoFirma / DNIe)</option>
+                                            <option value="internal_certificate" class="text-gray-900">Conformidad Acreditada con CSV (Sientia.MTX)</option>
+                                            <option value="autofirma" class="text-gray-900">Firma Cualificada (AutoFirma / DNIe)</option>
                                             <option value="manual_upload" class="text-gray-900">Subir PDF firmado externamente</option>
                                         </select>
                                     </div>

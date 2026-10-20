@@ -226,12 +226,26 @@ class CircuitExecutionService
                 $isSigning = $step->requires_signature || !empty($additionalData['sign_now']) || !empty($additionalData['signature_data']);
                 if ($isSigning) {
                     $sigMethod = $additionalData['signature_method'] ?? 'internal_certificate';
+                    $csv = $execution->metadata['csv'] ?? '';
+                    $evidencePayload = implode('|', [
+                        'CIRCUIT:' . $execution->id,
+                        'STEP:' . $step->id,
+                        'ORDER:' . $step->order,
+                        'USER:' . $user->id,
+                        'EMAIL:' . $user->email,
+                        'TS:' . now()->toIso8601String(),
+                        'CSV:' . $csv,
+                        'COMMENTS:' . ($comments ?? ''),
+                    ]);
+                    $calcHash = hash('sha256', $evidencePayload);
+
                     $sigData = array_merge([
                         'method' => $sigMethod,
                         'signer_name' => $user->name,
                         'signer_email' => $user->email,
                         'algorithm' => $additionalData['signature_algorithm'] ?? 'SHA256withRSA',
                         'certificate_subject' => $additionalData['certificate_subject'] ?? $user->name,
+                        'sha256_hash' => $additionalData['signature_data']['sha256_hash'] ?? $calcHash,
                         'ip' => request()->ip() ?? '127.0.0.1',
                         'user_agent' => request()->userAgent() ?? 'System',
                         'timestamp' => now()->toIso8601String(),

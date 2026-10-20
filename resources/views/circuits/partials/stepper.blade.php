@@ -166,7 +166,11 @@
                                             <div>
                                                 <div class="font-bold flex items-center gap-1.5">
                                                     <span>Firmado Electrónicamente</span>
-                                                    <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 font-semibold">{{ strtoupper($step->signature_data['method'] ?? 'Certificado PAdES') }}</span>
+                                                    @php
+                                                        $m = strtolower($step->signature_data['method'] ?? '');
+                                                        $badgeText = in_array($m, ['autofirma', 'manual_upload']) ? 'AUTOFIRMA PAdES' : 'CONFORMIDAD CSV';
+                                                    @endphp
+                                                    <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 font-semibold">{{ $badgeText }}</span>
                                                 </div>
                                                 <div class="text-[11px] text-emerald-700 dark:text-emerald-400">
                                                     Por {{ $step->signature_data['signer_name'] ?? $step->actionUser?->name }} ({{ $step->signature_data['signer_email'] ?? $step->actionUser?->email }})

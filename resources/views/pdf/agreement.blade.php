@@ -5,7 +5,7 @@
     <title>Acuerdo - {{ $activity->title }}</title>
     <style>
         @page { size: A4; margin: 2.5cm 2cm 3.5cm 2cm; }
-        body { font-family: 'Helvetica', 'Arial', sans-serif; color: #1e293b; line-height: 1.6; margin: 0; padding: 0; font-size: 13px; }
+        body { font-family: 'DejaVu Sans', 'Helvetica', 'Arial', sans-serif; color: #1e293b; line-height: 1.6; margin: 0; padding: 0; font-size: 13px; }
 
         .header { border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 30px; }
         .logo-text { font-weight: 900; font-size: 22px; color: #0f172a; letter-spacing: -0.04em; }
@@ -52,7 +52,7 @@
         .sig-header.signed { color: #059669; }
         .sig-header.pending { color: #94a3b8; }
 
-        .sig-check { font-size: 14px; float: right; margin-top: -2px; }
+        .sig-check { font-family: 'DejaVu Sans', sans-serif; font-size: 14px; float: right; margin-top: -2px; }
         .sig-name { font-size: 11px; font-weight: bold; color: #1e293b; margin-bottom: 2px; }
         .sig-email { font-size: 9px; color: #64748b; font-family: monospace; margin-bottom: 6px; }
         .sig-role { font-size: 9px; color: #94a3b8; }
@@ -159,7 +159,7 @@
                                         @if(!empty($signer['signed_at']))
                                             <div class="sig-header signed">
                                                 {{ __('Electronically Signed') }}
-                                                <span class="sig-check">✓</span>
+                                                <span class="sig-check">&#10003;</span>
                                             </div>
                                             <div class="sig-name">{{ $signer['name'] }}</div>
                                             <div class="sig-email">{{ $signer['email'] }}</div>

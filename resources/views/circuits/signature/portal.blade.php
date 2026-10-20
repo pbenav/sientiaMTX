@@ -43,25 +43,41 @@
         </div>
     </header>
 
-    <main class="flex-1 overflow-hidden flex flex-col md:flex-row">
-        {{-- Lado Izquierdo: Previsualización del Documento PDF Oficial --}}
-        <div class="flex-1 bg-gray-200 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-800 p-4 flex flex-col">
+    <main id="portal-split-container" class="flex-1 overflow-hidden flex flex-col md:flex-row relative">
+        {{-- Lado Izquierdo: Previsualización del Documento PDF Oficial (Redimensionable) --}}
+        <div id="pdf-split-panel" class="w-full md:w-[65%] bg-gray-100 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-800 p-3 sm:p-4 flex flex-col min-w-[280px]">
             <div class="flex items-center justify-between pb-2 mb-2 text-xs font-bold text-gray-600 dark:text-gray-300">
                 <span class="flex items-center gap-1.5">
                     <svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     Diligencia Oficial en Tramitación
                 </span>
-                <a href="{{ route('teams.circuits.document', [$team, $circuit, 'download' => 1]) }}" download class="text-violet-600 dark:text-violet-400 hover:underline text-[11px] font-semibold">
-                    Descargar copia PDF
-                </a>
+                <div class="flex items-center gap-2">
+                    {{-- Botones de ajuste de ancho rápido --}}
+                    <div class="hidden sm:flex items-center bg-gray-200 dark:bg-gray-700/60 rounded-lg p-0.5 text-[10px] font-bold text-gray-600 dark:text-gray-300">
+                        <button type="button" onclick="setSplitRatio(50)" class="px-2 py-0.5 rounded hover:bg-white dark:hover:bg-gray-600 transition-colors" title="50% visor / 50% controles">50%</button>
+                        <button type="button" onclick="setSplitRatio(65)" class="px-2 py-0.5 rounded hover:bg-white dark:hover:bg-gray-600 transition-colors active font-black text-violet-600 dark:text-violet-400" title="65% visor / 35% controles">65%</button>
+                        <button type="button" onclick="setSplitRatio(80)" class="px-2 py-0.5 rounded hover:bg-white dark:hover:bg-gray-600 transition-colors" title="80% visor / 20% controles">80%</button>
+                    </div>
+                    <a href="{{ route('teams.circuits.document', [$team, $circuit, 'download' => 1, 'for_step' => $step->id]) }}" download class="text-violet-600 dark:text-violet-400 hover:underline text-[11px] font-semibold flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        <span>Descargar PDF</span>
+                    </a>
+                </div>
             </div>
-            <div class="w-full flex-1 bg-white dark:bg-gray-900 rounded-2xl shadow-inner overflow-hidden border border-gray-300 dark:border-gray-700">
-                <iframe src="{{ route('teams.circuits.document', [$team, $circuit]) }}" class="w-full h-full" title="Diligencia de tramitación"></iframe>
+            <div class="w-full flex-1 bg-white dark:bg-gray-900 rounded-2xl shadow-inner overflow-hidden border border-gray-300 dark:border-gray-700 relative">
+                <iframe id="pdf-viewer-iframe" src="{{ route('teams.circuits.document', [$team, $circuit, 'for_step' => $step->id]) }}" class="w-full h-full border-0" title="Diligencia de tramitación"></iframe>
             </div>
         </div>
 
+        {{-- Divisor Redimensionable (Resizer Handle) --}}
+        <div id="split-resizer"
+             class="hidden md:flex items-center justify-center w-2.5 hover:w-3 bg-gray-200 hover:bg-violet-500 dark:bg-gray-800 dark:hover:bg-violet-600 cursor-col-resize select-none transition-all group z-30 shrink-0"
+             title="Arrastra para redimensionar el visor">
+            <div class="h-8 w-1 rounded-full bg-gray-400 dark:bg-gray-600 group-hover:bg-white transition-colors"></div>
+        </div>
+
         {{-- Lado Derecho: Controles del Asistente de Firma --}}
-        <div class="w-full md:w-104 bg-white dark:bg-gray-900 p-6 sm:p-8 flex flex-col shadow-xl z-10 shrink-0 overflow-y-auto">
+        <div id="controls-split-panel" class="flex-1 bg-white dark:bg-gray-900 p-6 sm:p-8 flex flex-col shadow-xl z-10 min-w-[340px] overflow-y-auto">
             <div class="mb-4">
                 <span class="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300">
                     Paso {{ $step->order }}: {{ $step->action_type_label }}
@@ -114,7 +130,7 @@
                 <p class="text-xs text-amber-800 dark:text-amber-300 mb-3 leading-relaxed">
                     Si no dispones de AutoFirma en este ordenador, puedes descargar el PDF, firmarlo con tu aplicación externa habitual y subir el archivo firmado.
                 </p>
-                <a href="{{ route('teams.circuits.document', [$team, $circuit, 'download' => 1]) }}"
+                <a href="{{ route('teams.circuits.document', [$team, $circuit, 'download' => 1, 'for_step' => $step->id]) }}"
                    class="block text-center text-xs font-bold text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 rounded-xl py-2 mb-3 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors" download>
                     ⬇ Descargar PDF para firmar
                 </a>
@@ -148,9 +164,9 @@
 
                     <button type="button" id="btn-internal-sign"
                             class="w-full py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 font-bold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 border border-gray-200 dark:border-gray-700"
-                            title="Aplica una firma electrónica acreditada mediante sello digital del servidor">
+                            title="Aplica una conformidad administrativa acreditada mediante registro del sistema con CSV">
                         <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                        <span>Firma Electrónica Acreditada (Sientia.MTX)</span>
+                        <span>Conformidad Acreditada (CSV)</span>
                     </button>
                 </form>
 
@@ -164,11 +180,80 @@
     </main>
 
     <script>
-        const DOWNLOAD_URL  = '{{ route('teams.circuits.document', [$team, $circuit]) }}';
+        const DOWNLOAD_URL  = '{{ route('teams.circuits.document', [$team, $circuit, 'for_step' => $step->id]) }}';
         const PROCESS_URL   = '{{ route('teams.circuits.steps.process', [$team, $circuit, $step]) }}';
         const CSRF_TOKEN    = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         const STEP_POSITION = {{ $stepIndex ?? max(0, $step->order - 1) }};
         const EXISTING_SIGNATURES = {{ $existingSignaturesCount }};
+
+        // ─── Redimensionamiento de Paneles (Split Resizer) ──────────────────
+        (function() {
+            const container = document.getElementById('portal-split-container');
+            const pdfPanel = document.getElementById('pdf-split-panel');
+            const resizer = document.getElementById('split-resizer');
+            const iframe = document.getElementById('pdf-viewer-iframe');
+
+            if (!container || !pdfPanel || !resizer) return;
+
+            // Cargar proporción guardada (por defecto 65% para lectura óptima del documento)
+            const savedRatio = localStorage.getItem('sientia_circuit_split_ratio');
+            const initialRatio = savedRatio ? parseFloat(savedRatio) : 65;
+            if (window.innerWidth >= 768 && initialRatio >= 25 && initialRatio <= 85) {
+                pdfPanel.style.width = initialRatio + '%';
+            }
+
+            window.setSplitRatio = function(ratio) {
+                if (window.innerWidth < 768) return;
+                pdfPanel.style.width = ratio + '%';
+                localStorage.setItem('sientia_circuit_split_ratio', ratio);
+            };
+
+            let isDragging = false;
+
+            function onMouseDown(e) {
+                if (window.innerWidth < 768) return;
+                isDragging = true;
+                document.body.style.cursor = 'col-resize';
+                document.body.style.userSelect = 'none';
+                if (iframe) iframe.style.pointerEvents = 'none'; // Evita interferencia del iframe con el cursor
+            }
+
+            function onMouseMove(e) {
+                if (!isDragging) return;
+                const clientX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0].clientX);
+                if (clientX === undefined) return;
+
+                const rect = container.getBoundingClientRect();
+                const totalWidth = rect.width;
+                const offsetX = clientX - rect.left;
+
+                // Restricciones: Mínimo 280px para visor, mínimo 340px para controles de firma
+                const minPdfPx = Math.max(280, totalWidth * 0.25);
+                const maxPdfPx = Math.min(totalWidth - 340, totalWidth * 0.85);
+
+                const clampedPx = Math.max(minPdfPx, Math.min(maxPdfPx, offsetX));
+                const ratio = (clampedPx / totalWidth) * 100;
+
+                pdfPanel.style.width = ratio.toFixed(2) + '%';
+                localStorage.setItem('sientia_circuit_split_ratio', ratio.toFixed(2));
+            }
+
+            function onMouseUp() {
+                if (!isDragging) return;
+                isDragging = false;
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+                if (iframe) iframe.style.pointerEvents = 'auto';
+            }
+
+            resizer.addEventListener('mousedown', onMouseDown);
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mouseup', onMouseUp);
+
+            resizer.addEventListener('touchstart', onMouseDown, { passive: true });
+            window.addEventListener('touchmove', onMouseMove, { passive: true });
+            window.addEventListener('touchend', onMouseUp);
+        })();
 
         // Inicialización de AutoFirma / AutoScript
         window.addEventListener('DOMContentLoaded', () => {
@@ -190,17 +275,17 @@
                 : 'Ocultar firma manual';
         });
 
-        // Firma Interna Sientia
+        // Conformidad Acreditada con CSV
         document.getElementById('btn-internal-sign').addEventListener('click', function() {
             const comments = document.getElementById('step-comments').value;
             document.getElementById('internal-comments-input').value = comments;
 
             Swal.fire({
-                title: '¿Firmar con acreditación digital Sientia.MTX?',
-                text: 'Se estampará tu firma electrónica acreditada con Código Seguro de Verificación (CSV) y registro de auditoría.',
+                title: '¿Registrar Conformidad Acreditada (CSV)?',
+                text: 'Se estampará tu conformidad oficial con Código Seguro de Verificación (CSV), huella SHA-256 completa y registro de auditoría.',
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonText: 'Sí, firmar y aprobar',
+                confirmButtonText: 'Sí, registrar conformidad',
                 cancelButtonText: 'Cancelar',
                 confirmButtonColor: '#7c3aed',
             }).then(result => {

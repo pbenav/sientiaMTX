@@ -187,12 +187,9 @@ class CircuitExecutionController extends Controller
                 ->with('error', 'No tienes permisos asignados para firmar o resolver este paso.');
         }
 
-        // Asegurar que el PDF base de la tramitación está generado
+        // Preparar el PDF de la tramitación sincronizado y listo para la firma del paso actual
         $pdfService = app(\App\Services\Circuits\CircuitPdfService::class);
-        $pdfPath = $circuit->signed_document_path;
-        if (!$pdfPath || !\Illuminate\Support\Facades\Storage::disk('local')->exists($pdfPath)) {
-            $pdfPath = $pdfService->generateAndAttach($circuit);
-        }
+        $pdfPath = $pdfService->generateAndAttach($circuit, $step, Auth::user());
 
         $allSteps = $circuit->steps()->orderBy('order', 'asc')->get();
         $stepIndex = $allSteps->search(fn($s) => $s->id === $step->id);
@@ -258,12 +255,14 @@ class CircuitExecutionController extends Controller
             if ($request->hasFile('signed_file')) {
                 $file = $request->file('signed_file');
                 $path = $file->store("circuits/{$circuit->id}/firmas", 'local');
+                $fileHash = hash_file('sha256', $file->getRealPath());
                 $sigMethod = $request->input('signature_method', 'autofirma');
                 $additionalData['signature_method'] = $sigMethod;
                 $additionalData['signature_data'] = [
                     'signed_file_path' => $path,
                     'file_name' => $file->getClientOriginalName(),
                     'file_size' => $file->getSize(),
+                    'sha256_hash' => $fileHash,
                     'method' => $sigMethod,
                     'signer_name' => Auth::user()->name,
                     'signer_email' => Auth::user()->email,
@@ -324,7 +323,19 @@ class CircuitExecutionController extends Controller
         }
 
         $pdfService = app(\App\Services\Circuits\CircuitPdfService::class);
-        $filePath = $circuit->signed_document_path;
+        $filePath = null;
+
+        // Si se solicita el PDF preparado específicamente para la firma de un paso en curso
+        if ($forStepId = $request->query('for_step')) {
+            $signingStep = $circuit->steps()->find($forStepId);
+            if ($signingStep && $signingStep->canUserAct(Auth::user(), $circuit)) {
+                $filePath = $pdfService->generateAndAttach($circuit, $signingStep, Auth::user());
+            }
+        }
+
+        if (!$filePath) {
+            $filePath = $circuit->signed_document_path;
+        }
 
         if (!$filePath || !\Illuminate\Support\Facades\Storage::disk('local')->exists($filePath)) {
             $filePath = $pdfService->generateAndAttach($circuit);
