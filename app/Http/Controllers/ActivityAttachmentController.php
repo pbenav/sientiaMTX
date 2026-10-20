@@ -75,7 +75,8 @@ class ActivityAttachmentController extends Controller
         $isValidPath = \Illuminate\Support\Str::startsWith($attachment->file_path, "activities/{$activity->id}/") ||
                        \Illuminate\Support\Str::startsWith($attachment->file_path, "attachments/activities/{$activity->id}/") ||
                        \Illuminate\Support\Str::startsWith($attachment->file_path, "attachments/tasks/{$activity->id}/") ||
-                       \Illuminate\Support\Str::startsWith($attachment->file_path, "tasks/{$activity->id}/");
+                       \Illuminate\Support\Str::startsWith($attachment->file_path, "tasks/{$activity->id}/") ||
+                       \Illuminate\Support\Str::startsWith($attachment->file_path, "circuits/");
         if (!$isValidPath) {
             abort(403, 'Ruta de archivo no válida.');
         }
@@ -110,7 +111,8 @@ class ActivityAttachmentController extends Controller
         $isValidPath = \Illuminate\Support\Str::startsWith($attachment->file_path, "activities/{$activity->id}/") ||
                        \Illuminate\Support\Str::startsWith($attachment->file_path, "attachments/activities/{$activity->id}/") ||
                        \Illuminate\Support\Str::startsWith($attachment->file_path, "attachments/tasks/{$activity->id}/") ||
-                       \Illuminate\Support\Str::startsWith($attachment->file_path, "tasks/{$activity->id}/");
+                       \Illuminate\Support\Str::startsWith($attachment->file_path, "tasks/{$activity->id}/") ||
+                       \Illuminate\Support\Str::startsWith($attachment->file_path, "circuits/");
         if (!$isValidPath) {
             abort(403, 'Ruta de archivo no válida.');
         }

@@ -23,18 +23,22 @@ class AuditTrailMiddleware
         $requestId = $request->header('X-Request-ID', (string) Str::uuid());
         $request->headers->set('X-Request-ID', $requestId);
 
-        // 2. Filtrar y sanear datos sensibles antes de registrar (Log Sanitization H-19)
+        // 2. Procesar petición a través de la cadena de middleware (inicia sesión y resuelve autenticación)
+        $response = $next($request);
+
+        // 3. Filtrar y sanear datos sensibles antes de registrar (Log Sanitization H-19)
         $payload = $request->except([
             'password', 'password_confirmation', 'current_password', 
             'secret', 'token', 'two_factor_code', 'recovery_code', 
             'api_key', 'authorization', '_token'
         ]);
 
-        // 3. Rastro de Auditoría Inmutable (HIPAA 164.312(b) & SOC 2 CC7.1 / M-11)
+        // 4. Rastro de Auditoría Inmutable (HIPAA 164.312(b) & SOC 2 CC7.1 / M-11)
         if ($request->method() !== 'GET' || $request->is('api/*') || $request->is('login') || $request->is('teams/*')) {
             Log::info('AUDIT_TRAIL', [
                 'request_id' => $requestId,
                 'user_id' => auth()->id() ?? 'guest',
+                'status' => $response instanceof Response ? $response->getStatusCode() : 200,
                 'ip_address' => $request->ip(),
                 'method' => $request->method(),
                 'url' => $request->fullUrl(),
@@ -42,9 +46,6 @@ class AuditTrailMiddleware
                 'sane_payload' => empty($payload) ? null : json_encode($payload, JSON_UNESCAPED_UNICODE),
             ]);
         }
-
-        // 4. Procesar petición
-        $response = $next($request);
 
         // 5. Adjuntar X-Request-ID en la respuesta
         if ($response instanceof Response) {

@@ -343,8 +343,9 @@
             const endX = startX + 165; // Deja margen para el código QR a la derecha del cajetín
 
             // Coordenadas Y: Empezamos en la altura del cajetín correspondiente a la etapa en la página dedicada
-            const yEnd = 640 - (rowIndex * 134);
-            const yStart = yEnd - 50;
+            // Ajustado a 622 para que la rúbrica caiga exactamente en el hueco reservado bajo el nombre y email
+            const yEnd = 622 - (rowIndex * 134);
+            const yStart = yEnd - 48;
 
             const extraParams = "signatureFormat=PADES-BES\n" +
                                 "signaturePage=-1\n" +

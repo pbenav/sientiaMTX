@@ -488,11 +488,11 @@
                                 @php
                                     $isPdf = str_contains($att->mime_type ?? '', 'pdf') || str_ends_with(strtolower($att->file_name ?? ''), '.pdf');
                                     $downloadUrl = $circuit->circuitable instanceof \App\Models\Activity
-                                        ? route('teams.activities.attachments.download', [$team, $circuit->circuitable, $att])
-                                        : route('teams.attachments.download', [$team, $att]);
+                                        ? route('teams.activities.attachments.download', [$team, $circuit->circuitable, $att], false)
+                                        : route('teams.attachments.download', [$team, $att], false);
                                     $viewUrl = $circuit->circuitable instanceof \App\Models\Activity
-                                        ? route('teams.activities.attachments.view', [$team, $circuit->circuitable, $att])
-                                        : route('teams.attachments.view', [$team, $att]);
+                                        ? route('teams.activities.attachments.view', [$team, $circuit->circuitable, $att], false)
+                                        : route('teams.attachments.view', [$team, $att], false);
                                 @endphp
                                 <div class="flex items-center justify-between p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-750/50 hover:bg-white dark:hover:bg-gray-750 transition-colors gap-3">
                                     <div class="flex items-center gap-2.5 min-w-0">
@@ -537,8 +537,8 @@
                             @php
                                 $firstPdf = $pdfAttachments->first();
                                 $firstPdfUrl = $circuit->circuitable instanceof \App\Models\Activity
-                                    ? route('teams.activities.attachments.view', [$team, $circuit->circuitable, $firstPdf])
-                                    : route('teams.attachments.view', [$team, $firstPdf]);
+                                    ? route('teams.activities.attachments.view', [$team, $circuit->circuitable, $firstPdf], false)
+                                    : route('teams.attachments.view', [$team, $firstPdf], false);
                             @endphp
                             <div x-data="{ openPdf: true, selectedPdfUrl: '{{ $firstPdfUrl }}', selectedPdfName: '{{ addslashes($firstPdf->file_name) }}' }" class="mt-4">
                                 <button type="button" @click="openPdf = !openPdf"
@@ -559,8 +559,8 @@
                                                     @foreach($pdfAttachments as $pAtt)
                                                         @php
                                                             $pUrl = $circuit->circuitable instanceof \App\Models\Activity
-                                                                ? route('teams.activities.attachments.view', [$team, $circuit->circuitable, $pAtt])
-                                                                : route('teams.attachments.view', [$team, $pAtt]);
+                                                                ? route('teams.activities.attachments.view', [$team, $circuit->circuitable, $pAtt], false)
+                                                                : route('teams.attachments.view', [$team, $pAtt], false);
                                                         @endphp
                                                         <option value="{{ $pUrl }}">
                                                             {{ $pAtt->file_name }}
