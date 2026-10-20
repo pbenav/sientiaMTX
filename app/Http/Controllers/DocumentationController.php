@@ -221,7 +221,7 @@ class DocumentationController extends Controller
 
         $title = $request->input('title', 'Manual Oficial SientiaMTX');
         $subtitle = $request->input('subtitle', 'Compendio de Usuario, Gobernanza Colegiada y Administración');
-        $version = $request->input('version', 'v1.2.0');
+        $version = $request->input('version', 'v' . config('app.version', '1.3.0'));
         $includeCover = $request->boolean('cover', true);
         $includeToc = $request->boolean('toc', true);
 

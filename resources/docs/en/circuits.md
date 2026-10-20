@@ -59,3 +59,4 @@ Any citizen or auditing body can verify authentic copies without requiring syste
 - Open URL: `/verificar/{csv?}`
 - Scan QR code from mobile devices to view certificate of authenticity.
 - Direct download of authentic consolidated PDF.
+

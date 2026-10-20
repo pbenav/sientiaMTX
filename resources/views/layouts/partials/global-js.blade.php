@@ -336,7 +336,7 @@
                 </h3>
 
                 <h2 class="text-5xl md:text-7xl font-bold mb-6 drop-shadow-sm" style="font-family: 'Georgia', serif; color: #453c38;">
-                    SientiaMTX <span style="color: #7c3aed;">v{{ config('app.version', '1.2.0') }}</span>
+                    SientiaMTX <span style="color: #7c3aed;">v{{ config('app.version', '1.3.0') }}</span>
                 </h2>
 
                 <div class="inline-block border-y-2 py-3 mb-6 px-8" style="border-color: #d1c8b4;">

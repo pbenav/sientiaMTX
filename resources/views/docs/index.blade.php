@@ -85,7 +85,7 @@
                             <p class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
                                 {{ __('Línea Editorial') }}
                             </p>
-                            <span class="text-[9px] font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 px-1.5 py-0.2 rounded">v1.2.0</span>
+                            <span class="text-[9px] font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 px-1.5 py-0.2 rounded">v{{ config('app.version', '1.3.0') }}</span>
                         </div>
 
                         <nav class="space-y-4">
@@ -224,7 +224,7 @@
                                 </div>
                                 <div>
                                     <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Versión / Edición:</label>
-                                    <input type="text" name="version" value="v1.2.0" required
+                                    <input type="text" name="version" value="v{{ config('app.version', '1.3.0') }}" required
                                         class="w-full text-xs font-bold rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-gray-900 dark:text-white">
                                 </div>
                             </div>
