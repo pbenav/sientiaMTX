@@ -561,6 +561,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/media/{attachment}', [\App\Http\Controllers\MediaController::class, 'destroy'])->name('media.destroy');
 
     // Documentación y Manuales
+    Route::match(['get', 'post'], '/docs/book/print', [\App\Http\Controllers\DocumentationController::class, 'printBook'])->name('docs.book.print');
     Route::get('/docs/{slug?}', [\App\Http\Controllers\DocumentationController::class, 'index'])->name('docs');
     Route::get('/docs/{slug}/print', [\App\Http\Controllers\DocumentationController::class, 'print'])->name('docs.print');
 
