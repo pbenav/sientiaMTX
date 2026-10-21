@@ -215,7 +215,8 @@
                             $sName = $st->actionUser?->name ?? $st->assignedUser?->name ?? 'Firmante';
                             $sDate = $st->signed_at ? $st->signed_at->format('d/m/Y H:i') : now()->format('d/m/Y H:i');
                             $sRole = $st->action_type_label ?? $st->name;
-                            $sCert = $st->signature_data['certificate_issuer'] ?? ($st->signature_data['method'] === 'autofirma' ? 'AutoFirma / FNMT-DNIe' : 'Certificado Digital');
+                            $sData = is_array($st->signature_data) ? $st->signature_data : [];
+                            $sCert = $sData['certificate_issuer'] ?? (($sData['method'] ?? '') === 'autofirma' ? 'AutoFirma / FNMT-DNIe' : 'Certificado Digital');
                         @endphp
                         <div class="firma-item">
                             <span class="firma-check">&#10003;</span>

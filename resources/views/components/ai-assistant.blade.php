@@ -1480,9 +1480,17 @@
                                         <button @click="tab='preview'" :class="tab==='preview' ? 'bg-violet-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'" class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all">👁 Preview</button>
                                     </div>
                                     <div x-show="tab==='html'" class="relative">
+                                        <button type="button" onclick="navigator.clipboard.writeText(${JSON.stringify(htmlCode).replace(/"/g, '&quot;')}); Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'HTML copiado', showConfirmButton: false, timer: 1500 });" class="absolute top-2 right-2 px-2.5 py-1 bg-gray-800/80 hover:bg-gray-700 text-gray-300 rounded-lg text-[9px] font-bold flex items-center gap-1 transition-all">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                                            <span>Copiar HTML</span>
+                                        </button>
                                         <pre class="bg-gray-900/95 text-emerald-400 p-4 rounded-2xl text-[10px] overflow-x-auto shadow-inner border border-gray-800 font-mono max-h-48 overflow-y-auto"><code>${htmlCode.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
                                     </div>
                                     <div x-show="tab==='css'" class="relative" style="display:none;">
+                                        <button type="button" onclick="navigator.clipboard.writeText(${JSON.stringify(cssCode).replace(/"/g, '&quot;')}); Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'CSS copiado', showConfirmButton: false, timer: 1500 });" class="absolute top-2 right-2 px-2.5 py-1 bg-gray-800/80 hover:bg-gray-700 text-gray-300 rounded-lg text-[9px] font-bold flex items-center gap-1 transition-all">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                                            <span>Copiar CSS</span>
+                                        </button>
                                         <pre class="bg-gray-900/95 text-blue-400 p-4 rounded-2xl text-[10px] overflow-x-auto shadow-inner border border-gray-800 font-mono max-h-48 overflow-y-auto"><code>${cssCode.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
                                     </div>
                                     <div x-show="tab==='preview'" class="relative" style="display:none;">
@@ -1492,6 +1500,12 @@
 
                                 <div class="mt-4 flex items-center justify-end gap-3 pt-4 border-t border-emerald-100/50 dark:border-slate-800">
                                     <span class="text-[9px] font-bold text-emerald-500/80 mr-auto uppercase tracking-tighter italic">{{ __('Create') }} o inyectar micrositio</span>
+                                    <button type="button" 
+                                            onclick="navigator.clipboard.writeText(${JSON.stringify((cssCode ? '<style>\n' + cssCode + '\n</style>\n\n' : '') + htmlCode).replace(/"/g, '&quot;')}); Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Código completo copiado', showConfirmButton: false, timer: 2000 });"
+                                            class="px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-[10px] font-bold uppercase tracking-widest rounded-2xl transition-all shadow-sm active:scale-95 flex items-center gap-2">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                                        <span>Copiar Código</span>
+                                    </button>
                                     <button onclick="window.dispatchEvent(new CustomEvent('ai:inject-microsite', { detail: { html: ${JSON.stringify(htmlCode).replace(/"/g, '&quot;')}, css: ${JSON.stringify(cssCode).replace(/"/g, '&quot;')} } }))" 
                                             class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold uppercase tracking-widest rounded-2xl transition-all shadow-lg active:scale-95 flex items-center gap-3">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
@@ -1750,7 +1764,7 @@
                 window.dispatchEvent(new CustomEvent('ai:smart-inject', { detail: { content: finalContent } }));
             },
 
-            copyToClipboard(text) {
+            extractCleanContent(text) {
                 let finalContent = text;
                 const match = text.match(/\[PAYLOAD\]([\s\S]*?)\[\/PAYLOAD\]/);
                 if (match) {
@@ -1759,24 +1773,47 @@
                     finalContent = text.replace(/\[PAYLOAD\]|\[\/PAYLOAD\]/g, '').trim();
                 }
 
-                // Si es un JSON, extraemos solo el texto útil
+                // Si es un JSON, extraemos el contenido legible o código correspondiente
                 try {
-                    if (finalContent.startsWith('{') && finalContent.includes('"content"')) {
+                    if (finalContent.startsWith('{')) {
                         const parsed = JSON.parse(this.cleanJson(finalContent));
-                        if (parsed.content) finalContent = parsed.content;
+                        if (parsed.content) {
+                            return parsed.content;
+                        }
+                        if (parsed.intent === 'generate_microsite' || (parsed.html && parsed.css)) {
+                            const cssBlock = parsed.css ? `<style>\n${parsed.css}\n</style>\n\n` : '';
+                            return `${cssBlock}${parsed.html || ''}`;
+                        }
+                        if (parsed.intent === 'generate_survey' && parsed.survey_data) {
+                            return JSON.stringify(parsed.survey_data, null, 2);
+                        }
+                        if (parsed.intent === 'bulk_tasks' && Array.isArray(parsed.tasks)) {
+                            return parsed.tasks.map(t => `- [ ] ${t.title || ''}${t.description ? ': ' + t.description : ''}`).join('\n');
+                        }
+                        if (parsed.html) {
+                            const cssBlock = parsed.css ? `<style>\n${parsed.css}\n</style>\n\n` : '';
+                            return `${cssBlock}${parsed.html}`;
+                        }
+                        if (parsed.title || parsed.description) {
+                            return [parsed.title, parsed.description].filter(Boolean).join('\n\n');
+                        }
                     }
                 } catch (e) {
                     // Fallback para JSON truncado
                     if (finalContent.includes('"intent"') && finalContent.includes('"content"')) {
                         let fallbackMatch = finalContent.match(/"content"\s*:\s*"([\s\S]*?)"\s*(?:}|,)/);
-                        if (!fallbackMatch) {
-                            fallbackMatch = finalContent.match(/"content"\s*:\s*"([\s\S]*)$/);
-                        }
+                        if (!fallbackMatch) fallbackMatch = finalContent.match(/"content"\s*:\s*"([\s\S]*)$/);
                         if (fallbackMatch && fallbackMatch[1]) {
-                            finalContent = fallbackMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
+                            return fallbackMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
                         }
                     }
                 }
+
+                return finalContent;
+            },
+
+            copyToClipboard(text) {
+                const finalContent = this.extractCleanContent(text);
 
                 navigator.clipboard.writeText(finalContent).then(() => {
                     const btn = event.currentTarget;
@@ -1787,8 +1824,7 @@
             },
             
             async saveToDrive(content) {
-                const match = content.match(/\[PAYLOAD\]([\s\S]*?)\[\/PAYLOAD\]/);
-                const finalContent = match ? match[1].trim() : content.replace(/\[PAYLOAD\]|\[\/PAYLOAD\]/g, '').trim();
+                const finalContent = this.extractCleanContent(content);
                 const btn = event.currentTarget;
                 const oldHtml = btn.innerHTML;
                 btn.innerHTML = '<svg class="w-3.5 h-3.5 animate-spin text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" stroke-width="2" stroke-linecap="round"/></svg>';
