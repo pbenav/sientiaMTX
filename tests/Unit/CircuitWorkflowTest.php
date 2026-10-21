@@ -277,5 +277,22 @@ class CircuitWorkflowTest extends TestCase
         $this->assertStringContainsString('<strong>decreto de prueba</strong>', $html);
         $this->assertStringContainsString('<li>Punto 1</li>', $html);
     }
+
+    public function test_circuit_two_document_model_architecture(): void
+    {
+        $execution = new CircuitExecution([
+            'title' => 'Concesión de Licencia Administrativa',
+            'status' => CircuitExecution::STATUS_IN_PROGRESS,
+            'signed_document_path' => 'circuits/99/Documento_99_concesion.pdf',
+            'metadata' => ['csv' => 'CSV-TRM-TEST-000099-DEMO'],
+        ]);
+
+        $this->assertEquals('circuits/99/Documento_99_concesion.pdf', $execution->signed_document_path);
+        $this->assertEquals('CSV-TRM-TEST-000099-DEMO', $execution->metadata['csv']);
+
+        // Comprobar que ambas vistas Blade existen y son reconocidas por el motor de vistas de Laravel
+        $this->assertTrue(view()->exists('pdf.circuit-original'));
+        $this->assertTrue(view()->exists('pdf.circuit-receipt'));
+    }
 }
 

@@ -88,10 +88,16 @@ class CircuitVerificationController extends Controller
             abort(404, 'Documento no encontrado o CSV no válido.');
         }
 
-        $filePath = $circuit->signed_document_path;
-        if (!$filePath || !Storage::disk('local')->exists($filePath)) {
-            $pdfService = app(\App\Services\Circuits\CircuitPdfService::class);
-            $filePath = $pdfService->generateAndAttach($circuit);
+        $pdfService = app(\App\Services\Circuits\CircuitPdfService::class);
+        $filePath = null;
+
+        if ($request->query('type') === 'receipt') {
+            $filePath = $pdfService->generateReceiptDocument($circuit);
+        } else {
+            $filePath = $circuit->signed_document_path;
+            if (!$filePath || !Storage::disk('local')->exists($filePath)) {
+                $filePath = $pdfService->generateOriginalDocument($circuit);
+            }
         }
 
         $fileName = basename($filePath);

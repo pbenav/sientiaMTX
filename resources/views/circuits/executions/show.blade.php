@@ -105,12 +105,13 @@
                 </div>
             </div>
 
-            {{-- Documento Oficial Firmado & Progress indicator --}}
-            <div class="flex items-center gap-3 shrink-0 flex-wrap">
+            {{-- Documento Oficial Firmado & Recibo Oficial (CSV) & Progress indicator --}}
+            <div class="flex items-center gap-2 shrink-0 flex-wrap">
                 <a href="{{ route('teams.circuits.document', [$team, $circuit]) }}" target="_blank"
-                    class="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-black bg-violet-50 hover:bg-violet-100 dark:bg-violet-900/30 dark:hover:bg-violet-900/50 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-700 transition-all shadow-2xs group">
-                    <svg class="w-4 h-4 text-violet-600 dark:text-violet-400 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    <span>Diligencia / PDF Oficial</span>
+                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black bg-violet-50 hover:bg-violet-100 dark:bg-violet-900/30 dark:hover:bg-violet-900/50 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-700 transition-all shadow-2xs group"
+                    title="Ver documento original sustantivo firmado">
+                    <svg class="w-4 h-4 text-violet-600 dark:text-violet-400 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <span>Doc. Firmado</span>
                     @if($circuit->signatures_count > 0)
                         <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[10px] font-black bg-emerald-500 text-white">
                             {{ $circuit->signatures_count }} {{ $circuit->signatures_count === 1 ? 'firma' : 'firmas' }}
@@ -118,7 +119,14 @@
                     @endif
                 </a>
 
-                <div class="flex flex-col items-end">
+                <a href="{{ route('teams.circuits.document', [$team, $circuit, 'type' => 'receipt']) }}" target="_blank"
+                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700 transition-all shadow-2xs group"
+                    title="Ver recibo oficial de tramitación con CSV y huella criptográfica">
+                    <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                    <span>Recibo (CSV)</span>
+                </a>
+
+                <div class="flex flex-col items-end pl-2">
                     <span class="text-[10px] uppercase font-bold text-gray-400">Progreso Global</span>
                     <div class="flex items-center gap-2 mt-1">
                         <div class="w-28 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
@@ -546,12 +554,13 @@
                             @endforeach
                         </div>
 
-                        {{-- Previsualizador incrustado si hay PDFs o Diligencia --}}
+                        {{-- Previsualizador incrustado de Documento Original, Recibo (CSV) y Adjuntos --}}
                         @php
                             $circuitDocUrl = route('teams.circuits.document', [$team, $circuit], false);
+                            $circuitReceiptUrl = route('teams.circuits.document', [$team, $circuit, 'type' => 'receipt'], false);
                             $pdfAttachments = $attachments->filter(fn($a) => str_contains($a->mime_type ?? '', 'pdf') || str_ends_with(strtolower($a->file_name ?? ''), '.pdf'));
                             $defaultPdfUrl = $circuitDocUrl;
-                            $defaultPdfName = 'Diligencia Oficial del Itinerario';
+                            $defaultPdfName = 'Documento Original Firmado';
                         @endphp
                         <div x-data="{ openPdf: true, selectedPdfUrl: '{{ $defaultPdfUrl }}', selectedPdfName: '{{ $defaultPdfName }}' }" class="mt-4">
                             <div class="flex items-center justify-between flex-wrap gap-2">
@@ -575,7 +584,8 @@
                                         <span class="text-gray-400 text-[11px]">Documento a ver:</span>
                                         <select @change="selectedPdfUrl = $event.target.value; selectedPdfName = $event.target.options[$event.target.selectedIndex].text"
                                             class="text-xs rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 py-1 pl-2 pr-6">
-                                            <option value="{{ $circuitDocUrl }}">Diligencia Oficial del Itinerario</option>
+                                            <option value="{{ $circuitDocUrl }}">Documento Original Firmado</option>
+                                            <option value="{{ $circuitReceiptUrl }}">Recibo Oficial de Tramitación (CSV)</option>
                                             @foreach($pdfAttachments as $pAtt)
                                                 @php
                                                     $pUrl = $circuit->circuitable instanceof \App\Models\Activity

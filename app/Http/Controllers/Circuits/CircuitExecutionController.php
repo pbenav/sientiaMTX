@@ -308,6 +308,14 @@ class CircuitExecutionController extends Controller
                 $additionalData
             );
 
+            // Generar o actualizar el Recibo Oficial de Tramitación con la huella real del documento firmado
+            try {
+                $pdfService = app(\App\Services\Circuits\CircuitPdfService::class);
+                $pdfService->generateReceiptDocument($circuit);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("Error generating receipt document for circuit {$circuit->id}: " . $e->getMessage());
+            }
+
             $msg = match ($request->decision) {
                 'approved' => 'Paso aprobado y conforme.' . ($step->requires_signature || !empty($additionalData['sign_now']) ? ' Firma digital registrada en la diligencia oficial.' : ''),
                 'returned' => 'Trámite devuelto para subsanación con las observaciones indicadas.',
@@ -332,7 +340,7 @@ class CircuitExecutionController extends Controller
     }
 
     /**
-     * Sirve o descarga el documento PDF oficial consolidado con todas las firmas del circuito.
+     * Sirve o descarga el documento PDF oficial consolidado o el recibo oficial de diligencia.
      */
     public function downloadDocument(Request $request, Team $team, CircuitExecution $circuit)
     {
@@ -347,20 +355,29 @@ class CircuitExecutionController extends Controller
         $pdfService = app(\App\Services\Circuits\CircuitPdfService::class);
         $filePath = null;
 
-        // Si se solicita el PDF preparado específicamente para la firma de un paso en curso
-        if ($forStepId = $request->query('for_step')) {
+        // 1. Si se solicita específicamente el Recibo Oficial de Tramitación (CSV)
+        if ($request->query('type') === 'receipt') {
+            $filePath = $pdfService->generateReceiptDocument($circuit);
+        }
+        // 2. Si se solicita el PDF preparado específicamente para la firma de un paso en curso
+        elseif ($forStepId = $request->query('for_step')) {
             $signingStep = $circuit->steps()->find($forStepId);
             if ($signingStep && $signingStep->canUserAct(Auth::user(), $circuit)) {
-                $filePath = $pdfService->generateAndAttach($circuit, $signingStep, Auth::user());
+                if ($circuit->signed_document_path && \Illuminate\Support\Facades\Storage::disk('local')->exists($circuit->signed_document_path)) {
+                    $filePath = $circuit->signed_document_path;
+                } else {
+                    $filePath = $pdfService->generateOriginalDocument($circuit, $signingStep, Auth::user());
+                }
             }
         }
 
+        // 3. Documento original o firmado por defecto
         if (!$filePath) {
             $filePath = $circuit->signed_document_path;
         }
 
         if (!$filePath || !\Illuminate\Support\Facades\Storage::disk('local')->exists($filePath)) {
-            $filePath = $pdfService->generateAndAttach($circuit);
+            $filePath = $pdfService->generateOriginalDocument($circuit);
         }
 
         $fileName = basename($filePath);

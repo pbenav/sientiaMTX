@@ -87,11 +87,20 @@
                             </div>
                         </div>
 
-                        <a href="{{ route('public.circuits.verify.download', $circuit->metadata['csv'] ?? $csv) }}" target="_blank"
-                            class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-md shadow-emerald-600/20 transition-all active:scale-95 shrink-0">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                            <span>Descargar Copia Auténtica (PDF)</span>
-                        </a>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <a href="{{ route('public.circuits.verify.download', $circuit->metadata['csv'] ?? $csv) }}" target="_blank"
+                                class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-md shadow-emerald-600/20 transition-all active:scale-95 shrink-0"
+                                title="Descargar documento firmado original">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                <span>Documento Firmado</span>
+                            </a>
+                            <a href="{{ route('public.circuits.verify.download', ['csv' => $circuit->metadata['csv'] ?? $csv, 'type' => 'receipt']) }}" target="_blank"
+                                class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-md shadow-violet-600/20 transition-all active:scale-95 shrink-0"
+                                title="Descargar recibo oficial de cotejo y diligencia con CSV">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                                <span>Recibo Oficial (CSV)</span>
+                            </a>
+                        </div>
                     </div>
 
                     <!-- Cuadrícula de Metadatos -->

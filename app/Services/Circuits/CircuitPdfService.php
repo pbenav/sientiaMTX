@@ -23,9 +23,28 @@ use Illuminate\Support\Str;
 class CircuitPdfService
 {
     /**
-     * Genera o actualiza el documento PDF consolidado con todas las firmas del circuito.
+     * Genera o actualiza el documento PDF consolidado (Documento Original y Recibo de Diligencia).
      */
     public function generateAndAttach(
+        CircuitExecution $execution,
+        ?\App\Models\CircuitExecutionStep $signingStep = null,
+        ?\App\Models\User $signingUser = null
+    ): string {
+        $originalPath = $this->generateOriginalDocument($execution, $signingStep, $signingUser);
+
+        // Si ya hay pasos firmados o está aprobado, generar también el Recibo de Diligencia oficial
+        if ($execution->steps()->whereNotNull('signed_at')->exists() || $signingStep !== null) {
+            $this->generateReceiptDocument($execution);
+        }
+
+        return $originalPath;
+    }
+
+    /**
+     * Genera el Documento Original limpio sin artificios de sistema,
+     * finalizando con el contenido y el resumen de fases e itinerario para firma.
+     */
+    public function generateOriginalDocument(
         CircuitExecution $execution,
         ?\App\Models\CircuitExecutionStep $signingStep = null,
         ?\App\Models\User $signingUser = null
@@ -55,16 +74,6 @@ class CircuitPdfService
             ? $this->sanitizeEmojisForPdf((string) str($rawContent)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]))
             : '';
 
-        // 2. Generar Código Seguro de Verificación (CSV) si no existe
-        $csv = $execution->metadata['csv'] ?? null;
-        if (!$csv) {
-            $meta = $execution->metadata ?? [];
-            $csv = 'CSV-TRM-' . strtoupper(Str::random(4)) . '-' . sprintf('%06d', $execution->id) . '-' . strtoupper(Str::random(4));
-            $meta['csv'] = $csv;
-            $execution->updateQuietly(['metadata' => $meta]);
-        }
-
-        // Si se prepara el documento para la firma del paso actual, reflejarlo aprobado en la diligencia
         $allSteps = $execution->steps()->orderBy('order', 'asc')->get();
         $simulatedExecution = $execution;
 
@@ -92,19 +101,18 @@ class CircuitPdfService
             });
         }
 
-        // 3. Renderizar la vista Blade del documento oficial en el idioma de la tramitación
+        // 2. Renderizar vista Blade limpia del documento original
         $originalLocale = app()->getLocale();
         $docLocale = $execution->initiator?->locale ?? 'es';
         app()->setLocale($docLocale);
 
         try {
-            $pdf = Pdf::loadView('pdf.circuit', [
+            $pdf = Pdf::loadView('pdf.circuit-original', [
                 'execution'     => $simulatedExecution,
                 'team'          => $team,
                 'circuitable'   => $circuitable,
                 'contentHtml'   => $contentHtml,
                 'steps'         => $allSteps,
-                'csv'           => $csv,
                 'signingStepId' => $signingStep?->id,
                 'signingUser'   => $signingUser,
             ]);
@@ -120,23 +128,115 @@ class CircuitPdfService
             app()->setLocale($originalLocale);
         }
 
-        // 4. Guardar archivo en almacenamiento local
+        // 3. Guardar archivo en disco local
         $directory = "circuits/{$execution->id}";
         if (!Storage::disk('local')->exists($directory)) {
             Storage::disk('local')->makeDirectory($directory);
         }
 
         $slugTitle = Str::slug($execution->title);
-        $fileName = "Tramitacion_{$execution->id}_{$slugTitle}_Firmado.pdf";
+        $fileName = "Documento_{$execution->id}_{$slugTitle}.pdf";
         $filePath = "{$directory}/{$fileName}";
 
         Storage::disk('local')->put($filePath, $pdfContent);
 
-        // 5. Actualizar la referencia en la ejecución
-        $execution->updateQuietly(['signed_document_path' => $filePath]);
+        // Si aún no hay un archivo firmado por AutoFirma guardado, la ruta del documento oficial apunta aquí
+        if (empty($execution->signed_document_path) || !Storage::disk('local')->exists($execution->signed_document_path)) {
+            $execution->updateQuietly(['signed_document_path' => $filePath]);
+        }
 
-        // 6. Sincronizar como adjunto en el elemento vinculado (Actividad o Expediente)
-        $this->syncAttachment($execution, $filePath, $fileName);
+        // Sincronizar adjunto en Actividad o Expediente
+        $this->syncAttachment($execution, $filePath, $fileName, 'Documento (Circuito #' . $execution->id . ')');
+
+        return $filePath;
+    }
+
+    /**
+     * Genera el Recibo Oficial de Tramitación y Cotejo Electrónico (Justificante con CSV y Hashes).
+     */
+    public function generateReceiptDocument(CircuitExecution $execution): string
+    {
+        $execution->loadMissing([
+            'steps.assignedUser',
+            'steps.assignedRole',
+            'steps.actionUser',
+            'circuitable',
+            'initiator',
+            'template',
+            'team',
+        ]);
+
+        $team = $execution->team;
+        $circuitable = $execution->circuitable;
+        $steps = $execution->steps()->orderBy('order', 'asc')->get();
+
+        // 1. Garantizar CSV único
+        $csv = $execution->metadata['csv'] ?? null;
+        if (!$csv) {
+            $meta = $execution->metadata ?? [];
+            $csv = 'CSV-TRM-' . strtoupper(Str::random(4)) . '-' . sprintf('%06d', $execution->id) . '-' . strtoupper(Str::random(4));
+            $meta['csv'] = $csv;
+            $execution->updateQuietly(['metadata' => $meta]);
+        }
+
+        // 2. Identificar el documento original firmado y calcular su huella SHA-256 real
+        $signedPath = $execution->signed_document_path;
+        if (!$signedPath || !Storage::disk('local')->exists($signedPath)) {
+            $signedPath = $this->generateOriginalDocument($execution);
+        }
+
+        $fullDiskPath = Storage::disk('local')->path($signedPath);
+        $signedDocHash = file_exists($fullDiskPath) ? hash_file('sha256', $fullDiskPath) : hash('sha256', 'CIRCUIT:' . $execution->id);
+        $signedDocName = basename($signedPath);
+        $signedDocSize = file_exists($fullDiskPath) ? filesize($fullDiskPath) : 0;
+
+        // 3. Renderizar vista Blade del recibo oficial
+        $originalLocale = app()->getLocale();
+        $docLocale = $execution->initiator?->locale ?? 'es';
+        app()->setLocale($docLocale);
+
+        try {
+            $pdf = Pdf::loadView('pdf.circuit-receipt', [
+                'execution'     => $execution,
+                'team'          => $team,
+                'circuitable'   => $circuitable,
+                'steps'         => $steps,
+                'csv'           => $csv,
+                'signedDocHash' => $signedDocHash,
+                'signedDocName' => $signedDocName,
+                'signedDocSize' => $signedDocSize,
+            ]);
+
+            $pdf->setPaper('A4', 'portrait');
+            $pdf->setOptions([
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true,
+            ]);
+
+            $pdfContent = $pdf->output();
+        } finally {
+            app()->setLocale($originalLocale);
+        }
+
+        // 4. Guardar recibo en disco local
+        $directory = "circuits/{$execution->id}";
+        if (!Storage::disk('local')->exists($directory)) {
+            Storage::disk('local')->makeDirectory($directory);
+        }
+
+        $slugTitle = Str::slug($execution->title);
+        $fileName = "Recibo_Tramitacion_{$execution->id}_{$slugTitle}.pdf";
+        $filePath = "{$directory}/{$fileName}";
+
+        Storage::disk('local')->put($filePath, $pdfContent);
+
+        // Guardar referencia del recibo en metadatos
+        $meta = $execution->metadata ?? [];
+        $meta['receipt_document_path'] = $filePath;
+        $execution->updateQuietly(['metadata' => $meta]);
+
+        // Sincronizar adjunto del recibo
+        $this->syncAttachment($execution, $filePath, $fileName, 'Recibo Oficial de Firma (Circuito #' . $execution->id . ')');
 
         return $filePath;
     }
@@ -144,19 +244,20 @@ class CircuitPdfService
     /**
      * Adjunta el PDF oficial generado al elemento vinculado (Activity o Expediente).
      */
-    public function syncAttachment(CircuitExecution $execution, string $filePath, string $fileName): void
+    public function syncAttachment(CircuitExecution $execution, string $filePath, string $fileName, ?string $label = null): void
     {
         $circuitable = $execution->circuitable;
         if (!$circuitable) {
             return;
         }
 
+        $label = $label ?? ('Diligencia de Tramitación (Circuito #' . $execution->id . ')');
         $fileSize = Storage::disk('local')->exists($filePath) ? Storage::disk('local')->size($filePath) : 0;
 
         if ($circuitable instanceof Activity) {
             $existing = $circuitable->attachments()
                 ->where('file_path', $filePath)
-                ->orWhere('label', 'like', 'Diligencia de Tramitación (Circuito #' . $execution->id . ')%')
+                ->orWhere('label', $label)
                 ->first();
 
             if ($existing) {
@@ -166,6 +267,7 @@ class CircuitPdfService
                     'file_size' => $fileSize,
                     'mime_type' => 'application/pdf',
                     'disk'      => 'local',
+                    'label'     => $label,
                 ]);
             } else {
                 $circuitable->attachments()->create([
@@ -175,7 +277,7 @@ class CircuitPdfService
                     'disk'           => 'local',
                     'mime_type'      => 'application/pdf',
                     'file_size'      => $fileSize,
-                    'label'          => 'Diligencia de Tramitación (Circuito #' . $execution->id . ')',
+                    'label'          => $label,
                 ]);
             }
         } elseif ($circuitable instanceof Expediente) {
