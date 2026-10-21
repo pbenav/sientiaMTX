@@ -48,4 +48,12 @@ return [
         'creator' => 'Auteur / Créateur',
         'dynamic' => 'Dynamique',
     ],
+    'digital_signature' => 'Signature numérique',
+    'requires_signature' => 'Exige une signature numérique',
+    'official_document' => 'Acte / Document officiel signé (PDF)',
+    'signed_electronically' => 'Signé électroniquement',
+    'started_successfully' => 'Traitement démarré avec succès.',
+    'already_in_circuit' => 'Cet élément a déjà un circuit de traitement actif en cours.',
+    'signature_required_error' => 'Cette étape exige une signature numérique. Veuillez compléter le processus dans l\'assistant AutoFirma.',
+    'file_required_error' => 'Vous devez joindre le fichier PDF signé pour compléter cette étape.',
 ];

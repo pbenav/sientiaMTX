@@ -115,7 +115,7 @@ class CircuitExecutionController extends Controller
         };
 
         if ($circuitable->isInCircuit) {
-            return redirect()->back()->with('warning', __('circuits.already_in_circuit', [], 'es') ?? 'Este elemento ya tiene una tramitación activa en curso.');
+            return redirect()->back()->with('warning', __('circuits.already_in_circuit'));
         }
 
         $template = $request->filled('circuit_template_id')
@@ -130,7 +130,7 @@ class CircuitExecutionController extends Controller
         );
 
         return redirect()->route('teams.circuits.show', [$team, $execution])
-            ->with('success', __('circuits.started_successfully', [], 'es') ?? 'Tramitación iniciada correctamente.');
+            ->with('success', __('circuits.started_successfully'));
     }
 
     /**
@@ -241,6 +241,28 @@ class CircuitExecutionController extends Controller
                 return response()->json(['error' => 'Es obligatorio justificar el motivo al devolver o rechazar.'], 422);
             }
             return redirect()->back()->with('error', 'Es obligatorio justificar el motivo al devolver o rechazar.');
+        }
+
+        // Si la etapa exige firma digital, bloquear avance hasta que se complete con AutoFirma o subida de archivo
+        if ($step->requires_signature && $request->decision === 'approved') {
+            $sigMethod = $request->input('signature_method', 'autofirma');
+            if ($sigMethod === 'autofirma' && !$request->hasFile('signed_file')) {
+                if ($request->wantsJson()) {
+                    return response()->json([
+                        'error' => __('circuits.signature_required_error'),
+                        'redirect' => route('teams.circuits.signature-portal', [$team, $circuit])
+                    ], 422);
+                }
+                return redirect()->route('teams.circuits.signature-portal', [$team, $circuit])
+                    ->with('warning', __('circuits.signature_required_error'));
+            }
+
+            if ($sigMethod === 'manual_upload' && !$request->hasFile('signed_file')) {
+                if ($request->wantsJson()) {
+                    return response()->json(['error' => __('circuits.file_required_error')], 422);
+                }
+                return redirect()->back()->with('error', __('circuits.file_required_error'));
+            }
         }
 
         try {

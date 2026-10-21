@@ -52,4 +52,8 @@ return [
     'requires_signature' => 'Requiere Firma Digital',
     'official_document' => 'Diligencia / Documento Oficial Firmado (PDF)',
     'signed_electronically' => 'Firmado Electrónicamente',
+    'started_successfully' => 'Tramitación iniciada correctamente.',
+    'already_in_circuit' => 'Este elemento ya tiene una tramitación activa en curso.',
+    'signature_required_error' => 'Esta etapa exige firma digital. Por favor, completa el proceso en el Asistente de AutoFirma.',
+    'file_required_error' => 'Debes adjuntar el archivo PDF firmado para completar esta etapa.',
 ];

@@ -52,4 +52,8 @@ return [
     'requires_signature' => 'Requires Digital Signature',
     'official_document' => 'Official Signed Document (PDF)',
     'signed_electronically' => 'Electronically Signed',
+    'started_successfully' => 'Routing started successfully.',
+    'already_in_circuit' => 'This item already has an active approval circuit in progress.',
+    'signature_required_error' => 'This step requires a digital signature. Please complete the process using the AutoFirma Assistant.',
+    'file_required_error' => 'You must attach the signed PDF file to complete this step.',
 ];

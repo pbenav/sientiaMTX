@@ -233,8 +233,9 @@
             <div class="bg-gradient-to-br from-violet-600 via-indigo-600 to-purple-700 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-indigo-600/20 relative overflow-hidden"
                 x-data="{ 
                     decision: 'approved', 
-                    sigMethod: 'internal_certificate', 
-                    signNow: {{ $circuit->currentStep->requires_signature ? 'true' : 'true' }} 
+                    sigMethod: '{{ $circuit->currentStep->requires_signature ? "autofirma" : "internal_certificate" }}', 
+                    signNow: true,
+                    hasManualFile: false
                 }">
 
                 <!-- Background decorative glow -->
@@ -404,30 +405,46 @@
                                         Selecciona el archivo PDF firmado con tu software externo:
                                     </label>
                                     <input type="file" name="signed_file" accept=".pdf,application/pdf"
+                                        @change="hasManualFile = $event.target.files.length > 0"
                                         class="w-full text-xs text-violet-200 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-white file:text-violet-900 hover:file:bg-violet-100 cursor-pointer">
                                 </div>
 
                                 <!-- Aviso AutoFirma -->
                                 <div x-show="sigMethod === 'autofirma'" class="p-3 bg-black/20 rounded-xl flex items-center justify-between text-[11px] text-violet-100 gap-2">
-                                    <span>Se invocará el certificado de firma reconocido en tu estación de trabajo (FNMT / DNIe).</span>
+                                    <span>Se abrirá el asistente interactivo de AutoFirma para seleccionar tu certificado digital (FNMT / DNIe).</span>
                                     <a href="https://firmaelectronica.gob.es/Home/Descargas.html" target="_blank" class="underline text-emerald-300 font-bold shrink-0">Descargar AutoFirma</a>
                                 </div>
                             </div>
                         </div>
 
                         <div class="flex items-center justify-end gap-3 pt-2">
-                            <button type="submit"
-                                class="px-6 py-3 rounded-xl font-black text-sm bg-white text-violet-900 hover:bg-violet-50 shadow-lg shadow-black/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2">
-                                <template x-if="decision === 'approved'">
-                                    <span class="flex items-center gap-2">
-                                        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                                        <span x-text="signNow ? 'Firmar Digitalmente y Aprobar' : 'Aprobar y Concluir Etapa'"></span>
-                                    </span>
-                                </template>
-                                <span x-show="decision === 'returned'">Enviar para Subsanación</span>
-                                <span x-show="decision === 'rejected'">Confirmar Rechazo</span>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                            </button>
+                            {{-- Cuando la decisión es aprobar y el método es AutoFirma, obligar a pasar por el asistente de firma --}}
+                            <template x-if="decision === 'approved' && sigMethod === 'autofirma'">
+                                <a href="{{ route('teams.circuits.signature-portal', [$team, $circuit]) }}"
+                                    class="px-6 py-3 rounded-xl font-black text-sm bg-white text-violet-900 hover:bg-violet-50 shadow-lg shadow-black/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                    <span>Abrir Asistente AutoFirma para Firmar</span>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                                </a>
+                            </template>
+
+                            {{-- Botón para devolución, rechazo, o firma manual/CSV --}}
+                            <template x-if="!(decision === 'approved' && sigMethod === 'autofirma')">
+                                <button type="submit"
+                                    :disabled="decision === 'approved' && sigMethod === 'manual_upload' && !hasManualFile"
+                                    :class="decision === 'approved' && sigMethod === 'manual_upload' && !hasManualFile ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.02] active:scale-[0.98]'"
+                                    class="px-6 py-3 rounded-xl font-black text-sm bg-white text-violet-900 hover:bg-violet-50 shadow-lg shadow-black/20 transition-all flex items-center gap-2">
+                                    <template x-if="decision === 'approved'">
+                                        <span class="flex items-center gap-2">
+                                            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                            <span x-text="sigMethod === 'manual_upload' ? 'Subir Firma y Concluir' : 'Registrar Conformidad (CSV)'"></span>
+                                        </span>
+                                    </template>
+                                    <span x-show="decision === 'returned'">Enviar para Subsanación</span>
+                                    <span x-show="decision === 'rejected'">Confirmar Rechazo</span>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                                </button>
+                            </template>
                         </div>
                     </form>
                 </div>

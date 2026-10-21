@@ -52,7 +52,7 @@ class CircuitPdfService
         }
 
         $contentHtml = $rawContent
-            ? (string) str($rawContent)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false])
+            ? $this->sanitizeEmojisForPdf((string) str($rawContent)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]))
             : '';
 
         // 2. Generar Código Seguro de Verificación (CSV) si no existe
@@ -204,6 +204,37 @@ class CircuitPdfService
                 ]);
             }
         }
+    }
+
+    /**
+     * Reemplaza emojis y caracteres gráficos no soportados por DejaVu Sans en DomPDF
+     * por entidades Unicode y glifos compatibles estilizados (evita cajas vacías o 'tofu').
+     */
+    protected function sanitizeEmojisForPdf(string $html): string
+    {
+        $replacements = [
+            '✅' => '<span style="color:#10b981;font-weight:bold;">&#10003;</span>',
+            '✔' => '<span style="color:#10b981;font-weight:bold;">&#10003;</span>',
+            '☑' => '<span style="color:#10b981;font-weight:bold;">&#10003;</span>',
+            '❌' => '<span style="color:#ef4444;font-weight:bold;">&#10007;</span>',
+            '✖' => '<span style="color:#ef4444;font-weight:bold;">&#10007;</span>',
+            '❎' => '<span style="color:#ef4444;font-weight:bold;">&#10007;</span>',
+            '⚠️' => '<span style="color:#f59e0b;font-weight:bold;">&#9888;</span>',
+            '⭐' => '<span style="color:#eab308;">&#9733;</span>',
+            '🔴' => '<span style="color:#ef4444;font-size:8px;">&bull;</span>',
+            '🟢' => '<span style="color:#10b981;font-size:8px;">&bull;</span>',
+            '🟡' => '<span style="color:#f59e0b;font-size:8px;">&bull;</span>',
+            '🔵' => '<span style="color:#3b82f6;font-size:8px;">&bull;</span>',
+            '➡️' => '&rarr;',
+            '⬅️' => '&larr;',
+            '⬆️' => '&uarr;',
+            '⬇️' => '&darr;',
+            '👤' => '<span style="color:#64748b;font-size:9px;">&#9787;</span>',
+            '👥' => '<span style="color:#64748b;font-size:9px;">&#9787;&#9787;</span>',
+            '🔒' => '<span style="color:#64748b;font-size:9px;">[Seguro]</span>',
+        ];
+
+        return str_replace(array_keys($replacements), array_values($replacements), $html);
     }
 }
 

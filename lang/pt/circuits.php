@@ -48,4 +48,12 @@ return [
         'creator' => 'Autor / Criador',
         'dynamic' => 'Dinâmico',
     ],
+    'digital_signature' => 'Assinatura digital',
+    'requires_signature' => 'Requer assinatura digital',
+    'official_document' => 'Diligência / Documento oficial assinado (PDF)',
+    'signed_electronically' => 'Assinado eletronicamente',
+    'started_successfully' => 'Tramitação iniciada com sucesso.',
+    'already_in_circuit' => 'Este item já possui um circuito de tramitação ativo em andamento.',
+    'signature_required_error' => 'Esta etapa exige assinatura digital. Por favor, conclua o processo no assistente do AutoFirma.',
+    'file_required_error' => 'Deve anexar o arquivo PDF assinado para concluir esta etapa.',
 ];
