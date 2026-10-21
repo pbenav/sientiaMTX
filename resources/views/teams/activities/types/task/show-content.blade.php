@@ -116,6 +116,7 @@
                                     'id'                  => $activity->id,
                                     'name'                => $activity->title,
                                     'status_value'        => $activity->status_value,
+                                    'status_label'        => $activity->status_label,
                                     'progress'            => $activity->progress_percentage,
                                     'progress_percentage' => $activity->progress_percentage,
                                     'status'              => ['value' => $activity->status_value],
@@ -134,6 +135,7 @@
                                 'id'                  => $activity->id,
                                 'name'                => $activity->title,
                                 'status_value'        => $activity->status_value,
+                                'status_label'        => $activity->status_label,
                                 'progress'            => $activity->progress_percentage,
                                 'progress_percentage' => $activity->progress_percentage,
                                 'status'              => ['value' => $activity->status_value],
@@ -442,7 +444,7 @@
                                                         class="w-1.5 h-1.5 rounded-full {{ str_contains($instStatusColor, 'text-') ? str_replace('text-', 'bg-', explode(' ', $instStatusColor)[0]) : 'bg-gray-400' }}">
                                                     </div>
                                                     <span
-                                                        class="text-xs font-bold uppercase tracking-tight">{{ $inst->status_label }}</span>
+                                                        class="text-xs font-bold uppercase tracking-tight">{{ $inst->status_label ?? ($inst->status_value ? (__("activities.statuses.{$inst->status_value}") !== "activities.statuses.{$inst->status_value}" ? __("activities.statuses.{$inst->status_value}") : ucfirst($inst->status_value)) : '—') }}</span>
                                                 </div>
                                                 <div class="flex items-center gap-2 w-28">
                                                     <div class="flex-1 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
