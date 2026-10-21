@@ -546,51 +546,52 @@
                             @endforeach
                         </div>
 
-                        {{-- Previsualizador incrustado si hay PDFs --}}
+                        {{-- Previsualizador incrustado si hay PDFs o Diligencia --}}
                         @php
+                            $circuitDocUrl = route('teams.circuits.document', [$team, $circuit], false);
                             $pdfAttachments = $attachments->filter(fn($a) => str_contains($a->mime_type ?? '', 'pdf') || str_ends_with(strtolower($a->file_name ?? ''), '.pdf'));
+                            $defaultPdfUrl = $circuitDocUrl;
+                            $defaultPdfName = 'Diligencia Oficial del Itinerario';
                         @endphp
-                        @if($pdfAttachments->isNotEmpty())
-                            @php
-                                $firstPdf = $pdfAttachments->first();
-                                $firstPdfUrl = $circuit->circuitable instanceof \App\Models\Activity
-                                    ? route('teams.activities.attachments.view', [$team, $circuit->circuitable, $firstPdf], false)
-                                    : route('teams.attachments.view', [$team, $firstPdf], false);
-                            @endphp
-                            <div x-data="{ openPdf: true, selectedPdfUrl: '{{ $firstPdfUrl }}', selectedPdfName: '{{ addslashes($firstPdf->file_name) }}' }" class="mt-4">
+                        <div x-data="{ openPdf: true, selectedPdfUrl: '{{ $defaultPdfUrl }}', selectedPdfName: '{{ $defaultPdfName }}' }" class="mt-4">
+                            <div class="flex items-center justify-between flex-wrap gap-2">
                                 <button type="button" @click="openPdf = !openPdf"
                                     class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 hover:bg-violet-100 transition-colors">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                    <span x-text="openPdf ? 'Ocultar visor de PDF adjunto' : 'Previsualizar PDF adjunto aquí'"></span>
+                                    <span x-text="openPdf ? 'Ocultar visor de documento' : 'Previsualizar documento / adjuntos aquí'"></span>
                                     <svg class="w-3.5 h-3.5 transition-transform" :class="openPdf ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                                 </button>
-
-                                <div x-show="openPdf" class="mt-3 bg-gray-100 dark:bg-gray-900 rounded-2xl p-3 border border-gray-200 dark:border-gray-700">
-                                    <div class="flex items-center justify-between pb-2 mb-2 border-b border-gray-200 dark:border-gray-800 text-xs">
-                                        <span class="font-bold text-gray-700 dark:text-gray-300" x-text="'Visualizando: ' + selectedPdfName"></span>
-                                        @if($pdfAttachments->count() > 1)
-                                            <div class="flex items-center gap-2">
-                                                <span class="text-gray-400 text-[11px]">Cambiar PDF:</span>
-                                                <select @change="selectedPdfUrl = $event.target.value; selectedPdfName = $event.target.options[$event.target.selectedIndex].text"
-                                                    class="text-xs rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 py-1 pl-2 pr-6">
-                                                    @foreach($pdfAttachments as $pAtt)
-                                                        @php
-                                                            $pUrl = $circuit->circuitable instanceof \App\Models\Activity
-                                                                ? route('teams.activities.attachments.view', [$team, $circuit->circuitable, $pAtt], false)
-                                                                : route('teams.attachments.view', [$team, $pAtt], false);
-                                                        @endphp
-                                                        <option value="{{ $pUrl }}">
-                                                            {{ $pAtt->file_name }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                        @endif
-                                    </div>
-                                    <iframe :src="selectedPdfUrl" class="w-full rounded-xl bg-white border border-gray-200 dark:border-gray-800" style="height: 520px;" title="Previsualizador de PDF adjunto"></iframe>
-                                </div>
+                                <a :href="selectedPdfUrl" target="_blank"
+                                    class="inline-flex items-center gap-1.5 text-xs text-violet-600 dark:text-violet-400 hover:underline font-semibold">
+                                    <span>Abrir en nueva pestaña</span>
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                </a>
                             </div>
-                        @endif
+
+                            <div x-show="openPdf" class="mt-3 bg-gray-100 dark:bg-gray-900 rounded-2xl p-3 border border-gray-200 dark:border-gray-700">
+                                <div class="flex items-center justify-between pb-2 mb-2 border-b border-gray-200 dark:border-gray-800 text-xs flex-wrap gap-2">
+                                    <span class="font-bold text-gray-700 dark:text-gray-300" x-text="'Visualizando: ' + selectedPdfName"></span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-gray-400 text-[11px]">Documento a ver:</span>
+                                        <select @change="selectedPdfUrl = $event.target.value; selectedPdfName = $event.target.options[$event.target.selectedIndex].text"
+                                            class="text-xs rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 py-1 pl-2 pr-6">
+                                            <option value="{{ $circuitDocUrl }}">Diligencia Oficial del Itinerario</option>
+                                            @foreach($pdfAttachments as $pAtt)
+                                                @php
+                                                    $pUrl = $circuit->circuitable instanceof \App\Models\Activity
+                                                        ? route('teams.activities.attachments.view', [$team, $circuit->circuitable, $pAtt], false)
+                                                        : route('teams.attachments.view', [$team, $pAtt], false);
+                                                @endphp
+                                                <option value="{{ $pUrl }}">
+                                                    Adjunto: {{ $pAtt->file_name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <iframe :src="selectedPdfUrl" class="w-full rounded-xl bg-white border border-gray-200 dark:border-gray-800" style="height: 560px;" title="Previsualizador de documento oficial y adjuntos"></iframe>
+                            </div>
+                        </div>
                     </div>
                 @endif
             </div>

@@ -77,6 +77,11 @@ return Application::configure(basePath: dirname(__DIR__))
 
             // Fallback robusto analizando la URL para errores 404 genéricos
             if ($e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException || $e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+                // Si es una petición de adjunto o documento (frecuentemente cargados en iframes), no redirigir a HTML
+                if (str_contains($request->path(), '/attachments/') || str_contains($request->path(), '/document')) {
+                    return response('Documento no encontrado o no disponible.', 404);
+                }
+
                 if (preg_match('#^teams/(\d+)/expedientes/\d+#', $request->path(), $matches)) {
                     return redirect(route('teams.expedientes.index', $matches[1]))
                         ->with('error', __('El expediente al que intentabas acceder ya no existe o ha sido eliminado por otro usuario.'));

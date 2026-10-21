@@ -128,7 +128,7 @@
             background: #faf5ff;
         }
 
-        .sig-inner-table { width: 100%; border-collapse: collapse; }
+        .sig-inner-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         .sig-inner-table td { vertical-align: top; padding: 0; }
 
         .sig-header { font-size: 7.5px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
@@ -164,9 +164,8 @@
         .sig-stamp-row {
             margin-bottom: 1.5px;
             color: #334155;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            word-break: break-word;
+            line-height: 1.25;
         }
         .sig-stamp-row strong {
             color: #0f172a;
@@ -375,7 +374,7 @@
                                             @endphp
                                             <table class="sig-inner-table">
                                                 <tr>
-                                                    <td>
+                                                    <td style="width: 73%; vertical-align: top;">
                                                         <div class="sig-header signed">
                                                             <span class="sig-check">&#10003;</span>
                                                             Etapa {{ $step->order }}: {{ $isAutoFirma ? 'Firma Cualificada (PAdES)' : 'Conformidad Acreditada (CSV)' }}
@@ -408,7 +407,7 @@
                                                             </div>
                                                         @endif
                                                     </td>
-                                                    <td class="qr-cell">
+                                                    <td class="qr-cell" style="width: 27%; vertical-align: middle; text-align: center;">
                                                         <img src="data:image/svg+xml;base64,{{ $qrSvg }}" width="56" height="56" class="qr-img" alt="QR Verificación">
                                                         <div class="qr-label">Cotejo CSV</div>
                                                     </td>
@@ -423,13 +422,13 @@
                                             @endphp
                                             <table class="sig-inner-table">
                                                 <tr>
-                                                    <td>
+                                                    <td style="width: 73%; vertical-align: top;">
                                                         <div class="sig-header in_progress">
                                                             Etapa {{ $step->order }}: Trámite de Firma en Curso
                                                         </div>
 
-                                                        <div class="sig-stamp-box" style="border-color: #c4b5fd; background: #faf5ff;">
-                                                            <div class="sig-stamp-title" style="color: #6d28d9;">Diligencia Oficial de Firma Electrónica</div>
+                                                        <div class="sig-stamp-box" style="border-color: #c4b5fd; background: #faf5ff; min-height: 64px;">
+                                                            <div class="sig-stamp-title" style="color: #6d28d9;">Espacio Reservado para Rúbrica Digital</div>
                                                             <div class="sig-stamp-line" style="border-color: #8b5cf6;"></div>
                                                             <div class="sig-stamp-row">
                                                                 <strong>FIRMANTE ASIGNADO:</strong> {{ strtoupper($signingName) }}
@@ -437,20 +436,14 @@
                                                             <div class="sig-stamp-row">
                                                                 <strong>ACTO / ROL:</strong> {{ $step->name }} &bull; {{ $signingEmail }}
                                                             </div>
-                                                            <div class="sig-stamp-row">
-                                                                <strong>ESTADO:</strong> Preparado para firma electrónica
-                                                            </div>
-                                                            <div class="sig-stamp-row sig-stamp-legal" style="color: #7c3aed;">
-                                                                Se estampará certificado digital PAdES / CSV al confirmar
-                                                            </div>
-                                                            <div class="sig-stamp-hash" style="color: #8b5cf6;">
-                                                                <strong>CSV ASIGNADO:</strong> <code>{{ $csv ?? 'EXP-' . $execution->id }}</code>
+                                                            <div class="sig-stamp-row sig-stamp-legal" style="color: #7c3aed; font-size: 6px;">
+                                                                Diligencia oficial con firma cualificada PAdES y cotejo CSV
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    <td class="qr-cell">
+                                                    <td class="qr-cell" style="width: 27%; vertical-align: middle; text-align: center;">
                                                         <img src="data:image/svg+xml;base64,{{ $qrSvg }}" width="56" height="56" class="qr-img" alt="QR Verificación">
-                                                        <div class="qr-label">Cotejo CSV</div>
+                                                        <div class="qr-label" style="color: #7c3aed;">Cotejo CSV</div>
                                                     </td>
                                                 </tr>
                                             </table>
