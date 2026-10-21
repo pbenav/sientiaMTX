@@ -334,18 +334,11 @@
                 return;
             }
 
-            // Calculamos la posición en formato grid (2 columnas) en la página dedicada de firmas
-            const rowIndex = Math.floor(STEP_POSITION / 2);
-            const colIndex = STEP_POSITION % 2;
-
-            // Coordenadas X: Columna izquierda y Columna derecha ajustadas a los márgenes del PDF
-            const startX = colIndex === 0 ? 67 : 305;
-            const endX = startX + 165; // Deja margen para el código QR a la derecha del cajetín
-
-            // Coordenadas Y: Empezamos en la altura del cajetín correspondiente a la etapa en la página dedicada
-            // Ajustado para que la rúbrica caiga exactamente dentro del espacio reservado del cajetín
-            const yEnd = 620 - (rowIndex * 135);
-            const yStart = yEnd - 55;
+            // Coordenadas calculadas dinámicamente según la posición del recuadro de firma en el documento
+            const startX = {{ $sigCoords['startX'] ?? 60 }};
+            const endX   = {{ $sigCoords['endX'] ?? 285 }};
+            const yStart = {{ $sigCoords['yStart'] ?? 200 }};
+            const yEnd   = {{ $sigCoords['yEnd'] ?? 248 }};
 
             const extraParams = "signatureFormat=PADES-BES\n" +
                                 "signaturePage=-1\n" +

@@ -94,20 +94,19 @@
         /* ── Espacio reservado para rúbrica de AutoFirma ── */
         .autofirma-box {
             margin-top: 15px;
-            border: 1px dashed #cbd5e1;
+            border: 1.5px dashed #cbd5e1;
             background: #fafafa;
             border-radius: 6px;
-            padding: 8px 12px;
-            min-height: 48px;
+            padding: 4px 8px;
+            min-height: 52px;
             page-break-inside: avoid;
+            position: relative;
         }
-        .autofirma-placeholder {
-            font-size: 7.5px;
-            color: #94a3b8;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            text-align: center;
-            font-weight: bold;
+        .autofirma-anchor {
+            font-size: 1pt;
+            color: transparent;
+            line-height: 1;
+            display: inline-block;
         }
 
         .footer {
@@ -214,9 +213,7 @@
 
     {{-- Espacio para rúbrica visible de AutoFirma / Certificado Digital --}}
     <div class="autofirma-box">
-        <div class="autofirma-placeholder">
-            Espacio reservado para firma electrónica (PAdES / AutoFirma)
-        </div>
+        <span class="autofirma-anchor">[[AUTOFIRMA_RUBRICA_ANCHOR]]</span>
     </div>
 
     {{-- Pie de página discreto --}}

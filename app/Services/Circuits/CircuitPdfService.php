@@ -242,6 +242,59 @@ class CircuitPdfService
     }
 
     /**
+     * Detecta las coordenadas exactas (en puntos PDF) del espacio reservado para la firma
+     * en la última página del documento generado para AutoFirma.
+     */
+    public function detectSignatureCoordinates(string $relativePdfPath, int $stepIndex = 0): array
+    {
+        $fullPath = Storage::disk('local')->path($relativePdfPath);
+        $colIndex = $stepIndex % 2;
+        $rowIndex = (int) floor($stepIndex / 2);
+
+        $defaultY = 220.0;
+        $detectedY = null;
+
+        if (file_exists($fullPath)) {
+            try {
+                $escaped = escapeshellarg($fullPath);
+                $pyScript = "import pypdf\n"
+                    . "r = pypdf.PdfReader(open({$escaped}, 'rb'))\n"
+                    . "p = r.pages[-1]\n"
+                    . "found = None\n"
+                    . "def v(t, cm, tm, font, s):\n"
+                    . "    global found\n"
+                    . "    if found is None and ('AUTOFIRMA' in t or 'ESPACIO' in t):\n"
+                    . "        found = tm[5]\n"
+                    . "p.extract_text(visitor_text=v)\n"
+                    . "if found is not None: print(found)\n";
+
+                $output = trim((string) shell_exec("python3 -c " . escapeshellarg($pyScript)));
+                if (is_numeric($output) && (float) $output > 30) {
+                    $detectedY = (float) $output;
+                }
+            } catch (\Throwable $e) {
+                // Silencioso, usar fallback
+            }
+        }
+
+        $baseY = $detectedY ?? $defaultY;
+
+        // Ajustar coordenadas para que la rúbrica encaje dentro del recuadro de la etapa
+        $startX = $colIndex === 0 ? 60 : 305;
+        $endX = $startX + 225;
+        $yEnd = (int) round($baseY + 5 - ($rowIndex * 55));
+        $yStart = (int) round($yEnd - 48);
+
+        return [
+            'startX' => $startX,
+            'endX'   => $endX,
+            'yStart' => max(40, $yStart),
+            'yEnd'   => max(88, $yEnd),
+            'page'   => -1,
+        ];
+    }
+
+    /**
      * Adjunta el PDF oficial generado al elemento vinculado (Activity o Expediente).
      */
     public function syncAttachment(CircuitExecution $execution, string $filePath, string $fileName, ?string $label = null): void

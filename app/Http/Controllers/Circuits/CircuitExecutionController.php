@@ -198,6 +198,7 @@ class CircuitExecutionController extends Controller
         }
 
         $existingSignaturesCount = $circuit->steps()->whereNotNull('signed_at')->count();
+        $sigCoords = $pdfService->detectSignatureCoordinates($pdfPath, $existingSignaturesCount);
 
         return view('circuits.signature.portal', [
             'team' => $team,
@@ -206,6 +207,7 @@ class CircuitExecutionController extends Controller
             'stepIndex' => $stepIndex,
             'signerUser' => Auth::user(),
             'existingSignaturesCount' => $existingSignaturesCount,
+            'sigCoords' => $sigCoords,
         ]);
     }
 
