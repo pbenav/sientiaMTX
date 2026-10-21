@@ -334,12 +334,11 @@
                 return;
             }
 
-            // Coordenadas calculadas dinámicamente según la posición del recuadro de firma en el documento
-            // (Margen izquierdo de 3.2cm reservado para la Banda Lateral Oficial)
-            const startX = {{ $sigCoords['startX'] ?? 95 }};
-            const endX   = {{ $sigCoords['endX'] ?? 315 }};
-            const yStart = {{ $sigCoords['yStart'] ?? 160 }};
-            const yEnd   = {{ $sigCoords['yEnd'] ?? 232 }};
+            // Coordenadas calculadas para la columna de firmas en el cajetín oficial al pie de página
+            const startX = {{ $sigCoords['startX'] ?? 215 }};
+            const endX   = {{ $sigCoords['endX'] ?? 490 }};
+            const yStart = {{ $sigCoords['yStart'] ?? 28 }};
+            const yEnd   = {{ $sigCoords['yEnd'] ?? 98 }};
 
             const extraParams = "signatureFormat=PADES-BES\n" +
                                 "signaturePage=-1\n" +
@@ -348,7 +347,7 @@
                                 "signaturePositionOnPageUpperRightX=" + endX + "\n" +
                                 "signaturePositionOnPageUpperRightY=" + yEnd + "\n" +
                                 "layer2FontFamily=1\n" +
-                                "layer2FontSize=6.8\n" +
+                                "layer2FontSize=6.5\n" +
                                 "layer2Text=FIRMADO DIGITALMENTE POR:\\n" +
                                 "$$SUBJECTCN$$\\n" +
                                 "Fecha y hora: $$SIGNDATE=dd/MM/yyyy HH:mm:ss$$\\n" +

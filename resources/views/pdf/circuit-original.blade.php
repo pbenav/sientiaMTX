@@ -4,47 +4,15 @@
     <meta charset="UTF-8">
     <title>{{ $execution->title }}</title>
     <style>
-        @page { size: A4; margin: 2.2cm 1.8cm 2.2cm 3.2cm; }
-        body { font-family: 'DejaVu Sans', 'Helvetica', 'Arial', sans-serif; color: #1e293b; line-height: 1.5; margin: 0; padding: 0; font-size: 11.5px; }
+        @page { size: A4; margin: 2cm 2cm 3.5cm 2cm; }
+        body { font-family: 'DejaVu Sans', 'Helvetica', 'Arial', sans-serif; color: #1e293b; line-height: 1.5; margin: 0; padding: 0; font-size: 11px; }
 
-        /* ── Banda Lateral Oficial (Sede Electrónica / CSV / Cotejo) ── */
-        .lateral-band {
-            position: fixed;
-            top: -1.2cm;
-            left: -2.8cm;
-            bottom: -1.2cm;
-            width: 2.5cm;
-            border-right: 1px solid #cbd5e1;
-            text-align: center;
-        }
-        .lateral-qr-box {
-            position: absolute;
-            bottom: 15px;
-            left: 6px;
-            width: 60px;
-            text-align: center;
-        }
-        .lateral-qr-img {
-            width: 54px;
-            height: 54px;
-        }
-        .lateral-qr-label {
-            font-size: 5.5px;
-            font-family: 'DejaVu Sans Mono', monospace;
-            color: #64748b;
-            margin-top: 2px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        .doc-header { border-bottom: 2px solid #7c3aed; padding-bottom: 12px; margin-bottom: 20px; }
-        .doc-title { font-size: 20px; font-weight: bold; color: #0f172a; margin: 0 0 6px 0; line-height: 1.25; }
-        .doc-meta { font-size: 9px; color: #64748b; margin-top: 4px; }
+        .doc-header { border-bottom: 2px solid #7c3aed; padding-bottom: 10px; margin-bottom: 18px; }
+        .doc-title { font-size: 19px; font-weight: bold; color: #0f172a; margin: 0 0 5px 0; line-height: 1.25; }
+        .doc-meta { font-size: 9px; color: #64748b; margin-top: 3px; }
         .doc-meta strong { color: #334155; }
 
-        .section-title { font-size: 11px; font-weight: bold; text-transform: uppercase; color: #7c3aed; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; margin-top: 22px; margin-bottom: 12px; letter-spacing: 1px; }
-
-        .content { font-size: 11px; color: #334155; margin-bottom: 20px; line-height: 1.6; }
+        .content { font-size: 11px; color: #334155; margin-bottom: 15px; line-height: 1.6; }
         .content p { margin-bottom: 8px; }
         .content ul { margin-bottom: 8px; padding-left: 20px; }
         .content ol { margin-bottom: 8px; padding-left: 20px; }
@@ -111,35 +79,163 @@
             background: #f8fafc;
         }
 
-        /* ── Espacio reservado para rúbrica de AutoFirma ── */
-        .autofirma-box {
-            margin-top: 20px;
-            border: 1.5px dashed #cbd5e1;
-            background: #fafafa;
+        /* ── CAJETÍN OFICIAL AL PIE DE PÁGINA (Fijo en todas las páginas) ── */
+        .footer-cajetin {
+            position: fixed;
+            bottom: -3.1cm;
+            left: 0;
+            right: 0;
+            height: 2.7cm;
+            border: 1px solid #cbd5e1;
             border-radius: 6px;
-            padding: 6px 10px;
-            min-height: 75px;
-            page-break-inside: avoid;
-            position: relative;
+            background: #f8fafc;
+            padding: 6px 8px;
+            box-sizing: border-box;
         }
-        .autofirma-anchor {
-            font-size: 1pt;
-            color: transparent;
-            line-height: 1;
-            display: inline-block;
+
+        .cajetin-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .cajetin-table td {
+            vertical-align: middle;
+            padding: 0 5px;
+        }
+
+        .col-sede {
+            width: 32%;
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .col-firmas {
+            width: 53%;
+            border-right: 1px solid #e2e8f0;
+            padding-left: 8px !important;
+        }
+
+        .col-qr {
+            width: 15%;
+            text-align: center;
+        }
+
+        .sede-title {
+            font-size: 8px;
+            font-weight: bold;
+            color: #7c3aed;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .sede-csv {
+            font-size: 7.5px;
+            font-family: 'DejaVu Sans Mono', monospace;
+            font-weight: bold;
+            color: #0f172a;
+            margin-bottom: 2px;
+        }
+
+        .sede-url {
+            font-size: 6.8px;
+            color: #64748b;
+            word-break: break-all;
+        }
+
+        .legal-notice {
+            font-size: 6px;
+            color: #94a3b8;
+            margin-top: 2px;
+            font-style: italic;
+        }
+
+        .firmas-title {
+            font-size: 7.8px;
+            font-weight: bold;
+            color: #0f172a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .firma-item {
+            font-size: 7px;
+            color: #334155;
+            line-height: 1.35;
+            margin-bottom: 2px;
+        }
+
+        .firma-item strong {
+            color: #047857;
+        }
+
+        .firma-item-pending {
+            font-size: 7px;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .firma-check {
+            color: #059669;
+            font-weight: bold;
+            font-size: 8px;
+        }
+
+        .qr-img {
+            width: 50px;
+            height: 50px;
+        }
+
+        .qr-caption {
+            font-size: 5.5px;
+            color: #64748b;
+            font-weight: bold;
+            margin-top: 1px;
+            text-transform: uppercase;
+            font-family: 'DejaVu Sans Mono', monospace;
         }
     </style>
 </head>
 <body>
 
-    {{-- Banda Lateral Oficial de Sede Electrónica (Fija en todas las páginas) --}}
-    <div class="lateral-band">
-        @if(!empty($qrSvg))
-            <div class="lateral-qr-box">
-                <img src="data:image/svg+xml;base64,{{ $qrSvg }}" class="lateral-qr-img" alt="QR Cotejo">
-                <div class="lateral-qr-label">Cotejo CSV</div>
-            </div>
-        @endif
+    {{-- Cajetín Oficial de Firma al Pie de Página (Fijo en todas las páginas) --}}
+    <div class="footer-cajetin">
+        <table class="cajetin-table">
+            <tr>
+                <td class="col-sede">
+                    <div class="sede-title">Sede Electrónica Sientia.MTX</div>
+                    <div class="sede-csv">CSV: {{ $csv }}</div>
+                    <div class="sede-url">Cotejo: {{ $verifyUrl }}</div>
+                    <div class="legal-notice">Validez legal según Ley 39/2015 del PACAP y Reg. eIDAS (UE 910/2014)</div>
+                </td>
+                <td class="col-firmas">
+                    <div class="firmas-title">Diligencia de Firmas Electrónicas Colegiadas</div>
+                    @forelse($signedSteps as $st)
+                        @php
+                            $sName = $st->actionUser?->name ?? $st->assignedUser?->name ?? 'Firmante';
+                            $sDate = $st->signed_at ? $st->signed_at->format('d/m/Y H:i') : now()->format('d/m/Y H:i');
+                            $sRole = $st->action_type_label ?? $st->name;
+                            $sCert = $st->signature_data['certificate_issuer'] ?? ($st->signature_data['method'] === 'autofirma' ? 'AutoFirma / FNMT-DNIe' : 'Certificado Digital');
+                        @endphp
+                        <div class="firma-item">
+                            <span class="firma-check">&#10003;</span>
+                            <strong>{{ $sName }}</strong> ({{ $sRole }}) &bull; {{ $sDate }} &bull; {{ $sCert }}
+                        </div>
+                    @empty
+                        <div class="firma-item-pending">
+                            En espera de resolución y firma en el itinerario
+                        </div>
+                    @endforelse
+                    <div class="legal-notice">Documento electrónico con firmas criptográficas PAdES reconocidas</div>
+                </td>
+                <td class="col-qr">
+                    @if(!empty($qrSvg))
+                        <img src="data:image/svg+xml;base64,{{ $qrSvg }}" class="qr-img" alt="QR">
+                        <div class="qr-caption">Cotejo CSV</div>
+                    @endif
+                </td>
+            </tr>
+        </table>
     </div>
 
     {{-- Encabezado Limpio del Documento --}}
@@ -163,31 +259,16 @@
         </div>
     @endif
 
-    {{-- Espacio para rúbrica visible de AutoFirma / Certificado Digital --}}
-    <div class="autofirma-box">
-        <span class="autofirma-anchor">[[AUTOFIRMA_RUBRICA_ANCHOR]]</span>
-    </div>
-
+    {{-- Paginación en esquina inferior derecha --}}
     <script type="text/php">
         if (isset($pdf)) {
-            $fontBold = $fontMetrics->getFont("DejaVu Sans", "bold");
-            $fontRegular = $fontMetrics->getFont("DejaVu Sans", "normal");
-
-            // Pista 1: Cabecera Sede Electrónica y CSV (color morado oficial Sientia #7c3aed)
-            $track1 = "SEDE ELECTRÓNICA SIENTIA.MTX  |  CÓDIGO SEGURO DE VERIFICACIÓN (CSV): {{ $csv }}";
-            $pdf->page_text(73, 560, $track1, $fontBold, 6.8, [0.49, 0.23, 0.93], 0, 0, 90);
-
-            // Pista 2: Diligencia de Firmas registradas
-            $track2 = "FIRMANTES: {{ addslashes($signersText ?? 'En proceso de tramitación') }}  |  Sello PAdES oficial verificado";
-            $pdf->page_text(61, 710, $track2, $fontRegular, 6.2, [0.2, 0.25, 0.3], 0, 0, 90);
-
-            // Pista 3: Validez legal y cotejo en sede
-            $track3 = "Documento electrónico auténtico (Ley 39/2015 y eIDAS)  |  Cotejo: {{ $verifyUrl ?? route('public.circuits.verify', $csv) }}";
-            $pdf->page_text(49, 680, $track3, $fontRegular, 5.8, [0.4, 0.45, 0.5], 0, 0, 90);
-
-            // Paginación en la banda lateral
-            $pagText = "Pág. {PAGE_NUM} de {PAGE_COUNT}";
-            $pdf->page_text(73, 90, $pagText, $fontBold, 6.5, [0.4, 0.45, 0.5], 0, 0, 90);
+            $text = "Página {PAGE_NUM} de {PAGE_COUNT}";
+            $size = 7.0;
+            $font = $fontMetrics->getFont("DejaVu Sans");
+            $width = $fontMetrics->get_text_width($text, $font, $size);
+            $x = $pdf->get_width() - $width - 56;
+            $y = $pdf->get_height() - 14;
+            $pdf->page_text($x, $y, $text, $font, $size, [0.58, 0.64, 0.72]);
         }
     </script>
 </body>

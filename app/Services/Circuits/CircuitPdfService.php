@@ -140,6 +140,7 @@ class CircuitPdfService
                 'circuitable'   => $circuitable,
                 'contentHtml'   => $contentHtml,
                 'steps'         => $allSteps,
+                'signedSteps'   => $signedSteps,
                 'csv'           => $csv,
                 'qrSvg'         => $qrSvg,
                 'verifyUrl'     => $verifyUrl,
@@ -275,54 +276,20 @@ class CircuitPdfService
 
     /**
      * Detecta las coordenadas exactas (en puntos PDF) del espacio reservado para la firma
-     * en la última página del documento generado para AutoFirma.
+     * en el cajetín oficial al pie de página para AutoFirma.
      */
     public function detectSignatureCoordinates(string $relativePdfPath, int $stepIndex = 0): array
     {
-        $fullPath = Storage::disk('local')->path($relativePdfPath);
-        $colIndex = $stepIndex % 2;
-        $rowIndex = (int) floor($stepIndex / 2);
-
-        $defaultY = 220.0;
-        $detectedY = null;
-
-        if (file_exists($fullPath)) {
-            try {
-                $escaped = escapeshellarg($fullPath);
-                $pyScript = "import pypdf\n"
-                    . "r = pypdf.PdfReader(open({$escaped}, 'rb'))\n"
-                    . "p = r.pages[-1]\n"
-                    . "found = None\n"
-                    . "def v(t, cm, tm, font, s):\n"
-                    . "    global found\n"
-                    . "    if found is None and ('AUTOFIRMA' in t or 'ESPACIO' in t):\n"
-                    . "        found = tm[5]\n"
-                    . "p.extract_text(visitor_text=v)\n"
-                    . "if found is not None: print(found)\n";
-
-                $output = trim((string) shell_exec("python3 -c " . escapeshellarg($pyScript)));
-                if (is_numeric($output) && (float) $output > 30) {
-                    $detectedY = (float) $output;
-                }
-            } catch (\Throwable $e) {
-                // Silencioso, usar fallback
-            }
-        }
-
-        $baseY = $detectedY ?? $defaultY;
-
-        // Ajustar coordenadas para que la rúbrica encaje dentro del recuadro de la etapa
-        // Margen izquierdo de 3.2cm (91pt) reservado para la banda lateral oficial
-        $startX = $colIndex === 0 ? 95 : 325;
-        $endX = $startX + 220;
-        $yEnd = (int) round($baseY + 5 - ($rowIndex * 80));
-        $yStart = (int) round($yEnd - 72);
-
+        // En el nuevo diseño institucional de cajetín al pie de página,
+        // la columna central de firmas está en una posición fija y estandarizada:
+        // Ancho: de X=215pt a X=490pt (275pt de ancho)
+        // Alto:  de Y=28pt a Y=98pt (70pt de alto en la parte inferior)
+        // Página: -1 (última página para estampar la rúbrica oficial)
         return [
-            'startX' => $startX,
-            'endX'   => $endX,
-            'yStart' => max(40, $yStart),
-            'yEnd'   => max(112, $yEnd),
+            'startX' => 215,
+            'endX'   => 490,
+            'yStart' => 28,
+            'yEnd'   => 98,
             'page'   => -1,
         ];
     }
