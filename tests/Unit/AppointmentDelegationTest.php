@@ -162,4 +162,98 @@ class AppointmentDelegationTest extends TestCase
 
         $this->assertEquals(302, $response->getStatusCode());
     }
+
+    public function test_activity_policy_authorizes_secretary_of_appointment(): void
+    {
+        $secretary = $this->getMockBuilder(User::class)
+            ->onlyMethods(['isSecretaryOf'])
+            ->getMock();
+        $secretary->id = 20;
+        $secretary->method('isSecretaryOf')->willReturnCallback(fn($uid, $tid) => $uid === 10 && $tid === 1);
+
+        $team = new Team(['name' => 'Demo Team']);
+        $team->id = 1;
+        $team->setRelation('members', collect([$secretary]));
+
+        $service = new AppointmentService();
+        $service->team_id = 1;
+
+        $appointment = new Appointment([
+            'user_id' => 10,
+        ]);
+        $appointment->setRelation('service', $service);
+
+        $activity = new \App\Models\Activity([
+            'created_by_id' => 10,
+            'team_id' => 1,
+            'visibility' => 'private',
+        ]);
+        $activity->id = 100;
+        $activity->setRelation('team', $team);
+        $activity->setRelation('appointment', $appointment);
+        $activity->setRelation('assignments', collect([
+            new \App\Models\ActivityAssignment(['user_id' => 10]),
+        ]));
+
+        $policy = new \App\Policies\ActivityPolicy();
+
+        $this->assertTrue($policy->view($secretary, $activity));
+        $this->assertTrue($policy->update($secretary, $activity));
+
+        // Usuario no secretario debe ser denegado
+        $otherUser = $this->getMockBuilder(User::class)
+            ->onlyMethods(['isSecretaryOf'])
+            ->getMock();
+        $otherUser->id = 99;
+        $otherUser->method('isSecretaryOf')->willReturn(false);
+
+        $this->assertFalse($policy->view($otherUser, $activity));
+        $this->assertFalse($policy->update($otherUser, $activity));
+    }
+
+    public function test_task_policy_authorizes_secretary_of_appointment(): void
+    {
+        $secretary = $this->getMockBuilder(User::class)
+            ->onlyMethods(['isSecretaryOf'])
+            ->getMock();
+        $secretary->id = 20;
+        $secretary->method('isSecretaryOf')->willReturnCallback(fn($uid, $tid) => $uid === 10 && $tid === 1);
+
+        $team = new Team(['name' => 'Demo Team']);
+        $team->id = 1;
+        $team->setRelation('members', collect([$secretary]));
+
+        $service = new AppointmentService();
+        $service->team_id = 1;
+
+        $appointment = new Appointment([
+            'user_id' => 10,
+        ]);
+        $appointment->setRelation('service', $service);
+
+        $task = new \App\Models\Task([
+            'created_by_id' => 10,
+            'assigned_user_id' => 10,
+            'team_id' => 1,
+            'visibility' => 'private',
+        ]);
+        $task->id = 200;
+        $task->setRelation('team', $team);
+        $task->setRelation('appointment', $appointment);
+
+        $policy = new \App\Policies\TaskPolicy();
+
+        $this->assertTrue($policy->view($secretary, $task));
+        $this->assertTrue($policy->update($secretary, $task));
+
+        // Usuario no secretario
+        $otherUser = $this->getMockBuilder(User::class)
+            ->onlyMethods(['isSecretaryOf'])
+            ->getMock();
+        $otherUser->id = 99;
+        $otherUser->method('isSecretaryOf')->willReturn(false);
+
+        $this->assertFalse($policy->view($otherUser, $task));
+        $this->assertFalse($policy->update($otherUser, $task));
+    }
 }

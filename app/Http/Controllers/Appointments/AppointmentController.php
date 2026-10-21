@@ -195,7 +195,7 @@ class AppointmentController extends Controller
         if ($appointment->service->team_id !== $team->id) {
             abort(403);
         }
-        $appointment->load(['service', 'visitor', 'task', 'expediente']);
+        $appointment->load(['service', 'visitor', 'task', 'activity', 'expediente']);
         
         \App\Jobs\SyncAppointmentWithGoogleJob::dispatchSync($appointment);
         
@@ -258,16 +258,25 @@ class AppointmentController extends Controller
                 'description'  => 'Actividad autogenerada para la atención de la cita ' . $appointment->localizador,
                 'status'       => ['value' => 'in_progress'],
                 'priority'     => 'medium',
-                'created_by_id'=> auth()->id(),
+                'created_by_id'=> $appointment->user_id ?? auth()->id(),
                 'type'         => 'meeting',
             ]);
             $activity->team_id = $team->id;
             $activity->save();
 
-            $activity->assignments()->create([
-                'user_id'        => auth()->id(),
-                'assigned_by_id' => auth()->id(),
-            ]);
+            if ($appointment->user_id) {
+                $activity->assignments()->create([
+                    'user_id'        => $appointment->user_id,
+                    'assigned_by_id' => auth()->id(),
+                ]);
+            }
+
+            if (auth()->id() !== $appointment->user_id) {
+                $activity->assignments()->create([
+                    'user_id'        => auth()->id(),
+                    'assigned_by_id' => auth()->id(),
+                ]);
+            }
 
             $appointment->update([
                 'activity_id' => $activity->id,
@@ -277,7 +286,15 @@ class AppointmentController extends Controller
         // Start time tracker if not already started
         $taskObj = $appointment->fresh()->activity;
         
-        $activeLog = \App\Models\TimeLog::where('user_id', auth()->id())
+        $user = auth()->user();
+        if (!$user->activeWorkdayLog()) {
+            if ($user->sync_with_cth) {
+                \App\Jobs\SyncWorkdayWithCth::syncNow($user, 'start');
+            }
+            $user->timeLogs()->create(['type' => 'workday', 'start_at' => now()]);
+        }
+
+        $activeLog = \App\Models\TimeLog::where('user_id', $user->id)
             ->whereNull('end_at')
             ->first();
 
@@ -287,7 +304,7 @@ class AppointmentController extends Controller
 
         if (!$activeLog || $activeLog->task_id !== $taskObj->id) {
             \App\Models\TimeLog::create([
-                'user_id'  => auth()->id(),
+                'user_id'  => $user->id,
                 'task_id'  => $taskObj->id,
                 'type'     => 'task',
                 'start_at' => now(),
