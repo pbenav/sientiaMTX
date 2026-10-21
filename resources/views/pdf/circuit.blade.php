@@ -23,9 +23,72 @@
 
         .section-title { font-size: 11px; font-weight: bold; text-transform: uppercase; color: #7c3aed; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; margin-top: 20px; margin-bottom: 10px; letter-spacing: 1px; }
 
-        .content { font-size: 12px; color: #334155; margin-bottom: 20px; }
+        .content { font-size: 11.5px; color: #334155; margin-bottom: 20px; line-height: 1.6; }
         .content p { margin-bottom: 8px; }
-        .content ul { margin-bottom: 8px; padding-left: 18px; }
+        .content ul { margin-bottom: 8px; padding-left: 20px; }
+        .content ol { margin-bottom: 8px; padding-left: 20px; }
+        .content li { margin-bottom: 3px; }
+
+        .content h1 { font-size: 15px; font-weight: bold; color: #0f172a; margin: 16px 0 8px 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
+        .content h2 { font-size: 13.5px; font-weight: bold; color: #0f172a; margin: 14px 0 6px 0; }
+        .content h3 { font-size: 12px; font-weight: bold; color: #1e293b; margin: 12px 0 4px 0; }
+        .content h4, .content h5, .content h6 { font-size: 11px; font-weight: bold; color: #334155; margin: 10px 0 4px 0; }
+
+        .content hr { border: 0; border-top: 1px solid #e2e8f0; margin: 14px 0; }
+        .content blockquote { border-left: 3px solid #7c3aed; background: #f8fafc; padding: 6px 12px; margin: 8px 0; color: #475569; font-style: italic; }
+
+        /* Soporte Unicode completo para código y diagramas ASCII / Box Drawing */
+        .content pre, pre {
+            font-family: 'DejaVu Sans Mono', monospace;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 8px 10px;
+            margin: 10px 0;
+            font-size: 8px;
+            line-height: 1.35;
+            color: #1e293b;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .content code, code {
+            font-family: 'DejaVu Sans Mono', monospace;
+        }
+        .content p code, .content li code {
+            background: #f1f5f9;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-size: 9.5px;
+            color: #7c3aed;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Tablas Markdown */
+        .content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 10px;
+        }
+        .content table th {
+            background: #f1f5f9;
+            color: #334155;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 8px;
+            letter-spacing: 0.5px;
+            padding: 6px 8px;
+            border: 1px solid #cbd5e1;
+            text-align: left;
+        }
+        .content table td {
+            padding: 6px 8px;
+            border: 1px solid #cbd5e1;
+            vertical-align: top;
+        }
+        .content table tr:nth-child(even) {
+            background: #f8fafc;
+        }
 
         /* ── Tabla de Etapas del Circuito ── */
         .steps-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 11px; }
@@ -46,8 +109,7 @@
             border: 1.5px solid #e2e8f0;
             border-radius: 6px;
             padding: 8px 10px;
-            height: 124px;
-            min-height: 124px;
+            min-height: 126px;
             position: relative;
             background: #ffffff;
             box-sizing: border-box;
@@ -61,6 +123,10 @@
             background: #fafafa;
             border-style: dashed;
         }
+        .sig-box.in_progress {
+            border-color: #8b5cf6;
+            background: #faf5ff;
+        }
 
         .sig-inner-table { width: 100%; border-collapse: collapse; }
         .sig-inner-table td { vertical-align: top; padding: 0; }
@@ -68,16 +134,74 @@
         .sig-header { font-size: 7.5px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
         .sig-header.signed { color: #059669; }
         .sig-header.pending { color: #94a3b8; }
+        .sig-header.in_progress { color: #7c3aed; }
 
-        .sig-check { font-family: 'DejaVu Sans', sans-serif; font-size: 10px; color: #059669; }
-        .sig-name { font-size: 10.5px; font-weight: bold; color: #0f172a; margin-bottom: 1px; }
-        .sig-meta { font-size: 8px; color: #475569; margin-bottom: 2px; }
-        .sig-date { font-size: 8px; color: #059669; font-weight: bold; margin-top: 2px; }
-        .sig-hash { font-size: 7px; color: #475569; margin-top: 2px; line-height: 1.2; }
-        .sig-hash code { font-family: monospace; font-size: 5.8px; color: #1e293b; word-break: break-all; }
-        .sig-comment { font-size: 7.5px; font-style: italic; color: #334155; margin-top: 2px; padding-top: 2px; border-top: 1px dotted #a7f3d0; }
+        .sig-check { font-family: 'DejaVu Sans', sans-serif; font-size: 9.5px; color: #059669; }
 
-        .qr-cell { width: 62px; text-align: center; vertical-align: top; padding-left: 6px; padding-top: 2px; }
+        /* Sello Institucional */
+        .sig-stamp-box {
+            border: 1px solid #a7f3d0;
+            background: #ffffff;
+            border-radius: 4px;
+            padding: 4px 6px;
+            margin-top: 2px;
+            font-size: 6.8px;
+            line-height: 1.25;
+            color: #1e293b;
+        }
+        .sig-stamp-title {
+            font-size: 6.8px;
+            font-weight: bold;
+            color: #065f46;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+        .sig-stamp-line {
+            border-bottom: 1px dotted #10b981;
+            margin: 2px 0 3px 0;
+        }
+        .sig-stamp-row {
+            margin-bottom: 1.5px;
+            color: #334155;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .sig-stamp-row strong {
+            color: #0f172a;
+            font-size: 6.5px;
+        }
+        .sig-stamp-legal {
+            font-size: 6px;
+            color: #059669;
+            font-weight: bold;
+            margin-top: 1.5px;
+        }
+        .sig-stamp-hash {
+            font-size: 5.8px;
+            color: #64748b;
+            margin-top: 2px;
+            border-top: 1px dotted #e2e8f0;
+            padding-top: 2px;
+            line-height: 1.15;
+        }
+        .sig-stamp-hash code {
+            font-family: 'DejaVu Sans Mono', monospace;
+            font-size: 5.4px;
+            color: #1e293b;
+            word-break: break-all;
+        }
+        .sig-comment {
+            font-size: 6.8px;
+            font-style: italic;
+            color: #334155;
+            margin-top: 2px;
+            padding-top: 2px;
+            border-top: 1px dotted #a7f3d0;
+        }
+
+        .qr-cell { width: 62px; text-align: center; vertical-align: top; padding-left: 6px; padding-top: 1px; }
         .qr-img { border: 1px solid #cbd5e1; padding: 2px; background: #ffffff; border-radius: 3px; }
         .qr-label { font-size: 5.5px; color: #059669; font-weight: bold; text-transform: uppercase; margin-top: 2px; letter-spacing: 0.5px; text-align: center; }
 
@@ -238,46 +362,55 @@
                         <tr>
                             @foreach($row as $step)
                                 <td class="signature-cell">
-                                    <div class="sig-box {{ $step->signed_at ? 'signed' : 'pending' }}">
+                                    <div class="sig-box {{ $step->signed_at ? 'signed' : (isset($signingStepId) && $step->id === $signingStepId ? 'in_progress' : 'pending') }}">
                                         @if($step->signed_at)
                                             @php
                                                 $sigMethod = $step->signature_data['method'] ?? 'internal_certificate';
                                                 $isAutoFirma = in_array(strtolower($sigMethod), ['autofirma', 'manual_upload']);
-                                                $methodLabel = $isAutoFirma ? 'Firma Reconocida (AutoFirma PAdES)' : 'Conformidad Acreditada (CSV)';
                                                 $fullHash = $step->signature_data['sha256_hash'] ?? hash('sha256', 'CIRCUIT:' . $execution->id . '|STEP:' . $step->id . '|ORDER:' . $step->order . '|USER:' . ($step->action_taken_by_id ?? 0) . '|TS:' . ($step->signed_at?->timestamp ?? 0) . '|CSV:' . ($csv ?? ''));
                                                 $verifyUrl = route('public.circuits.verify', ['csv' => $csv ?? '']) . '?hash=' . $fullHash . '&step=' . $step->order;
                                                 $qrSvg = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::size(200)->errorCorrection('M')->margin(2)->generate($verifyUrl));
+                                                $signerName = $step->signature_data['signer_name'] ?? $step->actionUser?->name ?? 'Usuario Certificado';
+                                                $signerEmail = $step->signature_data['signer_email'] ?? $step->actionUser?->email ?? '';
                                             @endphp
                                             <table class="sig-inner-table">
                                                 <tr>
                                                     <td>
                                                         <div class="sig-header signed">
                                                             <span class="sig-check">&#10003;</span>
-                                                            Etapa {{ $step->order }}: {{ $isAutoFirma ? 'Firma Reconocida' : 'Conformidad Acreditada' }}
+                                                            Etapa {{ $step->order }}: {{ $isAutoFirma ? 'Firma Cualificada (PAdES)' : 'Conformidad Acreditada (CSV)' }}
                                                         </div>
-                                                        <div class="sig-name">{{ $step->signature_data['signer_name'] ?? $step->actionUser?->name ?? 'Usuario Certificado' }}</div>
-                                                        <div class="sig-meta">
-                                                            {{ $step->name }} — {{ $step->signature_data['signer_email'] ?? $step->actionUser?->email ?? '' }}
-                                                        </div>
-                                                        <div class="sig-date">
-                                                            {{ $isAutoFirma ? 'Firmado' : 'Acreditado' }} el {{ $step->signed_at->format('d/m/Y \a \l\a\s H:i:s') }}
-                                                        </div>
-                                                        <div class="sig-hash">
-                                                            <div><strong>Método:</strong> {{ $methodLabel }}</div>
-                                                            <div style="margin-top: 1px;">
-                                                                <strong>Huella SHA-256:</strong><br>
+
+                                                        <div class="sig-stamp-box">
+                                                            <div class="sig-stamp-title">Diligencia Oficial de Firma Electrónica</div>
+                                                            <div class="sig-stamp-line"></div>
+                                                            <div class="sig-stamp-row">
+                                                                <strong>FIRMADO POR:</strong> {{ strtoupper($signerName) }}
+                                                            </div>
+                                                            <div class="sig-stamp-row">
+                                                                <strong>ACTO / ROL:</strong> {{ $step->name }} &bull; {{ $signerEmail }}
+                                                            </div>
+                                                            <div class="sig-stamp-row">
+                                                                <strong>FECHA:</strong> {{ $step->signed_at->format('d/m/Y \a \l\a\s H:i:s') }}
+                                                            </div>
+                                                            <div class="sig-stamp-row sig-stamp-legal">
+                                                                {{ $isAutoFirma ? 'Sello PAdES verificado en Sientia.MTX (Reglamento eIDAS / Ley 39/2015)' : 'Acreditado con CSV oficial según Ley 39/2015' }}
+                                                            </div>
+                                                            <div class="sig-stamp-hash">
+                                                                <strong>HUELLA SHA-256:</strong><br>
                                                                 <code>{{ strtolower($fullHash) }}</code>
                                                             </div>
                                                         </div>
+
                                                         @if($step->comments)
                                                             <div class="sig-comment">
-                                                                "{{ \Illuminate\Support\Str::limit($step->comments, 75) }}"
+                                                                "{{ \Illuminate\Support\Str::limit($step->comments, 65) }}"
                                                             </div>
                                                         @endif
                                                     </td>
                                                     <td class="qr-cell">
                                                         <img src="data:image/svg+xml;base64,{{ $qrSvg }}" width="56" height="56" class="qr-img" alt="QR Verificación">
-                                                        <div class="qr-label">Verificar QR</div>
+                                                        <div class="qr-label">Cotejo CSV</div>
                                                     </td>
                                                 </tr>
                                             </table>
@@ -285,20 +418,35 @@
                                             @php
                                                 $verifyUrl = route('public.circuits.verify', ['csv' => $csv ?? '']) . '?step=' . $step->order;
                                                 $qrSvg = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::size(200)->errorCorrection('M')->margin(2)->generate($verifyUrl));
+                                                $signingName = $signingUser?->name ?? $step->actionUser?->name ?? $step->assignedUser?->name ?? 'Usuario Firmante';
+                                                $signingEmail = $signingUser?->email ?? $step->actionUser?->email ?? $step->assignedUser?->email ?? '';
                                             @endphp
                                             <table class="sig-inner-table">
                                                 <tr>
                                                     <td>
-                                                        <div class="sig-header signed">
-                                                            <span class="sig-check">&#10003;</span>
-                                                            Etapa {{ $step->order }}: Firma Reconocida
+                                                        <div class="sig-header in_progress">
+                                                            Etapa {{ $step->order }}: Trámite de Firma en Curso
                                                         </div>
-                                                        <div class="sig-name">{{ $signingUser?->name ?? $step->actionUser?->name ?? $step->assignedUser?->name ?? 'Usuario Firmante' }}</div>
-                                                        <div class="sig-meta">
-                                                            {{ $step->name }} — {{ $signingUser?->email ?? $step->actionUser?->email ?? $step->assignedUser?->email ?? '' }}
+
+                                                        <div class="sig-stamp-box" style="border-color: #c4b5fd; background: #faf5ff;">
+                                                            <div class="sig-stamp-title" style="color: #6d28d9;">Diligencia Oficial de Firma Electrónica</div>
+                                                            <div class="sig-stamp-line" style="border-color: #8b5cf6;"></div>
+                                                            <div class="sig-stamp-row">
+                                                                <strong>FIRMANTE ASIGNADO:</strong> {{ strtoupper($signingName) }}
+                                                            </div>
+                                                            <div class="sig-stamp-row">
+                                                                <strong>ACTO / ROL:</strong> {{ $step->name }} &bull; {{ $signingEmail }}
+                                                            </div>
+                                                            <div class="sig-stamp-row">
+                                                                <strong>ESTADO:</strong> Preparado para firma electrónica
+                                                            </div>
+                                                            <div class="sig-stamp-row sig-stamp-legal" style="color: #7c3aed;">
+                                                                Se estampará certificado digital PAdES / CSV al confirmar
+                                                            </div>
+                                                            <div class="sig-stamp-hash" style="color: #8b5cf6;">
+                                                                <strong>CSV ASIGNADO:</strong> <code>{{ $csv ?? 'EXP-' . $execution->id }}</code>
+                                                            </div>
                                                         </div>
-                                                        <!-- Espacio reservado para que la rúbrica visual estampada por AutoFirma encaje en el cajetín -->
-                                                        <div style="height: 52px;"></div>
                                                     </td>
                                                     <td class="qr-cell">
                                                         <img src="data:image/svg+xml;base64,{{ $qrSvg }}" width="56" height="56" class="qr-img" alt="QR Verificación">
@@ -310,14 +458,15 @@
                                             <div class="sig-header pending">
                                                 Etapa {{ $step->order }}: {{ $step->requires_signature ? 'Firma Electrónica' : 'Conformidad' }}
                                             </div>
-                                            <div class="sig-name" style="color: #64748b;">
+                                            <div class="sig-name" style="color: #64748b; font-size: 10px; font-weight: bold; margin-bottom: 2px;">
                                                 {{ $step->assignedUser?->name ?? ($step->assignedRole ? 'Rol: ' . $step->assignedRole->name : 'Pendiente de asignación') }}
                                             </div>
-                                            <div class="sig-meta">
+                                            <div class="sig-meta" style="font-size: 8px; color: #64748b;">
                                                 {{ $step->name }} ({{ $step->action_type_label }})
                                             </div>
-                                            <!-- Espacio restante para que el sello de Autofirma encaje perfecto -->
-                                            <div style="height: 52px;"></div>
+                                            <div style="margin-top: 14px; font-size: 7.5px; color: #94a3b8; font-style: italic;">
+                                                En espera de tramitación y firma en itinerario
+                                            </div>
                                         @endif
                                     </div>
                                 </td>

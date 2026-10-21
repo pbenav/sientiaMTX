@@ -295,7 +295,11 @@
             <div x-show="activeTab === 'content'" class="space-y-4">
                 <div class="prose max-w-none text-gray-800 leading-relaxed text-sm sm:text-base border border-gray-100 bg-gray-50/40 p-6 sm:p-8 rounded-2xl">
                     @if(!empty($publication->content_html))
-                        {!! str($publication->content_html)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
+                        @if(str_contains($publication->content_html, '<p>') || str_contains($publication->content_html, '<div') || str_contains($publication->content_html, '<h'))
+                            {!! $publication->content_html !!}
+                        @else
+                            {!! str($publication->content_html)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
+                        @endif
                     @else
                         <p class="italic text-gray-400">El cuerpo íntegro del documento se encuentra autenticado en el expediente y documento PDF oficial.</p>
                     @endif

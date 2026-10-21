@@ -334,33 +334,9 @@
                 return;
             }
 
-            // Calculamos la posición en formato grid (2 columnas) en la página dedicada de firmas
-            const rowIndex = Math.floor(STEP_POSITION / 2);
-            const colIndex = STEP_POSITION % 2;
-
-            // Coordenadas X: Columna izquierda y Columna derecha ajustadas a los márgenes del PDF
-            const startX = colIndex === 0 ? 67 : 305;
-            const endX = startX + 165; // Deja margen para el código QR a la derecha del cajetín
-
-            // Coordenadas Y: Empezamos en la altura del cajetín correspondiente a la etapa en la página dedicada
-            // Ajustado a 622 para que la rúbrica caiga exactamente en el hueco reservado bajo el nombre y email
-            const yEnd = 622 - (rowIndex * 134);
-            const yStart = yEnd - 48;
-
-            const extraParams = "signatureFormat=PADES-BES\n" +
-                                "signaturePage=-1\n" +
-                                "signaturePositionOnPageLowerLeftX=" + startX + "\n" +
-                                "signaturePositionOnPageLowerLeftY=" + yStart + "\n" +
-                                "signaturePositionOnPageUpperRightX=" + endX + "\n" +
-                                "signaturePositionOnPageUpperRightY=" + yEnd + "\n" +
-                                "layer2FontFamily=1\n" +
-                                "layer2FontSize=6\n" +
-                                "layer2Text=DILIGENCIA DE FIRMA ELECTRÓNICA\\n" +
-                                "-----------------------------------------------------------\\n" +
-                                "FIRMADO POR: $$SUBJECTCN$$\\n" +
-                                "FECHA: $$SIGNDATE=dd/MM/yyyy$$ a las $$SIGNDATE=HH:mm$$\\n" +
-                                "-----------------------------------------------------------\\n" +
-                                "Sello de validez PAdES oficial verificado en Sientia.MTX\n";
+            // Firma electrónica reconocida PAdES-BES mediante certificado digital (X.509)
+            // La diligencia visual e institucional queda perfectamente maquetada en el documento oficial
+            const extraParams = "signatureFormat=PADES-BES\n";
 
             AutoScript.sign(
                 pdfBase64,

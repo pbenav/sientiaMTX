@@ -292,15 +292,9 @@ class CircuitExecutionService
                     }
                 }
 
-                // Generar o actualizar el documento consolidado en PDF con la nueva firma
+                // Generar el documento consolidado oficial en PDF con la diligencia de firmas actualizada
                 try {
-                    $signedFilePath = $additionalData['signature_data']['signed_file_path'] ?? null;
-                    if ($signedFilePath && \Illuminate\Support\Facades\Storage::disk('local')->exists($signedFilePath)) {
-                        $execution->updateQuietly(['signed_document_path' => $signedFilePath]);
-                        $this->pdfService->syncAttachment($execution, $signedFilePath, basename($signedFilePath));
-                    } else {
-                        $this->pdfService->generateAndAttach($execution);
-                    }
+                    $this->pdfService->generateAndAttach($execution);
                 } catch (\Throwable $e) {
                     \Illuminate\Support\Facades\Log::warning('Circuit PDF generation failed: ' . $e->getMessage());
                 }
