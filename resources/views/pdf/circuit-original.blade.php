@@ -81,19 +81,9 @@
             background: #f8fafc;
         }
 
-        /* ── Tabla de Etapas del Circuito ── */
-        .steps-table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; font-size: 10.5px; }
-        .steps-table th { background: #f1f5f9; color: #475569; font-size: 8px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; padding: 6px 8px; border: 1px solid #e2e8f0; text-align: left; }
-        .steps-table td { padding: 6px 8px; border: 1px solid #e2e8f0; vertical-align: top; }
-        .status-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 8px; font-weight: bold; text-transform: uppercase; }
-        .status-approved { background: #dcfce7; color: #15803d; }
-        .status-in_progress { background: #dbeafe; color: #1d4ed8; }
-        .status-returned { background: #fef3c7; color: #b45309; }
-        .status-pending { background: #f1f5f9; color: #64748b; }
-
         /* ── Espacio reservado para rúbrica de AutoFirma ── */
         .autofirma-box {
-            margin-top: 15px;
+            margin-top: 20px;
             border: 1.5px dashed #cbd5e1;
             background: #fafafa;
             border-radius: 6px;
@@ -107,18 +97,6 @@
             color: transparent;
             line-height: 1;
             display: inline-block;
-        }
-
-        .footer {
-            position: fixed;
-            bottom: -1.8cm;
-            left: 0;
-            right: 0;
-            font-size: 7.5px;
-            color: #94a3b8;
-            text-align: center;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 4px;
         }
     </style>
 </head>
@@ -145,80 +123,9 @@
         </div>
     @endif
 
-    {{-- Resumen de Fases del Itinerario --}}
-    <div class="section-title">Itinerario y Fases de la Tramitación</div>
-    <table class="steps-table">
-        <thead>
-            <tr>
-                <th style="width: 6%;">Nº</th>
-                <th style="width: 30%;">Etapa</th>
-                <th style="width: 22%;">Acción / Rol</th>
-                <th style="width: 20%;">Asignado / Revisor</th>
-                <th style="width: 12%;">Estado</th>
-                <th style="width: 10%;">Firma</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($steps as $step)
-                <tr>
-                    <td style="text-align: center; font-weight: bold;">{{ $step->order }}</td>
-                    <td>
-                        <strong>{{ $step->name }}</strong>
-                        @if($step->description)
-                            <div style="font-size: 7.5px; color: #64748b;">{{ $step->description }}</div>
-                        @endif
-                    </td>
-                    <td>{{ $step->action_type_label }}</td>
-                    <td>
-                        @if($step->actionUser)
-                            <strong>{{ $step->actionUser->name }}</strong>
-                        @elseif($step->assignedUser)
-                            {{ $step->assignedUser->name }}
-                        @elseif($step->assignedRole)
-                            Rol: {{ $step->assignedRole->name }}
-                        @else
-                            --
-                        @endif
-                    </td>
-                    <td>
-                        @php
-                            $stClass = match($step->status) {
-                                'approved' => 'status-approved',
-                                'in_progress' => 'status-in_progress',
-                                'returned' => 'status-returned',
-                                default => 'status-pending',
-                            };
-                            $stLabel = match($step->status) {
-                                'approved' => 'Aprobado',
-                                'in_progress' => 'En curso',
-                                'returned' => 'Devuelto',
-                                default => 'Pendiente',
-                            };
-                        @endphp
-                        <span class="status-badge {{ $stClass }}">{{ $stLabel }}</span>
-                    </td>
-                    <td style="text-align: center;">
-                        @if($step->signed_at || (isset($signingStepId) && $step->id === $signingStepId))
-                            <span style="color: #059669; font-weight: bold; font-size: 8.5px;"><span style="font-family: 'DejaVu Sans', sans-serif;">&#10003;</span> Firmado</span>
-                        @elseif($step->requires_signature)
-                            <span style="color: #d97706; font-size: 8px; font-weight: bold;">Requerida</span>
-                        @else
-                            <span style="color: #94a3b8; font-size: 8px;">No req.</span>
-                        @endif
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
-
     {{-- Espacio para rúbrica visible de AutoFirma / Certificado Digital --}}
     <div class="autofirma-box">
         <span class="autofirma-anchor">[[AUTOFIRMA_RUBRICA_ANCHOR]]</span>
-    </div>
-
-    {{-- Pie de página discreto --}}
-    <div class="footer">
-        Documento original en tramitación &bull; {{ $execution->title }} &bull; Sientia.MTX
     </div>
 
     <script type="text/php">

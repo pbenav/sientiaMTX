@@ -70,6 +70,10 @@ class CircuitPdfService
             $rawContent = $circuitable->description ?? $circuitable->notes ?? '';
         }
 
+        // Si el contenido contiene un cierre tipo "Fin del Documento" o coletillas posteriores, recortar desde ese punto
+        $rawContent = preg_replace('/(\n|\r)*(\s*---*\s*)?\*{0,2}Fin del Documento\*{0,2}.*$/si', '', $rawContent);
+        $rawContent = trim($rawContent);
+
         $contentHtml = $rawContent
             ? $this->sanitizeEmojisForPdf((string) str($rawContent)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]))
             : '';
