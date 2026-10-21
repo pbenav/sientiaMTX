@@ -4,8 +4,38 @@
     <meta charset="UTF-8">
     <title>{{ $execution->title }}</title>
     <style>
-        @page { size: A4; margin: 2.2cm 2cm 2.5cm 2cm; }
+        @page { size: A4; margin: 2.2cm 1.8cm 2.2cm 3.2cm; }
         body { font-family: 'DejaVu Sans', 'Helvetica', 'Arial', sans-serif; color: #1e293b; line-height: 1.5; margin: 0; padding: 0; font-size: 11.5px; }
+
+        /* ── Banda Lateral Oficial (Sede Electrónica / CSV / Cotejo) ── */
+        .lateral-band {
+            position: fixed;
+            top: -1.2cm;
+            left: -2.8cm;
+            bottom: -1.2cm;
+            width: 2.5cm;
+            border-right: 1px solid #cbd5e1;
+            text-align: center;
+        }
+        .lateral-qr-box {
+            position: absolute;
+            bottom: 15px;
+            left: 6px;
+            width: 60px;
+            text-align: center;
+        }
+        .lateral-qr-img {
+            width: 54px;
+            height: 54px;
+        }
+        .lateral-qr-label {
+            font-size: 5.5px;
+            font-family: 'DejaVu Sans Mono', monospace;
+            color: #64748b;
+            margin-top: 2px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
 
         .doc-header { border-bottom: 2px solid #7c3aed; padding-bottom: 12px; margin-bottom: 20px; }
         .doc-title { font-size: 20px; font-weight: bold; color: #0f172a; margin: 0 0 6px 0; line-height: 1.25; }
@@ -87,8 +117,8 @@
             border: 1.5px dashed #cbd5e1;
             background: #fafafa;
             border-radius: 6px;
-            padding: 4px 8px;
-            min-height: 52px;
+            padding: 6px 10px;
+            min-height: 75px;
             page-break-inside: avoid;
             position: relative;
         }
@@ -101,6 +131,16 @@
     </style>
 </head>
 <body>
+
+    {{-- Banda Lateral Oficial de Sede Electrónica (Fija en todas las páginas) --}}
+    <div class="lateral-band">
+        @if(!empty($qrSvg))
+            <div class="lateral-qr-box">
+                <img src="data:image/svg+xml;base64,{{ $qrSvg }}" class="lateral-qr-img" alt="QR Cotejo">
+                <div class="lateral-qr-label">Cotejo CSV</div>
+            </div>
+        @endif
+    </div>
 
     {{-- Encabezado Limpio del Documento --}}
     <div class="doc-header">
@@ -130,13 +170,24 @@
 
     <script type="text/php">
         if (isset($pdf)) {
-            $text = "Página {PAGE_NUM} de {PAGE_COUNT}";
-            $size = 7.5;
-            $font = $fontMetrics->getFont("DejaVu Sans");
-            $width = $fontMetrics->get_text_width($text, $font, $size);
-            $x = ($pdf->get_width() - $width) / 2;
-            $y = $pdf->get_height() - 25;
-            $pdf->page_text($x, $y, $text, $font, $size, [0.58, 0.64, 0.72]);
+            $fontBold = $fontMetrics->getFont("DejaVu Sans", "bold");
+            $fontRegular = $fontMetrics->getFont("DejaVu Sans", "normal");
+
+            // Pista 1: Cabecera Sede Electrónica y CSV (color morado oficial Sientia #7c3aed)
+            $track1 = "SEDE ELECTRÓNICA SIENTIA.MTX  |  CÓDIGO SEGURO DE VERIFICACIÓN (CSV): {{ $csv }}";
+            $pdf->page_text(73, 560, $track1, $fontBold, 6.8, [0.49, 0.23, 0.93], 0, 0, 90);
+
+            // Pista 2: Diligencia de Firmas registradas
+            $track2 = "FIRMANTES: {{ addslashes($signersText ?? 'En proceso de tramitación') }}  |  Sello PAdES oficial verificado";
+            $pdf->page_text(61, 710, $track2, $fontRegular, 6.2, [0.2, 0.25, 0.3], 0, 0, 90);
+
+            // Pista 3: Validez legal y cotejo en sede
+            $track3 = "Documento electrónico auténtico (Ley 39/2015 y eIDAS)  |  Cotejo: {{ $verifyUrl ?? route('public.circuits.verify', $csv) }}";
+            $pdf->page_text(49, 680, $track3, $fontRegular, 5.8, [0.4, 0.45, 0.5], 0, 0, 90);
+
+            // Paginación en la banda lateral
+            $pagText = "Pág. {PAGE_NUM} de {PAGE_COUNT}";
+            $pdf->page_text(73, 90, $pagText, $fontBold, 6.5, [0.4, 0.45, 0.5], 0, 0, 90);
         }
     </script>
 </body>

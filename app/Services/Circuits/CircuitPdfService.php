@@ -105,7 +105,30 @@ class CircuitPdfService
             });
         }
 
-        // 2. Renderizar vista Blade limpia del documento original
+        // 2. Garantizar CSV único y datos de cotejo público para la Banda Lateral Oficial
+        $csv = $execution->metadata['csv'] ?? null;
+        if (!$csv) {
+            $meta = $execution->metadata ?? [];
+            $csv = 'CSV-TRM-' . strtoupper(Str::random(4)) . '-' . sprintf('%06d', $execution->id) . '-' . strtoupper(Str::random(4));
+            $meta['csv'] = $csv;
+            $execution->updateQuietly(['metadata' => $meta]);
+        }
+
+        $verifyUrl = route('public.circuits.verify', $csv);
+        $qrSvg = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::size(200)->errorCorrection('M')->margin(0)->generate($verifyUrl));
+
+        // Resumen de firmantes para la banda lateral
+        $signedSteps = $allSteps->filter(fn($s) => $s->signed_at !== null || ($signingStep && $s->id === $signingStep->id));
+        $signersList = [];
+        foreach ($signedSteps as $st) {
+            $sName = $st->actionUser?->name ?? $st->assignedUser?->name ?? 'Firmante';
+            $sDate = $st->signed_at ? $st->signed_at->format('d/m/Y H:i') : now()->format('d/m/Y H:i');
+            $sRole = $st->action_type_label ?? $st->name;
+            $signersList[] = "{$sName} ({$sRole}) - {$sDate}";
+        }
+        $signersText = !empty($signersList) ? implode(' | ', $signersList) : 'En proceso de tramitación y firma';
+
+        // 3. Renderizar vista Blade limpia del documento original con Banda Lateral
         $originalLocale = app()->getLocale();
         $docLocale = $execution->initiator?->locale ?? 'es';
         app()->setLocale($docLocale);
@@ -117,6 +140,10 @@ class CircuitPdfService
                 'circuitable'   => $circuitable,
                 'contentHtml'   => $contentHtml,
                 'steps'         => $allSteps,
+                'csv'           => $csv,
+                'qrSvg'         => $qrSvg,
+                'verifyUrl'     => $verifyUrl,
+                'signersText'   => $signersText,
                 'signingStepId' => $signingStep?->id,
                 'signingUser'   => $signingUser,
             ]);
@@ -124,7 +151,8 @@ class CircuitPdfService
             $pdf->setPaper('A4', 'portrait');
             $pdf->setOptions([
                 'isHtml5ParserEnabled' => true,
-                'isRemoteEnabled' => true,
+                'isRemoteEnabled'      => true,
+                'isPhpEnabled'         => true,
             ]);
 
             $pdfContent = $pdf->output();
@@ -284,16 +312,17 @@ class CircuitPdfService
         $baseY = $detectedY ?? $defaultY;
 
         // Ajustar coordenadas para que la rúbrica encaje dentro del recuadro de la etapa
-        $startX = $colIndex === 0 ? 60 : 305;
-        $endX = $startX + 225;
-        $yEnd = (int) round($baseY + 5 - ($rowIndex * 55));
-        $yStart = (int) round($yEnd - 48);
+        // Margen izquierdo de 3.2cm (91pt) reservado para la banda lateral oficial
+        $startX = $colIndex === 0 ? 95 : 325;
+        $endX = $startX + 220;
+        $yEnd = (int) round($baseY + 5 - ($rowIndex * 80));
+        $yStart = (int) round($yEnd - 72);
 
         return [
             'startX' => $startX,
             'endX'   => $endX,
             'yStart' => max(40, $yStart),
-            'yEnd'   => max(88, $yEnd),
+            'yEnd'   => max(112, $yEnd),
             'page'   => -1,
         ];
     }

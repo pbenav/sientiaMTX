@@ -335,10 +335,11 @@
             }
 
             // Coordenadas calculadas dinámicamente según la posición del recuadro de firma en el documento
-            const startX = {{ $sigCoords['startX'] ?? 60 }};
-            const endX   = {{ $sigCoords['endX'] ?? 285 }};
-            const yStart = {{ $sigCoords['yStart'] ?? 200 }};
-            const yEnd   = {{ $sigCoords['yEnd'] ?? 248 }};
+            // (Margen izquierdo de 3.2cm reservado para la Banda Lateral Oficial)
+            const startX = {{ $sigCoords['startX'] ?? 95 }};
+            const endX   = {{ $sigCoords['endX'] ?? 315 }};
+            const yStart = {{ $sigCoords['yStart'] ?? 160 }};
+            const yEnd   = {{ $sigCoords['yEnd'] ?? 232 }};
 
             const extraParams = "signatureFormat=PADES-BES\n" +
                                 "signaturePage=-1\n" +
@@ -347,13 +348,12 @@
                                 "signaturePositionOnPageUpperRightX=" + endX + "\n" +
                                 "signaturePositionOnPageUpperRightY=" + yEnd + "\n" +
                                 "layer2FontFamily=1\n" +
-                                "layer2FontSize=5.5\n" +
-                                "layer2Text=DILIGENCIA DE FIRMA ELECTRÓNICA\\n" +
-                                "-----------------------------------------------------------\\n" +
-                                "FIRMADO POR: $$SUBJECTCN$$\\n" +
-                                "FECHA: $$SIGNDATE=dd/MM/yyyy$$ a las $$SIGNDATE=HH:mm$$\\n" +
-                                "-----------------------------------------------------------\\n" +
-                                "Sello de validez PAdES oficial verificado en Sientia.MTX\n";
+                                "layer2FontSize=6.8\n" +
+                                "layer2Text=FIRMADO DIGITALMENTE POR:\\n" +
+                                "$$SUBJECTCN$$\\n" +
+                                "Fecha y hora: $$SIGNDATE=dd/MM/yyyy HH:mm:ss$$\\n" +
+                                "Certificado emitido por: $$ISSUERCN$$\\n" +
+                                "Sello oficial verificado en Sientia.MTX\n";
 
             AutoScript.sign(
                 pdfBase64,
