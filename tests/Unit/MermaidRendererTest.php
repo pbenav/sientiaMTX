@@ -36,3 +36,4 @@ class MermaidRendererTest extends TestCase
         $this->assertEquals($html, $result);
     }
 }
+

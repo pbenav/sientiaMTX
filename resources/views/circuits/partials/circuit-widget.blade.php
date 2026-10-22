@@ -10,13 +10,37 @@
     $activeCircuit = $circuitable->activeCircuitExecution;
     $availableTemplates = $team->circuitTemplates()->active()->forTarget($type ?? 'both')->get();
     $pastCircuits = $circuitable->circuitExecutions()->where('id', '!=', $activeCircuit?->id ?? 0)->latest()->take(3)->get();
+    $teamMembers = $team->members()->orderBy('name')->get();
+    if ($team->creator && !$teamMembers->contains('id', $team->creator->id)) {
+        $teamMembers->prepend($team->creator);
+    }
 @endphp
 
 <div x-data="{
     openStartModal: false,
+    mode: '{{ $availableTemplates->isNotEmpty() ? 'template' : 'adhoc' }}',
     selectedTemplateId: '{{ $availableTemplates->first()?->id ?? '' }}',
     title: '{{ addslashes($circuitable->title) }}',
-    notes: ''
+    notes: '',
+    saveAsTemplate: false,
+    templateName: '',
+    adhocSteps: [
+        { name: 'Visto Bueno / Revisión Preliminar', action_type: 'endorsement', assigned_to_user_id: '', requires_signature: false },
+        { name: 'Aprobación y Firma Definitiva', action_type: 'approval', assigned_to_user_id: '', requires_signature: true }
+    ],
+    addStep() {
+        this.adhocSteps.push({
+            name: 'Etapa ' + (this.adhocSteps.length + 1),
+            action_type: 'approval',
+            assigned_to_user_id: '',
+            requires_signature: false
+        });
+    },
+    removeStep(index) {
+        if (this.adhocSteps.length > 1) {
+            this.adhocSteps.splice(index, 1);
+        }
+    }
 }" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-sm">
 
     {{-- Widget Header --}}
@@ -185,7 +209,7 @@
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0">
 
-        <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] w-full max-w-lg overflow-hidden shadow-2xl border border-gray-100 dark:border-gray-800 transform transition-all text-left"
+        <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-gray-100 dark:border-gray-800 transform transition-all text-left"
             @click.away="openStartModal = false"
             x-transition:enter="transition ease-out duration-300 transform"
             x-transition:enter-start="opacity-0 scale-95"
@@ -194,7 +218,7 @@
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95">
 
-            <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-violet-50/50 dark:bg-violet-950/20">
+            <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-violet-50/50 dark:bg-violet-950/20 shrink-0">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-2xl bg-violet-600 text-white flex items-center justify-center font-black">
                         ⚡
@@ -213,56 +237,154 @@
                 </button>
             </div>
 
-            <form action="{{ route('teams.circuits.start', $team) }}" method="POST" class="p-6 space-y-4">
+            <form action="{{ route('teams.circuits.start', $team) }}" method="POST" class="p-6 overflow-y-auto flex-1 custom-scrollbar space-y-4">
                 @csrf
                 <input type="hidden" name="circuitable_type" value="{{ $type }}">
                 <input type="hidden" name="circuitable_id" value="{{ $circuitable->id }}">
+                <input type="hidden" name="mode" :value="mode">
 
-                {{-- Template Selection --}}
-                <div>
-                    <label class="block text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1.5">
-                        Plantilla de Circuito
-                    </label>
-                    @if($availableTemplates->isNotEmpty())
-                        <select name="circuit_template_id" x-model="selectedTemplateId" class="w-full text-sm bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-violet-500 focus:border-violet-500">
-                            @foreach($availableTemplates as $tmpl)
-                                <option value="{{ $tmpl->id }}">{{ $tmpl->name }} ({{ $tmpl->steps->count() }} pasos)</option>
-                            @endforeach
-                            <option value="">Circuito Estándar (Visto Bueno → Justificación → Aprobación)</option>
-                        </select>
-                    @else
-                        <div class="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 rounded-xl text-xs text-amber-800 dark:text-amber-300">
-                            No hay plantillas personalizadas creadas. Se aplicará el <strong>Circuito Estándar de 3 Pasos</strong> (Visto Bueno → Justificación → Aprobación).
-                        </div>
-                    @endif
+                {{-- Selector de Modalidad (Plantilla vs Itinerario Abierto) --}}
+                <div class="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-2xl">
+                    <button type="button" @click="mode = 'template'" 
+                        :class="mode === 'template' ? 'bg-white dark:bg-gray-700 text-violet-700 dark:text-violet-300 shadow-sm font-black' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 font-bold'"
+                        class="flex-1 py-2 text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                        <span>Usar Plantilla</span>
+                    </button>
+                    <button type="button" @click="mode = 'adhoc'" 
+                        :class="mode === 'adhoc' ? 'bg-white dark:bg-gray-700 text-violet-700 dark:text-violet-300 shadow-sm font-black' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 font-bold'"
+                        class="flex-1 py-2 text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        <span>Itinerario Abierto (Al vuelo)</span>
+                    </button>
                 </div>
 
-                {{-- Tramitation Title --}}
+                {{-- MODO 1: Plantilla Existente --}}
+                <div x-show="mode === 'template'" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1.5">
+                            Plantilla de Circuito
+                        </label>
+                        @if($availableTemplates->isNotEmpty())
+                            <select name="circuit_template_id" x-model="selectedTemplateId" class="w-full text-sm bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-violet-500 focus:border-violet-500">
+                                @foreach($availableTemplates as $tmpl)
+                                    <option value="{{ $tmpl->id }}">{{ $tmpl->name }} ({{ $tmpl->steps->count() }} pasos)</option>
+                                @endforeach
+                                <option value="">Circuito Estándar (Visto Bueno → Justificación → Aprobación)</option>
+                            </select>
+                        @else
+                            <div class="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 rounded-xl text-xs text-amber-800 dark:text-amber-300">
+                                No hay plantillas personalizadas creadas en este equipo. Se aplicará el <strong>Circuito Estándar de 3 Pasos</strong> o puedes definir un itinerario abierto sobre la marcha en la pestaña superior.
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- MODO 2: Itinerario Abierto (Ad-hoc sobre la marcha) --}}
+                <div x-show="mode === 'adhoc'" class="space-y-3.5" style="display: none;">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <label class="block text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                                Definir Etapas del Itinerario
+                            </label>
+                            <span class="text-[10px] text-gray-400">Guardan estricto orden secuencial: cada paso debe concluir antes de que actúe el siguiente.</span>
+                        </div>
+                        <button type="button" @click="addStep()" class="inline-flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 hover:text-violet-700 hover:underline">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                            <span>+ Añadir etapa</span>
+                        </button>
+                    </div>
+
+                    <div class="space-y-3 max-h-60 overflow-y-auto custom-scrollbar p-1">
+                        <template x-for="(st, idx) in adhocSteps" :key="idx">
+                            <div class="p-3.5 bg-gray-50 dark:bg-gray-800/60 rounded-2xl border border-gray-200/80 dark:border-gray-700 relative flex flex-col gap-2.5">
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-violet-600 text-white text-[11px] font-black shrink-0 shadow-xs" x-text="idx + 1"></span>
+                                    <input type="text" :name="'steps[' + idx + '][name]'" x-model="st.name" required
+                                        class="flex-1 text-xs bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-violet-500 focus:border-violet-500 py-1.5 px-3 font-bold"
+                                        placeholder="Nombre de la etapa...">
+                                    <button type="button" @click="removeStep(idx)" x-show="adhocSteps.length > 1"
+                                        class="text-gray-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" title="Eliminar etapa">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    </button>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                                    <div>
+                                        <label class="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-tight mb-1">Quién resuelve:</label>
+                                        <select :name="'steps[' + idx + '][assigned_to_user_id]'" x-model="st.assigned_to_user_id" 
+                                            class="w-full text-xs bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-violet-500 focus:border-violet-500 py-1.5 px-2.5">
+                                            <option value="">Cualquier responsable / Creador</option>
+                                            @foreach($teamMembers as $m)
+                                                <option value="{{ $m->id }}">{{ $m->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-tight mb-1">Tipo de Acción:</label>
+                                        <select :name="'steps[' + idx + '][action_type]'" x-model="st.action_type"
+                                            class="w-full text-xs bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-violet-500 focus:border-violet-500 py-1.5 px-2.5">
+                                            <option value="endorsement">Visto Bueno / Conformidad</option>
+                                            <option value="justification">Justificación Técnica</option>
+                                            <option value="approval">Aprobación / Resolución</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between pt-2 border-t border-gray-200/50 dark:border-gray-700/50">
+                                    <label class="inline-flex items-center gap-2 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300">
+                                        <input type="checkbox" :name="'steps[' + idx + '][requires_signature]'" value="1" x-model="st.requires_signature"
+                                            class="rounded border-gray-300 dark:border-gray-600 text-violet-600 focus:ring-violet-500 w-4 h-4">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                            Exigir Firma Digital (AutoFirma / Certificado)
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    {{-- Opción: Guardar también como plantilla fija --}}
+                    <div class="pt-2 border-t border-gray-100 dark:border-gray-800">
+                        <label class="inline-flex items-center gap-2 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300">
+                            <input type="checkbox" name="save_as_template" value="1" x-model="saveAsTemplate"
+                                class="rounded border-gray-300 dark:border-gray-600 text-violet-600 focus:ring-violet-500">
+                            <span>Guardar este itinerario como plantilla en el equipo para futuras ocasiones</span>
+                        </label>
+                        <div x-show="saveAsTemplate" class="mt-2" style="display: none;">
+                            <input type="text" name="template_name" x-model="templateName"
+                                class="w-full text-xs bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-violet-500 focus:border-violet-500 py-1.5 px-3 font-semibold"
+                                placeholder="Nombre de la nueva plantilla (ej. Circuito Revisión + Firma Dirección)...">
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Título de la Tramitación --}}
                 <div>
                     <label class="block text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1.5">
                         Título de la Tramitación
                     </label>
                     <input type="text" name="title" x-model="title" required
-                        class="w-full text-sm bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-violet-500 focus:border-violet-500"
+                        class="w-full text-sm bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-violet-500 focus:border-violet-500 py-2 px-3"
                         placeholder="Ej. Aprobación y Justificación: {{ $circuitable->title }}">
                 </div>
 
-                {{-- Initial Notes --}}
+                {{-- Observaciones Iniciales --}}
                 <div>
                     <label class="block text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1.5">
                         Observaciones / Justificación Inicial (Opcional)
                     </label>
-                    <textarea name="notes" x-model="notes" rows="3"
-                        class="w-full text-sm bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-violet-500 focus:border-violet-500"
+                    <textarea name="notes" x-model="notes" rows="2"
+                        class="w-full text-sm bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-violet-500 focus:border-violet-500 py-2 px-3"
                         placeholder="Explica brevemente el motivo o indicaciones para los revisores del circuito..."></textarea>
                 </div>
 
-                <div class="flex items-center justify-end gap-3 pt-3 border-t border-gray-100 dark:border-gray-800">
+                <div class="flex items-center justify-end gap-3 pt-3 border-t border-gray-100 dark:border-gray-800 shrink-0">
                     <button @click="openStartModal = false" type="button" class="text-xs font-bold text-gray-500 dark:text-gray-400 hover:text-gray-700 px-4 py-2">
                         Cancelar
                     </button>
-                    <button type="submit" class="text-xs font-black uppercase tracking-wider bg-violet-600 hover:bg-violet-700 text-white px-5 py-2.5 rounded-xl shadow-md transition-all active:scale-95">
-                        Lanzar Tramitación
+                    <button type="submit" class="text-xs font-black uppercase tracking-wider bg-violet-600 hover:bg-violet-700 text-white px-5 py-2.5 rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        <span>Lanzar Tramitación</span>
                     </button>
                 </div>
             </form>

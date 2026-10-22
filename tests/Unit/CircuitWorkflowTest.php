@@ -16,6 +16,9 @@ use App\Models\CircuitPublication;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\TeamRole;
+use App\Services\Circuits\CircuitExecutionService;
+use App\Services\Circuits\CircuitPublicationService;
+use App\Services\Circuits\CircuitPdfService;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -293,6 +296,106 @@ class CircuitWorkflowTest extends TestCase
         // Comprobar que ambas vistas Blade existen y son reconocidas por el motor de vistas de Laravel
         $this->assertTrue(view()->exists('pdf.circuit-original'));
         $this->assertTrue(view()->exists('pdf.circuit-receipt'));
+    }
+
+    public function test_circuit_execution_service_blocks_non_current_or_inactive_steps(): void
+    {
+        $pubService = $this->createMock(CircuitPublicationService::class);
+        $pdfService = $this->createMock(CircuitPdfService::class);
+        $service = new CircuitExecutionService($pubService, $pdfService);
+
+        $execution = new CircuitExecution([
+            'status' => CircuitExecution::STATUS_IN_PROGRESS,
+        ]);
+        $execution->id = 10;
+        $execution->current_step_id = 1;
+
+        $step2 = new CircuitExecutionStep([
+            'order' => 2,
+            'name' => 'Firma Final',
+            'status' => CircuitExecutionStep::STATUS_PENDING,
+        ]);
+        $step2->id = 2;
+        $step2->setRelation('execution', $execution);
+
+        $user = new User(['name' => 'Firmante']);
+        $user->id = 5;
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Solo se puede actuar sobre el paso en curso de la tramitación.');
+
+        $service->processStep($step2, $user, CircuitExecutionStep::DECISION_APPROVED);
+    }
+
+    public function test_circuit_execution_service_blocks_action_on_inactive_execution(): void
+    {
+        $pubService = $this->createMock(CircuitPublicationService::class);
+        $pdfService = $this->createMock(CircuitPdfService::class);
+        $service = new CircuitExecutionService($pubService, $pdfService);
+
+        $execution = new CircuitExecution([
+            'status' => CircuitExecution::STATUS_APPROVED,
+        ]);
+        $execution->id = 10;
+        $execution->current_step_id = 1;
+
+        $step1 = new CircuitExecutionStep([
+            'order' => 1,
+            'name' => 'Paso 1',
+            'status' => CircuitExecutionStep::STATUS_APPROVED,
+        ]);
+        $step1->id = 1;
+        $step1->setRelation('execution', $execution);
+
+        $user = new User(['name' => 'Firmante']);
+        $user->id = 5;
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Esta tramitación no se encuentra activa.');
+
+        $service->processStep($step1, $user, CircuitExecutionStep::DECISION_APPROVED);
+    }
+
+    public function test_circuit_adhoc_template_and_step_attributes(): void
+    {
+        // Un itinerario abierto ad-hoc no requiere de una plantilla fija (circuit_template_id es nulo)
+        $execution = new CircuitExecution([
+            'circuit_template_id' => null,
+            'team_id' => 1,
+            'title' => 'Itinerario Abierto Especial',
+            'status' => CircuitExecution::STATUS_IN_PROGRESS,
+        ]);
+
+        $this->assertNull($execution->circuit_template_id);
+        $this->assertTrue($execution->is_active);
+
+        $adhocStep1 = new CircuitExecutionStep([
+            'template_step_id' => null,
+            'order' => 1,
+            'name' => 'Visto Bueno de Intervención',
+            'action_type' => CircuitTemplateStep::ACTION_ENDORSEMENT,
+            'assigned_to_user_id' => 12,
+            'requires_signature' => false,
+            'status' => CircuitExecutionStep::STATUS_PENDING,
+        ]);
+
+        $adhocStep2 = new CircuitExecutionStep([
+            'template_step_id' => null,
+            'order' => 2,
+            'name' => 'Firma de Alcaldía',
+            'action_type' => CircuitTemplateStep::ACTION_APPROVAL,
+            'assigned_to_user_id' => 1,
+            'requires_signature' => true,
+            'status' => CircuitExecutionStep::STATUS_PENDING,
+        ]);
+
+        $execution->setRelation('steps', collect([$adhocStep1, $adhocStep2]));
+
+        $this->assertCount(2, $execution->steps);
+        $this->assertNull($adhocStep1->template_step_id);
+        $this->assertFalse($adhocStep1->requires_signature);
+        $this->assertTrue($adhocStep2->requires_signature);
+        $this->assertEquals(1, $execution->required_signatures_count);
     }
 }
 

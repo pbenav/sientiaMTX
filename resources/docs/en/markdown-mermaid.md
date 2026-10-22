@@ -150,3 +150,4 @@ pie title Quarterly Administrative Cases
 2. **One-Click Insert**: Explore ready-to-use templates and click **`⚡ Insert into Document`** to drop code directly at the cursor position.
 3. **Live Preview**: Switch to the **Preview** tab to review rendered diagrams before saving.
 4. **PDF Output**: Sientia.MTX automatically renders and embeds clean, high-resolution diagram graphics in official PDF reports and signed circuit documents.
+

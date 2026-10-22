@@ -100,9 +100,17 @@ class CircuitExecutionController extends Controller
         $request->validate([
             'circuitable_type' => 'required|string',
             'circuitable_id' => 'required|integer',
-            'circuit_template_id' => 'nullable|exists:circuit_templates,id',
+            'mode' => 'nullable|string|in:template,adhoc',
+            'circuit_template_id' => 'nullable',
             'title' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
+            'steps' => 'nullable|array',
+            'steps.*.name' => 'nullable|string|max:255',
+            'steps.*.action_type' => 'nullable|string|in:endorsement,justification,approval,publication',
+            'steps.*.assigned_to_user_id' => 'nullable',
+            'steps.*.requires_signature' => 'nullable',
+            'save_as_template' => 'nullable',
+            'template_name' => 'nullable|string|max:255',
         ]);
 
         $type = $request->input('circuitable_type');
@@ -118,15 +126,55 @@ class CircuitExecutionController extends Controller
             return redirect()->back()->with('warning', __('circuits.already_in_circuit'));
         }
 
-        $template = $request->filled('circuit_template_id')
-            ? CircuitTemplate::where('team_id', $team->id)->findOrFail($request->circuit_template_id)
-            : null;
+        $isAdhoc = $request->input('mode') === 'adhoc' || ($request->filled('steps') && count($request->input('steps', [])) > 0);
+
+        $template = null;
+        if (!$isAdhoc && $request->filled('circuit_template_id')) {
+            $template = CircuitTemplate::where('team_id', $team->id)->find($request->circuit_template_id);
+        }
+
+        // Si el usuario configuró un itinerario ad-hoc y marcó "Guardar como plantilla", persistirla
+        if ($isAdhoc && $request->boolean('save_as_template') && $request->filled('template_name')) {
+            try {
+                $savedTemplate = CircuitTemplate::create([
+                    'team_id' => $team->id,
+                    'created_by_id' => Auth::id(),
+                    'name' => $request->input('template_name'),
+                    'description' => 'Plantilla creada al vuelo desde ' . $circuitable->title,
+                    'target_type' => $type === 'expediente' ? 'expediente' : ($type === 'activity' ? 'activity' : 'both'),
+                    'is_active' => true,
+                ]);
+
+                foreach ($request->input('steps', []) as $idx => $st) {
+                    $savedTemplate->steps()->create([
+                        'order' => $idx + 1,
+                        'name' => $st['name'] ?? ('Paso ' . ($idx + 1)),
+                        'action_type' => $st['action_type'] ?? CircuitTemplateStep::ACTION_APPROVAL,
+                        'assignee_type' => !empty($st['assigned_to_user_id']) ? CircuitTemplateStep::ASSIGNEE_SPECIFIC_USER : CircuitTemplateStep::ASSIGNEE_CREATOR,
+                        'assignee_id' => !empty($st['assigned_to_user_id']) ? (int) $st['assigned_to_user_id'] : null,
+                        'requires_signature' => filter_var($st['requires_signature'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                    ]);
+                }
+                $template = $savedTemplate;
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Error saving ad-hoc template: ' . $e->getMessage());
+            }
+        }
+
+        $startData = [
+            'title' => $request->title,
+            'notes' => $request->notes,
+        ];
+
+        if ($isAdhoc && $request->filled('steps')) {
+            $startData['steps'] = $request->input('steps');
+        }
 
         $execution = $this->executionService->startCircuit(
             $circuitable,
             $template,
             Auth::user(),
-            $request->only(['title', 'notes'])
+            $startData
         );
 
         return redirect()->route('teams.circuits.show', [$team, $execution])
@@ -225,6 +273,27 @@ class CircuitExecutionController extends Controller
 
         if ($circuit->team_id !== $team->id || $step->circuit_execution_id !== $circuit->id) {
             abort(404);
+        }
+
+        // 1. Verificar que el paso sea el paso activo en curso
+        if ($circuit->current_step_id !== $step->id) {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'Solo se puede actuar sobre el paso en curso de la tramitación.'], 422);
+            }
+            return redirect()->back()->with('error', 'Solo se puede actuar sobre el paso en curso de la tramitación.');
+        }
+
+        // 2. Blindaje de orden y necesidad: No se puede concluir una etapa si existen etapas previas pendientes
+        $hasUnapprovedPreviousSteps = $circuit->steps()
+            ->where('order', '<', $step->order)
+            ->where('status', '!=', CircuitExecutionStep::STATUS_APPROVED)
+            ->exists();
+
+        if ($hasUnapprovedPreviousSteps) {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'No es posible resolver esta etapa porque existen etapas previas en el itinerario pendientes de visto bueno o aprobación.'], 422);
+            }
+            return redirect()->back()->with('error', 'No es posible resolver esta etapa porque existen etapas previas en el itinerario pendientes de visto bueno o aprobación.');
         }
 
         $request->validate([

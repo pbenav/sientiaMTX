@@ -206,3 +206,4 @@ Para facilitar la redacción sin tener que memorizar la sintaxis:
 2. **Chuleta Interactiva con Inserción Directa**: Al pulsar el botón se abrirá una ventana emergente organizada por categorías con plantillas listas. Basta con pulsar **`⚡ Insertar en Documento`** para colocar el código del diagrama en la posición exacta del cursor.
 3. **Pestaña "Vista Previa"**: Cambia a la pestaña de vista previa del editor para comprobar cómo se dibuja tu diagrama antes de guardar la nota, actividad o circuito.
 4. **Fidelidad en PDF**: Al exportar o firmar documentos oficiales, Sientia.MTX compila los diagramas en gráficos de alta definición que se incorporan simétricamente en el documento original.
+

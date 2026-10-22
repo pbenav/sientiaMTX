@@ -108,18 +108,24 @@ class CircuitExecutionService
             } elseif (!empty($data['steps'])) {
                 // Pasos personalizados ad-hoc
                 foreach ($data['steps'] as $index => $stepData) {
+                    $requiresSig = filter_var($stepData['requires_signature'] ?? false, FILTER_VALIDATE_BOOLEAN);
+                    $assignedUserId = !empty($stepData['assigned_to_user_id']) ? (int) $stepData['assigned_to_user_id'] : null;
+                    $assigneeType = $assignedUserId 
+                        ? CircuitTemplateStep::ASSIGNEE_SPECIFIC_USER 
+                        : ($stepData['assignee_type'] ?? CircuitTemplateStep::ASSIGNEE_CREATOR);
+
                     CircuitExecutionStep::create([
                         'circuit_execution_id' => $execution->id,
                         'template_step_id' => null,
                         'order' => $stepData['order'] ?? ($index + 1),
-                        'name' => $stepData['name'],
+                        'name' => $stepData['name'] ?? ('Paso ' . ($index + 1)),
                         'description' => $stepData['description'] ?? null,
                         'action_type' => $stepData['action_type'] ?? CircuitTemplateStep::ACTION_APPROVAL,
-                        'assignee_type' => $stepData['assignee_type'] ?? CircuitTemplateStep::ASSIGNEE_SPECIFIC_USER,
-                        'assigned_to_user_id' => $stepData['assigned_to_user_id'] ?? null,
+                        'assignee_type' => $assigneeType,
+                        'assigned_to_user_id' => $assignedUserId,
                         'assigned_to_role_id' => $stepData['assigned_to_role_id'] ?? null,
                         'status' => CircuitExecutionStep::STATUS_PENDING,
-                        'requires_signature' => $stepData['requires_signature'] ?? false,
+                        'requires_signature' => $requiresSig,
                         'action_data' => $stepData['action_config'] ?? [],
                     ]);
                 }
@@ -200,6 +206,16 @@ class CircuitExecutionService
 
         if ($execution->current_step_id !== $step->id) {
             throw new InvalidArgumentException('Solo se puede actuar sobre el paso en curso de la tramitación.');
+        }
+
+        // Blindaje estricto de orden y prelación: Ninguna etapa posterior puede concluirse si existen etapas previas sin aprobar
+        $hasUnapprovedPreviousSteps = $execution->steps()
+            ->where('order', '<', $step->order)
+            ->where('status', '!=', CircuitExecutionStep::STATUS_APPROVED)
+            ->exists();
+
+        if ($hasUnapprovedPreviousSteps) {
+            throw new InvalidArgumentException('No se puede resolver esta etapa porque existen etapas previas en el itinerario pendientes de resolución o visto bueno.');
         }
 
         if (!$step->canUserAct($user, $execution)) {
@@ -307,15 +323,28 @@ class CircuitExecutionService
                 $targetStep = $execution->steps()->where('order', $returnToOrder)->first()
                     ?? $execution->steps()->orderBy('order', 'asc')->first();
 
+                // Al devolver a un paso anterior, todos los pasos desde el destino en adelante
+                // se invalidan y vuelven a PENDING para que el orden y los vistos buenos se vuelvan a exigir obligatoriamente.
+                if ($targetStep) {
+                    $execution->steps()
+                        ->where('order', '>=', $targetStep->order)
+                        ->where('id', '!=', $step->id)
+                        ->update([
+                            'status' => CircuitExecutionStep::STATUS_PENDING,
+                            'action_taken_by_id' => null,
+                            'decision' => null,
+                            'completed_at' => null,
+                            'signed_at' => null,
+                            'signature_data' => null,
+                        ]);
+
+                    $targetStep->update(['status' => CircuitExecutionStep::STATUS_PENDING]);
+                }
+
                 $execution->update([
                     'current_step_id' => $targetStep?->id ?? $step->id,
                     'status' => CircuitExecution::STATUS_RETURNED,
                 ]);
-
-                // Poner el paso de destino nuevamente en pending
-                if ($targetStep) {
-                    $targetStep->update(['status' => CircuitExecutionStep::STATUS_PENDING]);
-                }
             } elseif ($decision === CircuitExecutionStep::DECISION_REJECTED) {
                 // Rechazo / Denegación definitiva
                 $step->update(['status' => CircuitExecutionStep::STATUS_REJECTED]);
