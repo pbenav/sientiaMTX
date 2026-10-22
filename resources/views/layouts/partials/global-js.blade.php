@@ -86,6 +86,9 @@
                             if (node.nodeType === 1) { // Element node
                                 if (node.matches('.prose, .markdown-content') || node.querySelector('.prose, .markdown-content')) {
                                     processMarkdownLinks(node);
+                                    if (window.renderMermaidDiagrams) {
+                                        window.renderMermaidDiagrams(node);
+                                    }
                                 }
                             }
                         });

@@ -4,6 +4,7 @@
     id: 'md-editor-' + Math.random().toString(36).substr(2, 9),
     content: @js($value), 
     tab: 'write',
+    showMermaidModal: false,
     uploading: false,
     uploadUrl: @js($uploadUrl),
     mentionsUrl: @js($mentionsUrl),
@@ -24,6 +25,16 @@
         }
         this.$watch('mentionQuery', value => {
             this.mentionIndex = 0;
+        });
+        this.$watch('tab', val => {
+            if (val === 'preview') {
+                this.$nextTick(() => {
+                    const container = document.getElementById(this.id + '-preview');
+                    if (container && window.renderMermaidDiagrams) {
+                        window.renderMermaidDiagrams(container);
+                    }
+                });
+            }
         });
     },
 
@@ -388,9 +399,15 @@
                 </button>
                 <div class="h-6 w-px bg-gray-200 dark:bg-gray-800"></div>
                 <a href="https://www.markdownguide.org/cheat-sheet/" target="_blank" 
-                   class="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-violet-600 transition-colors">
+                   class="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-violet-600 transition-colors" title="{{ __('Chuleta oficial de Markdown') }}">
                     Markdown
                 </a>
+                <div class="h-6 w-px bg-gray-200 dark:bg-gray-800"></div>
+                <button type="button" @click="showMermaidModal = true" 
+                   class="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors" title="{{ __('Chuleta y ejemplos de diagramas Mermaid') }}">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/></svg>
+                    <span>Mermaid</span>
+                </button>
             </div>
         </div>
 
@@ -427,4 +444,437 @@
             <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest" x-text="(content || '').length + ' caracteres'"></span>
         </div>
     </div>
+
+    <!-- Modal: Chuleta Interactiva de Diagramas Mermaid -->
+    <template x-teleport="body">
+        <div x-show="showMermaidModal" 
+             x-cloak 
+             class="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6"
+             @keydown.escape.window="showMermaidModal = false">
+            
+            <!-- Backdrop -->
+            <div x-show="showMermaidModal" 
+                 x-transition:enter="ease-out duration-300" 
+                 x-transition:enter-start="opacity-0" 
+                 x-transition:enter-end="opacity-100" 
+                 x-transition:leave="ease-in duration-200" 
+                 x-transition:leave-start="opacity-100" 
+                 x-transition:leave-end="opacity-0" 
+                 class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
+                 @click="showMermaidModal = false"></div>
+
+            <!-- Modal Panel -->
+            <div x-show="showMermaidModal" 
+                 x-data="{ 
+                     activeTab: 'flowchart',
+                     copiedKey: null,
+                     copyCode(code, key) {
+                         navigator.clipboard.writeText(code);
+                         this.copiedKey = key;
+                         setTimeout(() => this.copiedKey = null, 2000);
+                     },
+                     insertSnippet(snippet) {
+                         insertAtCursor('\n```mermaid\n' + snippet.trim() + '\n```\n');
+                         showMermaidModal = false;
+                     }
+                 }"
+                 x-transition:enter="ease-out duration-300" 
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:scale-95" 
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+                 x-transition:leave="ease-in duration-200" 
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:scale-95" 
+                 class="relative w-full max-w-4xl max-h-[90vh] bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden text-left font-sans">
+                
+                <!-- Cabecera del Modal -->
+                <div class="px-8 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-gradient-to-r from-violet-500/10 via-fuchsia-500/5 to-transparent">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-violet-600 flex items-center justify-center text-white shadow-lg shadow-violet-500/25">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-black text-slate-900 dark:text-white uppercase tracking-wider">Chuleta Rápida de Diagramas Mermaid</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Inserta plantillas listas para usar en tus notas, actividades y circuitos.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <a href="{{ route('documentation.index', 'markdown-mermaid') }}" target="_blank" 
+                           class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 hover:bg-violet-100 text-[11px] font-bold rounded-xl transition-colors">
+                            <span>📖 Manual Completo</span>
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                        </a>
+                        <button type="button" @click="showMermaidModal = false" 
+                                class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabs de Tipos de Diagrama -->
+                <div class="px-8 pt-4 pb-2 border-b border-slate-100 dark:border-slate-800 flex gap-2 overflow-x-auto custom-scrollbar bg-slate-50/50 dark:bg-slate-900/50">
+                    <button type="button" @click="activeTab = 'flowchart'" 
+                            :class="activeTab === 'flowchart' ? 'bg-violet-600 text-white shadow-md shadow-violet-600/20' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'"
+                            class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 whitespace-nowrap">
+                        <span>🔄 Flujograma</span>
+                    </button>
+                    <button type="button" @click="activeTab = 'sequence'" 
+                            :class="activeTab === 'sequence' ? 'bg-violet-600 text-white shadow-md shadow-violet-600/20' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'"
+                            class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 whitespace-nowrap">
+                        <span>⚡ Secuencia</span>
+                    </button>
+                    <button type="button" @click="activeTab = 'state'" 
+                            :class="activeTab === 'state' ? 'bg-violet-600 text-white shadow-md shadow-violet-600/20' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'"
+                            class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 whitespace-nowrap">
+                        <span>📌 Estados</span>
+                    </button>
+                    <button type="button" @click="activeTab = 'gantt'" 
+                            :class="activeTab === 'gantt' ? 'bg-violet-600 text-white shadow-md shadow-violet-600/20' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'"
+                            class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 whitespace-nowrap">
+                        <span>📊 Cronograma (Gantt)</span>
+                    </button>
+                    <button type="button" @click="activeTab = 'pie'" 
+                            :class="activeTab === 'pie' ? 'bg-violet-600 text-white shadow-md shadow-violet-600/20' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'"
+                            class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 whitespace-nowrap">
+                        <span>🥧 Gráfico Circular (Pie)</span>
+                    </button>
+                    <button type="button" @click="activeTab = 'er'" 
+                            :class="activeTab === 'er' ? 'bg-violet-600 text-white shadow-md shadow-violet-600/20' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'"
+                            class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 whitespace-nowrap">
+                        <span>🗂️ Entidad-Relación</span>
+                    </button>
+                </div>
+
+                <!-- Contenido de las pestañas -->
+                <div class="p-8 overflow-y-auto flex-1 custom-scrollbar space-y-6">
+                    
+                    {{-- TAB 1: Flujograma --}}
+                    <div x-show="activeTab === 'flowchart'" class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-900 dark:text-white">Flujograma de Tramitación y Decisión (TD: Top-Down)</h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Ideal para describir procesos administrativos, bifurcaciones de validación o itinerarios de firma.</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button type="button" @click="copyCode(
+`graph TD
+    A([Inicio del Trámite]) --> B[Recepción de Solicitud]
+    B --> C{¿Cumple requisitos?}
+    C -- Sí --> D[Revisión por Coordinador]
+    C -- No --> E[Requerimiento de Subsanación]
+    E --> F{¿Aporta documentación?}
+    F -- Sí --> D
+    F -- No --> G([Archivo / Desistimiento])
+    D --> H[Firma y Resolución]
+    H --> I([Fin del Procedimiento])`, 'flow1')" 
+                                        class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5">
+                                    <span x-text="copiedKey === 'flow1' ? '✓ Copiado' : 'Copiar'"></span>
+                                </button>
+                                <button type="button" @click="insertSnippet(
+`graph TD
+    A([Inicio del Trámite]) --> B[Recepción de Solicitud]
+    B --> C{¿Cumple requisitos?}
+    C -- Sí --> D[Revisión por Coordinador]
+    C -- No --> E[Requerimiento de Subsanación]
+    E --> F{¿Aporta documentación?}
+    F -- Sí --> D
+    F -- No --> G([Archivo / Desistimiento])
+    D --> H[Firma y Resolución]
+    H --> I([Fin del Procedimiento])`)" 
+                                        class="px-4 py-1.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-violet-600/20 flex items-center gap-1.5">
+                                    <span>⚡ Insertar en Documento</span>
+                                </button>
+                            </div>
+                        </div>
+                        <pre class="bg-slate-950 text-emerald-400 p-4 rounded-2xl text-xs font-mono overflow-x-auto shadow-inner leading-relaxed border border-slate-800"><code>graph TD
+    A([Inicio del Trámite]) --&gt; B[Recepción de Solicitud]
+    B --&gt; C{¿Cumple requisitos?}
+    C -- Sí --&gt; D[Revisión por Coordinador]
+    C -- No --&gt; E[Requerimiento de Subsanación]
+    E --&gt; F{¿Aporta documentación?}
+    F -- Sí --&gt; D
+    F -- No --&gt; G([Archivo / Desistimiento])
+    D --&gt; H[Firma y Resolución]
+    H --&gt; I([Fin del Procedimiento])</code></pre>
+                    </div>
+
+                    {{-- TAB 2: Secuencia --}}
+                    <div x-show="activeTab === 'sequence'" class="space-y-4" style="display: none;">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-900 dark:text-white">Diagrama de Secuencia e Intercambio de Mensajes</h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Muestra la interacción paso a paso entre actores, Sede Electrónica y AutoFirma.</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button type="button" @click="copyCode(
+`sequenceDiagram
+    autonumber
+    actor U as Usuario Firmante
+    participant S as Sede Electrónica MTX
+    participant A as AutoFirma Local
+    participant T as Servidor de Sellado
+
+    U->>S: Solicita firmar documento
+    S->>S: Calcula hash SHA-256 y prepara PDF
+    S->>A: Invoca AutoScript con hash y coords
+    A->>U: Pide selección de certificado FNMT/DNIe
+    U-->>A: Selecciona certificado
+    A->>A: Firma digital PKCS#7 / PAdES
+    A-->>S: Devuelve paquete criptográfico
+    S->>T: Registra diligencia y CSV
+    T-->>S: Validación y sello de tiempo
+    S-->>U: Muestra documento firmado con QR` , 'seq1')" 
+                                        class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl transition-colors">
+                                    <span x-text="copiedKey === 'seq1' ? '✓ Copiado' : 'Copiar'"></span>
+                                </button>
+                                <button type="button" @click="insertSnippet(
+`sequenceDiagram
+    autonumber
+    actor U as Usuario Firmante
+    participant S as Sede Electrónica MTX
+    participant A as AutoFirma Local
+    participant T as Servidor de Sellado
+
+    U->>S: Solicita firmar documento
+    S->>S: Calcula hash SHA-256 y prepara PDF
+    S->>A: Invoca AutoScript con hash y coords
+    A->>U: Pide selección de certificado FNMT/DNIe
+    U-->>A: Selecciona certificado
+    A->>A: Firma digital PKCS#7 / PAdES
+    A-->>S: Devuelve paquete criptográfico
+    S->>T: Registra diligencia y CSV
+    T-->>S: Validación y sello de tiempo
+    S-->>U: Muestra documento firmado con QR`)" 
+                                        class="px-4 py-1.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-violet-600/20 flex items-center gap-1.5">
+                                    <span>⚡ Insertar en Documento</span>
+                                </button>
+                            </div>
+                        </div>
+                        <pre class="bg-slate-950 text-cyan-400 p-4 rounded-2xl text-xs font-mono overflow-x-auto shadow-inner leading-relaxed border border-slate-800"><code>sequenceDiagram
+    autonumber
+    actor U as Usuario Firmante
+    participant S as Sede Electrónica MTX
+    participant A as AutoFirma Local
+    participant T as Servidor de Sellado
+
+    U-&gt;&gt;S: Solicita firmar documento
+    S-&gt;&gt;S: Calcula hash SHA-256 y prepara PDF
+    S-&gt;&gt;A: Invoca AutoScript con hash y coords
+    A-&gt;&gt;U: Pide selección de certificado FNMT/DNIe
+    U--&gt;&gt;A: Selecciona certificado
+    A-&gt;&gt;A: Firma digital PKCS#7 / PAdES
+    A--&gt;&gt;S: Devuelve paquete criptográfico
+    S-&gt;&gt;T: Registra diligencia y CSV
+    T--&gt;&gt;S: Validación y sello de tiempo
+    S--&gt;&gt;U: Muestra documento firmado con QR</code></pre>
+                    </div>
+
+                    {{-- TAB 3: Estados --}}
+                    <div x-show="activeTab === 'state'" class="space-y-4" style="display: none;">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-900 dark:text-white">Máquina de Estados de un Circuito o Expediente</h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Visualiza el ciclo de vida de un trámite desde Borrador hasta Finalizado o Rechazado.</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button type="button" @click="copyCode(
+`stateDiagram-v2
+    [*] --> Borrador
+    Borrador --> EnTramite : Iniciar Circuito
+    EnTramite --> EnFirma : Etapa en curso
+    EnFirma --> EnTramite : Firma aprobada (quedan pasos)
+    EnFirma --> Aprobado : Última firma completada
+    EnFirma --> Rechazado : Voto negativo / Reprobación
+    Aprobado --> Publicado : Generar Recibo y CSV
+    Publicado --> [*]
+    Rechazado --> [*]`, 'state1')" 
+                                        class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl transition-colors">
+                                    <span x-text="copiedKey === 'state1' ? '✓ Copiado' : 'Copiar'"></span>
+                                </button>
+                                <button type="button" @click="insertSnippet(
+`stateDiagram-v2
+    [*] --> Borrador
+    Borrador --> EnTramite : Iniciar Circuito
+    EnTramite --> EnFirma : Etapa en curso
+    EnFirma --> EnTramite : Firma aprobada (quedan pasos)
+    EnFirma --> Aprobado : Última firma completada
+    EnFirma --> Rechazado : Voto negativo / Reprobación
+    Aprobado --> Publicado : Generar Recibo y CSV
+    Publicado --> [*]
+    Rechazado --> [*]`)" 
+                                        class="px-4 py-1.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-violet-600/20 flex items-center gap-1.5">
+                                    <span>⚡ Insertar en Documento</span>
+                                </button>
+                            </div>
+                        </div>
+                        <pre class="bg-slate-950 text-amber-400 p-4 rounded-2xl text-xs font-mono overflow-x-auto shadow-inner leading-relaxed border border-slate-800"><code>stateDiagram-v2
+    [*] --&gt; Borrador
+    Borrador --&gt; EnTramite : Iniciar Circuito
+    EnTramite --&gt; EnFirma : Etapa en curso
+    EnFirma --&gt; EnTramite : Firma aprobada (quedan pasos)
+    EnFirma --&gt; Aprobado : Última firma completada
+    EnFirma --&gt; Rechazado : Voto negativo / Reprobación
+    Aprobado --&gt; Publicado : Generar Recibo y CSV
+    Publicado --&gt; [*]
+    Rechazado --&gt; [*]</code></pre>
+                    </div>
+
+                    {{-- TAB 4: Gantt --}}
+                    <div x-show="activeTab === 'gantt'" class="space-y-4" style="display: none;">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-900 dark:text-white">Cronograma de Proyecto o Plan de Actuación (Gantt)</h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Representa fases temporales, dependencias y plazos de entrega.</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button type="button" @click="copyCode(
+`gantt
+    title Cronograma de Implantación Sientia.MTX
+    dateFormat  YYYY-MM-DD
+    section Fase 1: Análisis
+    Auditoría de Procesos       :done, a1, 2026-11-01, 7d
+    Parametrización Circuitos   :active, a2, after a1, 10d
+    section Fase 2: Despliegue
+    Configuración AutoFirma     :b1, 2026-11-18, 5d
+    Pruebas Piloto y Sellado    :b2, after b1, 7d
+    section Fase 3: Producción
+    Formación de Usuarios       :c1, after b2, 5d
+    Puesta en Marcha            :crit, after c1, 3d`, 'gantt1')" 
+                                        class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl transition-colors">
+                                    <span x-text="copiedKey === 'gantt1' ? '✓ Copiado' : 'Copiar'"></span>
+                                </button>
+                                <button type="button" @click="insertSnippet(
+`gantt
+    title Cronograma de Implantación Sientia.MTX
+    dateFormat  YYYY-MM-DD
+    section Fase 1: Análisis
+    Auditoría de Procesos       :done, a1, 2026-11-01, 7d
+    Parametrización Circuitos   :active, a2, after a1, 10d
+    section Fase 2: Despliegue
+    Configuración AutoFirma     :b1, 2026-11-18, 5d
+    Pruebas Piloto y Sellado    :b2, after b1, 7d
+    section Fase 3: Producción
+    Formación de Usuarios       :c1, after b2, 5d
+    Puesta en Marcha            :crit, after c1, 3d`)" 
+                                        class="px-4 py-1.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-violet-600/20 flex items-center gap-1.5">
+                                    <span>⚡ Insertar en Documento</span>
+                                </button>
+                            </div>
+                        </div>
+                        <pre class="bg-slate-950 text-fuchsia-400 p-4 rounded-2xl text-xs font-mono overflow-x-auto shadow-inner leading-relaxed border border-slate-800"><code>gantt
+    title Cronograma de Implantación Sientia.MTX
+    dateFormat  YYYY-MM-DD
+    section Fase 1: Análisis
+    Auditoría de Procesos       :done, a1, 2026-11-01, 7d
+    Parametrización Circuitos   :active, a2, after a1, 10d
+    section Fase 2: Despliegue
+    Configuración AutoFirma     :b1, 2026-11-18, 5d
+    Pruebas Piloto y Sellado    :b2, after b1, 7d
+    section Fase 3: Producción
+    Formación de Usuarios       :c1, after b2, 5d
+    Puesta en Marcha            :crit, after c1, 3d</code></pre>
+                    </div>
+
+                    {{-- TAB 5: Pie --}}
+                    <div x-show="activeTab === 'pie'" class="space-y-4" style="display: none;">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-900 dark:text-white">Gráfico Circular de Distribución (Pie Chart)</h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Para resumir porcentajes o cuotas de participación en informes ejecutivos.</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button type="button" @click="copyCode(
+`pie title Estado de los Expedientes del Trimestre
+    \"Completados y Firmados\" : 62
+    \"En Trámite de Subsanación\" : 23
+    \"Pendientes de Informe\" : 10
+    \"Desestimados\" : 5`, 'pie1')" 
+                                        class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl transition-colors">
+                                    <span x-text="copiedKey === 'pie1' ? '✓ Copiado' : 'Copiar'"></span>
+                                </button>
+                                <button type="button" @click="insertSnippet(
+`pie title Estado de los Expedientes del Trimestre
+    \"Completados y Firmados\" : 62
+    \"En Trámite de Subsanación\" : 23
+    \"Pendientes de Informe\" : 10
+    \"Desestimados\" : 5`)" 
+                                        class="px-4 py-1.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-violet-600/20 flex items-center gap-1.5">
+                                    <span>⚡ Insertar en Documento</span>
+                                </button>
+                            </div>
+                        </div>
+                        <pre class="bg-slate-950 text-pink-400 p-4 rounded-2xl text-xs font-mono overflow-x-auto shadow-inner leading-relaxed border border-slate-800"><code>pie title Estado de los Expedientes del Trimestre
+    "Completados y Firmados" : 62
+    "En Trámite de Subsanación" : 23
+    "Pendientes de Informe" : 10
+    "Desestimados" : 5</code></pre>
+                    </div>
+
+                    {{-- TAB 6: ER --}}
+                    <div x-show="activeTab === 'er'" class="space-y-4" style="display: none;">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-900 dark:text-white">Diagrama de Entidad-Relación de Datos</h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Para documentar la estructura de datos entre Expedientes, Circuitos y Firmantes.</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button type="button" @click="copyCode(
+`erDiagram
+    EXPEDIENTE ||--o{ CIRCUITO : contiene
+    CIRCUITO ||--|{ ETAPA : estructura
+    ETAPA }|--|| USUARIO : asignada_a
+    ETAPA ||--o| FIRMA : produce
+    FIRMA {
+        string csv PK
+        string sha256
+        datetime signed_at
+        string certificado
+    }`, 'er1')" 
+                                        class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl transition-colors">
+                                    <span x-text="copiedKey === 'er1' ? '✓ Copiado' : 'Copiar'"></span>
+                                </button>
+                                <button type="button" @click="insertSnippet(
+`erDiagram
+    EXPEDIENTE ||--o{ CIRCUITO : contiene
+    CIRCUITO ||--|{ ETAPA : estructura
+    ETAPA }|--|| USUARIO : asignada_a
+    ETAPA ||--o| FIRMA : produce
+    FIRMA {
+        string csv PK
+        string sha256
+        datetime signed_at
+        string certificado
+    }`)" 
+                                        class="px-4 py-1.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-violet-600/20 flex items-center gap-1.5">
+                                    <span>⚡ Insertar en Documento</span>
+                                </button>
+                            </div>
+                        </div>
+                        <pre class="bg-slate-950 text-blue-400 p-4 rounded-2xl text-xs font-mono overflow-x-auto shadow-inner leading-relaxed border border-slate-800"><code>erDiagram
+    EXPEDIENTE ||--o{ CIRCUITO : contiene
+    CIRCUITO ||--|{ ETAPA : estructura
+    ETAPA }|--|| USUARIO : asignada_a
+    ETAPA ||--o| FIRMA : produce
+    FIRMA {
+        string csv PK
+        string sha256
+        datetime signed_at
+        string certificado
+    }</code></pre>
+                    </div>
+
+                </div>
+
+                <!-- Pie del Modal con Consejo Rápido -->
+                <div class="px-8 py-3.5 bg-slate-50 dark:bg-slate-950/60 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">
+                    <div class="flex items-center gap-2">
+                        <span class="text-amber-500">💡</span>
+                        <span>Escribe <code>```mermaid</code> al principio y <code>```</code> al final en cualquier documento o tarea para generar diagramas automáticos.</span>
+                    </div>
+                    <button type="button" @click="showMermaidModal = false" class="text-xs font-bold text-slate-600 dark:text-slate-400 hover:underline">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
 </div>

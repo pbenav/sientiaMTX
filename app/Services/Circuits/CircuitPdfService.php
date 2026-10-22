@@ -78,6 +78,11 @@ class CircuitPdfService
             ? $this->sanitizeEmojisForPdf((string) str($rawContent)->markdown(['html_input' => 'strip', 'allow_unsafe_links' => false]))
             : '';
 
+        if (!empty($contentHtml)) {
+            $mermaidService = app(\App\Services\Mermaid\MermaidRendererService::class);
+            $contentHtml = $mermaidService->renderMermaidBlocksInHtml($contentHtml);
+        }
+
         $allSteps = $execution->steps()->orderBy('order', 'asc')->get();
         $simulatedExecution = $execution;
 

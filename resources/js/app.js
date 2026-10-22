@@ -211,3 +211,64 @@ window.openQrModal = function(qrSvgBase64, downloadName) {
         }
     });
 };
+
+// ── Mermaid Diagram Integration ──
+import mermaid from 'mermaid';
+
+const isDarkTheme = () => {
+    return document.documentElement.classList.contains('dark') || 
+           (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+};
+
+try {
+    mermaid.initialize({
+        startOnLoad: false,
+        theme: isDarkTheme() ? 'dark' : 'default',
+        securityLevel: 'loose',
+        fontFamily: 'inherit'
+    });
+    window.mermaid = mermaid;
+} catch (e) {
+    console.warn('[Mermaid] Initialization warning:', e);
+}
+
+window.renderMermaidDiagrams = async function(root = document) {
+    if (!root || !window.mermaid) return;
+    const codeBlocks = root.querySelectorAll('pre code.language-mermaid, pre code.lang-mermaid, div.mermaid:not([data-processed])');
+    if (!codeBlocks.length) return;
+
+    for (let i = 0; i < codeBlocks.length; i++) {
+        const el = codeBlocks[i];
+        if (el.getAttribute('data-mermaid-processed')) continue;
+        el.setAttribute('data-mermaid-processed', 'true');
+
+        const rawCode = (el.textContent || '').trim();
+        if (!rawCode) continue;
+
+        const pre = el.closest('pre') || el;
+        const container = document.createElement('div');
+        container.className = 'mermaid-diagram flex justify-center items-center my-6 p-4 bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-x-auto';
+        
+        const uniqueId = 'mermaid-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now();
+        
+        try {
+            const { svg } = await mermaid.render(uniqueId, rawCode);
+            container.innerHTML = svg;
+            if (pre.parentNode) {
+                pre.parentNode.replaceChild(container, pre);
+            }
+        } catch (err) {
+            console.warn('[Mermaid] Syntax error in diagram:', err);
+            el.removeAttribute('data-mermaid-processed');
+            const errEl = document.getElementById(uniqueId) || document.getElementById('d' + uniqueId);
+            if (errEl) errEl.remove();
+        }
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    window.renderMermaidDiagrams(document);
+});
+document.addEventListener('turbo:load', () => window.renderMermaidDiagrams(document));
+window.addEventListener('contentChanged', () => window.renderMermaidDiagrams(document));
+
