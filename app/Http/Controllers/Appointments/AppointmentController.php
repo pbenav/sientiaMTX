@@ -503,7 +503,8 @@ class AppointmentController extends Controller
             try {
                 $googleService = new \App\Services\GoogleService();
                 $member = $appointment->service->user;
-                if ($member && $googleService->setTokenForUser($member)) {
+                $teamId = $appointment->service?->team_id;
+                if ($member && $googleService->setTokenForUser($member, $teamId)) {
                     $googleService->deleteEvent($appointment->google_event_id);
                     $appointment->update(['google_event_id' => null]);
                 }
@@ -520,7 +521,8 @@ class AppointmentController extends Controller
             try {
                 $googleService = new \App\Services\GoogleService();
                 $member = $appointment->service->user;
-                if ($member && $googleService->setTokenForUser($member)) {
+                $teamId = $appointment->service?->team_id;
+                if ($member && $googleService->setTokenForUser($member, $teamId)) {
                     $googleService->updateTask('@default', $appointment->google_task_id, ['status' => 'cancelled']);
                     $appointment->update(['google_task_id' => null]);
                 }

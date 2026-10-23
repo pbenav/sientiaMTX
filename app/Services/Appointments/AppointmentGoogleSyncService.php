@@ -14,8 +14,9 @@ class AppointmentGoogleSyncService
     {
         try {
             $member = $appointment->member;
+            $teamId = $appointment->service?->team_id;
             
-            if ($this->googleService->setTokenForUser($member)) {
+            if ($this->googleService->setTokenForUser($member, $teamId)) {
                 $description = "Cita Previa: {$appointment->service->name}\n"
                              . "Ciudadano: {$appointment->visitor->full_name}\n"
                              . "Localizador: {$appointment->localizador}";
@@ -58,8 +59,9 @@ class AppointmentGoogleSyncService
     {
         try {
             $member = $appointment->member;
+            $teamId = $appointment->service?->team_id;
             
-            if ($this->googleService->setTokenForUser($member)) {
+            if ($this->googleService->setTokenForUser($member, $teamId)) {
                 $description = "Cita Previa: {$appointment->service->name}\n"
                              . "Ciudadano: {$appointment->visitor->full_name}\n"
                              . "Localizador: {$appointment->localizador}\n"
