@@ -76,10 +76,13 @@ class BookPublicAppointmentAction
         $normalizedEmail = null;
         if (!empty($data['email'])) {
             $normalizedEmail = $this->normalizeEmail($data['email']);
-            $validationResult = $this->emailValidation->verify($data['email']);
             
-            if (!$validationResult['valid']) {
-                throw ValidationException::withMessages(['email' => 'El correo electrónico no parece existir. Por favor, verifica que sea correcto.']);
+            if (config('email_validation.enabled', false)) {
+                $validationResult = $this->emailValidation->verify($data['email']);
+                
+                if (!$validationResult['valid']) {
+                    throw ValidationException::withMessages(['email' => 'El correo electrónico no parece existir. Por favor, verifica que sea correcto.']);
+                }
             }
         }
 

@@ -390,7 +390,7 @@ class PublicAppointmentController extends Controller
             'first_name'    => 'required|string|max:100',
             'last_name'     => 'required|string|max:150',
             'dni'           => ['required', 'string', 'max:20', new DniNie],
-            'email'         => 'nullable|email:rfc,dns|max:255',
+            'email'         => 'nullable|email|max:255',
             'phone'         => ['nullable', 'string', 'max:20', 'regex:/^(\+?[0-9\s\-\.\(\)]{6,20})$/'],
             'city'          => 'nullable|string|max:100',
             'postal_code'   => 'nullable|string|max:10',
@@ -430,8 +430,8 @@ class PublicAppointmentController extends Controller
             'last_name' => $lastName,
         ]);
 
-        // Validación avanzada de email si se proporciona y cambió
-        if (!empty($data['email']) && $data['email'] !== $appointment->visitor->email) {
+        // Validación avanzada de email si se proporciona y cambió (solo si está habilitada)
+        if (config('email_validation.enabled', false) && !empty($data['email']) && $data['email'] !== $appointment->visitor->email) {
             $validationResult = $this->emailValidation->verify($data['email']);
             
             if (!$validationResult['valid']) {

@@ -12,7 +12,7 @@ class EmailValidationService
      */
     public function verify(string $email, ?int $visitorId = null): array
     {
-        if (!config('email_validation.enabled', true)) {
+        if (!config('email_validation.enabled', false)) {
             return ['valid' => true, 'reason' => 'Email validation is disabled', 'method' => 'disabled'];
         }
 

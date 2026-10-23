@@ -25,7 +25,7 @@ class StorePublicAppointmentRequest extends FormRequest
             'first_name'    => 'required|string|max:100',
             'last_name'     => 'required|string|max:150',
             'dni'           => ['required', 'string', 'max:20', new DniNie],
-            'email'         => 'nullable|email:rfc,dns|max:255',
+            'email'         => 'nullable|email|max:255',
             'phone'         => ['nullable', 'string', 'max:20', 'regex:/^(\+?[0-9\s\-\.\(\)]{6,20})$/'],
             'city'          => 'nullable|string|max:100',
             'postal_code'   => 'nullable|string|max:10',
