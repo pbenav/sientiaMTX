@@ -161,8 +161,9 @@
                     placeholder="{{ __('tasks.assigned_to') }}"
                     width="w-40"
                 >
+                    <option value="all" {{ ($filters['assigned_to'] ?? null) === 'all' ? 'selected' : '' }}>{{ __('teams.all_members') ?? 'Todos los miembros' }}</option>
                     @foreach ($members as $member)
-                        <option value="{{ $member->id }}" {{ $filters['assigned_to'] == $member->id ? 'selected' : '' }}>{{ $member->name }}</option>
+                        <option value="{{ $member->id }}" {{ ($filters['assigned_to'] ?? null) == $member->id ? 'selected' : '' }}>{{ $member->name }}</option>
                     @endforeach
                 </x-kanban.filter-select>
 

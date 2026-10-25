@@ -22,7 +22,7 @@ class BuildKanbanDataAction
      */
     public function execute(Team $team, Request $request, $user, bool $isManager): array
     {
-        $filters = $this->getFilters($request);
+        $filters = $this->getFilters($request, $team);
 
         $columns = $this->buildColumns($team, $user, $isManager, $filters);
         $todayActivities = $this->buildTodayActivities($team, $user, $isManager);
@@ -81,18 +81,16 @@ class BuildKanbanDataAction
         ->where('activities.is_archived', false)
         ->where('activities.is_template', false);
 
-        if (!empty($filters['assigned_to'])) {
-            $a = $filters['assigned_to'];
-            $query->where(function ($sq) use ($a) {
-                $sq->whereHas('assignedTo', fn($sub) => $sub->where('users.id', $a))
-                   ->orWhereExists(function ($subq) use ($a) {
-                       $subq->select(\DB::raw(1))
-                            ->from('activity_task_mapping')
-                            ->join('task_assignments', 'activity_task_mapping.task_id', '=', 'task_assignments.task_id')
-                            ->whereColumn('activity_task_mapping.activity_id', 'activities.id')
-                            ->where('task_assignments.user_id', $a);
-                   });
-            });
+        if (!empty($filters['assigned_to']) && $filters['assigned_to'] === 'all') {
+            // Ver todas las actividades operativas del equipo
+            $query->operationalForTeam($team);
+        } elseif (!empty($filters['assigned_to'])) {
+            $targetUser = \App\Models\User::find($filters['assigned_to']);
+            if ($targetUser) {
+                $query->operationalForKanban($targetUser, $team);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
         } else {
             // Tablero Kanban personalizado por usuario dentro de este equipo
             $query->operationalForKanban($user, $team);
@@ -172,16 +170,22 @@ class BuildKanbanDataAction
      */
     protected function buildCompletedTasks(Team $team, $user, bool $isManager)
     {
+        $userId = $user->id;
+
         return $team->activities()
             ->with(['expediente', 'assignedUser'])
             ->whereIn('type', Activity::KANBAN_TYPES)
             ->where('is_template', false)
             ->where('is_archived', true)
-            ->where(function ($q) use ($user) {
-                $userId = $user->id;
+            ->where(function ($q) use ($userId) {
                 $q->whereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId))
                   ->orWhereHas('assignedGroups', fn($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $userId)))
-                  ->orWhere('created_by_id', $userId);
+                  ->orWhere(function ($own) use ($userId) {
+                      $own->where('created_by_id', $userId)
+                          ->whereNull('parent_id')
+                          ->whereDoesntHave('assignedTo', fn($at) => $at->where('users.id', '!=', $userId))
+                          ->whereDoesntHave('assignedGroups');
+                  });
             })
             ->notEphemeral()
             ->orderBy('updated_at', 'desc')
@@ -205,9 +209,9 @@ class BuildKanbanDataAction
     /**
      * Extracts and returns filters from the request.
      */
-    protected function getFilters(Request $request): array
+    protected function getFilters(Request $request, Team $team): array
     {
-        return app(\App\Services\PersistentFilterService::class)->getFilters($request, 'tasks', [
+        return app(\App\Services\PersistentFilterService::class)->getFilters($request, "tasks_team_{$team->id}", [
             'status', 'priority', 'assigned_to', 'skill_id', 'type', 'search', 'expediente_id',
             'urgency', 'assignment_mode', 'blocked',
         ]);

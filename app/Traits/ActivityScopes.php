@@ -563,10 +563,11 @@ trait ActivityScopes
      */
     public function scopeOperationalForKanban(Builder $query, $user, Team $team)
     {
-        $userId = $user->id;
+        $userId = $user instanceof User ? $user->id : (int) $user;
 
         return $query->where('activities.team_id', $team->id)
             ->where('activities.is_template', false)
+            ->whereIn('activities.type', $this->getScopesKanbanTypes())
             ->where(function ($q) use ($userId) {
                 // Tareas asignadas directamente al usuario
                 $q->whereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId))
@@ -588,8 +589,13 @@ trait ActivityScopes
                                 });
                           });
                   })
-                  // Creadas por el usuario
-                  ->orWhere('activities.created_by_id', $userId)
+                  // Tareas propias del usuario (creadas por él, raíz, y no delegadas a terceros)
+                  ->orWhere(function ($own) use ($userId) {
+                      $own->where('activities.created_by_id', $userId)
+                          ->whereNull('activities.parent_id')
+                          ->whereDoesntHave('assignedTo', fn($at) => $at->where('users.id', '!=', $userId))
+                          ->whereDoesntHave('assignedGroups');
+                  })
                   // Tareas públicas sin asignar en este equipo (disponibles para cualquier miembro)
                   ->orWhere(function ($unassigned) {
                       $unassigned->where('activities.visibility', 'public')
@@ -608,6 +614,17 @@ trait ActivityScopes
                 $childQ->whereHas('assignedTo', fn($at) => $at->where('users.id', $userId))
                        ->orWhereHas('assignedGroups', fn($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $userId)));
             });
+    }
+
+    /**
+     * Filtra actividades operativas de un equipo (todas las hojas no plantillas del equipo).
+     */
+    public function scopeOperationalForTeam(Builder $query, Team $team)
+    {
+        return $query->where('activities.team_id', $team->id)
+            ->where('activities.is_template', false)
+            ->whereIn('activities.type', $this->getScopesKanbanTypes())
+            ->whereDoesntHave('children');
     }
 
     // ─── Helpers para scopes ─────────────────────────────────────────────────

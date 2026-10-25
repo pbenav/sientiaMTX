@@ -48,5 +48,24 @@ class KanbanScopeTest extends TestCase
         );
         $this->assertContains(7, $bindings);
     }
+
+    public function test_operational_for_team_enforces_team_isolation_and_excludes_templates(): void
+    {
+        $team = new Team();
+        $team->id = 99;
+
+        $query = Activity::query()->operationalForTeam($team);
+        $sql = $query->toSql();
+        $bindings = $query->getBindings();
+
+        $this->assertTrue(
+            str_contains($sql, '"activities"."team_id" = ?') || str_contains($sql, '`activities`.`team_id` = ?')
+        );
+        $this->assertContains(99, $bindings);
+
+        $this->assertTrue(
+            str_contains($sql, '"activities"."is_template" = ?') || str_contains($sql, '`activities`.`is_template` = ?')
+        );
+    }
 }
 
