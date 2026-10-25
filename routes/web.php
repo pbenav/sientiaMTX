@@ -565,6 +565,7 @@ Route::middleware('auth')->group(function () {
     // Documentación y Manuales
     Route::match(['get', 'post'], '/docs/book/print', [\App\Http\Controllers\DocumentationController::class, 'printBook'])->name('docs.book.print');
     Route::get('/docs/{slug?}', [\App\Http\Controllers\DocumentationController::class, 'index'])->name('docs');
+    Route::get('/documentation/{slug?}', [\App\Http\Controllers\DocumentationController::class, 'index'])->name('documentation.index');
     Route::get('/docs/{slug}/print', [\App\Http\Controllers\DocumentationController::class, 'print'])->name('docs.print');
 
     // Créditos

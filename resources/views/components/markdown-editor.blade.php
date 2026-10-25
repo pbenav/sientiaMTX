@@ -498,7 +498,7 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <a href="{{ route('documentation.index', 'markdown-mermaid') }}" target="_blank" 
+                        <a href="{{ route('docs', 'markdown-mermaid') }}" target="_blank" 
                            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 hover:bg-violet-100 text-[11px] font-bold rounded-xl transition-colors">
                             <span>📖 Manual Completo</span>
                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
