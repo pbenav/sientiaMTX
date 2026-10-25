@@ -197,6 +197,10 @@
                 >
                     <option value="task" {{ ($filters['type'] ?? null) === 'task' ? 'selected' : '' }}>📋 {{ __('activities.types.task') }}</option>
                     <option value="agreement" {{ ($filters['type'] ?? null) === 'agreement' ? 'selected' : '' }}>⚖️ {{ __('activities.types.agreement') }}</option>
+                    <option value="meeting" {{ ($filters['type'] ?? null) === 'meeting' ? 'selected' : '' }}>📅 {{ __('activities.types.meeting') ?? 'Reunión' }}</option>
+                    <option value="reminder" {{ ($filters['type'] ?? null) === 'reminder' ? 'selected' : '' }}>⏰ {{ __('activities.types.reminder') ?? 'Recordatorio' }}</option>
+                    <option value="document" {{ ($filters['type'] ?? null) === 'document' ? 'selected' : '' }}>📄 {{ __('activities.types.document') ?? 'Documento' }}</option>
+                    <option value="note" {{ ($filters['type'] ?? null) === 'note' ? 'selected' : '' }}>📝 {{ __('activities.types.note') ?? 'Nota' }}</option>
                     <option value="template" {{ ($filters['type'] ?? null) === 'template' ? 'selected' : '' }}>{{ __('tasks.template') }}</option>
                     <option value="instance" {{ ($filters['type'] ?? null) === 'instance' ? 'selected' : '' }}>{{ __('tasks.subtask') }}</option>
                     <option value="plain" {{ ($filters['type'] ?? null) === 'plain' ? 'selected' : '' }}>{{ __('activities.types.task') }} ({{ __('Simple') }})</option>

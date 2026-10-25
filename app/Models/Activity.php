@@ -126,7 +126,7 @@ class Activity extends Model
     /**
      * Tipos que pueden aparecer en el Kanban (Flujo de trabajo / Estados).
      */
-    public const KANBAN_TYPES = ['task', 'agreement'];
+    public const KANBAN_TYPES = ['task', 'agreement', 'meeting', 'reminder', 'document', 'note'];
 
     /**
      * Tipos que pueden aparecer en la Matriz Eisenhower (Priorización por urgencia/importancia).
@@ -692,7 +692,9 @@ class Activity extends Model
      */
     public function isCompleted(): bool
     {
-        return in_array($this->status_value, ['completed', 'done', 'approved', 'triggered', 'accepted', 'finished']);
+        return in_array($this->status_value, [
+            'completed', 'done', 'approved', 'triggered', 'accepted', 'finished', 'published', 'dismissed',
+        ]);
     }
 
     /**

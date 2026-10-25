@@ -11,11 +11,7 @@ class KanbanScopeTest extends TestCase
 {
     public function test_kanban_types_only_contains_actionable_types(): void
     {
-        $this->assertEquals(['task', 'agreement'], Activity::KANBAN_TYPES);
-        $this->assertNotContains('document', Activity::KANBAN_TYPES);
-        $this->assertNotContains('meeting', Activity::KANBAN_TYPES);
-        $this->assertNotContains('reminder', Activity::KANBAN_TYPES);
-        $this->assertNotContains('note', Activity::KANBAN_TYPES);
+        $this->assertEquals(['task', 'agreement', 'meeting', 'reminder', 'document', 'note'], Activity::KANBAN_TYPES);
         $this->assertNotContains('link', Activity::KANBAN_TYPES);
     }
 
