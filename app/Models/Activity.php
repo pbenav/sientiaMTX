@@ -126,7 +126,7 @@ class Activity extends Model
     /**
      * Tipos que pueden aparecer en el Kanban (Flujo de trabajo / Estados).
      */
-    public const KANBAN_TYPES = ['task', 'agreement'];
+    public const KANBAN_TYPES = ['task', 'agreement', 'document', 'meeting', 'reminder'];
 
     /**
      * Tipos que pueden aparecer en la Matriz Eisenhower (Priorización por urgencia/importancia).

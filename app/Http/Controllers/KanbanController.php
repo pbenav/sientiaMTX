@@ -56,9 +56,14 @@ class KanbanController extends Controller
         // Sync activities to ensure their column matches their actual progress (0%, 1-99%, 100%)
         $team->activities()
             ->forKanban()
-            ->operationalForKanban($user, $team)
+            ->visibleTo($user, $isManager)
             ->notEphemeral()
             ->where('is_archived', false)
+            ->where(function ($q) {
+                $q->whereNull('kanban_column_id')
+                  ->orWhere('progress_percentage', 100)
+                  ->orWhere('progress_percentage', 0);
+            })
             ->get()->each(function ($activity) {
                 $activity->syncKanbanColumn();
             });

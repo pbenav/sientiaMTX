@@ -77,7 +77,6 @@ class BuildKanbanDataAction
         ])
         ->forKanban()
         ->visibleTo($user, $isManager)
-        ->operationalForKanban($user, $team)
         ->notEphemeral()
         ->where('is_archived', false)
         ->when($filters['status'] ?? null, fn($q, $s) => $q->whereJsonContains('status->value', $s))
@@ -85,6 +84,7 @@ class BuildKanbanDataAction
         ->when($filters['assigned_to'] ?? null, function ($q, $a) {
             $q->where(function ($sq) use ($a) {
                 $sq->whereHas('assignedTo', fn($sub) => $sub->where('users.id', $a))
+                   ->orWhere('assigned_user_id', $a)
                    ->orWhereExists(function ($subq) use ($a) {
                        $subq->select(\DB::raw(1))
                             ->from('activity_task_mapping')
@@ -105,7 +105,7 @@ class BuildKanbanDataAction
                    ->orWhereHas('skills', fn($sk) => $sk->where('skills.id', $skillId));
             });
         })
-        ->when($filters['type'], fn($q, $type) => $this->filterByType($q, $type))
+        ->when($filters['type'] ?? null, fn($q, $type) => $this->filterByType($q, $type))
         ->when($filters['urgency'] ?? null, fn($q, $u) => $q->byUrgency($u))
         ->when($filters['assignment_mode'] ?? null, fn($q, $m) => $q->byAssignmentMode($m))
         ->when(isset($filters['blocked']) && $filters['blocked'] !== '' && $filters['blocked'] !== null, function ($q) use ($filters) {
@@ -150,7 +150,7 @@ class BuildKanbanDataAction
                 'timeLogs' => fn($q) => $q->whereDate('start_at', today()),
             ])
             ->forKanban()
-            ->operationalForKanban($user, $team)
+            ->visibleTo($user, $isManager)
             ->notEphemeral()
             ->where('is_archived', false)
             ->today()
