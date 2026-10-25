@@ -53,16 +53,26 @@ class KanbanController extends Controller
         $user = auth()->user();
         $isManager = $team->isManager($user);
 
-        // Sync activities to ensure their column matches their actual progress (0%, 1-99%, 100%)
+        // Limpiar cualquier actividad no kanban o plantilla del equipo que tenga asignada erróneamente una columna kanban
+        $team->activities()
+            ->whereNotNull('kanban_column_id')
+            ->where(function ($q) {
+                $q->whereNotIn('type', Activity::KANBAN_TYPES)
+                  ->orWhere('is_template', true);
+            })
+            ->update(['kanban_column_id' => null]);
+
+        // Sincronizar actividades operativas del equipo con sus columnas correspondientes según su progreso
         $team->activities()
             ->forKanban()
-            ->visibleTo($user, $isManager)
             ->notEphemeral()
             ->where('is_archived', false)
-            ->where(function ($q) {
+            ->where('is_template', false)
+            ->where(function ($q) use ($team) {
                 $q->whereNull('kanban_column_id')
                   ->orWhere('progress_percentage', 100)
-                  ->orWhere('progress_percentage', 0);
+                  ->orWhere('progress_percentage', 0)
+                  ->orWhereDoesntHave('kanbanColumn', fn($cq) => $cq->where('team_id', $team->id));
             })
             ->get()->each(function ($activity) {
                 $activity->syncKanbanColumn();
@@ -110,7 +120,7 @@ class KanbanController extends Controller
 
         $column = KanbanColumn::findOrFail($validated['kanban_column_id']);
 
-        if ($column->team_id !== $team->id) {
+        if ($task->team_id !== $team->id || $column->team_id !== $team->id) {
             abort(403);
         }
 

@@ -126,7 +126,7 @@ class Activity extends Model
     /**
      * Tipos que pueden aparecer en el Kanban (Flujo de trabajo / Estados).
      */
-    public const KANBAN_TYPES = ['task', 'agreement', 'document', 'meeting', 'reminder'];
+    public const KANBAN_TYPES = ['task', 'agreement'];
 
     /**
      * Tipos que pueden aparecer en la Matriz Eisenhower (Priorización por urgencia/importancia).
@@ -876,6 +876,15 @@ class Activity extends Model
         }
         if (!$team) return;
 
+        // Si la actividad no es de tipo Kanban o es una plantilla, no debe tener kanban_column_id
+        if (!in_array($this->type, self::KANBAN_TYPES) || $this->is_template) {
+            if ($this->kanban_column_id !== null) {
+                $this->kanban_column_id = null;
+                $this->saveQuietly();
+            }
+            return;
+        }
+
         $currentProgress = (int)$this->progress;
         $expectedTypes = [];
         if ($currentProgress === 100) {
@@ -888,7 +897,7 @@ class Activity extends Model
 
         $currentColumn = \App\Models\KanbanColumn::find($this->kanban_column_id);
 
-        if (!$currentColumn || !in_array($currentColumn->type, $expectedTypes)) {
+        if (!$currentColumn || $currentColumn->team_id !== $team->id || !in_array($currentColumn->type, $expectedTypes)) {
             $typeToAssign = $currentProgress === 100 ? 'done' : ($currentProgress === 0 ? 'todo' : 'in_progress');
             
             $defaultColumn = $team->kanbanColumns()

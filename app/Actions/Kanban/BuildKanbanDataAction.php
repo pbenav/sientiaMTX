@@ -75,16 +75,17 @@ class BuildKanbanDataAction
             'attachments',
             'timeLogs' => fn($q) => $q->whereDate('start_at', today()),
         ])
+        ->where('activities.team_id', $team->id)
         ->forKanban()
-        ->visibleTo($user, $isManager)
         ->notEphemeral()
-        ->where('is_archived', false)
-        ->when($filters['status'] ?? null, fn($q, $s) => $q->whereJsonContains('status->value', $s))
-        ->when($filters['priority'] ?? null, fn($q, $p) => $q->where('priority', $p))
-        ->when($filters['assigned_to'] ?? null, function ($q, $a) {
-            $q->where(function ($sq) use ($a) {
-                $sq->whereHas('assignedTo', fn($sub) => $sub->where('users.id', $a))
-                   ->orWhere('assigned_user_id', $a)
+        ->where('activities.is_archived', false)
+        ->where('activities.is_template', false);
+
+        if (!empty($filters['assigned_to'])) {
+            $a = $filters['assigned_to'];
+            $query->where(function ($sq) use ($a) {
+                $sq->where('activities.assigned_user_id', $a)
+                   ->orWhereHas('assignedTo', fn($sub) => $sub->where('users.id', $a))
                    ->orWhereExists(function ($subq) use ($a) {
                        $subq->select(\DB::raw(1))
                             ->from('activity_task_mapping')
@@ -93,31 +94,39 @@ class BuildKanbanDataAction
                             ->where('task_assignments.user_id', $a);
                    });
             });
-        })
-        ->when($filters['search'] ?? null, function ($q, $s) {
-            $q->where('title', 'like', "%{$s}%")
-              ->orWhere('description', 'like', "%{$s}%");
-        })
-        ->when($filters['expediente_id'] ?? null, fn($q, $expId) => $q->where('expediente_id', $expId))
-        ->when($filters['skill_id'] ?? null, function ($q, $skillId) {
-            $q->where(function ($sq) use ($skillId) {
-                $sq->where('metadata->skill_id', $skillId)
-                   ->orWhereHas('skills', fn($sk) => $sk->where('skills.id', $skillId));
-            });
-        })
-        ->when($filters['type'] ?? null, fn($q, $type) => $this->filterByType($q, $type))
-        ->when($filters['urgency'] ?? null, fn($q, $u) => $q->byUrgency($u))
-        ->when($filters['assignment_mode'] ?? null, fn($q, $m) => $q->byAssignmentMode($m))
-        ->when(isset($filters['blocked']) && $filters['blocked'] !== '' && $filters['blocked'] !== null, function ($q) use ($filters) {
-            if ($filters['blocked'] == '1') {
-                $q->blocked();
-            } elseif ($filters['blocked'] == '0') {
-                $q->whereJsonDoesntContain('status->value', 'blocked');
-            }
-        })
-        ->orderBy('kanban_order', 'asc')
-        ->orderByRaw(TaskPriority::orderQuery())
-        ->orderBy('progress_percentage', 'desc');
+        } else {
+            // Tablero Kanban personalizado por usuario dentro de este equipo
+            $query->operationalForKanban($user, $team);
+        }
+
+        $query->when($filters['status'] ?? null, fn($q, $s) => $q->whereJsonContains('status->value', $s))
+            ->when($filters['priority'] ?? null, fn($q, $p) => $q->where('priority', $p))
+            ->when($filters['search'] ?? null, function ($q, $s) {
+                $q->where(function ($sq) use ($s) {
+                    $sq->where('title', 'like', "%{$s}%")
+                       ->orWhere('description', 'like', "%{$s}%");
+                });
+            })
+            ->when($filters['expediente_id'] ?? null, fn($q, $expId) => $q->where('expediente_id', $expId))
+            ->when($filters['skill_id'] ?? null, function ($q, $skillId) {
+                $q->where(function ($sq) use ($skillId) {
+                    $sq->where('metadata->skill_id', $skillId)
+                       ->orWhereHas('skills', fn($sk) => $sk->where('skills.id', $skillId));
+                });
+            })
+            ->when($filters['type'] ?? null, fn($q, $type) => $this->filterByType($q, $type))
+            ->when($filters['urgency'] ?? null, fn($q, $u) => $q->byUrgency($u))
+            ->when($filters['assignment_mode'] ?? null, fn($q, $m) => $q->byAssignmentMode($m))
+            ->when(isset($filters['blocked']) && $filters['blocked'] !== '' && $filters['blocked'] !== null, function ($q) use ($filters) {
+                if ($filters['blocked'] == '1') {
+                    $q->blocked();
+                } elseif ($filters['blocked'] == '0') {
+                    $q->whereJsonDoesntContain('status->value', 'blocked');
+                }
+            })
+            ->orderBy('kanban_order', 'asc')
+            ->orderByRaw(TaskPriority::orderQuery())
+            ->orderBy('progress_percentage', 'desc');
     }
 
     /**
@@ -150,7 +159,7 @@ class BuildKanbanDataAction
                 'timeLogs' => fn($q) => $q->whereDate('start_at', today()),
             ])
             ->forKanban()
-            ->visibleTo($user, $isManager)
+            ->operationalForKanban($user, $team)
             ->notEphemeral()
             ->where('is_archived', false)
             ->today()
@@ -167,9 +176,16 @@ class BuildKanbanDataAction
         return $team->activities()
             ->with(['expediente', 'assignedUser'])
             ->whereIn('type', Activity::KANBAN_TYPES)
-            ->visibleTo($user, $isManager)
-            ->notEphemeral()
+            ->where('is_template', false)
             ->where('is_archived', true)
+            ->where(function ($q) use ($user) {
+                $userId = $user->id;
+                $q->where('assigned_user_id', $userId)
+                  ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId))
+                  ->orWhereHas('assignedGroups', fn($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $userId)))
+                  ->orWhere('created_by_id', $userId);
+            })
+            ->notEphemeral()
             ->orderBy('updated_at', 'desc')
             ->limit(50)
             ->get();
