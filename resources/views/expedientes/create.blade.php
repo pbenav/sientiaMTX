@@ -3,7 +3,7 @@
 
     <x-slot name="header">
         <div class="flex items-start gap-4">
-            <a href="{{ route('teams.expedientes.index', $team) }}"
+            <a href="{{ route('teams.expedientes.index', $team) }}" data-back-button
                 class="mt-1 p-2.5 bg-gray-50 dark:bg-gray-800/50 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-2xl transition-all shadow-sm border border-gray-100 dark:border-gray-700/50 shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -250,7 +250,6 @@
             </div>
         </form>
     </div>
-</x-app-layout>
 @push('scripts')
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
@@ -329,3 +328,4 @@
         });
     </script>
 @endpush
+</x-app-layout>

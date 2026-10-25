@@ -515,3 +515,53 @@
             }, true);
         })();
     </script>
+
+    <!-- ⬅️ Sientia Intelligent Navigation & Smart Back Button ⬅️ -->
+    <script>
+        (function() {
+            window.smartNavigateBack = function(fallbackUrl, event) {
+                if (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                const currentOrigin = window.location.origin;
+                const referrer = document.referrer;
+
+                // Si hay historial previo dentro del mismo origen y no es un autorefresco a la misma URL
+                if (window.history.length > 1 && referrer && referrer.startsWith(currentOrigin) && referrer !== window.location.href) {
+                    window.history.back();
+                } else if (fallbackUrl && fallbackUrl !== '#' && !fallbackUrl.startsWith('javascript:')) {
+                    window.location.href = fallbackUrl;
+                } else {
+                    window.history.back();
+                }
+            };
+
+            document.addEventListener('click', function(e) {
+                // 1. Selector explícito por data-attribute
+                let backBtn = e.target.closest('[data-back-button]');
+
+                // 2. Si no tiene data-attribute, detectar botones de retroceso en cabeceras de navegación
+                if (!backBtn) {
+                    const candidate = e.target.closest('a, button');
+                    if (candidate) {
+                        // Detectar si está en la barra de cabecera junto al breadcrumb
+                        const isNearBreadcrumb = candidate.nextElementSibling?.matches?.('[aria-label="breadcrumb"], nav') ||
+                                                 candidate.parentElement?.querySelector?.('[aria-label="breadcrumb"], nav');
+                        const hasChevronLeft = candidate.querySelector('svg path[d*="M15 19l-7-7 7-7"], svg path[d*="M10 19l-7-7m0 0l7-7m-7 7h18"]');
+                        const titleAttr = (candidate.getAttribute('title') || candidate.getAttribute('aria-label') || '').toLowerCase();
+                        const hasBackTitle = titleAttr.includes('back') || titleAttr.includes('volver') || titleAttr.includes('regresar') || titleAttr.includes('retroceder');
+
+                        if (hasChevronLeft && (isNearBreadcrumb || hasBackTitle)) {
+                            backBtn = candidate;
+                        }
+                    }
+                }
+
+                if (backBtn) {
+                    const fallback = backBtn.getAttribute('href') || backBtn.dataset.fallback;
+                    window.smartNavigateBack(fallback, e);
+                }
+            }, true);
+        })();
+    </script>
