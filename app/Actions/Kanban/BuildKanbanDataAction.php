@@ -84,8 +84,7 @@ class BuildKanbanDataAction
         if (!empty($filters['assigned_to'])) {
             $a = $filters['assigned_to'];
             $query->where(function ($sq) use ($a) {
-                $sq->where('activities.assigned_user_id', $a)
-                   ->orWhereHas('assignedTo', fn($sub) => $sub->where('users.id', $a))
+                $sq->whereHas('assignedTo', fn($sub) => $sub->where('users.id', $a))
                    ->orWhereExists(function ($subq) use ($a) {
                        $subq->select(\DB::raw(1))
                             ->from('activity_task_mapping')
@@ -180,8 +179,7 @@ class BuildKanbanDataAction
             ->where('is_archived', true)
             ->where(function ($q) use ($user) {
                 $userId = $user->id;
-                $q->where('assigned_user_id', $userId)
-                  ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId))
+                $q->whereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId))
                   ->orWhereHas('assignedGroups', fn($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $userId)))
                   ->orWhere('created_by_id', $userId);
             })

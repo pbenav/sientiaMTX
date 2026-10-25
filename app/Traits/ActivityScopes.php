@@ -417,8 +417,7 @@ trait ActivityScopes
                     // 3. Instancias/hojas asignadas al manager (ejecución directa)
                     $q->whereDoesntHave('children')
                       ->where(function ($inner) use ($userId) {
-                          $inner->where('assigned_user_id', $userId)
-                                ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId))
+                          $inner->whereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId))
                                 ->orWhereHas('assignedGroups', fn($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $userId)))
                                 ->orWhereExists(function ($sub) use ($userId) {
                                     $sub->select(DB::raw(1))
@@ -443,8 +442,7 @@ trait ActivityScopes
             $query->where('is_template', false)
                 ->whereDoesntHave('children')
                 ->where(function ($q) use ($userId) {
-                    $q->where('assigned_user_id', $userId)
-                      ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId))
+                    $q->whereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId))
                       ->orWhereHas('assignedGroups', fn($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $userId)))
                       ->orWhere(function($roots) use ($userId) {
                           $roots->whereNull('parent_id')
@@ -452,7 +450,6 @@ trait ActivityScopes
                       })
                       ->orWhere(function ($unassigned) {
                           $unassigned->where('visibility', 'public')
-                                     ->whereNull('assigned_user_id')
                                      ->whereDoesntHave('assignedTo')
                                      ->whereDoesntHave('assignedGroups')
                                      ->whereNotExists(function ($sub) {
@@ -571,9 +568,8 @@ trait ActivityScopes
         return $query->where('activities.team_id', $team->id)
             ->where('activities.is_template', false)
             ->where(function ($q) use ($userId) {
-                // Tareas asignadas directamente
-                $q->where('activities.assigned_user_id', $userId)
-                  ->orWhereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId))
+                // Tareas asignadas directamente al usuario
+                $q->whereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId))
                   // Tareas asignadas a sus grupos
                   ->orWhereHas('assignedGroups', fn($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $userId)))
                   // Mapeadas desde el sistema legacy
@@ -597,7 +593,6 @@ trait ActivityScopes
                   // Tareas públicas sin asignar en este equipo (disponibles para cualquier miembro)
                   ->orWhere(function ($unassigned) {
                       $unassigned->where('activities.visibility', 'public')
-                                 ->whereNull('activities.assigned_user_id')
                                  ->whereDoesntHave('assignedTo')
                                  ->whereDoesntHave('assignedGroups')
                                  ->whereNotExists(function ($sub) {
@@ -610,8 +605,7 @@ trait ActivityScopes
             })
             // Deduplicación inteligente: si el usuario ya tiene asignada una tarea hija, ocultar el padre contenedor
             ->whereDoesntHave('children', function ($childQ) use ($userId) {
-                $childQ->where('activities.assigned_user_id', $userId)
-                       ->orWhereHas('assignedTo', fn($at) => $at->where('users.id', $userId))
+                $childQ->whereHas('assignedTo', fn($at) => $at->where('users.id', $userId))
                        ->orWhereHas('assignedGroups', fn($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $userId)));
             });
     }

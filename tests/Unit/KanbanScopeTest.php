@@ -42,10 +42,11 @@ class KanbanScopeTest extends TestCase
             str_contains($sql, '"activities"."is_template" = ?') || str_contains($sql, '`activities`.`is_template` = ?')
         );
 
-        // Must check assigned user
+        // Must check assigned user via activity_assignments pivot
         $this->assertTrue(
-            str_contains($sql, '"activities"."assigned_user_id" = ?') || str_contains($sql, '`activities`.`assigned_user_id` = ?')
+            str_contains($sql, 'activity_assignments')
         );
         $this->assertContains(7, $bindings);
     }
 }
+
