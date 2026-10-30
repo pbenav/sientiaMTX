@@ -225,15 +225,16 @@
                                     {{ $thread->title }}
                                 </a>
 
-                                @if ($thread->task)
-                                    <a href="{{ route('teams.activities.show', [$team, $thread->task]) }}"
+                                @if ($thread->activity || $thread->task)
+                                    @php $linkedItem = $thread->activity ?? $thread->task; @endphp
+                                    <a href="{{ route('teams.activities.show', [$team, $linkedItem]) }}"
                                         class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 dark:bg-gray-800 hover:bg-violet-100 dark:hover:bg-violet-900/30 text-[10px] font-bold text-gray-600 dark:text-gray-300 hover:text-violet-700 dark:hover:text-violet-400 rounded-md transition-colors border border-gray-200 dark:border-gray-700 hover:border-violet-200 dark:hover:border-violet-800">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                 d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                         </svg>
-                                        {{ __('forum.task') }}: {{ Str::limit($thread->task->title, 20) }}
+                                        {{ $thread->activity ? ($thread->activity->type_label ?? __('Actividad')) : __('forum.task') }}: {{ Str::limit($linkedItem->title, 20) }}
                                     </a>
                                 @endif
                             </div>

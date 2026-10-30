@@ -424,6 +424,16 @@ class Activity extends Model
         return $this->belongsTo(TeamFolder::class, 'folder_id');
     }
 
+    /**
+     * Hilo de discusión del foro vinculado a la actividad.
+     *
+     * @return HasOne<\App\Models\ForumThread, $this>
+     */
+    public function forumThread(): HasOne
+    {
+        return $this->hasOne(ForumThread::class, 'activity_id');
+    }
+
     // ─── Infraestructura compartida ───────────────────────────────────────────
 
     /**

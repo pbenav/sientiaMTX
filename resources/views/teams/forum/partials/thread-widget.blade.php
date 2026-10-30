@@ -76,10 +76,14 @@
 
             <form action="{{ route('teams.forum.store', $team) }}" method="POST">
                 @csrf
-                <input type="hidden" name="task_id" value="{{ $rootTask->id }}">
+                @if ($rootTask instanceof \App\Models\Activity)
+                    <input type="hidden" name="activity_id" value="{{ $rootTask->id }}">
+                @else
+                    <input type="hidden" name="task_id" value="{{ $rootTask->id }}">
+                @endif
                 <input type="hidden" name="title" value="Discusión: {{ $rootTask->title }}">
                 <input type="hidden" name="content"
-                    value="Hilo de discusión abierto para la tarea: {{ $rootTask->title }}">
+                    value="Hilo de discusión abierto para: {{ $rootTask->title }}">
 
                 <button type="submit"
                     class="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs py-2 px-4 rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2">
