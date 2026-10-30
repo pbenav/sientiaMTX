@@ -1211,22 +1211,8 @@
                 if (data.current_model) this.currentModel = data.current_model;
                 this.retryCount = 0;
 
-                // Auto-create tasks if AI sent a creation payload
-                if (!isError && hasPayload) {
-                    try {
-                        const match = data.message.match(/\[PAYLOAD\]([\s\S]*?)\[\/PAYLOAD\]/);
-                        if (match) {
-                            const raw = match[1].trim();
-                            const pData = JSON.parse(this.cleanJson(raw));
-                            if (pData.intent === 'bulk_tasks') {
-                                setTimeout(() => window.dispatchEvent(new CustomEvent('ai:inject-bulk-tasks', { detail: { json: JSON.stringify(pData.tasks) } })), 500);
-                            } else if (pData.intent === 'full_task') {
-                                const actType = (pData.task_data && pData.task_data.type) ? pData.task_data.type : 'task';
-                                setTimeout(() => this.submitServerTransfer('task', raw, null, actType), 500);
-                            }
-                        }
-                    } catch (e) { console.error('Auto-trigger parse error:', e); }
-                }
+                // Las tareas y actividades se crean a petición expresa del usuario mediante los botones de acción en las tarjetas de payload
+                // (evitando duplicaciones automáticas involuntarias o bucles al responder).
 
                 // Notifications
                 if (!this.open) {
@@ -2426,9 +2412,11 @@
             },
 
             async injectBulkTasks(detail) {
+                if (this._isCreatingBulkTasks) return;
                 const tasks = JSON.parse(detail.json);
                 if (!tasks || !tasks.length) return;
                 
+                this._isCreatingBulkTasks = true;
                 const isDark = document.documentElement.classList.contains('dark');
                 Swal.fire({
                     title: 'Creando Tareas',
@@ -2466,6 +2454,8 @@
                     }
                 } catch (error) {
                     Swal.fire('Error', 'Problema de conexión.', 'error');
+                } finally {
+                    this._isCreatingBulkTasks = false;
                 }
             }
         }));
