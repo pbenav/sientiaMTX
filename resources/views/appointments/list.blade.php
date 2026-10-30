@@ -230,6 +230,7 @@
                 <div class="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800 px-5 py-3 flex items-center justify-between transition-all" x-show="count > 0" style="display: none;" x-cloak>
                     <span class="text-xs font-bold text-gray-600 dark:text-gray-400"><span x-text="count"></span> {{ __('selected') }}</span>
                     <div class="flex gap-2">
+                        <button type="submit" name="bulk_action" value="confirmed" form="bulk-form" class="px-3 py-1.5 text-xs font-black bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 rounded-lg transition-colors">{{ __('Confirmado') }}</button>
                         <button type="submit" name="bulk_action" value="complete" form="bulk-form" class="px-3 py-1.5 text-xs font-black bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-900/30 dark:text-violet-400 rounded-lg transition-colors">{{ __('Complete') }}</button>
                         <button type="button" onclick="confirmBulkNoShow()" class="px-3 py-1.5 text-xs font-black bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700/50 dark:text-gray-300 rounded-lg transition-colors">{{ __('No show') }}</button>
                         <button type="button" onclick="confirmBulkCancel()" class="px-3 py-1.5 text-xs font-black bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400 rounded-lg transition-colors">{{ __("Cancel") }}</button>

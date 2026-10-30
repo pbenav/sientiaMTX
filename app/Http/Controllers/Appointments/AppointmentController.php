@@ -134,7 +134,7 @@ class AppointmentController extends Controller
         $request->validate([
             'appointment_ids' => 'required|array',
             'appointment_ids.*' => 'exists:appointments,id',
-            'bulk_action' => 'required|in:complete,cancel,delete,no_show',
+            'bulk_action' => 'required|in:complete,confirm,confirmed,cancel,delete,no_show',
         ]);
 
         $appointments = Appointment::whereIn('id', $request->appointment_ids)
@@ -149,16 +149,41 @@ class AppointmentController extends Controller
                 if ($appointment->task) {
                     $appointment->task->update(['status' => 'completed', 'progress_percentage' => 100]);
                 }
+                if ($appointment->activity) {
+                    $appointment->activity->update(['status' => ['value' => 'completed'], 'progress_percentage' => 100]);
+                }
+            } elseif (in_array($request->bulk_action, ['confirm', 'confirmed'])) {
+                $appointment->update([
+                    'status' => 'confirmed',
+                    'cancelled_at' => null,
+                    'cancellation_reason' => null,
+                ]);
+                if ($appointment->task) {
+                    $appointment->task->update(['status' => 'in_progress']);
+                }
+                if ($appointment->activity) {
+                    $appointment->activity->update([
+                        'status' => ['value' => 'scheduled'],
+                        'progress_percentage' => 0,
+                    ]);
+                }
+                \App\Jobs\SyncAppointmentWithGoogleJob::dispatch($appointment);
             } elseif ($request->bulk_action === 'no_show') {
                 $appointment->update([
                     'status' => 'no_show',
                 ]);
+                if ($appointment->activity) {
+                    $appointment->activity->update(['status' => ['value' => 'cancelled']]);
+                }
             } elseif ($request->bulk_action === 'cancel') {
                 $appointment->update([
                     'status'              => 'cancelled',
                     'cancelled_at'        => now(),
                     'cancellation_reason' => $request->input('cancellation_reason'),
                 ]);
+                if ($appointment->activity) {
+                    $appointment->activity->update(['status' => ['value' => 'cancelled']]);
+                }
                 $this->deleteGoogleEvent($appointment);
                 $this->deleteGoogleTask($appointment);
                 if ($appointment->visitor->email && $appointment->visitor->consent_email) {
@@ -178,6 +203,9 @@ class AppointmentController extends Controller
                 }
                 if ($appointment->task) {
                     $appointment->task->delete();
+                }
+                if ($appointment->activity) {
+                    $appointment->activity->delete();
                 }
                 $appointment->delete();
             }
