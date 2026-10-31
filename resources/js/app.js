@@ -212,30 +212,40 @@ window.openQrModal = function(qrSvgBase64, downloadName) {
     });
 };
 
-// ── Mermaid Diagram Integration ──
-import mermaid from 'mermaid';
+// ── Mermaid Diagram Integration (Carga bajo demanda) ──
+let mermaidInstance = null;
 
 const isDarkTheme = () => {
     return document.documentElement.classList.contains('dark') || 
            (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
 };
 
-try {
-    mermaid.initialize({
-        startOnLoad: false,
-        theme: isDarkTheme() ? 'dark' : 'default',
-        securityLevel: 'loose',
-        fontFamily: 'inherit'
-    });
-    window.mermaid = mermaid;
-} catch (e) {
-    console.warn('[Mermaid] Initialization warning:', e);
-}
+const getMermaid = async () => {
+    if (mermaidInstance) return mermaidInstance;
+    try {
+        const { default: mermaid } = await import('mermaid');
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: isDarkTheme() ? 'dark' : 'default',
+            securityLevel: 'loose',
+            fontFamily: 'inherit'
+        });
+        window.mermaid = mermaid;
+        mermaidInstance = mermaid;
+        return mermaid;
+    } catch (e) {
+        console.warn('[Mermaid] Failed to load module dynamically:', e);
+        return null;
+    }
+};
 
 window.renderMermaidDiagrams = async function(root = document) {
-    if (!root || !window.mermaid) return;
+    if (!root) return;
     const codeBlocks = root.querySelectorAll('pre code.language-mermaid, pre code.lang-mermaid, div.mermaid:not([data-processed])');
     if (!codeBlocks.length) return;
+
+    const mermaid = await getMermaid();
+    if (!mermaid) return;
 
     for (let i = 0; i < codeBlocks.length; i++) {
         const el = codeBlocks[i];
