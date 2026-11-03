@@ -94,19 +94,20 @@
                             </svg>
                             {{ number_format($thread->views) }}
                         </span>
-                        @if ($thread->task)
+                        @if ($thread->activity || $thread->task)
+                            @php $linkedItem = $thread->activity ?? $thread->task; @endphp
                             <span class="shrink-0">•</span>
-                            <a href="{{ route('teams.activities.show', [$team, $thread->task]) }}"
+                            <a href="{{ route('teams.activities.show', [$team, $linkedItem]) }}"
                                 class="text-blue-600 dark:text-blue-400 hover:underline truncate flex items-center gap-1">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.172 13.828a4 4 0 015.656 0l4 4a4 4 0 01-5.656 5.656l-1.102-1.101"/></svg>
-                                <span>{{ __('Tarea:') }} {{ Str::limit($thread->task->title, 30) }}</span>
+                                <span>{{ $thread->activity ? ($thread->activity->type_label ?? __('Actividad')) : __('Tarea:') }}: {{ Str::limit($linkedItem->title, 30) }}</span>
                             </a>
                         @else
                             @if (auth()->id() === $thread->user_id || auth()->user()->getRole($team) === 'coordinator')
                                 <span class="shrink-0">•</span>
                                 <button type="button" @click="$dispatch('open-modal', 'link-task-modal')" class="text-gray-400 hover:text-blue-500 transition-colors flex items-center gap-1">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.172 13.828a4 4 0 015.656 0l4 4a4 4 0 01-5.656 5.656l-1.102-1.101"/></svg>
-                                    Vincular Tarea
+                                    Vincular Actividad
                                 </button>
                             @endif
                         @endif
@@ -116,8 +117,8 @@
                 @if (auth()->id() === $thread->user_id || auth()->user()->getRole($team) === 'coordinator')
                     <div class="items-center gap-2 shrink-0 hidden md:inline-flex">
                         <button type="button" @click="$dispatch('open-modal', 'link-task-modal')"
-                            class="p-2 {{ $thread->task_id ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-white text-gray-500 hover:text-blue-600 hover:bg-blue-50 border-gray-200' }} border dark:bg-gray-800 dark:border-gray-700 rounded-xl transition-colors shadow-sm"
-                            title="{{ $thread->task_id ? 'Cambiar tarea vinculada' : 'Vincular a tarea' }}">
+                            class="p-2 {{ ($thread->activity_id || $thread->task_id) ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-white text-gray-500 hover:text-blue-600 hover:bg-blue-50 border-gray-200' }} border dark:bg-gray-800 dark:border-gray-700 rounded-xl transition-colors shadow-sm"
+                            title="{{ ($thread->activity_id || $thread->task_id) ? 'Cambiar actividad vinculada' : 'Vincular a actividad' }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" />
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M10.172 13.828a4 4 0 015.656 0l4 4a4 4 0 01-5.656 5.656l-1.102-1.101" />
@@ -389,12 +390,14 @@
 
         @php
             $isManager = auth()->user()->getRole($team) === 'coordinator';
-            $availableTasks = \App\Models\Task::where('team_id', $team->id)
+            $availableActivities = \App\Models\Activity::where('team_id', $team->id)
                 ->whereNull('parent_id')
+                ->where('is_archived', false)
+                ->where('is_template', false)
                 ->visibleTo(auth()->user(), $isManager)
                 ->where(function($q) use ($thread) {
                     $q->whereDoesntHave('forumThread')
-                      ->orWhere('id', $thread->task_id);
+                      ->orWhere('id', $thread->activity_id);
                 })
                 ->orderBy('title')
                 ->get();
@@ -414,22 +417,22 @@
                         </svg>
                     </div>
                     <h2 class="text-xl font-bold text-gray-900 dark:text-white heading">
-                        Vincular a Tarea
+                        Vincular a Actividad
                     </h2>
                 </div>
 
                 <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                    Selecciona una tarea para vincular este hilo. Esto permitirá acceder rápidamente a la conversación desde la tarea y viceversa.
+                    Selecciona una actividad para vincular este hilo. Esto permitirá acceder rápidamente a la conversación desde la actividad y viceversa.
                 </p>
 
                 <div class="mt-6">
-                    <x-input-label for="task_id_modal" value="Seleccionar Tarea" class="mb-2" />
-                    <select x-ref="taskSelectModal" id="task_id_modal" name="task_id" class="task-selector-tom w-full">
+                    <x-input-label for="activity_id_modal" value="Seleccionar Actividad" class="mb-2" />
+                    <select x-ref="taskSelectModal" id="activity_id_modal" name="activity_id" class="task-selector-tom w-full">
                         <option value="">{{ __('forum.none') ?? '-- Ninguna (Biblioteca de Conocimiento) --' }}</option>
-                        @foreach ($availableTasks as $t)
-                            <option value="{{ $t->id }}" {{ $thread->task_id == $t->id ? 'selected' : '' }}
-                                data-assignee="{{ $t->assignedUser ? $t->assignedUser->name : ($t->assignedTo->count() > 0 ? $t->assignedTo->first()->name : __('Unassigned')) }}">
-                                [{{ __('tasks.statuses.' . $t->status) }}] {{ $t->title }}
+                        @foreach ($availableActivities as $act)
+                            <option value="{{ $act->id }}" {{ $thread->activity_id == $act->id ? 'selected' : '' }}
+                                data-assignee="{{ $act->assignedTo->count() > 0 ? $act->assignedTo->pluck('name')->join(', ') : __('Unassigned') }}">
+                                [{{ $act->type_label }} - {{ strtoupper($act->status_value ?? '') }}] {{ $act->title }}
                             </option>
                         @endforeach
                     </select>

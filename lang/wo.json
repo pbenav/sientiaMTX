@@ -32,7 +32,7 @@
     "Modalidad de la Cita": "Melokaanu waxtu wi",
     "Nombre": "Tur",
     "Apellidos": "Sant",
-    "DNI \/ NIE \/ Pasaporte": "Kàrt Ubbite \/ Paspor",
+    "DNI / NIE / Pasaporte": "Kàrt Ubbite / Paspor",
     "Correo Electrónico": "Imeel",
     "Teléfono Móvil": "Telefon",
     "Municipio": "Gox",
@@ -100,5 +100,7 @@
     "Cita Confirmada": "Waxtu wéer na",
     "Nueva Cita Previa": "Waxtu bu Bees",
     "Información Adicional": "Xibaar yu Yees",
-    "Por favor, completa los siguientes campos requeridos por el servicio": "Danga gëna fessal leen yi ñu wax ngir yéen service bi"
+    "Por favor, completa los siguientes campos requeridos por el servicio": "Danga gëna fessal leen yi ñu wax ngir yéen service bi",
+    "Your Team Quota": "Kóota sa ekip",
+    "This team is assigned :quota GB of storage. Upon reaching the limit, members will not be able to upload new files until space is freed or the quota is increased.": "Ekip bii am na :quota GB ci dencukaay. Boo aggee ci dig bi, mbindeef yi dunu mën a yeb yeneen dencukaay ba keroog ñuy bàyyi barab walla ñu yokk kóota bi."
 }

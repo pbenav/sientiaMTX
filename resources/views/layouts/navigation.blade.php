@@ -147,6 +147,7 @@
                                 request()->routeIs('teams.gantt') ||
                                 request()->routeIs('teams.forum.*') ||
                                 request()->routeIs('teams.expedientes.*') ||
+                                request()->routeIs('teams.circuits.*') ||
                                 request()->routeIs('teams.members') ||
                                 request()->routeIs('teams.edit') ||
                                 request()->routeIs('appointments.*');
@@ -182,6 +183,10 @@
                                         <x-dropdown-link :href="route('teams.expedientes.index', $currentTeamId)">
                                             {{ __('Expedientes') }}
                                         </x-dropdown-link>
+                                        <x-dropdown-link :href="route('teams.circuits.index', $currentTeamId)">
+                                            Circuitos
+                                        </x-dropdown-link>
+                                        <div class="border-t border-gray-100 dark:border-gray-800"></div>
                                         <x-dropdown-link :href="route('teams.activities.index', $currentTeamId)" :active="request()->routeIs('teams.activities.*') || request()->routeIs('teams.tasks.*')">
                                             {{ __('navigation.task_list') }}
                                         </x-dropdown-link>
@@ -419,6 +424,7 @@
                         request()->routeIs('teams.kanban') ||
                         request()->routeIs('teams.forum.*') ||
                         request()->routeIs('teams.expedientes.*') ||
+                        request()->routeIs('teams.circuits.*') ||
                         request()->routeIs('teams.members') ||
                         request()->routeIs('teams.edit') ||
                         request()->routeIs('appointments.*');
@@ -440,6 +446,9 @@
                         <div class="border-t border-violet-200 dark:border-violet-800/50 my-1 mx-4"></div>
                         <x-responsive-nav-link :href="route('teams.expedientes.index', $currentTeamId)" :active="request()->routeIs('teams.expedientes.*')" class="text-sm">
                             {{ __('Expedientes') }}
+                        </x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('teams.circuits.index', $currentTeamId)" :active="request()->routeIs('teams.circuits.*')" class="text-sm">
+                            Circuitos
                         </x-responsive-nav-link>
                         <x-responsive-nav-link :href="route('teams.activities.index', $currentTeamId)" :active="request()->routeIs('teams.activities.*') || request()->routeIs('teams.tasks.*')" class="text-sm">
                             {{ __('navigation.task_list') }}

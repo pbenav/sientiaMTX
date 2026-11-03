@@ -49,7 +49,8 @@ class SyncAppointmentWithGoogleJob implements ShouldQueue
         }
 
         $member = $this->appointment->member;
-        if (!$member || !$googleService->setTokenForUser($member)) {
+        $teamId = $this->appointment->service?->team_id;
+        if (!$member || !$googleService->setTokenForUser($member, $teamId)) {
             return;
         }
 

@@ -550,6 +550,8 @@
                             ['name' => __('forum.title') ?? 'Foro', 'route' => route('teams.forum.index', $drawerTeamId), 'active' => request()->routeIs('teams.forum.*')],
                             ['divider' => true],
                             ['name' => 'Expedientes', 'route' => route('teams.expedientes.index', $drawerTeamId), 'active' => request()->routeIs('teams.expedientes.*')],
+                            ['name' => 'Circuitos', 'route' => route('teams.circuits.index', $drawerTeamId), 'active' => request()->routeIs('teams.circuits.*')],
+                            ['divider' => true],
                             ['name' => __('navigation.task_list'), 'route' => route('teams.activities.index', $drawerTeamId), 'active' => request()->routeIs('teams.activities.*')],
                             ['name' => __('teams.eisenhower_matrix'), 'route' => route('teams.eisenhower', $drawerTeamId), 'active' => request()->routeIs('teams.eisenhower')],
                             ['name' => __('navigation.gantt'), 'route' => route('teams.gantt', $drawerTeamId), 'active' => request()->routeIs('teams.gantt')],

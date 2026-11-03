@@ -3813,5 +3813,18 @@
     "✗ Incorrect phone format": "✗ Formato de teléfono incorrecto",
     "✗ Invalid DNI — check number or letter": "✗ DNI no válido — revisa el número o la letra",
     "✗ Invalid NIE — check check digit": "✗ NIE no válido — revisa el dígito de control",
-    "🛂 Detected as passport or other document": "🛂 Detectado como pasaporte u otro documento"
+    "🛂 Detected as passport or other document": "🛂 Detectado como pasaporte u otro documento",
+    "This team is assigned :quota GB of storage. Upon reaching the limit, members will not be able to upload new files until space is freed or the quota is increased.": "Este equipo tiene asignados :quota GB de almacenamiento. Al alcanzar el límite, los miembros no podrán subir nuevos archivos hasta que se libere espacio o se amplíe la cuota.",
+    "Keep your team lightweight and optimized": "Mantén tu equipo ligero y optimizado",
+    "Used disk space": "Espacio en disco utilizado",
+    "Used": "Utilizado",
+    "Chat Media": "Archivos de Chat",
+    "Photos, stickers and audios received": "Fotos, stickers y audios recibidos",
+    "Local attachments in tasks": "Adjuntos locales en tareas",
+    "Wall": "Muro",
+    "Local attachments in messages": "Adjuntos locales en mensajes",
+    "Local attachments in files": "Adjuntos locales en expedientes",
+    "Cloud-linked files (Zero impact on local quota)": "Archivos vinculados desde la nube (Impacto 0 en cuota local)",
+    "Linked Documents": "Documentos Vinculados",
+    "Purge Tool": "Herramienta de Purga"
 }

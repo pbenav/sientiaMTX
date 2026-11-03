@@ -108,17 +108,28 @@ class ForumMessage extends Model
                         return $query;
                     }
 
-                    // Task-related bypass
+                    // Task/Activity-related bypass
                     $thread = $this->thread;
-                    if ($thread && $thread->task_id) {
-                        $task = $thread->task;
-                        if ($task) {
-                            $query->orWhere(function($q) use ($task, $userId) {
-                                $q->whereRaw('? IN (SELECT user_id FROM task_assignments WHERE task_id = ? AND user_id IS NOT NULL)', [$userId, $task->id])
-                                  ->orWhereRaw('? = (SELECT created_by_id FROM tasks WHERE id = ?)', [$userId, $task->id])
-                                  ->orWhereRaw('? = (SELECT assigned_user_id FROM tasks WHERE id = ?)', [$userId, $task->id])
-                                  ->orWhereRaw('EXISTS (SELECT 1 FROM group_user gu JOIN task_assignments ta ON gu.group_id = ta.group_id WHERE gu.user_id = ? AND ta.task_id = ?)', [$userId, $task->id]);
-                            });
+                    if ($thread) {
+                        if ($thread->activity_id) {
+                            $activity = $thread->activity;
+                            if ($activity) {
+                                $query->orWhere(function($q) use ($activity, $userId) {
+                                    $q->whereRaw('? = (SELECT created_by_id FROM activities WHERE id = ?)', [$userId, $activity->id])
+                                      ->orWhereRaw('EXISTS (SELECT 1 FROM activity_assignments WHERE activity_id = ? AND user_id = ?)', [$activity->id, $userId])
+                                      ->orWhereRaw('EXISTS (SELECT 1 FROM group_user gu JOIN activity_assignments aa ON gu.group_id = aa.group_id WHERE gu.user_id = ? AND aa.activity_id = ?)', [$userId, $activity->id]);
+                                });
+                            }
+                        } elseif ($thread->task_id) {
+                            $task = $thread->task;
+                            if ($task) {
+                                $query->orWhere(function($q) use ($task, $userId) {
+                                    $q->whereRaw('? IN (SELECT user_id FROM task_assignments WHERE task_id = ? AND user_id IS NOT NULL)', [$userId, $task->id])
+                                      ->orWhereRaw('? = (SELECT created_by_id FROM tasks WHERE id = ?)', [$userId, $task->id])
+                                      ->orWhereRaw('? = (SELECT assigned_user_id FROM tasks WHERE id = ?)', [$userId, $task->id])
+                                      ->orWhereRaw('EXISTS (SELECT 1 FROM group_user gu JOIN task_assignments ta ON gu.group_id = ta.group_id WHERE gu.user_id = ? AND ta.task_id = ?)', [$userId, $task->id]);
+                                });
+                            }
                         }
                     }
                 }

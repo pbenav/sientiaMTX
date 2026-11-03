@@ -299,21 +299,35 @@ class AiContentTransferController extends Controller
                     return response()->json(['success' => false, 'message' => 'No se pudieron procesar las tareas enviadas.'], 400);
                 }
 
+                $validTypes = ['task', 'document', 'note', 'agreement', 'meeting', 'reminder'];
                 $createdCount = 0;
                 foreach ($tasksData as $taskItem) {
                     $taskTitle = $taskItem['title'] ?? 'Nueva Tarea (Ax.ia)';
                     $taskDesc = $taskItem['description'] ?? '';
+                    $itemType = strtolower($taskItem['type'] ?? 'task');
+                    if (!in_array($itemType, $validTypes)) {
+                        $itemType = 'task';
+                    }
+
+                    $activityData = [
+                        'title' => $taskTitle,
+                        'description' => $taskDesc,
+                        'visibility' => 'private',
+                        'status' => 'pending',
+                    ];
+
+                    if (!empty($taskItem['due_date'])) {
+                        $activityData['due_date'] = $taskItem['due_date'];
+                    }
+                    if (!empty($taskItem['scheduled_date'])) {
+                        $activityData['scheduled_date'] = $taskItem['scheduled_date'];
+                    }
                     
                     try {
                         app(\App\Services\ActivityService::class)->create(
                             $team,
-                            'task',
-                            [
-                                'title' => $taskTitle,
-                                'description' => $taskDesc,
-                                'visibility' => 'private',
-                                'status' => 'pending',
-                            ]
+                            $itemType,
+                            $activityData
                         );
                         $createdCount++;
                     } catch (\Exception $e) {
@@ -323,7 +337,7 @@ class AiContentTransferController extends Controller
 
                 return response()->json([
                     'success' => true, 
-                    'message' => "Se han generado $createdCount tareas correctamente.",
+                    'message' => "Se han generado $createdCount actividades correctamente.",
                 ]);
             }
 

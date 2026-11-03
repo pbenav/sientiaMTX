@@ -3743,7 +3743,7 @@
     "Your responses are completely anonymous and processed under GDPR for the continuous improvement of civic management.": "Ihre Antworten sind völlig anonym und werden im Rahmen der DSGVO verarbeitet, um das Bürgermanagement kontinuierlich zu verbessern.",
     "Your schedule is completely available": "Ihr Zeitplan ist vollständig verfügbar",
     "Your team's command center.": "Die Kommandozentrale Ihres Teams.",
-    "Your Team Quota": "Your Team Quota",
+    "Your Team Quota": "Speicherkontingent Ihres Teams",
     "Your team\\": "Ihr Team",
     "Zip Code": "Postleitzahl",
     "_15_d_as": "+15 Tage",
@@ -3812,5 +3812,18 @@
     "✗ Incorrect phone format": "✗ Falsches Telefonformat",
     "✗ Invalid DNI — check number or letter": "✗ Ungültiger DNI – Prüfnummer oder Buchstabe",
     "✗ Invalid NIE — check check digit": "✗ Ungültige NIE – Prüfziffer prüfen",
-    "🛂 Detected as passport or other document": "🛂 Detected as passport or other document"
+    "🛂 Detected as passport or other document": "🛂 Detected as passport or other document",
+    "This team is assigned :quota GB of storage. Upon reaching the limit, members will not be able to upload new files until space is freed or the quota is increased.": "Diesem Team sind :quota GB Speicherplatz zugewiesen. Bei Erreichen des Limits können die Mitglieder keine neuen Dateien mehr hochladen, bis Speicherplatz freigegeben oder das Kontingent erhöht wird.",
+    "Keep your team lightweight and optimized": "Halten Sie Ihr Team schlank und optimiert",
+    "Used disk space": "Genutzter Speicherplatz",
+    "Used": "Genutzt",
+    "Chat Media": "Chat-Medien",
+    "Photos, stickers and audios received": "Empfangene Fotos, Sticker und Audios",
+    "Local attachments in tasks": "Lokale Anhänge in Aufgaben",
+    "Wall": "Pinnwand",
+    "Local attachments in messages": "Lokale Anhänge in Nachrichten",
+    "Local attachments in files": "Lokale Anhänge in Akten",
+    "Cloud-linked files (Zero impact on local quota)": "Aus der Cloud verknüpfte Dateien (Kein Einfluss auf das lokale Kontingent)",
+    "Linked Documents": "Verknüpfte Dokumente",
+    "Purge Tool": "Bereinigungswerkzeug"
 }

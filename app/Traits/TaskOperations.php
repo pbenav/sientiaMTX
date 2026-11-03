@@ -131,7 +131,7 @@ trait TaskOperations
 
         $currentColumn = \App\Models\KanbanColumn::find($this->kanban_column_id);
 
-        if (!$currentColumn || !in_array($currentColumn->type, $expectedTypes)) {
+        if (!$currentColumn || $currentColumn->team_id !== $team->id || !in_array($currentColumn->type, $expectedTypes)) {
             $typeToAssign = $currentProgress === 100 ? 'done' : ($currentProgress === 0 ? 'todo' : 'in_progress');
             
             $defaultColumn = $team->kanbanColumns()

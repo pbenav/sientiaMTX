@@ -112,8 +112,9 @@ class ExpedienteController extends Controller
         $allExpedientes = $team->expedientes()->orderBy('title')->get();
         $users = $team->members;
         $groups = $team->groups;
+        $circuitTemplates = $team->circuitTemplates()->active()->forTarget('expediente')->get();
         
-        return view('expedientes.create', compact('team', 'allExpedientes', 'users', 'groups'));
+        return view('expedientes.create', compact('team', 'allExpedientes', 'users', 'groups', 'circuitTemplates'));
     }
 
     /**
@@ -139,6 +140,8 @@ class ExpedienteController extends Controller
             'related_ids' => 'nullable|array',
             'related_ids.*' => 'exists:expedientes,id',
             'assigned_user_id' => 'nullable|exists:users,id',
+            'circuit_template_id' => 'nullable|exists:circuit_templates,id',
+            'start_circuit_now' => 'nullable|boolean',
             'assigned_to' => 'nullable|array',
             'assigned_to.*' => 'exists:users,id',
             'assigned_groups' => 'nullable|array',
@@ -158,7 +161,25 @@ class ExpedienteController extends Controller
             'start_date' => $validated['start_date'] ?? null,
             'end_date' => $validated['end_date'] ?? null,
             'assigned_user_id' => $validated['assigned_user_id'] ?? null,
+            'circuit_template_id' => $validated['circuit_template_id'] ?? null,
         ]);
+
+        // Si se seleccionó iniciar tramitación de circuito inmediatamente al crear
+        if (!empty($validated['start_circuit_now'])) {
+            $circuitTemplate = !empty($expediente->circuit_template_id)
+                ? \App\Models\CircuitTemplate::where('team_id', $team->id)->find($expediente->circuit_template_id)
+                : null;
+            try {
+                app(\App\Services\Circuits\CircuitExecutionService::class)->startCircuit(
+                    $expediente,
+                    $circuitTemplate,
+                    auth()->user(),
+                    ['title' => 'Tramitación: ' . $expediente->title]
+                );
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("No se pudo iniciar circuito automáticamente en expediente: " . $e->getMessage());
+            }
+        }
 
         // Create Role-Based Assignments
         if (!empty($validated['assigned_to'])) {
@@ -405,8 +426,9 @@ class ExpedienteController extends Controller
             
         $users = $team->members;
         $groups = $team->groups;
+        $circuitTemplates = $team->circuitTemplates()->active()->forTarget('expediente')->get();
 
-        return view('expedientes.edit', compact('team', 'expediente', 'allExpedientes', 'users', 'groups'));
+        return view('expedientes.edit', compact('team', 'expediente', 'allExpedientes', 'users', 'groups', 'circuitTemplates'));
     }
 
     /**
@@ -429,6 +451,8 @@ class ExpedienteController extends Controller
             'related_ids' => 'nullable|array',
             'related_ids.*' => 'exists:expedientes,id',
             'assigned_user_id' => 'nullable|exists:users,id',
+            'circuit_template_id' => 'nullable|exists:circuit_templates,id',
+            'start_circuit_now' => 'nullable|boolean',
             'assigned_to' => 'nullable|array',
             'assigned_to.*' => 'exists:users,id',
             'assigned_groups' => 'nullable|array',
@@ -438,6 +462,23 @@ class ExpedienteController extends Controller
         // No auto-public logic to allow private dossiers with assignments.
 
         $expediente->update($validated);
+
+        // Si se seleccionó iniciar tramitación de circuito inmediatamente al actualizar
+        if (!empty($validated['start_circuit_now']) && !$expediente->isInCircuit) {
+            $circuitTemplate = !empty($expediente->circuit_template_id)
+                ? \App\Models\CircuitTemplate::where('team_id', $team->id)->find($expediente->circuit_template_id)
+                : null;
+            try {
+                app(\App\Services\Circuits\CircuitExecutionService::class)->startCircuit(
+                    $expediente,
+                    $circuitTemplate,
+                    auth()->user(),
+                    ['title' => 'Tramitación: ' . $expediente->title]
+                );
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("No se pudo iniciar circuito en update expediente: " . $e->getMessage());
+            }
+        }
 
         // Update assignments
         $expediente->assignments()->delete();

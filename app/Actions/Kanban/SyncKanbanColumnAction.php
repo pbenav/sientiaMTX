@@ -77,7 +77,7 @@ class SyncKanbanColumnAction
     protected function setTodoState(Activity $task): void
     {
         $task->progress_percentage = 0;
-        $task->status = ['value' => $this->statusForType($task, 'pending', 'draft', 'proposed', 'scheduled')];
+        $task->status = ['value' => $this->statusForType($task, 'todo')];
     }
 
     /**
@@ -86,7 +86,7 @@ class SyncKanbanColumnAction
     protected function setDoneState(Activity $task): void
     {
         $task->progress_percentage = 100;
-        $task->status = ['value' => $this->statusForType($task, 'completed', 'approved', 'accepted', 'finished')];
+        $task->status = ['value' => $this->statusForType($task, 'done')];
     }
 
     /**
@@ -105,20 +105,52 @@ class SyncKanbanColumnAction
         }
 
         if ($task->isCompleted() || $task->isPending()) {
-            $task->status = ['value' => $this->statusForType($task, 'in_progress', 'under_review', 'in_debate', 'in_progress')];
+            $task->status = ['value' => $this->statusForType($task, 'in_progress')];
         }
     }
 
     /**
-     * Returns the appropriate status value based on activity type.
+     * Returns the appropriate status value based on activity type and target state.
      */
-    protected function statusForType(Activity $task, string $default, string $document, string $agreement, string $meeting): string
+    protected function statusForType(Activity $task, string $targetState): string
     {
         return match ($task->type) {
-            'document' => $document,
-            'agreement' => $agreement,
-            'meeting' => $meeting,
-            default => $default,
+            'document' => match ($targetState) {
+                'todo' => 'draft',
+                'in_progress' => 'review',
+                'done' => 'approved',
+                default => 'draft',
+            },
+            'note' => match ($targetState) {
+                'todo' => 'draft',
+                'in_progress' => 'draft',
+                'done' => 'published',
+                default => 'draft',
+            },
+            'agreement' => match ($targetState) {
+                'todo' => 'proposed',
+                'in_progress' => 'in_debate',
+                'done' => 'approved',
+                default => 'proposed',
+            },
+            'meeting' => match ($targetState) {
+                'todo' => 'scheduled',
+                'in_progress' => 'in_progress',
+                'done' => 'completed',
+                default => 'scheduled',
+            },
+            'reminder' => match ($targetState) {
+                'todo' => 'pending',
+                'in_progress' => 'pending',
+                'done' => 'dismissed',
+                default => 'pending',
+            },
+            default => match ($targetState) {
+                'todo' => 'pending',
+                'in_progress' => 'in_progress',
+                'done' => 'completed',
+                default => 'pending',
+            },
         };
     }
 

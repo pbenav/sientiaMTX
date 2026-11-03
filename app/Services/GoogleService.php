@@ -63,22 +63,50 @@ class GoogleService
         $token = null;
         $refreshToken = null;
         $source = null;
+        $actualTeamId = $teamId;
 
-        // 1. Try to get team-specific token from pivot
+        // 1. Try to get team-specific token from pivot if teamId is specified
         if ($teamId) {
-            $membership = $user->teams()->where('team_id', $teamId)->first();
+            $membership = $user->teams()->where('teams.id', $teamId)->first();
             if ($membership && $membership->pivot->google_token) {
                 $token = $membership->pivot->google_token;
                 $refreshToken = $membership->pivot->google_refresh_token;
                 $source = $membership->pivot;
+                $actualTeamId = $membership->id;
             }
         }
 
-        // 2. Fallback to global user token if no team token or no team specified
+        // 2. Fallback to active/current team of user if available
+        if (!$token && !empty($user->current_team_id) && $user->current_team_id != $teamId) {
+            $membership = $user->teams()->where('teams.id', $user->current_team_id)->first();
+            if ($membership && $membership->pivot->google_token) {
+                $token = $membership->pivot->google_token;
+                $refreshToken = $membership->pivot->google_refresh_token;
+                $source = $membership->pivot;
+                $actualTeamId = $membership->id;
+            }
+        }
+
+        // 3. Fallback: check if user has Google linked in ANY of their teams
+        if (!$token) {
+            $membershipWithGoogle = $user->teams()
+                ->wherePivotNotNull('google_token')
+                ->first();
+
+            if ($membershipWithGoogle && $membershipWithGoogle->pivot->google_token) {
+                $token = $membershipWithGoogle->pivot->google_token;
+                $refreshToken = $membershipWithGoogle->pivot->google_refresh_token;
+                $source = $membershipWithGoogle->pivot;
+                $actualTeamId = $membershipWithGoogle->id;
+            }
+        }
+
+        // 4. Fallback to legacy global user token
         if (!$token && $user->google_token) {
             $token = $user->google_token;
             $refreshToken = $user->google_refresh_token;
             $source = $user;
+            $actualTeamId = null;
         }
 
         if (!$token) {
@@ -95,12 +123,12 @@ class GoogleService
                 $newToken = $this->client->fetchAccessTokenWithRefreshToken($refreshToken);
                 
                 if (isset($newToken['error'])) {
-                    Log::error('Google API Error (Refresh Token) for user ' . $user->id . ' (Team: '.$teamId.'): ' . json_encode($newToken));
+                    Log::error('Google API Error (Refresh Token) for user ' . $user->id . ' (Team: '.$actualTeamId.'): ' . json_encode($newToken));
                     return false;
                 }
 
-                if ($source instanceof \App\Models\TeamUser) {
-                    $user->teams()->updateExistingPivot($teamId, [
+                if ($source instanceof \App\Models\TeamUser && $actualTeamId) {
+                    $user->teams()->updateExistingPivot($actualTeamId, [
                         'google_token' => $newToken,
                     ]);
                 } else {

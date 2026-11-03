@@ -167,8 +167,9 @@ class ActivityController extends Controller
         $skills = \App\Models\Skill::forTeam($team->id)->orderBy('name')->get();
         $services = $team->services()->orderBy('name')->get();
         $priorities = ['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'];
+        $circuitTemplates = $team->circuitTemplates()->active()->forTarget('activity')->get();
 
-        return view('teams.activities.create', compact('team', 'type', 'members', 'groups', 'expedientes', 'parentActivities', 'skills', 'services', 'priorities'));
+        return view('teams.activities.create', compact('team', 'type', 'members', 'groups', 'expedientes', 'parentActivities', 'skills', 'services', 'priorities', 'circuitTemplates'));
     }
 
     /**
@@ -262,9 +263,10 @@ class ActivityController extends Controller
         $skills = \App\Models\Skill::forTeam($team->id)->orderBy('name')->get();
         $services = $team->services()->orderBy('name')->get();
         $priorities = ['low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'critical' => 'Crítica'];
-                $allStatusesWithTypes = \App\Services\ActivityStatusManager::getAllStatusesWithTypes();
+        $allStatusesWithTypes = \App\Services\ActivityStatusManager::getAllStatusesWithTypes();
+        $circuitTemplates = $team->circuitTemplates()->active()->forTarget('activity')->get();
 
-        return view('teams.activities.edit', compact('team', 'activity', 'members', 'groups', 'expedientes', 'parentActivities', 'skills', 'services', 'priorities', 'allStatusesWithTypes'));    }
+        return view('teams.activities.edit', compact('team', 'activity', 'members', 'groups', 'expedientes', 'parentActivities', 'skills', 'services', 'priorities', 'allStatusesWithTypes', 'circuitTemplates'));    }
 
     /**
      * Actualiza una actividad, verificando cuota de almacenamiento y protegiendo integridad de acuerdos firmados.

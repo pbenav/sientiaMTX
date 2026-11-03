@@ -113,9 +113,15 @@ class ChatCallController extends Controller
             return response()->json(['success' => false, 'message' => 'No hay participantes para iniciar la reunión'], 422);
         }
 
-        // Find a team shared with the first receiver to get the Google token
+        // Find a team shared with the first receiver to get the Google token (prioritizing one where user has Google linked)
         $receiver = User::find($receivers[0]);
-        $sharedTeam = $receiver->teams()->whereHas('members', fn($q) => $q->where('user_id', $user->id))->first();
+        $sharedTeamWithGoogle = $user->teams()
+            ->wherePivotNotNull('google_token')
+            ->whereHas('members', fn($q) => $q->where('users.id', $receiver->id))
+            ->first();
+
+        $sharedTeam = $sharedTeamWithGoogle
+            ?? $receiver->teams()->whereHas('members', fn($q) => $q->where('users.id', $user->id))->first();
         $teamId = $sharedTeam?->id;
 
         $googleService = app(GoogleService::class);
@@ -177,7 +183,7 @@ class ChatCallController extends Controller
     public function generateMeetLink(Request $request): JsonResponse
     {
         $user = auth()->user();
-        $teamId = $request->team_id ?? $user->teams()->first()?->id;
+        $teamId = $request->team_id ?? $user->current_team_id ?? $user->teams()->wherePivotNotNull('google_token')->first()?->id ?? $user->teams()->first()?->id;
 
         $googleService = app(\App\Services\GoogleService::class);
 

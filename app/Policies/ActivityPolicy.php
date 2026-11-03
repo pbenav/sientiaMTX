@@ -42,14 +42,28 @@ class ActivityPolicy
             return $user->id === $activity->created_by_id;
         }
 
-        $isMember = $activity->team->members()->where('user_id', $user->id)->exists();
+        $isMember = $activity->team->relationLoaded('members')
+            ? $activity->team->members->contains('id', $user->id)
+            : $activity->team->members()->where('user_id', $user->id)->exists();
         if (!$isMember) return false;
 
         if ($user->id === $activity->created_by_id) return true;
 
-        $isAssigned = $activity->assignments()
-            ->where('user_id', $user->id)
-            ->exists();
+        // Si la actividad está vinculada a una cita previa y el usuario es secretario/a del titular en el equipo
+        $appointment = $activity->relationLoaded('appointment') 
+            ? $activity->appointment 
+            : ($activity->appointment()->first() ?? \App\Models\Appointment::where('activity_id', $activity->id)->first());
+
+        if ($appointment) {
+            $teamId = $activity->team_id ?? $appointment->service?->team_id ?? $appointment->service()->value('team_id');
+            if ($teamId && $user->isSecretaryOf($appointment->user_id, $teamId)) {
+                return true;
+            }
+        }
+
+        $isAssigned = $activity->relationLoaded('assignments')
+            ? $activity->assignments->contains('user_id', $user->id)
+            : $activity->assignments()->where('user_id', $user->id)->exists();
         if ($isAssigned) return true;
 
         $isGroupMember = $activity->assignedGroups()
@@ -110,9 +124,28 @@ class ActivityPolicy
     {
         if ($user->id === $activity->created_by_id) return true;
 
-        $isDirectAssigned = $activity->assignments()
-            ->where('user_id', $user->id)
-            ->exists();
+        if ($activity->team) {
+            $isMember = $activity->team->relationLoaded('members')
+                ? $activity->team->members->contains('id', $user->id)
+                : $activity->team->members()->where('user_id', $user->id)->exists();
+            if (!$isMember) return false;
+        }
+
+        // Si la actividad está vinculada a una cita previa y el usuario es secretario/a del titular en el equipo
+        $appointment = $activity->relationLoaded('appointment') 
+            ? $activity->appointment 
+            : ($activity->appointment()->first() ?? \App\Models\Appointment::where('activity_id', $activity->id)->first());
+
+        if ($appointment) {
+            $teamId = $activity->team_id ?? $appointment->service?->team_id ?? $appointment->service()->value('team_id');
+            if ($teamId && $user->isSecretaryOf($appointment->user_id, $teamId)) {
+                return true;
+            }
+        }
+
+        $isDirectAssigned = $activity->relationLoaded('assignments')
+            ? $activity->assignments->contains('user_id', $user->id)
+            : $activity->assignments()->where('user_id', $user->id)->exists();
         if ($isDirectAssigned) return true;
 
         $isGroupMember = $activity->assignedGroups()

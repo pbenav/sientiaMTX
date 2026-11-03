@@ -90,8 +90,13 @@ class TaskAttachmentController extends Controller
     {
         $this->authorizeAttachmentAccess($team, $attachment);
 
-        if (!Storage::disk('public')->exists($attachment->file_path)) {
-            return back()->with('error', 'El archivo no se encuentra en el servidor.');
+        $disk = $attachment->storage_provider ?: 'public';
+        if (!Storage::disk($disk)->exists($attachment->file_path)) {
+            if (Storage::disk('local')->exists($attachment->file_path)) {
+                $disk = 'local';
+            } else {
+                return back()->with('error', 'El archivo no se encuentra en el servidor.');
+            }
         }
 
         AttachmentLog::create([
@@ -101,15 +106,20 @@ class TaskAttachmentController extends Controller
             'ip_address' => request()->ip()
         ]);
 
-        return Storage::disk('public')->download($attachment->file_path, $attachment->file_name);
+        return Storage::disk($disk)->download($attachment->file_path, $attachment->file_name);
     }
 
     public function viewAttachment(Team $team, TaskAttachment $attachment)
     {
         $this->authorizeAttachmentAccess($team, $attachment);
 
-        if (!Storage::disk('public')->exists($attachment->file_path)) {
-            return back()->with('error', 'El archivo no se encuentra en el servidor.');
+        $disk = $attachment->storage_provider ?: 'public';
+        if (!Storage::disk($disk)->exists($attachment->file_path)) {
+            if (Storage::disk('local')->exists($attachment->file_path)) {
+                $disk = 'local';
+            } else {
+                return back()->with('error', 'El archivo no se encuentra en el servidor.');
+            }
         }
 
         AttachmentLog::create([
@@ -119,7 +129,7 @@ class TaskAttachmentController extends Controller
             'ip_address' => request()->ip()
         ]);
 
-        return Storage::disk('public')->response($attachment->file_path);
+        return Storage::disk($disk)->response($attachment->file_path);
     }
 
     protected function authorizeAttachmentAccess(Team $team, TaskAttachment $attachment)

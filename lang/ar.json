@@ -32,7 +32,7 @@
     "Modalidad de la Cita": "نوع الموعد",
     "Nombre": "الاسم",
     "Apellidos": "اللقب",
-    "DNI \/ NIE \/ Pasaporte": "رقم الهوية \/ جواز السفر",
+    "DNI / NIE / Pasaporte": "رقم الهوية / جواز السفر",
     "Correo Electrónico": "البريد الإلكتروني",
     "Teléfono Móvil": "رقم الهاتف المحمول",
     "Municipio": "البلدية",
@@ -100,5 +100,7 @@
     "Cita Confirmada": "Cita Confirmada",
     "Nueva Cita Previa": "Nueva Cita Previa",
     "Información Adicional": "معلومات إضافية",
-    "Por favor, completa los siguientes campos requeridos por el servicio": "يرجى إكمال الحقول التالية المطلوبة للخدمة"
+    "Por favor, completa los siguientes campos requeridos por el servicio": "يرجى إكمال الحقول التالية المطلوبة للخدمة",
+    "Your Team Quota": "حصة فريقك",
+    "This team is assigned :quota GB of storage. Upon reaching the limit, members will not be able to upload new files until space is freed or the quota is increased.": "تم تخصيص :quota جيجابايت من مساحة التخزين لهذا الفريق. عند الوصول إلى الحد الأقصى، لن يتمكن الأعضاء من رفع ملفات جديدة حتى يتم تحرير مساحة أو زيادة الحصة."
 }

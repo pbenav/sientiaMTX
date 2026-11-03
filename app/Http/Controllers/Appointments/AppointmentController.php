@@ -134,7 +134,7 @@ class AppointmentController extends Controller
         $request->validate([
             'appointment_ids' => 'required|array',
             'appointment_ids.*' => 'exists:appointments,id',
-            'bulk_action' => 'required|in:complete,cancel,delete,no_show',
+            'bulk_action' => 'required|in:complete,confirm,confirmed,cancel,delete,no_show',
         ]);
 
         $appointments = Appointment::whereIn('id', $request->appointment_ids)
@@ -149,16 +149,41 @@ class AppointmentController extends Controller
                 if ($appointment->task) {
                     $appointment->task->update(['status' => 'completed', 'progress_percentage' => 100]);
                 }
+                if ($appointment->activity) {
+                    $appointment->activity->update(['status' => ['value' => 'completed'], 'progress_percentage' => 100]);
+                }
+            } elseif (in_array($request->bulk_action, ['confirm', 'confirmed'])) {
+                $appointment->update([
+                    'status' => 'confirmed',
+                    'cancelled_at' => null,
+                    'cancellation_reason' => null,
+                ]);
+                if ($appointment->task) {
+                    $appointment->task->update(['status' => 'in_progress']);
+                }
+                if ($appointment->activity) {
+                    $appointment->activity->update([
+                        'status' => ['value' => 'scheduled'],
+                        'progress_percentage' => 0,
+                    ]);
+                }
+                \App\Jobs\SyncAppointmentWithGoogleJob::dispatch($appointment);
             } elseif ($request->bulk_action === 'no_show') {
                 $appointment->update([
                     'status' => 'no_show',
                 ]);
+                if ($appointment->activity) {
+                    $appointment->activity->update(['status' => ['value' => 'cancelled']]);
+                }
             } elseif ($request->bulk_action === 'cancel') {
                 $appointment->update([
                     'status'              => 'cancelled',
                     'cancelled_at'        => now(),
                     'cancellation_reason' => $request->input('cancellation_reason'),
                 ]);
+                if ($appointment->activity) {
+                    $appointment->activity->update(['status' => ['value' => 'cancelled']]);
+                }
                 $this->deleteGoogleEvent($appointment);
                 $this->deleteGoogleTask($appointment);
                 if ($appointment->visitor->email && $appointment->visitor->consent_email) {
@@ -179,6 +204,9 @@ class AppointmentController extends Controller
                 if ($appointment->task) {
                     $appointment->task->delete();
                 }
+                if ($appointment->activity) {
+                    $appointment->activity->delete();
+                }
                 $appointment->delete();
             }
         }
@@ -195,7 +223,7 @@ class AppointmentController extends Controller
         if ($appointment->service->team_id !== $team->id) {
             abort(403);
         }
-        $appointment->load(['service', 'visitor', 'task', 'expediente']);
+        $appointment->load(['service', 'visitor', 'task', 'activity', 'expediente']);
         
         \App\Jobs\SyncAppointmentWithGoogleJob::dispatchSync($appointment);
         
@@ -258,16 +286,25 @@ class AppointmentController extends Controller
                 'description'  => 'Actividad autogenerada para la atención de la cita ' . $appointment->localizador,
                 'status'       => ['value' => 'in_progress'],
                 'priority'     => 'medium',
-                'created_by_id'=> auth()->id(),
+                'created_by_id'=> $appointment->user_id ?? auth()->id(),
                 'type'         => 'meeting',
             ]);
             $activity->team_id = $team->id;
             $activity->save();
 
-            $activity->assignments()->create([
-                'user_id'        => auth()->id(),
-                'assigned_by_id' => auth()->id(),
-            ]);
+            if ($appointment->user_id) {
+                $activity->assignments()->create([
+                    'user_id'        => $appointment->user_id,
+                    'assigned_by_id' => auth()->id(),
+                ]);
+            }
+
+            if (auth()->id() !== $appointment->user_id) {
+                $activity->assignments()->create([
+                    'user_id'        => auth()->id(),
+                    'assigned_by_id' => auth()->id(),
+                ]);
+            }
 
             $appointment->update([
                 'activity_id' => $activity->id,
@@ -277,7 +314,15 @@ class AppointmentController extends Controller
         // Start time tracker if not already started
         $taskObj = $appointment->fresh()->activity;
         
-        $activeLog = \App\Models\TimeLog::where('user_id', auth()->id())
+        $user = auth()->user();
+        if (!$user->activeWorkdayLog()) {
+            if ($user->sync_with_cth) {
+                \App\Jobs\SyncWorkdayWithCth::syncNow($user, 'start');
+            }
+            $user->timeLogs()->create(['type' => 'workday', 'start_at' => now()]);
+        }
+
+        $activeLog = \App\Models\TimeLog::where('user_id', $user->id)
             ->whereNull('end_at')
             ->first();
 
@@ -287,7 +332,7 @@ class AppointmentController extends Controller
 
         if (!$activeLog || $activeLog->task_id !== $taskObj->id) {
             \App\Models\TimeLog::create([
-                'user_id'  => auth()->id(),
+                'user_id'  => $user->id,
                 'task_id'  => $taskObj->id,
                 'type'     => 'task',
                 'start_at' => now(),
@@ -486,7 +531,8 @@ class AppointmentController extends Controller
             try {
                 $googleService = new \App\Services\GoogleService();
                 $member = $appointment->service->user;
-                if ($member && $googleService->setTokenForUser($member)) {
+                $teamId = $appointment->service?->team_id;
+                if ($member && $googleService->setTokenForUser($member, $teamId)) {
                     $googleService->deleteEvent($appointment->google_event_id);
                     $appointment->update(['google_event_id' => null]);
                 }
@@ -503,7 +549,8 @@ class AppointmentController extends Controller
             try {
                 $googleService = new \App\Services\GoogleService();
                 $member = $appointment->service->user;
-                if ($member && $googleService->setTokenForUser($member)) {
+                $teamId = $appointment->service?->team_id;
+                if ($member && $googleService->setTokenForUser($member, $teamId)) {
                     $googleService->updateTask('@default', $appointment->google_task_id, ['status' => 'cancelled']);
                     $appointment->update(['google_task_id' => null]);
                 }

@@ -20,6 +20,9 @@ use App\Http\Controllers\GoogleDriveController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\Microsite\MicrositeController;
 use App\Http\Controllers\Microsite\PublicMicrositeController;
+use App\Http\Controllers\Circuits\CircuitExecutionController;
+use App\Http\Controllers\Circuits\CircuitTemplateController;
+use App\Http\Controllers\Circuits\CircuitPublicBoardController;
 use Illuminate\Support\Facades\Route;
 
 // Telegram Webhook (Public) - Rate Limited
@@ -63,6 +66,16 @@ Route::prefix('citas')->name('public.appointments.')->middleware('throttle:60,1'
 Route::get('/directorio', [PublicMicrositeController::class, 'directory'])->name('public.microsites.directory');
 Route::get('/p/{slug}', [PublicMicrositeController::class, 'show'])->name('public.microsites.show');
 Route::get('/embed/files/{attachment}/{token}', [\App\Http\Controllers\PublicAttachmentController::class, 'embed'])->name('public.attachments.embed');
+
+// --- Tablón Edictal y Documentos Públicos (Ciudadanía) ---
+Route::get('/tablon/{team}', [CircuitPublicBoardController::class, 'teamBoard'])->name('public.circuits.board');
+Route::get('/tablon/doc/{slug}', [CircuitPublicBoardController::class, 'show'])->name('public.circuits.show');
+Route::get('/tablon/doc/{slug}/pdf', [CircuitPublicBoardController::class, 'pdf'])->name('public.circuits.pdf');
+Route::get('/tablon/doc/{slug}/descargar', [CircuitPublicBoardController::class, 'download'])->name('public.circuits.download');
+
+// --- Verificación Pública y Cotejo de Documentos (CSV / Ley 39/2015) ---
+Route::get('/verificar/{csv?}', [\App\Http\Controllers\Circuits\CircuitVerificationController::class, 'show'])->name('public.circuits.verify');
+Route::get('/verificar/{csv}/descargar', [\App\Http\Controllers\Circuits\CircuitVerificationController::class, 'download'])->name('public.circuits.verify.download');
 
 // --- Firma Digital de Acuerdos ---
 // GET (show + download): protegidas por signed URL (se envían por email)
@@ -405,6 +418,39 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{image}', [\App\Http\Controllers\Microsite\MicrositeImageController::class, 'destroy'])->name('destroy');
     });
 
+    // Circuitos de Tramitación y Aprobación (Workflows)
+    Route::prefix('teams/{team}/circuitos')->name('teams.circuits.')->group(function () {
+        // Bandeja de trámites pendientes de visto bueno / firma del usuario
+        Route::get('/pendientes', [CircuitExecutionController::class, 'pending'])->name('pending');
+
+        // Plantillas de Circuitos (CRUD)
+        Route::prefix('plantillas')->name('templates.')->group(function () {
+            Route::get('/', [CircuitTemplateController::class, 'index'])->name('index');
+            Route::get('/crear', [CircuitTemplateController::class, 'create'])->name('create');
+            Route::post('/', [CircuitTemplateController::class, 'store'])->name('store');
+            Route::get('/{template}/editar', [CircuitTemplateController::class, 'edit'])->name('edit');
+            Route::put('/{template}', [CircuitTemplateController::class, 'update'])->name('update');
+            Route::delete('/{template}', [CircuitTemplateController::class, 'destroy'])->name('destroy');
+        });
+
+        // Tablón Edictal (Gestión interna)
+        Route::prefix('tablon')->name('board.')->group(function () {
+            Route::get('/', [CircuitPublicBoardController::class, 'index'])->name('index');
+            Route::post('/{publication}/retirar', [CircuitPublicBoardController::class, 'withdraw'])->name('withdraw');
+        });
+
+        // Tramitaciones del equipo
+        Route::get('/', [CircuitExecutionController::class, 'index'])->name('index');
+        Route::post('/iniciar', [CircuitExecutionController::class, 'start'])->name('start');
+        Route::get('/{circuit}', [CircuitExecutionController::class, 'show'])->name('show');
+        Route::get('/{circuit}/documento', [CircuitExecutionController::class, 'downloadDocument'])->name('document');
+        Route::get('/{circuit}/firmar', [CircuitExecutionController::class, 'signaturePortal'])->name('signature-portal');
+        Route::post('/{circuit}/pasos/{step}/resolver', [CircuitExecutionController::class, 'processStep'])->name('steps.process');
+        Route::post('/{circuit}/cancelar', [CircuitExecutionController::class, 'cancel'])->name('cancel');
+        Route::delete('/{circuit}', [CircuitExecutionController::class, 'destroy'])->name('destroy');
+        Route::post('/{circuit}/publicar', [CircuitPublicBoardController::class, 'publishDirectly'])->name('publish');
+    });
+
     // Theme route
     Route::post('/theme', [\App\Http\Controllers\ThemeController::class, 'update'])->name('theme.update');
     Route::post('/layout', [\App\Http\Controllers\LayoutController::class, 'update'])->name('layout.update');
@@ -517,7 +563,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/media/{attachment}', [\App\Http\Controllers\MediaController::class, 'destroy'])->name('media.destroy');
 
     // Documentación y Manuales
+    Route::match(['get', 'post'], '/docs/book/print', [\App\Http\Controllers\DocumentationController::class, 'printBook'])->name('docs.book.print');
     Route::get('/docs/{slug?}', [\App\Http\Controllers\DocumentationController::class, 'index'])->name('docs');
+    Route::get('/documentation/{slug?}', [\App\Http\Controllers\DocumentationController::class, 'index'])->name('documentation.index');
     Route::get('/docs/{slug}/print', [\App\Http\Controllers\DocumentationController::class, 'print'])->name('docs.print');
 
     // Créditos

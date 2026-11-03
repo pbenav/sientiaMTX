@@ -38,18 +38,38 @@ class TaskPolicy
         }
 
         // 1. Check if user is member of the team
-        $isMember = $task->team->members()->where('user_id', $user->id)->exists();
+        $isMember = $task->team->relationLoaded('members')
+            ? $task->team->members->contains('id', $user->id)
+            : $task->team->members()->where('user_id', $user->id)->exists();
         if (!$isMember) {
             \Log::warning("TaskPolicy@view DENIED [not_member] task#{$task->id} user#{$user->id} team#{$task->team_id}");
             return false;
         }
 
         $isCreator        = $user->id === $task->created_by_id;
+        if ($isCreator) return true;
+
+        // Si la tarea está vinculada a una cita previa y el usuario es secretario/a del titular en el equipo
+        $appointment = $task->relationLoaded('appointment')
+            ? $task->appointment
+            : ($task->appointment()->first() ?? \App\Models\Appointment::where('task_id', $task->id)->first());
+
+        if ($appointment) {
+            $teamId = $task->team_id ?? $appointment->service?->team_id ?? $appointment->service()->value('team_id');
+            if ($teamId && $user->isSecretaryOf($appointment->user_id, $teamId)) {
+                return true;
+            }
+        }
+
         $isDirectAssigned = $user->id === $task->assigned_user_id;
-        $isCollaborator   = $task->assignedTo()->where('users.id', $user->id)->exists();
-        $isGroupMember    = $task->assignedGroups()->whereHas('users', function ($q) use ($user) {
-            $q->where('users.id', $user->id);
-        })->exists();
+        $isCollaborator   = $task->relationLoaded('assignedTo')
+            ? $task->assignedTo->contains('id', $user->id)
+            : $task->assignedTo()->where('users.id', $user->id)->exists();
+        $isGroupMember    = $task->relationLoaded('assignedGroups')
+            ? $task->assignedGroups->some(fn($g) => $g->relationLoaded('users') ? $g->users->contains('id', $user->id) : $g->users()->where('users.id', $user->id)->exists())
+            : $task->assignedGroups()->whereHas('users', function ($q) use ($user) {
+                $q->where('users.id', $user->id);
+            })->exists();
         $isAssigned = $isDirectAssigned || $isCollaborator || $isGroupMember;
 
         $hasAssignees = $task->assigned_user_id !== null || $task->assignedTo()->count() > 0 || $task->assignedGroups()->count() > 0;
@@ -79,7 +99,28 @@ class TaskPolicy
             return $user->id === $task->created_by_id;
         }
 
+        $isMember = $task->team->relationLoaded('members')
+            ? $task->team->members->contains('id', $user->id)
+            : $task->team->members()->where('user_id', $user->id)->exists();
+        if (!$isMember) return false;
+
         $isCreator = $user->id === $task->created_by_id;
+        if ($isCreator) {
+            return true;
+        }
+
+        // Si la tarea está vinculada a una cita previa y el usuario es secretario/a del titular en el equipo
+        $appointment = $task->relationLoaded('appointment')
+            ? $task->appointment
+            : ($task->appointment()->first() ?? \App\Models\Appointment::where('task_id', $task->id)->first());
+
+        if ($appointment) {
+            $teamId = $task->team_id ?? $appointment->service?->team_id ?? $appointment->service()->value('team_id');
+            if ($teamId && $user->isSecretaryOf($appointment->user_id, $teamId)) {
+                return true;
+            }
+        }
+
         $isAssigned = $user->id === $task->assigned_user_id ||
                    $task->assignedTo()->where('users.id', $user->id)->exists() ||
                    $task->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $user->id))->exists();

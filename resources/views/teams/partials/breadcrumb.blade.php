@@ -15,8 +15,19 @@
         str_contains($routeName, 'appointments.services') => __('Services') . ' — ' . __('Appointments'),
         str_contains($routeName, 'appointments.blocks') => __('Blocks') . ' — ' . __('Appointments'),
         str_contains($routeName, 'appointments.list') => __('List') . ' — ' . __('Appointments'),
-        str_contains($routeName, 'appointments.index') => __('Appointments'),
-        str_contains($routeName, 'appointments.show') => __('Appointment Details'),
+        str_contains($routeName, 'circuits.templates.create') => 'Plantillas',
+        str_contains($routeName, 'circuits.templates.edit') => 'Plantillas',
+        str_contains($routeName, 'circuits.templates') => 'Circuitos',
+        str_contains($routeName, 'circuits.pending') => 'Circuitos',
+        str_contains($routeName, 'circuits.board') => 'Circuitos',
+        str_contains($routeName, 'circuits.show') => 'Circuitos',
+        str_contains($routeName, 'circuits.index') => null,
+        str_contains($routeName, 'circuits') => null,
+        str_contains($routeName, 'expedientes.create') => 'Expedientes',
+        str_contains($routeName, 'expedientes.edit') => 'Expedientes',
+        str_contains($routeName, 'expedientes.show') => 'Expedientes',
+        str_contains($routeName, 'expedientes.index') => null,
+        str_contains($routeName, 'expedientes') => null,
         default => null,
     };
 @endphp
@@ -56,11 +67,28 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
         </svg>
 
-        {{-- Current page --}}
+        {{-- Current page / parent section --}}
         <div class="flex items-center min-w-0">
-            <span class="text-gray-500 dark:text-gray-400 truncate max-w-[10rem] sm:max-w-[15rem]" aria-current="page">
-                {{ $currentPageLabel }}
-            </span>
+            @if(isset($team) && $currentPageLabel === 'Circuitos' && !request()->routeIs('teams.circuits.index'))
+                <a href="{{ route('teams.circuits.index', $team) }}"
+                    class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors truncate max-w-[8rem] sm:max-w-[12rem]">
+                    {{ $currentPageLabel }}
+                </a>
+            @elseif(isset($team) && $currentPageLabel === 'Plantillas' && !request()->routeIs('teams.circuits.templates.index'))
+                <a href="{{ route('teams.circuits.templates.index', $team) }}"
+                    class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors truncate max-w-[8rem] sm:max-w-[12rem]">
+                    {{ $currentPageLabel }}
+                </a>
+            @elseif(isset($team) && $currentPageLabel === 'Expedientes' && !request()->routeIs('teams.expedientes.index'))
+                <a href="{{ route('teams.expedientes.index', $team) }}"
+                    class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors truncate max-w-[8rem] sm:max-w-[12rem]">
+                    {{ $currentPageLabel }}
+                </a>
+            @else
+                <span class="text-gray-500 dark:text-gray-400 truncate max-w-[10rem] sm:max-w-[15rem]" aria-current="page">
+                    {{ $currentPageLabel }}
+                </span>
+            @endif
         </div>
     @endif
 </nav>

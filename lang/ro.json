@@ -32,7 +32,7 @@
     "Modalidad de la Cita": "Modalitatea Programării",
     "Nombre": "Nume",
     "Apellidos": "Prenume",
-    "DNI \/ NIE \/ Pasaporte": "CNP \/ Pașaport",
+    "DNI / NIE / Pasaporte": "CNP / Pașaport",
     "Correo Electrónico": "E-mail",
     "Teléfono Móvil": "Telefon Mobil",
     "Municipio": "Localitate",
@@ -100,5 +100,7 @@
     "Cita Confirmada": "Programare Confirmată",
     "Nueva Cita Previa": "Nouă Programare",
     "Información Adicional": "Informații Suplimentare",
-    "Por favor, completa los siguientes campos requeridos por el servicio": "Vă rugăm să completați următoarele câmpuri solicitate de serviciu"
+    "Por favor, completa los siguientes campos requeridos por el servicio": "Vă rugăm să completați următoarele câmpuri solicitate de serviciu",
+    "Your Team Quota": "Cota echipei tale",
+    "This team is assigned :quota GB of storage. Upon reaching the limit, members will not be able to upload new files until space is freed or the quota is increased.": "Acestei echipe îi sunt alocați :quota GB de stocare. La atingerea limitei, membrii nu vor mai putea încărca fișiere noi până când nu se eliberează spațiu sau se mărește cota."
 }

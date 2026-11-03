@@ -237,7 +237,8 @@ class AppointmentBlockController extends Controller
         if ($appointment->google_event_id) {
             try {
                 $googleService = new \App\Services\GoogleService();
-                if ($googleService->setTokenForUser($appointment->member)) {
+                $teamId = $appointment->service?->team_id;
+                if ($googleService->setTokenForUser($appointment->member, $teamId)) {
                     $googleService->deleteEvent($appointment->google_event_id);
                     $appointment->update(['google_event_id' => null]);
                 }

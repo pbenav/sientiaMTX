@@ -3750,7 +3750,7 @@
     "Your responses are completely anonymous and processed under GDPR for the continuous improvement of civic management.": "Tus respuestas son completamente anónimas y se procesan bajo el RGPD para la mejora continua de la gestión ciudadana.",
     "Your schedule is completely available": "Sua agenda está totalmente disponível",
     "Your team's command center.": "O centro de comando da sua equipe.",
-    "Your Team Quota": "Sua taxa de equipamento",
+    "Your Team Quota": "Cota da sua equipa",
     "Your team\\": "Sua equipe\\",
     "Zip Code": "CEP",
     "_15_d_as": "+15 dias",
@@ -3819,5 +3819,18 @@
     "✗ Incorrect phone format": "✗ Formato de teléfono incorrecto",
     "✗ Invalid DNI — check number or letter": "✗ ID inválido — verifique o número ou letra",
     "✗ Invalid NIE — check check digit": "✗ NIE inválido — verifique o dígito de verificação",
-    "🛂 Detected as passport or other document": "🛂 Detectado como passaporte ou outro documento"
+    "🛂 Detected as passport or other document": "🛂 Detectado como passaporte ou outro documento",
+    "This team is assigned :quota GB of storage. Upon reaching the limit, members will not be able to upload new files until space is freed or the quota is increased.": "Esta equipa tem atribuídos :quota GB de armazenamento. Ao atingir o limite, os membros não poderão carregar novos ficheiros até que seja libertado espaço ou a cota seja aumentada.",
+    "Keep your team lightweight and optimized": "Mantenha a sua equipa leve e otimizada",
+    "Used disk space": "Espaço em disco utilizado",
+    "Used": "Utilizado",
+    "Chat Media": "Mídias do chat",
+    "Photos, stickers and audios received": "Fotos, stickers e áudios recebidos",
+    "Local attachments in tasks": "Anexos locais em tarefas",
+    "Wall": "Mural",
+    "Local attachments in messages": "Anexos locais em mensagens",
+    "Local attachments in files": "Anexos locais em processos",
+    "Cloud-linked files (Zero impact on local quota)": "Ficheiros vinculados da nuvem (Impacto zero na cota local)",
+    "Linked Documents": "Documentos vinculados",
+    "Purge Tool": "Ferramenta de limpeza"
 }

@@ -17,6 +17,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -123,7 +126,7 @@ class Activity extends Model
     /**
      * Tipos que pueden aparecer en el Kanban (Flujo de trabajo / Estados).
      */
-    public const KANBAN_TYPES = ['task', 'agreement'];
+    public const KANBAN_TYPES = ['task', 'agreement', 'meeting', 'reminder', 'document', 'note'];
 
     /**
      * Tipos que pueden aparecer en la Matriz Eisenhower (Priorización por urgencia/importancia).
@@ -174,6 +177,7 @@ class Activity extends Model
         'parent_id',
         'expediente_id',
         'folder_id',
+        'circuit_template_id',
         'type',
         'title',
         'description',
@@ -215,6 +219,30 @@ class Activity extends Model
         'auto_priority'        => 'boolean',
         'progress_percentage'  => 'integer',
     ];
+
+    /**
+     * The "booted" method of the model.
+     * Garantiza que cualquier actividad creada sin estado tenga su estado inicial por defecto.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (Activity $activity) {
+            if (empty($activity->status)) {
+                $type = $activity->type ?? 'task';
+                $defaultValue = match ($type) {
+                    'task'      => 'pending',
+                    'document'  => 'draft',
+                    'note'      => 'draft',
+                    'link'      => 'active',
+                    'agreement' => 'proposed',
+                    'meeting'   => 'scheduled',
+                    'reminder'  => 'pending',
+                    default     => 'pending',
+                };
+                $activity->status = ['value' => $defaultValue];
+            }
+        });
+    }
 
     /**
      * Accessor para el bloqueo del Gantt, almacenado en metadata.
@@ -396,6 +424,16 @@ class Activity extends Model
         return $this->belongsTo(TeamFolder::class, 'folder_id');
     }
 
+    /**
+     * Hilo de discusión del foro vinculado a la actividad.
+     *
+     * @return HasOne<\App\Models\ForumThread, $this>
+     */
+    public function forumThread(): HasOne
+    {
+        return $this->hasOne(ForumThread::class, 'activity_id');
+    }
+
     // ─── Infraestructura compartida ───────────────────────────────────────────
 
     /**
@@ -534,6 +572,45 @@ class Activity extends Model
         return $this->hasMany(ActivityAttachment::class, 'activity_id');
     }
 
+    /**
+     * Historial de tramitaciones/circuitos de esta actividad.
+     *
+     * @return MorphMany<\App\Models\CircuitExecution, $this>
+     */
+    public function circuitExecutions(): MorphMany
+    {
+        return $this->morphMany(CircuitExecution::class, 'circuitable')->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Tramitación/circuito actualmente activo para esta actividad.
+     *
+     * @return MorphOne<\App\Models\CircuitExecution, $this>
+     */
+    public function activeCircuitExecution(): MorphOne
+    {
+        return $this->morphOne(CircuitExecution::class, 'circuitable')
+            ->whereIn('status', [CircuitExecution::STATUS_IN_PROGRESS, CircuitExecution::STATUS_RETURNED]);
+    }
+
+    /**
+     * Determina si la actividad está actualmente inmersa en un circuito de tramitación.
+     */
+    public function getIsInCircuitAttribute(): bool
+    {
+        return $this->activeCircuitExecution()->exists();
+    }
+
+    /**
+     * Plantilla de circuito asociada o asignada a esta actividad.
+     *
+     * @return BelongsTo<\App\Models\CircuitTemplate, $this>
+     */
+    public function circuitTemplate(): BelongsTo
+    {
+        return $this->belongsTo(CircuitTemplate::class, 'circuit_template_id');
+    }
+
     // ─── Relaciones de especialidades y servicios (Task compat layer) ─────────
 
     /**
@@ -564,6 +641,16 @@ class Activity extends Model
     public function service(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Service::class, 'service_id', 'id');
+    }
+
+    /**
+     * Cita previa vinculada a esta actividad (si procede).
+     *
+     * @return HasOne<\App\Models\Appointment, $this>
+     */
+    public function appointment(): HasOne
+    {
+        return $this->hasOne(Appointment::class, 'activity_id');
     }
 
     /**
@@ -615,7 +702,9 @@ class Activity extends Model
      */
     public function isCompleted(): bool
     {
-        return in_array($this->status_value, ['completed', 'done', 'approved', 'triggered', 'accepted', 'finished']);
+        return in_array($this->status_value, [
+            'completed', 'done', 'approved', 'triggered', 'accepted', 'finished', 'published', 'dismissed',
+        ]);
     }
 
     /**
@@ -799,6 +888,15 @@ class Activity extends Model
         }
         if (!$team) return;
 
+        // Si la actividad no es de tipo Kanban o es una plantilla, no debe tener kanban_column_id
+        if (!in_array($this->type, self::KANBAN_TYPES) || $this->is_template) {
+            if ($this->kanban_column_id !== null) {
+                $this->kanban_column_id = null;
+                $this->saveQuietly();
+            }
+            return;
+        }
+
         $currentProgress = (int)$this->progress;
         $expectedTypes = [];
         if ($currentProgress === 100) {
@@ -811,7 +909,7 @@ class Activity extends Model
 
         $currentColumn = \App\Models\KanbanColumn::find($this->kanban_column_id);
 
-        if (!$currentColumn || !in_array($currentColumn->type, $expectedTypes)) {
+        if (!$currentColumn || $currentColumn->team_id !== $team->id || !in_array($currentColumn->type, $expectedTypes)) {
             $typeToAssign = $currentProgress === 100 ? 'done' : ($currentProgress === 0 ? 'todo' : 'in_progress');
             
             $defaultColumn = $team->kanbanColumns()

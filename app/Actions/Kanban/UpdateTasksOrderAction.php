@@ -27,6 +27,10 @@ class UpdateTasksOrderAction
         ]);
 
         $column = KanbanColumn::findOrFail($validated['column_id']);
+
+        if ($column->team_id !== $team->id) {
+            abort(403);
+        }
         $syncAction = app(SyncKanbanColumnAction::class);
         $movedTaskProgress = null;
 

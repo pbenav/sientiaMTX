@@ -26,6 +26,10 @@ class ValidEmail implements ValidationRule
             return;
         }
 
+        if (!config('email_validation.enabled', false)) {
+            return;
+        }
+
         // Verificación completa usando el servicio
         $service = app(EmailValidationService::class);
         $result = $service->verify($email);

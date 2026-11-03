@@ -4,7 +4,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between gap-3 flex-wrap">
             <div class="flex items-center gap-2 min-w-0">
-                <a href="{{ route('teams.dashboard', $team) }}"
+                <a href="{{ route('teams.dashboard', $team) }}" data-back-button
                     class="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded-lg transition-all shrink-0"
                     title="{{ __("Back") }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
@@ -135,10 +135,13 @@
         @else
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 @foreach($expedientes as $expediente)
-                    <a href="{{ route('teams.expedientes.show', [$team, $expediente]) }}" class="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-violet-300 dark:hover:border-violet-500/50 rounded-2xl p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md flex flex-col relative overflow-hidden">
+                    <div class="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-violet-300 dark:hover:border-violet-500/50 rounded-2xl p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md flex flex-col relative overflow-hidden">
                         
+                        <!-- Main Card Link -->
+                        <a href="{{ route('teams.expedientes.show', [$team, $expediente]) }}" class="absolute inset-0 z-0" aria-label="{{ $expediente->title }}"></a>
+
                         <!-- Status Bar Header -->
-                        <div class="flex justify-between items-start mb-3">
+                        <div class="flex justify-between items-start mb-3 relative z-10">
                             <div class="flex items-center gap-2">
                                 <span class="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md">
                                     {{ $expediente->code }}
@@ -158,35 +161,38 @@
                                 ];
                                 $currentStatusColor = $statusColors[$expediente->status] ?? 'bg-gray-100 text-gray-600';
                             @endphp
-                            <div class="flex items-center gap-2 relative z-10">
+                            <div class="flex items-center gap-2">
                                 <span class="text-xs font-bold px-2.5 py-1 rounded-lg {{ $currentStatusColor }}">
                                     {{ ucfirst($expediente->status) }}
                                 </span>
                                 @can('delete', $expediente)
-                                    <form id="delete-exp-{{ $expediente->id }}" action="{{ route('teams.expedientes.destroy', [$team, $expediente]) }}" method="POST" class="shrink-0" onclick="event.preventDefault(); event.stopPropagation();">
+                                    <button type="button" 
+                                            onclick="event.preventDefault(); event.stopPropagation(); confirmDeleteExpediente({{ $expediente->id }})" 
+                                            class="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/30 rounded-lg transition-colors cursor-pointer" 
+                                            title="{{ __('Delete File') }}">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                    </button>
+                                    <form id="delete-exp-{{ $expediente->id }}" action="{{ route('teams.expedientes.destroy', [$team, $expediente]) }}" method="POST" class="hidden">
                                         @csrf
                                         @method('DELETE')
                                         <input type="hidden" name="cascade_delete" id="cascade_delete_{{ $expediente->id }}" value="0">
-                                        <button type="button" onclick="confirmDeleteExpediente({{ $expediente->id }})" class="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="{{ __('Delete File') }}">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                        </button>
                                     </form>
                                 @endcan
                             </div>
                         </div>
 
                         <!-- Title -->
-                        <h4 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors leading-tight mb-2">
+                        <h4 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors leading-tight mb-2 relative z-10 pointer-events-none">
                             {{ $expediente->title }}
                         </h4>
 
                         <!-- Description short snippet -->
-                        <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-4 flex-grow">
+                        <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-4 flex-grow relative z-10 pointer-events-none">
                             {{ Str::limit($expediente->description, 120) ?? 'Sin descripción.' }}
                         </p>
 
                         <!-- Footer Metadata -->
-                        <div class="mt-auto pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-[11px] font-medium text-gray-400 dark:text-gray-500">
+                        <div class="mt-auto pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-[11px] font-medium text-gray-400 dark:text-gray-500 relative z-10 pointer-events-none">
                             <div class="flex items-center gap-2">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
                                 <span>{{ $expediente->activities_count }} {{ __("Activities") }}</span>
@@ -199,7 +205,7 @@
 
                         <!-- Accent background glow effect on hover -->
                         <div class="absolute -right-6 -top-6 w-24 h-24 bg-violet-500/5 dark:bg-violet-400/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-                    </a>
+                    </div>
                 @endforeach
             </div>
 
@@ -210,48 +216,55 @@
         @endif
 
     </div>
-</x-app-layout>
 
-@push('scripts')
-    <script>
-        window.confirmDeleteExpediente = function(id) {
-            Swal.fire({
-                title: '¿{{ __('Delete File') }}?',
-                html: `
-                    <div class="text-left text-sm text-gray-600 dark:text-gray-300 space-y-4">
-                        <p>{{ __('Esta acción moverá el expediente a la papelera.') }}</p>
-                        <div class="p-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-900/30">
-                            <label class="flex items-start gap-3 cursor-pointer group">
-                                <input type="checkbox" id="swal-cascade-delete" class="mt-1 w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-red-600 focus:ring-red-500 bg-white dark:bg-gray-800 transition-colors">
-                                <div class="flex-1">
-                                    <span class="block text-sm font-bold text-red-700 dark:text-red-400">{{ __('Eliminación en cascada (Profilaxis)') }}</span>
-                                    <span class="block text-xs text-red-600/70 dark:text-red-400/70 mt-0.5">{{ __('Eliminará también física y permanentemente TODAS las tareas, notas y archivos adjuntos vinculados. ¡Esta acción física es irreversible y liberará espacio en el servidor!') }}</span>
-                                </div>
-                            </label>
+    @push('scripts')
+        <script>
+            window.confirmDeleteExpediente = function(id) {
+                Swal.fire({
+                    title: '¿{{ __('Delete File') }}?',
+                    html: `
+                        <div class="text-left text-sm text-gray-600 dark:text-gray-300 space-y-4">
+                            <p>{{ __('Esta acción moverá el expediente a la papelera.') }}</p>
+                            <div class="p-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-900/30">
+                                <label class="flex items-start gap-3 cursor-pointer group">
+                                    <input type="checkbox" id="swal-cascade-delete" class="mt-1 w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-red-600 focus:ring-red-500 bg-white dark:bg-gray-800 transition-colors">
+                                    <div class="flex-1">
+                                        <span class="block text-sm font-bold text-red-700 dark:text-red-400">{{ __('Eliminación en cascada (Profilaxis)') }}</span>
+                                        <span class="block text-xs text-red-600/70 dark:text-red-400/70 mt-0.5">{{ __('Eliminará también física y permanentemente TODAS las tareas, notas y archivos adjuntos vinculados. ¡Esta acción física es irreversible y liberará espacio en el servidor!') }}</span>
+                                    </div>
+                                </label>
+                            </div>
                         </div>
-                    </div>
-                `,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#94a3b8',
-                confirmButtonText: '{{ __('Sí, Eliminar') }}',
-                cancelButtonText: '{{ __('Cancel') }}',
-                customClass: {
-                    popup: 'rounded-[2rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white p-4',
-                    title: 'text-xl font-black text-gray-900 dark:text-white pt-4',
-                    confirmButton: 'rounded-xl px-6 py-2.5 font-bold text-xs uppercase tracking-widest shadow-lg shadow-red-500/30 transition-all',
-                    cancelButton: 'rounded-xl px-6 py-2.5 font-bold text-xs uppercase tracking-widest transition-all'
-                },
-                preConfirm: () => {
-                    return document.getElementById('swal-cascade-delete').checked;
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById('cascade_delete_' + id).value = result.value ? '1' : '0';
-                    document.getElementById('delete-exp-' + id).submit();
-                }
-            });
-        }
-    </script>
-@endpush
+                    `,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#94a3b8',
+                    confirmButtonText: '{{ __('Sí, Eliminar') }}',
+                    cancelButtonText: '{{ __('Cancel') }}',
+                    customClass: {
+                        popup: 'rounded-[2rem] border-0 shadow-2xl dark:bg-gray-900 dark:text-white p-4',
+                        title: 'text-xl font-black text-gray-900 dark:text-white pt-4',
+                        confirmButton: 'rounded-xl px-6 py-2.5 font-bold text-xs uppercase tracking-widest shadow-lg shadow-red-500/30 transition-all',
+                        cancelButton: 'rounded-xl px-6 py-2.5 font-bold text-xs uppercase tracking-widest transition-all'
+                    },
+                    preConfirm: () => {
+                        const cascadeInput = document.getElementById('swal-cascade-delete');
+                        return cascadeInput ? cascadeInput.checked : false;
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const cascadeHidden = document.getElementById('cascade_delete_' + id);
+                        const form = document.getElementById('delete-exp-' + id);
+                        if (cascadeHidden) {
+                            cascadeHidden.value = result.value ? '1' : '0';
+                        }
+                        if (form) {
+                            form.submit();
+                        }
+                    }
+                });
+            };
+        </script>
+    @endpush
+</x-app-layout>

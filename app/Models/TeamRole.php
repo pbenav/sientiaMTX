@@ -32,6 +32,14 @@ class TeamRole extends Model
     protected $fillable = ['name', 'description'];
 
     /**
+     * Asignaciones de usuarios con este rol.
+     */
+    public function teamUsers(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(TeamUser::class, 'role_id');
+    }
+
+    /**
      * Scope: excluye el rol de moderator.
      *
      * @param \Illuminate\Database\Eloquent\Builder $query

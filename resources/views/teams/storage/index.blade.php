@@ -4,10 +4,10 @@
             <div class="flex items-center justify-between mb-8">
                 <div>
                     <h2 class="text-3xl font-black text-gray-800 dark:text-white uppercase tracking-tighter">
-                        {{ __('Gestión de Almacenamiento') }}
+                        {{ __('Storage Management') }}
                     </h2>
                     <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">
-                        {{ $team->name }} • Mantén tu equipo ligero y optimizado
+                        {{ $team->name }} • {{ __('Keep your team lightweight and optimized') }}
                     </p>
                 </div>
                 <a href="{{ route('teams.dashboard', $team) }}" 
@@ -35,7 +35,7 @@
                         <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-purple-500 opacity-20 blur-[100px] rounded-full"></div>
                         
                         <div class="relative z-10">
-                            <h3 class="text-xs font-black uppercase tracking-[0.3em] text-gray-400 mb-2">Espacio en disco utilizado</h3>
+                            <h3 class="text-xs font-black uppercase tracking-[0.3em] text-gray-400 mb-2">{{ __('Used disk space') }}</h3>
                             @php
                                 $sizeStr = $stats['total_size']['readable_size'] ?? '0 B';
                                 $parts = explode(' ', $sizeStr);
@@ -61,7 +61,7 @@
                                 </div>
                                 <div class="flex justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
                                     <span>{{ __('teams.team_limit') }}: {{ $quotaGB }} GB</span>
-                                    <span class="{{ $percentage > 90 ? 'text-rose-500 animate-pulse' : '' }} font-black">{{ $percentage }}% Utilizado</span>
+                                    <span class="{{ $percentage > 90 ? 'text-rose-500 animate-pulse' : '' }} font-black">{{ $percentage }}% {{ __('Used') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -77,16 +77,16 @@
                                 </div>
                                 <span class="bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter">Telegram Bot</span>
                             </div>
-                            <h4 class="text-xl font-black text-gray-800 dark:text-white uppercase tracking-tighter mb-1">{{ __('Media') }} Chat</h4>
-                            <p class="text-sm text-gray-500 mb-6">Fotos, stickers y audios recibidos</p>
+                            <h4 class="text-xl font-black text-gray-800 dark:text-white uppercase tracking-tighter mb-1">{{ __('Chat Media') }}</h4>
+                            <p class="text-sm text-gray-500 mb-6">{{ __('Photos, stickers and audios received') }}</p>
                             <div class="flex items-center justify-between border-t border-gray-50 dark:border-gray-700/50 pt-4">
                                 <div class="text-center flex-1 border-r border-gray-50 dark:border-gray-700/50">
                                     <span class="block text-lg font-black text-gray-800 dark:text-white">{{ $stats['telegram']['count'] }}</span>
-                                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Archivos</span>
+                                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{{ __('Files') }}</span>
                                 </div>
                                 <div class="text-center flex-1">
                                     <span class="block text-lg font-black text-blue-500">{{ $stats['telegram']['readable_size'] }}</span>
-                                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Tamaño</span>
+                                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{{ __('Size') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -97,18 +97,18 @@
                                 <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center text-violet-500 shadow-inner">
                                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                 </div>
-                                <span class="bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter">Tareas</span>
+                                <span class="bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter">{{ __('Tasks') }}</span>
                             </div>
-                            <h4 class="text-xl font-black text-gray-800 dark:text-white uppercase tracking-tighter mb-1">Tareas</h4>
-                            <p class="text-sm text-gray-500 mb-6">Adjuntos locales en tareas</p>
+                            <h4 class="text-xl font-black text-gray-800 dark:text-white uppercase tracking-tighter mb-1">{{ __('Tasks') }}</h4>
+                            <p class="text-sm text-gray-500 mb-6">{{ __('Local attachments in tasks') }}</p>
                             <div class="flex items-center justify-between border-t border-gray-50 dark:border-gray-700/50 pt-4">
                                 <div class="text-center flex-1 border-r border-gray-50 dark:border-gray-700/50">
                                     <span class="block text-lg font-black text-gray-800 dark:text-white">{{ $stats['tasks']['count'] }}</span>
-                                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Archivos</span>
+                                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{{ __('Files') }}</span>
                                 </div>
                                 <div class="text-center flex-1">
                                     <span class="block text-lg font-black text-blue-500">{{ $stats['tasks']['readable_size'] }}</span>
-                                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Tamaño</span>
+                                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{{ __('Size') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -119,18 +119,18 @@
                                 <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center text-violet-500 shadow-inner">
                                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/></svg>
                                 </div>
-                                <span class="bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter">Foro</span>
+                                <span class="bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter">{{ __('Forum') }}</span>
                             </div>
-                            <h4 class="text-xl font-black text-gray-800 dark:text-white uppercase tracking-tighter mb-1">Muro</h4>
-                            <p class="text-sm text-gray-500 mb-6">Adjuntos locales en mensajes</p>
+                            <h4 class="text-xl font-black text-gray-800 dark:text-white uppercase tracking-tighter mb-1">{{ __('Wall') }}</h4>
+                            <p class="text-sm text-gray-500 mb-6">{{ __('Local attachments in messages') }}</p>
                             <div class="flex items-center justify-between border-t border-gray-50 dark:border-gray-700/50 pt-4">
                                 <div class="text-center flex-1 border-r border-gray-50 dark:border-gray-700/50">
                                     <span class="block text-lg font-black text-gray-800 dark:text-white">{{ $stats['forum']['count'] }}</span>
-                                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Archivos</span>
+                                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{{ __('Files') }}</span>
                                 </div>
                                 <div class="text-center flex-1">
                                     <span class="block text-lg font-black text-blue-500">{{ $stats['forum']['readable_size'] }}</span>
-                                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Tamaño</span>
+                                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{{ __('Size') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -144,15 +144,15 @@
                                 <span class="bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter">{{ __("Files") }}</span>
                             </div>
                             <h4 class="text-xl font-black text-gray-800 dark:text-white uppercase tracking-tighter mb-1">{{ __("Files") }}</h4>
-                            <p class="text-sm text-gray-500 mb-6">Adjuntos locales en expedientes</p>
+                            <p class="text-sm text-gray-500 mb-6">{{ __('Local attachments in files') }}</p>
                             <div class="flex items-center justify-between border-t border-gray-50 dark:border-gray-700/50 pt-4">
                                 <div class="text-center flex-1 border-r border-gray-50 dark:border-gray-700/50">
                                     <span class="block text-lg font-black text-gray-800 dark:text-white">{{ $stats['expedientes']['count'] }}</span>
-                                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Archivos</span>
+                                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{{ __('Files') }}</span>
                                 </div>
                                 <div class="text-center flex-1">
                                     <span class="block text-lg font-black text-blue-500">{{ $stats['expedientes']['readable_size'] }}</span>
-                                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Tamaño</span>
+                                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{{ __('Size') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -169,12 +169,12 @@
                                 </div>
                                 <div>
                                     <h4 class="text-2xl font-black text-blue-900 dark:text-blue-100 uppercase tracking-tighter">Google Drive</h4>
-                                    <p class="text-sm text-blue-700/60 dark:text-blue-400/60 font-medium">Archivos vinculados desde la nube (Impacto 0 en cuota local)</p>
+                                    <p class="text-sm text-blue-700/60 dark:text-blue-400/60 font-medium">{{ __('Cloud-linked files (Zero impact on local quota)') }}</p>
                                 </div>
                             </div>
                             <div class="text-right">
                                 <span class="block text-4xl font-black text-blue-600 dark:text-blue-400 tracking-tighter">{{ $stats['google']['count'] }}</span>
-                                <span class="text-[10px] font-black text-blue-500/50 uppercase tracking-[0.2em]">Documentos Vinculados</span>
+                                <span class="text-[10px] font-black text-blue-500/50 uppercase tracking-[0.2em]">{{ __('Linked Documents') }}</span>
                             </div>
                         </div>
                     </div>
@@ -191,7 +191,7 @@
                             <span class="w-8 h-8 rounded-full bg-rose-500 flex items-center justify-center text-white text-base">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                             </span>
-                            Herramienta de Purga
+                            {{ __('Purge Tool') }}
                         </h3>
 
                         <form action="{{ route('teams.storage.purge', $team) }}" method="POST" onsubmit="return confirmPurge(this)">

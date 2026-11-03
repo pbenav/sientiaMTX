@@ -710,7 +710,7 @@
     "Configure OAuth2 credentials for Gmail and Calendar synchronization.": "Configure OAuth2 credentials for Gmail and Calendar synchronization.",
     "Configure the URL and shared Secret to connect with the main Sientia CTH server.": "Configure the URL and shared Secret to connect with the main Sientia CTH server.",
     "Confirm": "Confirm",
-    "Confirmado": "Confirmado",
+    "Confirmado": "Confirmed",
     "Confirmar": "Confirm",
     "Confirmar Reserva": "Confirmar Reserva",
     "Confirmation email to citizen": "Confirmation email to citizen",
@@ -3812,5 +3812,18 @@
     "✗ Incorrect phone format": "✗ Incorrect phone format",
     "✗ Invalid DNI — check number or letter": "✗ Invalid DNI — check number or letter",
     "✗ Invalid NIE — check check digit": "✗ Invalid NIE — check check digit",
-    "🛂 Detected as passport or other document": "🛂 Detected as passport or other document"
+    "🛂 Detected as passport or other document": "🛂 Detected as passport or other document",
+    "This team is assigned :quota GB of storage. Upon reaching the limit, members will not be able to upload new files until space is freed or the quota is increased.": "This team is assigned :quota GB of storage. Upon reaching the limit, members will not be able to upload new files until space is freed or the quota is increased.",
+    "Keep your team lightweight and optimized": "Keep your team lightweight and optimized",
+    "Used disk space": "Used disk space",
+    "Used": "Used",
+    "Chat Media": "Chat Media",
+    "Photos, stickers and audios received": "Photos, stickers and audios received",
+    "Local attachments in tasks": "Local attachments in tasks",
+    "Wall": "Wall",
+    "Local attachments in messages": "Local attachments in messages",
+    "Local attachments in files": "Local attachments in files",
+    "Cloud-linked files (Zero impact on local quota)": "Cloud-linked files (Zero impact on local quota)",
+    "Linked Documents": "Linked Documents",
+    "Purge Tool": "Purge Tool"
 }

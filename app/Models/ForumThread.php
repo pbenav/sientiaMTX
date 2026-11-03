@@ -39,6 +39,7 @@ use Illuminate\Database\Eloquent\Builder;
  * @property-read \App\Models\Team $team
  * @property-read \App\Models\User $user
  * @property-read \App\Models\Task|null $task
+ * @property-read \App\Models\Activity|null $activity
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ForumMessage> $messages
  *
  * @mixin Builder
@@ -49,6 +50,7 @@ class ForumThread extends Model
         'team_id',
         'user_id',
         'task_id',
+        'activity_id',
         'title',
         'is_pinned',
         'is_locked',
@@ -91,6 +93,16 @@ class ForumThread extends Model
     }
 
     /**
+     * Relación de pertenencia a la actividad asociada al hilo.
+     *
+     * @return BelongsTo<\App\Models\Activity, $this>
+     */
+    public function activity()
+    {
+        return $this->belongsTo(Activity::class);
+    }
+
+    /**
      * Relación uno-a-muchos con los mensajes del hilo.
      *
      * @return HasMany<\App\Models\ForumMessage, $this>
@@ -101,23 +113,23 @@ class ForumThread extends Model
     }
 
     /**
-     * Scope: hilos huérfanos (sin tarea vinculada) = Biblioteca de Conocimiento.
+     * Scope: hilos huérfanos (sin tarea o actividad vinculada) = Biblioteca de Conocimiento.
      *
      * @param \Illuminate\Database\Eloquent\Builder $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeOrphaned($query)
     {
-        return $query->whereNull('task_id');
+        return $query->whereNull('task_id')->whereNull('activity_id');
     }
 
     /**
      * Determina si este hilo es parte de la "Biblioteca de Conocimiento".
      *
-     * @return bool True si el hilo no tiene tarea vinculada
+     * @return bool True si el hilo no tiene tarea ni actividad vinculada
      */
     public function isKnowledgeLibrary(): bool
     {
-        return is_null($this->task_id);
+        return is_null($this->task_id) && is_null($this->activity_id);
     }
 }

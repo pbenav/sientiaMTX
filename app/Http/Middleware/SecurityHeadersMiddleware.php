@@ -53,7 +53,7 @@ class SecurityHeadersMiddleware
                    "media-src 'self' data: blob: https://assets.mixkit.co; " .
                    "worker-src 'self' blob:; " .
                    "connect-src 'self' data: ws://* wss://* ws://127.0.0.1:* wss://127.0.0.1:* {$appOrigin} https://meet.jit.si https://nominatim.openstreetmap.org https://unpkg.com {$onlyOfficeUrl}; " .
-                   "frame-src 'self' https://meet.jit.si afirma: {$onlyOfficeUrl};";
+                   "frame-src 'self' https://meet.jit.si afirma: {$onlyOfficeUrl} https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://www.google.com https://maps.google.com;";
             $response->headers->set('Content-Security-Policy', $csp);
         }
 

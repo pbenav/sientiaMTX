@@ -24,6 +24,9 @@ SientiaMTX no es solo una herramienta de gestión; es un ecosistema diseñado pa
 ## ✨ Características Principales
 
 ### 🌟 Novedades Recientes (v1.1.0)
+*   **Circuitos de Tramitación y Firma Digital**: Flujos colegiados de validación con doble vía: **AutoFirma (PAdES)** y **Conformidad Acreditada (CSV)** según Ley 39/2015 y eIDAS.
+*   **Sede de Cotejo y Códigos QR**: Diligencias oficiales con Código Seguro de Verificación (CSV), huellas SHA-256 completas y QR directo para verificación pública ciudadana (`/verificar/{csv}`).
+*   **Tablón Edictal Electrónico**: Publicación pública de resoluciones y acuerdos oficiales con control de vigencia y plazos.
 *   **Recordatorios Masivos (Bulk Nudge)**: Notificación avanzada y simultánea a múltiples miembros con identificación granular `task_id:user_id`.
 *   **Mapeo de Dominios (CNAME)**: Soporte completo para dominios personalizados eliminando problemas de XSRF y sesiones en iframes.
 *   **Internacionalización Global**: Compatibilidad nativa con modo RTL (ej. Árabe/Darija) y traducción automática por IA de servicios.
@@ -81,6 +84,7 @@ php artisan migrate --force
 Hemos preparado manuales detallados para cada perfil:
 
 *   📖 [**Manual de Usuario (ES)**](resources/docs/es/user-manual.md) / [**User Manual (EN)**](resources/docs/en/user-manual.md)
+*   🏛️ [**Circuitos y Firma Digital (ES)**](resources/docs/es/circuits.md)
 *   🛡️ [**Manual de Administrador (ES)**](resources/docs/es/admin-manual.md) / [**Admin Manual (EN)**](resources/docs/en/admin-manual.md)
 *   🚀 [**Guía de Instalación**](resources/docs/es/installation.md)
 *   🤖 [**Configuración de Telegram**](resources/docs/es/telegram.md)

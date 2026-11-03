@@ -143,4 +143,19 @@ Ax.ia (potenciada por los modelos **Gemini 2.0 Flash** y **Gemini 1.5 Pro**) est
 
 ---
 
+## 🏛️ 11. Circuitos de Tramitación, Firma Digital y Verificación CSV/QR
+
+SientiaMTX incorpora un flujo oficial de gobernanza colegiada conforme a la **Ley 39/2015 del Procedimiento Administrativo Común** y el reglamento europeo **eIDAS**:
+
+- **Iniciar Tramitación**: Desde cualquier Actividad o Expediente aprobado, pulsa en *Tramitar Circuito* para someter el documento a un itinerario formal de firmas y vistos buenos.
+- **Doble Modalidad de Firma**:
+  - **Firma Electrónica AutoFirma (PAdES)**: Permite firmar digitalmente con certificado de empleado público o persona física mediante la aplicación oficial AutoFirma.
+  - **Conformidad Acreditada (CSV)**: Para etapas de revisión técnica o visto bueno, estampa una conformidad interna vinculada a la sesión y sellada con Código Seguro de Verificación y huella SHA-256.
+- **Visor Dividido Redimensionable**: El portal de firma con AutoFirma ofrece un divisor ajustable con visor PDF interactivo a pantalla completa o doble columna para revisar el documento antes de firmar.
+- **Diligencia Oficial Consolidada (PDF)**: Documento oficial generado automáticamente con el itinerario de fases, cajetines de firma institucionales en verde, huellas SHA-256 completas y **código QR dinámico** de cotejo.
+- **Sede Electrónica de Verificación Pública (`/verificar/{csv}`)**: Cualquier ciudadano, auditor o administración puede escanear el código QR con su teléfono o introducir el CSV en el portal público para comprobar la autenticidad e integridad del documento y descargar la copia original custodiada.
+- **Tablón Edictal Público**: Permite publicar acuerdos y resoluciones concluidas en el tablón web del organismo con control de plazos y expiración.
+
+---
+
 **SientiaMTX: Elevando la productividad y la colaboración mediante la tecnología y el diseño.**

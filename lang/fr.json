@@ -3744,7 +3744,7 @@
     "Your responses are completely anonymous and processed under GDPR for the continuous improvement of civic management.": "Vos réponses sont totalement anonymes et sont traitées dans le cadre du RGPD pour l'amélioration continue de la gestion citoyenne.",
     "Your schedule is completely available": "Votre agenda est entièrement disponible",
     "Your team's command center.": "Le centre de commandement de votre équipe.",
-    "Your Team Quota": "Vos frais d'équipement",
+    "Your Team Quota": "Quota de votre équipe",
     "Your team\\": "Votre équipe\\",
     "Zip Code": "Code postal",
     "_15_d_as": "+15 jours",
@@ -3813,5 +3813,18 @@
     "✗ Incorrect phone format": "✗ Mauvais format de téléphone",
     "✗ Invalid DNI — check number or letter": "✗ Pièce d'identité invalide - vérifiez le numéro ou la lettre",
     "✗ Invalid NIE — check check digit": "✗ NIE invalide — vérifiez le chiffre de contrôle",
-    "🛂 Detected as passport or other document": "🛂 Détecté comme passeport ou autre document"
+    "🛂 Detected as passport or other document": "🛂 Détecté comme passeport ou autre document",
+    "This team is assigned :quota GB of storage. Upon reaching the limit, members will not be able to upload new files until space is freed or the quota is increased.": "Cette équipe dispose de :quota Go de stockage. Une fois la limite atteinte, les membres ne pourront plus téléverser de nouveaux fichiers tant que de l'espace n'aura pas été libéré ou que le quota n'aura pas été augmenté.",
+    "Keep your team lightweight and optimized": "Gardez votre équipe légère et optimisée",
+    "Used disk space": "Espace disque utilisé",
+    "Used": "Utilisé",
+    "Chat Media": "Médias du chat",
+    "Photos, stickers and audios received": "Photos, autocollants et audios reçus",
+    "Local attachments in tasks": "Pièces jointes locales dans les tâches",
+    "Wall": "Mur",
+    "Local attachments in messages": "Pièces jointes locales dans les messages",
+    "Local attachments in files": "Pièces jointes locales dans les dossiers",
+    "Cloud-linked files (Zero impact on local quota)": "Fichiers liés depuis le cloud (Impact nul sur le quota local)",
+    "Linked Documents": "Documents liés",
+    "Purge Tool": "Outil de purge"
 }

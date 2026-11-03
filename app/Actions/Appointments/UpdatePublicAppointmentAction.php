@@ -105,7 +105,7 @@ class UpdatePublicAppointmentAction
 
     protected function validateEmailAndDniConflicts(array $data, array $checkData, Appointment $appointment): void
     {
-        if (!empty($data['email']) && $data['email'] !== $appointment->visitor->email) {
+        if (config('email_validation.enabled', false) && !empty($data['email']) && $data['email'] !== $appointment->visitor->email) {
             $validationResult = $this->emailValidation->verify($data['email']);
             if (!$validationResult['valid']) {
                 throw ValidationException::withMessages(['email' => 'El correo electrónico no parece existir. Por favor, verifica que sea correcto.']);

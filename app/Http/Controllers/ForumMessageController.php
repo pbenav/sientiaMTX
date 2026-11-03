@@ -30,6 +30,26 @@ class ForumMessageController extends Controller
             return back()->with('error', __('forum.thread_locked'));
         }
 
+        // Privacy check
+        if ($thread->activity_id) {
+            $activity = $thread->activity()->withTrashed()->first();
+            if ($activity) {
+                $isCoordinator = $team->isCoordinator(auth()->user());
+                if (method_exists($activity, 'isVisibleTo') && !$activity->isVisibleTo(auth()->user(), $isCoordinator)) {
+                    abort(403);
+                }
+            }
+        } elseif ($thread->task_id) {
+            $task = $thread->task()->withTrashed()->first();
+            if ($task) {
+                $isCoordinator = $team->isCoordinator(auth()->user());
+                $taskQuery = \App\Models\Task::where('id', $task->id)->withTrashed()->visibleTo(auth()->user(), $isCoordinator);
+                if (!$taskQuery->exists()) {
+                    abort(403);
+                }
+            }
+        }
+
         $validated = $request->validate([
             'content' => 'required|string|max:10000',
             'parent_id' => 'nullable|exists:forum_messages,id',
@@ -163,14 +183,23 @@ class ForumMessageController extends Controller
         }
         
         // --- Final Filter and Dispatch ---
-        if ($message->is_private && $thread->task) {
-            $task = $thread->task;
-            $recipients = $recipients->filter(function($u) use ($task) {
-                return $u->id === $task->created_by_id ||
-                       $u->id === $task->assigned_user_id ||
-                       $task->assignedTo->contains($u->id) ||
-                       $task->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $u->id))->exists();
-            });
+        if ($message->is_private) {
+            if ($thread->activity) {
+                $act = $thread->activity;
+                $recipients = $recipients->filter(function($u) use ($act) {
+                    return $u->id === $act->created_by_id ||
+                           $act->assignedTo->contains($u->id) ||
+                           $act->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $u->id))->exists();
+                });
+            } elseif ($thread->task) {
+                $task = $thread->task;
+                $recipients = $recipients->filter(function($u) use ($task) {
+                    return $u->id === $task->created_by_id ||
+                           $u->id === $task->assigned_user_id ||
+                           $task->assignedTo->contains($u->id) ||
+                           $task->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $u->id))->exists();
+                });
+            }
         }
 
         $recipients = $recipients->filter(function($u) {
@@ -196,6 +225,26 @@ class ForumMessageController extends Controller
 
         if ($thread->is_locked) {
             return back()->with('error', __('forum.thread_locked'));
+        }
+
+        // Privacy check
+        if ($thread->activity_id) {
+            $activity = $thread->activity()->withTrashed()->first();
+            if ($activity) {
+                $isCoordinator = $team->isCoordinator(auth()->user());
+                if (method_exists($activity, 'isVisibleTo') && !$activity->isVisibleTo(auth()->user(), $isCoordinator)) {
+                    abort(403);
+                }
+            }
+        } elseif ($thread->task_id) {
+            $task = $thread->task()->withTrashed()->first();
+            if ($task) {
+                $isCoordinator = $team->isCoordinator(auth()->user());
+                $taskQuery = \App\Models\Task::where('id', $task->id)->withTrashed()->visibleTo(auth()->user(), $isCoordinator);
+                if (!$taskQuery->exists()) {
+                    abort(403);
+                }
+            }
         }
 
         if (auth()->id() !== $message->user_id && auth()->user()->getRole($team) !== 'coordinator') {

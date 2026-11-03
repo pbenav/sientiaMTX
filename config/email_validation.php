@@ -12,7 +12,7 @@ return [
     |
     */
 
-    'enabled' => env('EMAIL_VALIDATION_ENABLED', true),
+    'enabled' => env('EMAIL_VALIDATION_ENABLED', false),
 
     'timeout' => env('EMAIL_VALIDATION_TIMEOUT', 8),
 
