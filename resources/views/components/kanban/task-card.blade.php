@@ -7,12 +7,12 @@
 
 <div x-data="{ 
          taskId: {{ $task->id }},
-         get isWorking() { return Alpine.store('timer').activeTaskId == this.taskId }
+         get isWorking() { return Alpine.store('timer')?.activeTaskId == this.taskId }
      }"
-     :class="isWorking ? 'ring-2 ring-violet-500 shadow-xl shadow-violet-500/20 bg-white dark:bg-gray-900' : ({{ ($isTodayCard || !$task->is_archived) && ($task->isCompleted() || $column?->type === 'done') ? 'true' : 'false' }} ? 'bg-gray-50/80 dark:bg-gray-900/80 grayscale-[0.3]' : 'bg-white dark:bg-gray-900')"
+     :class="isWorking ? 'ring-2 ring-violet-500 shadow-xl shadow-violet-500/20 bg-white dark:bg-gray-900' : ({{ ($isTodayCard || !$task->is_archived) && ($task->isCompleted() || $column?->isDone() || $task->progress >= 100) ? 'true' : 'false' }} ? 'bg-gray-50/80 dark:bg-gray-900/80 grayscale-[0.3]' : 'bg-white dark:bg-gray-900')"
      class="backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-md border-l-[5px] sm:border-l-[6px] p-2.5 sm:p-3.5 md:p-4 cursor-grab active:cursor-grabbing hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 group relative animate-card-appear border-t border-r border-b border-gray-100/50 dark:border-gray-800/50"
      data-task-id="{{ $task->id }}"
-     {{ ($isTodayCard || !$task->is_archived) && ($task->isCompleted() || $column?->type === 'done') ? 'data-completed=1' : '' }}
+     {{ ($isTodayCard || !$task->is_archived) && ($task->isCompleted() || $column?->isDone() || $task->progress >= 100) ? 'data-completed=1' : '' }}
      style="border-left-color: {{ $qCfg['color'] ?? '#d1d5db' }}; animation-delay: {{ $cardIndex * 50 }}ms; will-change: transform, opacity;">
     
     <!-- Card Content -->
@@ -128,8 +128,11 @@
             <div class="flex items-center gap-1.5">
                 @include('tasks.partials.task-timer-button')
                 @if($showBadges && !$task->is_archived)
+                    @php
+                        $isCardDone = ($isTodayCard || !$task->is_archived) && ($task->isCompleted() || $column?->isDone() || $task->progress >= 100);
+                    @endphp
                     <button onclick="archiveTask({{ $task->id }})" 
-                            class="archive-task-btn p-1 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-500 hover:text-emerald-600 transition-colors {{ ($task->isCompleted() || $column?->type === 'done') ? '' : 'hidden' }}"
+                            class="archive-task-btn p-1 rounded-lg transition-all {{ $isCardDone ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 hover:bg-emerald-600 hover:text-white shadow-sm border border-emerald-200/50 dark:border-emerald-500/20' : 'opacity-0 group-hover:opacity-100 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30' }}"
                             title="{{ __('tasks.mark_as_completed_and_archive') }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
@@ -174,7 +177,7 @@
             <input type="range" min="0" max="100" value="{{ $task->progress }}" autocomplete="off"
                 class="absolute w-full h-full opacity-0 cursor-pointer z-30 progress-slider"
                 data-task-id="{{ $task->id }}"
-                {{ $task->children()->count() > 0 ? 'disabled' : '' }}>
+                {{ ($task->children_count ?? ($task->relationLoaded('children') ? $task->children->count() : ($task->exists ? $task->children()->count() : 0))) > 0 ? 'disabled' : '' }}>
         </div>
     </div>
     @endif

@@ -667,7 +667,10 @@
 
                 async fetch() {
                     try {
-                        const res = await fetch('{{ route('time-logs.status') }}');
+                        const res = await fetch('{{ route('time-logs.status', [], false) }}', {
+                            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+                        if (!res.ok) return;
                         const data = await res.json();
                         this.activeTaskId = data.active_task_id;
                         this.elapsed = Math.floor(data.task_elapsed);
@@ -732,7 +735,10 @@
 
                 async check() {
                     try {
-                        const res = await fetch('{{ route('notifications.unread-count') }}');
+                        const res = await fetch('{{ route('notifications.unread-count', [], false) }}', {
+                            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+                        if (!res.ok) return;
                         const data = await res.json();
 
                         // Only show pending summary if it hasn't been shown in the last 2 hours

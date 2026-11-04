@@ -2,8 +2,8 @@
     taskId: {{ $activity->id }},
     loading: false,
     
-    get isActive() { return Alpine.store('timer').activeTaskId == this.taskId },
-    get elapsed() { return this.isActive ? Alpine.store('timer').elapsed : 0 },
+    get isActive() { return (window.Alpine && Alpine.store('timer')) ? Alpine.store('timer').activeTaskId == this.taskId : false },
+    get elapsed() { return this.isActive ? (Alpine.store('timer')?.elapsed ?? 0) : 0 },
     humanTime: '{{ $activity->totalTrackedTimeHuman() }}',
 
     init() {
@@ -16,30 +16,36 @@
 
     toggle() {
         this.loading = true;
-        fetch('{{ route('time-logs.toggle-task', $activity) }}', {
+        fetch('{{ route('time-logs.toggle-task', $activity, false) }}', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}' 
+            },
             body: JSON.stringify({ intent: this.isActive ? 'stop' : 'start' })
         })
-        .then(res => res.json())
-        .then(data => {
-            if (data.status === 'started') {
+        .then(async res => {
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || data.status === 'error' || data.success === false) {
+                const msg = data.message || 'Error al actualizar el contador';
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({ icon: 'error', title: 'Ups...', text: msg });
+                } else {
+                    alert(msg);
+                }
+            } else if (data.status === 'started') {
                 window.dispatchEvent(new CustomEvent('task-started', { detail: { taskId: this.taskId, initialSeconds: data.total_elapsed || 0 } }));
                 if (data.workday_started) {
                     window.dispatchEvent(new CustomEvent('workday-toggled', { detail: { working: true } }));
-                }
-            } else if (data.status === 'error') {
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({ icon: 'error', title: 'Ups...', text: data.message });
-                } else {
-                    alert(data.message);
                 }
             } else {
                 if (data.total_human_time) {
                     this.humanTime = data.total_human_time;
                     window.dispatchEvent(new CustomEvent('time-updated', { detail: { taskId: this.taskId, humanTime: data.total_human_time } }));
                 }
-                if (Alpine.store('timer')) Alpine.store('timer').stop();
+                if (window.Alpine && Alpine.store('timer')) Alpine.store('timer').stop();
                 window.dispatchEvent(new CustomEvent('task-stopped', { detail: { taskId: this.taskId } }));
             }
             this.loading = false;
@@ -65,7 +71,7 @@ class="flex flex-col items-end gap-1">
         <template x-if="!isActive">
             <span class="text-[10px] font-bold text-gray-400 dark:text-gray-500" x-text="humanTime"></span>
         </template>
-        <template x-if="isActive && Alpine.store('timer').timer">
+        <template x-if="isActive && Alpine.store('timer')?.timer">
             <span class="text-[10px] font-bold text-violet-500 animate-pulse" x-cloak x-text="formatTime(elapsed)"></span>
         </template>
 

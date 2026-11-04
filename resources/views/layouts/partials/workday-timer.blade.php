@@ -31,11 +31,14 @@
     },
     
     fetchStatus(isInit = false) {
-        let url = '{{ route('time-logs.status') }}';
+        let url = '{{ route('time-logs.status', [], false) }}';
         if (isInit) url += '?init=1';
-        fetch(url)
-            .then(res => res.json())
+        fetch(url, {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        })
+            .then(res => res.ok ? res.json() : null)
             .then(data => {
+                if (!data) return;
                 this.working = data.is_working;
                 this.elapsed = Math.floor(data.workday_elapsed);
                 this.activeTask = data.active_task_id;
@@ -44,16 +47,19 @@
                 if (data.cth) {
                     this.cthData = data.cth;
                 }
-            });
+            })
+            .catch(err => console.error('Workday timer fetch error:', err));
     },
     
     toggle() {
         this.loading = true;
         const intent = this.working ? 'stop' : 'start';
-        fetch('{{ route('time-logs.toggle-workday') }}', {
+        fetch('{{ route('time-logs.toggle-workday', [], false) }}', {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}' 
             },
             body: JSON.stringify({ intent: intent })

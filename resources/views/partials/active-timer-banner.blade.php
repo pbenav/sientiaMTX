@@ -25,7 +25,7 @@
         stopTimer() {
             if (this.loading) return;
             this.loading = true;
-            fetch('{{ route('time-logs.toggle-task', $activeActivity->id) }}', {
+            fetch('{{ route('time-logs.toggle-task', $activeActivity->id, false) }}', {
                 method: 'POST',
                 headers: { 
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',

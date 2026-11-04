@@ -77,15 +77,30 @@
             if (label) label.textContent = slider.value + '%';
 
             slider.addEventListener('input', function() {
-                const lbl = this.parentElement.parentElement.querySelector('.progress-label');
-                if (lbl) lbl.textContent = this.value + '%';
-                const fl = this.parentElement.querySelector('.progress-fill');
-                if (fl) fl.style.width = this.value + '%';
-                const th = this.parentElement.querySelector('.progress-thumb');
-                if (th) {
-                    th.style.left = this.value + '%';
-                    th.style.marginLeft = this.value == 0 ? '8px' : (this.value == 100 ? '-8px' : '0');
-                }
+                const val = this.value;
+                const taskId = this.dataset.taskId;
+                document.querySelectorAll(`[data-task-id="${taskId}"]`).forEach(c => {
+                    const s = c.querySelector('input.progress-slider');
+                    if (s && s !== this) s.value = val;
+                    const lbl = c.querySelector('.progress-label');
+                    if (lbl) lbl.textContent = val + '%';
+                    const fl = c.querySelector('.progress-fill');
+                    if (fl) {
+                        fl.style.width = val + '%';
+                        if (val == 100) {
+                            fl.classList.remove('bg-violet-500');
+                            fl.classList.add('bg-emerald-500');
+                        } else {
+                            fl.classList.add('bg-violet-500');
+                            fl.classList.remove('bg-emerald-500');
+                        }
+                    }
+                    const th = c.querySelector('.progress-thumb');
+                    if (th) {
+                        th.style.left = val + '%';
+                        th.style.marginLeft = val == 0 ? '8px' : (val == 100 ? '-8px' : '0');
+                    }
+                });
             });
 
             slider.addEventListener('change', function() {
@@ -110,11 +125,16 @@
 
         // --- API Functions ---
         window.archiveTask = window.kanbanArchiveTask = function(taskId) {
-            const card = document.querySelector(`[data-task-id="${taskId}"]`);
-            if (card) { card.style.transform = 'scale(0.9)'; card.style.opacity = '0'; setTimeout(() => card.remove(), 300); }
+            const cards = document.querySelectorAll(`[data-task-id="${taskId}"]`);
+            cards.forEach(card => {
+                card.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                card.style.transform = 'scale(0.9)';
+                card.style.opacity = '0';
+                setTimeout(() => card.remove(), 300);
+            });
             fetch(`{{ route('teams.activities.move', [$team, ':taskId']) }}`.replace(':taskId', taskId), {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                 body: JSON.stringify({ status: 'completed', progress_percentage: 100, is_archived: true })
             }).catch(error => console.error('Error:', error));
         };
@@ -139,7 +159,7 @@
                 if (result.isConfirmed) {
                     const columnEl = document.querySelector(`.task-list[data-column-id="${columnId}"]`);
                     if (!columnEl) return;
-                    const taskCards = columnEl.querySelectorAll('[data-task-id][data-completed="1"]');
+                    const taskCards = columnEl.querySelectorAll('[data-task-id]');
                     const totalTasks = taskCards.length;
                     if (totalTasks === 0) return;
                     let completedCount = 0;
@@ -151,8 +171,16 @@
                         setTimeout(() => card.remove(), 300);
                         fetch(`{{ route('teams.activities.move', [$team, ':taskId']) }}`.replace(':taskId', taskId), {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                             body: JSON.stringify({ status: 'completed', progress_percentage: 100, is_archived: true })
+                        }).then(() => {
+                            completedCount++;
+                            if (completedCount === totalTasks) setTimeout(() => window.location.reload(), 500);
+                        }).catch(err => console.error(err));
+                    });
+                }
+            });
+        };
                         }).then(() => {
                             completedCount++;
                             if (completedCount === totalTasks) setTimeout(() => window.location.reload(), 500);
@@ -183,13 +211,12 @@
             }));
             fetch(`{{ route('teams.kanban.tasks.order', $team) }}`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                 body: JSON.stringify({ column_id: columnId, tasks: tasks, moved_task_id: taskId })
             }).then(response => response.json()).then(data => {
                 if (data.success && data.progress !== null) {
-                    const card = document.querySelector(`[data-task-id="${taskId}"]`);
-                    if (card) {
-                        const slider = card.querySelector('input[type="range"]');
+                    document.querySelectorAll(`[data-task-id="${taskId}"]`).forEach(card => {
+                        const slider = card.querySelector('input.progress-slider');
                         if (slider) {
                             slider.value = data.progress;
                             const fl = slider.parentElement.querySelector('.progress-fill');
@@ -212,14 +239,13 @@
                         const archiveBtn = card.querySelector('.archive-task-btn');
                         if (archiveBtn) {
                             if (data.progress == 100) {
-                                archiveBtn.classList.remove('hidden');
-                            } else {
-                                archiveBtn.classList.add('hidden');
+                                archiveBtn.classList.remove('opacity-0', 'group-hover:opacity-100', 'text-gray-400');
+                                archiveBtn.classList.add('bg-emerald-50', 'dark:bg-emerald-900/30', 'text-emerald-600', 'shadow-sm', 'border', 'border-emerald-200/50');
                             }
                         }
                         const label = card.querySelector('.progress-text') || card.querySelector('.progress-label');
                         if (label) label.innerText = `${data.progress}%`;
-                    }
+                    });
                 }
             }).catch(error => console.error('Error:', error));
         };
@@ -228,16 +254,16 @@
             console.log(`[Kanban] Sending progress update for Task ${taskId} -> ${progress}%`);
             fetch(`{{ route('teams.activities.move', [$team, ':taskId']) }}`.replace(':taskId', taskId), {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                 body: JSON.stringify({ progress_percentage: progress })
             }).then(response => response.json()).then(data => {
                 console.log(`[Kanban] Received response for Task ${taskId}:`, data);
                 if (data.success && data.kanban_column_id) {
-                    const card = document.querySelector(`[data-task-id="${taskId}"]`);
-                    if (card) {
+                    const cards = document.querySelectorAll(`[data-task-id="${taskId}"]`);
+                    cards.forEach(card => {
                         const currentList = card.closest('.task-list');
                         const targetColId = String(data.kanban_column_id);
-                        if (currentList && currentList.dataset.columnId !== targetColId) {
+                        if (currentList && currentList.dataset.columnId !== targetColId && currentList.dataset.columnId !== 'today') {
                             const targetList = document.querySelector(`.task-list[data-column-id="${targetColId}"]`);
                             if (targetList) {
                                 card.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
@@ -250,6 +276,12 @@
                                     const tcEl = targetList.parentElement.querySelector('.column-title').nextElementSibling;
                                     if (tcEl) tcEl.textContent = parseInt(tcEl.textContent || '0') + 1;
                                     void card.offsetWidth;
+                                    card.style.opacity = '1';
+                                    card.style.transform = 'scale(1)';
+                                }, 300);
+                            }
+                        }
+                    });
                                     card.style.opacity = '1';
                                     card.style.transform = 'scale(1)';
                                 }, 300);

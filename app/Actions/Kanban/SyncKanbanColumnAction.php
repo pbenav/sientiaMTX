@@ -63,12 +63,13 @@ class SyncKanbanColumnAction
      */
     protected function syncProgressAndStatus(Activity $task, KanbanColumn $column): void
     {
-        match ($column->type) {
-            'todo' => $this->setTodoState($task),
-            'done' => $this->setDoneState($task),
-            'in_progress', 'custom' => $this->setInProgressState($task, $column),
-            default => null,
-        };
+        if ($column->isDone()) {
+            $this->setDoneState($task);
+        } elseif ($column->isTodo()) {
+            $this->setTodoState($task);
+        } else {
+            $this->setInProgressState($task, $column);
+        }
     }
 
     /**

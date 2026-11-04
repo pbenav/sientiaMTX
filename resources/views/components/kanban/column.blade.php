@@ -20,8 +20,8 @@
                     {{ count($column->activities->filter(fn($t) => !$t->is_archived)) }}
                 </span>
 
-                <!-- Trash Icon for Custom Columns -->
-                @if($column->type === 'custom')
+                <!-- Trash Icon for Custom Columns (not default semantic) -->
+                @if($column->type === 'custom' && !$column->isDefaultSemantic())
                     <button onclick="deleteColumn({{ $column->id }})" 
                             class="p-1 sm:p-1.5 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm border border-red-200/50 dark:border-red-500/20 shrink-0"
                             title="{{ __('Delete column') }}">
@@ -31,8 +31,8 @@
                     </button>
                 @endif
 
-                <!-- Archive All Completed Button -->
-                @if(count($column->activities->filter(fn($t) => !$t->is_archived && ($t->isCompleted() || $column->type === 'done'))) > 0)
+                <!-- Archive All Completed Button (strictly on Done column when completed activities exist) -->
+                @if($column->isDone() && count($column->activities->filter(fn($t) => !$t->is_archived)) > 0)
                     <button onclick="archiveAllCompleted({{ $column->id }})" 
                             class="p-1 sm:p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all shadow-sm border border-emerald-200/50 dark:border-emerald-500/20 shrink-0 group/btn"
                             title="{{ __('Archive all completed tasks in this column') }}">

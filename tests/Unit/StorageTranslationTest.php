@@ -24,3 +24,4 @@ class StorageTranslationTest extends TestCase
         }
     }
 }
+

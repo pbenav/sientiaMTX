@@ -84,21 +84,54 @@ class KanbanColumn extends Model
      */
     public function getDisplayTitleAttribute(): string
     {
-        $lower = mb_strtolower(trim($this->title));
-        $defaultTodo = ['pendiente', 'todo', 'por hacer', 'pending'];
-        $defaultInProgress = ['en progreso', 'in progress', 'en curso'];
-        $defaultDone = ['completada', 'completado', 'completed', 'hecho', 'done'];
-
-        if (($this->type === 'todo' && in_array($lower, $defaultTodo)) || in_array($lower, $defaultTodo)) {
+        if ($this->isTodo()) {
             return __('tasks.statuses.pending');
         }
-        if (($this->type === 'in_progress' && in_array($lower, $defaultInProgress)) || in_array($lower, $defaultInProgress)) {
+        if ($this->isInProgress()) {
             return __('tasks.statuses.in_progress');
         }
-        if (($this->type === 'done' && in_array($lower, $defaultDone)) || in_array($lower, $defaultDone)) {
+        if ($this->isDone()) {
             return __('tasks.statuses.completed');
         }
 
         return $this->title;
+    }
+
+    /**
+     * Comprueba si la columna representa semánticamente el estado completado/hecho.
+     */
+    public function isDone(): bool
+    {
+        $lower = mb_strtolower(trim($this->title));
+        $defaultDone = ['completada', 'completadas', 'completado', 'completed', 'hecho', 'done', 'finalizada', 'finalizadas', 'finalizado'];
+        return $this->type === 'done' || in_array($lower, $defaultDone);
+    }
+
+    /**
+     * Comprueba si la columna representa semánticamente el estado pendiente.
+     */
+    public function isTodo(): bool
+    {
+        $lower = mb_strtolower(trim($this->title));
+        $defaultTodo = ['pendiente', 'pendientes', 'todo', 'por hacer', 'pending'];
+        return $this->type === 'todo' || in_array($lower, $defaultTodo);
+    }
+
+    /**
+     * Comprueba si la columna representa semánticamente el estado en progreso.
+     */
+    public function isInProgress(): bool
+    {
+        $lower = mb_strtolower(trim($this->title));
+        $defaultInProgress = ['en progreso', 'in progress', 'en curso', 'en trámite', 'en tramite'];
+        return $this->type === 'in_progress' || in_array($lower, $defaultInProgress);
+    }
+
+    /**
+     * Comprueba si la columna es una de las columnas base/semánticas del sistema.
+     */
+    public function isDefaultSemantic(): bool
+    {
+        return $this->isTodo() || $this->isInProgress() || $this->isDone();
     }
 }

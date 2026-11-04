@@ -18,6 +18,17 @@ class UpdateTasksOrderAction
      */
     public function execute(Team $team, Request $request): array
     {
+        if ($request->input('column_id') === 'today') {
+            $movedTaskId = $request->input('moved_task_id');
+            if ($movedTaskId) {
+                $task = Activity::where('id', $movedTaskId)->where('team_id', $team->id)->first();
+                if ($task) {
+                    $task->update(['due_date' => today()]);
+                }
+            }
+            return ['success' => true, 'progress' => null];
+        }
+
         $validated = $request->validate([
             'column_id' => 'required|exists:kanban_columns,id',
             'tasks' => 'required|array',

@@ -151,17 +151,17 @@ class TimeLogController extends Controller
     {
         $task = \App\Models\Activity::find($id) ?? \App\Models\Task::find($id);
         if (!$task) {
-            return response()->json(['success' => false, 'message' => __('Tarea no encontrada.')], 404);
+            return response()->json(['success' => false, 'status' => 'error', 'message' => __('Tarea no encontrada.')], 404);
         }
         $user = auth()->user();
         if ($user->cannot('view', $task)) {
-            return response()->json(['success' => false, 'message' => __('No tienes permiso para interactuar con esta tarea.')], 403);
+            return response()->json(['success' => false, 'status' => 'error', 'message' => __('No tienes permiso para interactuar con esta tarea.')], 403);
         }
 
         $intent = $request->input('intent'); // 'start' or 'stop'
         $lock = \Illuminate\Support\Facades\Cache::lock('task_toggle_' . $user->id, 3);
         if (!$lock->get()) {
-            return response()->json(['success' => false, 'message' => __('Petición en curso, por favor espera.')], 429);
+            return response()->json(['success' => false, 'status' => 'error', 'message' => __('Petición en curso, por favor espera.')], 429);
         }
 
         try {
@@ -205,7 +205,7 @@ class TimeLogController extends Controller
                 if ($user->sync_with_cth) {
                     $cthResult = \App\Jobs\SyncWorkdayWithCth::syncNow($user, 'start');
                     if (!$cthResult['success']) {
-                        return response()->json(['success' => false, 'message' => $cthResult['message']]);
+                        return response()->json(['success' => false, 'status' => 'error', 'message' => $cthResult['message']]);
                     }
                 }
                 $user->timeLogs()->create(['type' => 'workday', 'start_at' => now()]);

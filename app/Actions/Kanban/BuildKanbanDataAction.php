@@ -75,6 +75,7 @@ class BuildKanbanDataAction
             'attachments',
             'timeLogs' => fn($q) => $q->whereDate('start_at', today()),
         ])
+        ->withCount('children')
         ->where('activities.team_id', $team->id)
         ->forKanban()
         ->notEphemeral()
@@ -159,6 +160,7 @@ class BuildKanbanDataAction
             ->operationalForKanban($user, $team)
             ->notEphemeral()
             ->where('is_archived', false)
+            ->where('is_template', false)
             ->today()
             ->orderBy('kanban_order', 'asc')
             ->orderByRaw(TaskPriority::orderQuery())

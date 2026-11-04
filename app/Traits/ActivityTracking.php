@@ -17,12 +17,21 @@ trait ActivityTracking
     public function totalTrackedSeconds(): int
     {
         // Own logs
-        $ownSeconds = (int) $this->timeLogs()->whereNotNull('end_at')->get()
-            ->sum(fn($log) => max(0, $log->start_at->diffInSeconds($log->end_at, false)));
+        if ($this->relationLoaded('timeLogs')) {
+            $ownSeconds = (int) $this->timeLogs->filter(fn($log) => $log->end_at !== null)
+                ->sum(fn($log) => max(0, $log->start_at->diffInSeconds($log->end_at, false)));
+        } elseif ($this->exists) {
+            $ownSeconds = (int) $this->timeLogs()->whereNotNull('end_at')->get()
+                ->sum(fn($log) => max(0, $log->start_at->diffInSeconds($log->end_at, false)));
+        } else {
+            $ownSeconds = 0;
+        }
 
         // Children logs
         $childrenSeconds = 0;
-        if ($this->children()->exists()) {
+        if ($this->relationLoaded('children')) {
+            $childrenSeconds = (int) $this->children->sum(fn($child) => $child->totalTrackedSeconds());
+        } elseif ($this->exists && $this->children()->exists()) {
              $childrenIds = $this->children()->pluck('id');
              $childrenLogs = \App\Models\TimeLog::whereIn('task_id', $childrenIds)->whereNotNull('end_at')->get();
              $childrenSeconds = (int) $childrenLogs->sum(fn($log) => max(0, $log->start_at->diffInSeconds($log->end_at, false)));
@@ -107,13 +116,23 @@ trait ActivityTracking
      */
     public function totalTrackedTimeTodaySeconds(): int
     {
-        $own = (int) $this->timeLogs()
-            ->where('created_at', '>=', now()->startOfDay())
-            ->get()
-            ->sum(fn($log) => $log->end_at ? max(0, $log->start_at->diffInSeconds($log->end_at, false)) : max(0, $log->start_at->diffInSeconds(now(), false)));
+        if ($this->relationLoaded('timeLogs')) {
+            $own = (int) $this->timeLogs
+                ->filter(fn($log) => $log->start_at && $log->start_at->isToday())
+                ->sum(fn($log) => $log->end_at ? max(0, $log->start_at->diffInSeconds($log->end_at, false)) : max(0, $log->start_at->diffInSeconds(now(), false)));
+        } elseif ($this->exists) {
+            $own = (int) $this->timeLogs()
+                ->where('created_at', '>=', now()->startOfDay())
+                ->get()
+                ->sum(fn($log) => $log->end_at ? max(0, $log->start_at->diffInSeconds($log->end_at, false)) : max(0, $log->start_at->diffInSeconds(now(), false)));
+        } else {
+            $own = 0;
+        }
 
         $childrenSeconds = 0;
-        if ($this->children()->exists()) {
+        if ($this->relationLoaded('children')) {
+            $childrenSeconds = (int) $this->children->sum(fn($child) => $child->totalTrackedTimeTodaySeconds());
+        } elseif ($this->exists && $this->children()->exists()) {
             $childrenIds = $this->children()->pluck('id');
             $childrenLogs = \App\Models\TimeLog::whereIn('task_id', $childrenIds)
                 ->where('created_at', '>=', now()->startOfDay())

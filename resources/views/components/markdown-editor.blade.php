@@ -314,7 +314,7 @@
                  x-transition:enter-start="opacity-0 translate-y-4"
                  x-transition:enter-end="opacity-100 translate-y-0"
                  :style="`top: ${mentionPos.top}px; left: ${mentionPos.left}px;`"
-                 @wheel.stop=""
+                 @wheel.stop="true"
                  class="absolute z-[1000] w-72 bg-white dark:bg-gray-800 border border-violet-100 dark:border-violet-900/50 rounded-2xl shadow-2xl overflow-hidden">
                 <div class="px-4 py-2 bg-violet-50 dark:bg-violet-900/20 border-b border-violet-100 dark:border-violet-900/30 flex items-center justify-between">
                     <span class="text-[10px] font-black text-violet-600 dark:text-violet-400 uppercase tracking-widest">{{ __('Mencionar') }}</span>
@@ -426,7 +426,7 @@
                     @keydown="handleKeyDown($event)"
                     @paste="handlePaste($event)"
                     @drop.prevent="handleDrop($event)"
-                    @dragover.prevent=""
+                    @dragover.prevent="true"
                     @scroll="updateMentionPosition()"
                     {{ $required ? 'required' : '' }}
                 ></textarea>
@@ -468,6 +468,7 @@
                  x-data="{ 
                      activeTab: 'flowchart',
                      copiedKey: null,
+                     pieSnippet: 'pie title Estado de los Expedientes del Trimestre\n    &quot;Completados y Firmados&quot; : 62\n    &quot;En Trámite de Subsanación&quot; : 23\n    &quot;Pendientes de Informe&quot; : 10\n    &quot;Desestimados&quot; : 5',
                      copyCode(code, key) {
                          navigator.clipboard.writeText(code);
                          this.copiedKey = key;
@@ -782,21 +783,11 @@
                                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Para resumir porcentajes o cuotas de participación en informes ejecutivos.</p>
                             </div>
                             <div class="flex items-center gap-2">
-                                <button type="button" @click="copyCode(
-`pie title Estado de los Expedientes del Trimestre
-    \"Completados y Firmados\" : 62
-    \"En Trámite de Subsanación\" : 23
-    \"Pendientes de Informe\" : 10
-    \"Desestimados\" : 5`, 'pie1')" 
+                                <button type="button" @click="copyCode(pieSnippet, 'pie1')" 
                                         class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl transition-colors">
                                     <span x-text="copiedKey === 'pie1' ? '✓ Copiado' : 'Copiar'"></span>
                                 </button>
-                                <button type="button" @click="insertSnippet(
-`pie title Estado de los Expedientes del Trimestre
-    \"Completados y Firmados\" : 62
-    \"En Trámite de Subsanación\" : 23
-    \"Pendientes de Informe\" : 10
-    \"Desestimados\" : 5`)" 
+                                <button type="button" @click="insertSnippet(pieSnippet)" 
                                         class="px-4 py-1.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-violet-600/20 flex items-center gap-1.5">
                                     <span>⚡ Insertar en Documento</span>
                                 </button>
