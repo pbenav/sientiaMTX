@@ -7,7 +7,7 @@
     <div class="h-1.5 w-full shrink-0 kanban-column-accent bg-violet-500"></div>
 
     <!-- Column Header -->
-    <div class="p-3 sm:p-3.5 md:p-4 flex flex-col gap-1.5 sm:gap-2 cursor-grab active:cursor-grabbing column-handle">
+    <div class="p-3 sm:p-3.5 md:p-4 flex flex-col gap-1.5 sm:gap-2 select-none">
         <div class="flex items-center justify-between gap-1">
             <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
                 <h3 class="font-black text-gray-900 dark:text-white uppercase tracking-[0.15em] text-[13px] column-title truncate">

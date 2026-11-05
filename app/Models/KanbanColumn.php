@@ -102,9 +102,15 @@ class KanbanColumn extends Model
      */
     public function isDone(): bool
     {
+        if ($this->type === 'done') {
+            return true;
+        }
+        if ($this->type === 'custom') {
+            return false;
+        }
         $lower = mb_strtolower(trim($this->title));
         $defaultDone = ['completada', 'completadas', 'completado', 'completed', 'hecho', 'done', 'finalizada', 'finalizadas', 'finalizado'];
-        return $this->type === 'done' || in_array($lower, $defaultDone);
+        return in_array($lower, $defaultDone);
     }
 
     /**
@@ -112,9 +118,15 @@ class KanbanColumn extends Model
      */
     public function isTodo(): bool
     {
+        if ($this->type === 'todo') {
+            return true;
+        }
+        if ($this->type === 'custom') {
+            return false;
+        }
         $lower = mb_strtolower(trim($this->title));
         $defaultTodo = ['pendiente', 'pendientes', 'todo', 'por hacer', 'pending'];
-        return $this->type === 'todo' || in_array($lower, $defaultTodo);
+        return in_array($lower, $defaultTodo);
     }
 
     /**
@@ -122,9 +134,15 @@ class KanbanColumn extends Model
      */
     public function isInProgress(): bool
     {
+        if ($this->type === 'in_progress') {
+            return true;
+        }
+        if ($this->type === 'custom') {
+            return false;
+        }
         $lower = mb_strtolower(trim($this->title));
         $defaultInProgress = ['en progreso', 'in progress', 'en curso', 'en trámite', 'en tramite'];
-        return $this->type === 'in_progress' || in_array($lower, $defaultInProgress);
+        return in_array($lower, $defaultInProgress);
     }
 
     /**
@@ -132,6 +150,6 @@ class KanbanColumn extends Model
      */
     public function isDefaultSemantic(): bool
     {
-        return $this->isTodo() || $this->isInProgress() || $this->isDone();
+        return in_array($this->type, ['todo', 'in_progress', 'done']);
     }
 }

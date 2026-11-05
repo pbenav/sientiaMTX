@@ -24,7 +24,7 @@ class DestroyKanbanColumnAction
         if (in_array($column->type, ['todo', 'in_progress', 'done'])) {
             return [
                 'success' => false,
-                'message' => 'No puedes eliminar columnas base del sistema.',
+                'message' => __('You cannot delete system base columns.'),
             ];
         }
 

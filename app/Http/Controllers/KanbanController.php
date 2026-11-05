@@ -53,12 +53,18 @@ class KanbanController extends Controller
         $user = auth()->user();
         $isManager = $team->isManager($user);
 
-        // Limpiar cualquier actividad no kanban o plantilla del equipo que tenga asignada erróneamente una columna kanban
+        // Limpiar cualquier actividad no kanban o plantilla pura del equipo que tenga asignada erróneamente una columna kanban
         $team->activities()
             ->whereNotNull('kanban_column_id')
             ->where(function ($q) {
                 $q->whereNotIn('type', Activity::KANBAN_TYPES)
-                  ->orWhere('is_template', true);
+                  ->orWhere(function ($tmplQ) {
+                      $tmplQ->where('is_template', true)
+                            ->where(function ($notMaster) {
+                                $notMaster->whereNull('metadata->assignment_mode')
+                                          ->orWhereNotIn('metadata->assignment_mode', ['distributed', 'shared']);
+                            });
+                  });
             })
             ->update(['kanban_column_id' => null]);
 
@@ -67,7 +73,13 @@ class KanbanController extends Controller
             ->forKanban()
             ->notEphemeral()
             ->where('is_archived', false)
-            ->where('is_template', false)
+            ->where(function ($tq) {
+                $tq->where('is_template', false)
+                   ->orWhere(function ($masterQ) {
+                       $masterQ->where('is_template', true)
+                               ->whereIn('metadata->assignment_mode', ['distributed', 'shared']);
+                   });
+            })
             ->where(function ($q) use ($team) {
                 $q->whereNull('kanban_column_id')
                   ->orWhere('progress_percentage', 100)

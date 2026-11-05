@@ -375,4 +375,5 @@ return array (
   'go_to_root' => 'Ir a actividad raíz',
   'restore' => 'Restaurar',
   'mark_as_completed_and_archive' => 'Marcar como completada y archivar',
+  'progress_calculated_from_subtasks' => 'El progreso se calcula automáticamente a partir de las subtareas',
 );

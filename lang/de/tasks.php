@@ -363,4 +363,5 @@ return [
     'go_to_root' => 'Gehen Sie zur Root-Aktivität',
     'restore' => 'Wiederherstellen',
     'mark_as_completed_and_archive' => 'Als erledigt markieren und archivieren',
+    'progress_calculated_from_subtasks' => 'Der Fortschritt wird automatisch aus Unteraufgaben berechnet',
 ];

@@ -161,10 +161,22 @@ class SyncKanbanColumnAction
     protected function syncParentProgress(Activity $task): void
     {
         $parent = $task->parent;
-        while ($parent) {
-            $parent->update(['progress_percentage' => $parent->progress]);
-            $parent->syncKanbanColumn();
+        $maxDepth = 20;
+        $depth = 0;
+        $seen = [$task->id];
+
+        while ($parent && $depth < $maxDepth) {
+            if (in_array($parent->id, $seen, true)) {
+                break;
+            }
+            $seen[] = $parent->id;
+            $newProgress = (int) $parent->progress;
+            if ($parent->progress_percentage !== $newProgress) {
+                $parent->update(['progress_percentage' => $newProgress]);
+                $parent->syncKanbanColumn();
+            }
             $parent = $parent->parent;
+            $depth++;
         }
     }
 }

@@ -18,6 +18,13 @@
             opacity: 0.9;
         }
 
+        /* Disabled progress sliders feedback */
+        .progress-slider:disabled ~ .progress-fill,
+        .progress-slider:disabled ~ .progress-thumb {
+            opacity: 0.55;
+            filter: grayscale(35%);
+        }
+
         /* Responsive Kanban column widths */
         @media (max-width: 640px) {
             .kanban-column {
@@ -67,6 +74,44 @@
 
         .kanban-column::after {
             display: none;
+        }
+
+        /* Horizontal Board Scrollbar */
+        #kanban-scroll-container::-webkit-scrollbar {
+            height: 10px;
+        }
+        #kanban-scroll-container::-webkit-scrollbar-track {
+            background: rgba(156, 163, 175, 0.12);
+            border-radius: 9999px;
+            margin: 0 1rem;
+        }
+        #kanban-scroll-container::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.4);
+            border-radius: 9999px;
+            transition: background 0.2s ease;
+        }
+        #kanban-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 92, 246, 0.75);
+        }
+        .dark #kanban-scroll-container::-webkit-scrollbar-track {
+            background: rgba(31, 41, 55, 0.5);
+        }
+        .dark #kanban-scroll-container::-webkit-scrollbar-thumb {
+            background: rgba(167, 139, 250, 0.4);
+        }
+        .dark #kanban-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(167, 139, 250, 0.75);
+        }
+        #kanban-scroll-container {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(139, 92, 246, 0.45) rgba(156, 163, 175, 0.12);
+        }
+
+        /* Panning state for drag-to-scroll */
+        body.is-board-panning,
+        body.is-board-panning * {
+            cursor: grabbing !important;
+            user-select: none !important;
         }
     </style>
 
@@ -251,19 +296,11 @@
 
     <div class="flex flex-col min-h-[calc(100vh-180px)] w-full pb-10">
         <!-- Kanban Board Container -->
-        <div class="flex-1 overflow-x-auto pb-6 pt-2 no-scrollbar">
+        <div id="kanban-scroll-container" class="flex-1 overflow-x-auto pb-6 pt-2 custom-scrollbar">
             <div class="flex h-full gap-2 sm:gap-3 md:gap-4 px-2 sm:px-3 md:px-6 w-max min-w-full items-start pb-4" id="kanban-board">
                 @foreach($columns as $column)
                     <x-kanban.column :column="$column" :team="$team" :quadrantConfig="$quadrantConfig" />
                 @endforeach
-
-                <!-- Today Column -->
-                <x-kanban.today-column 
-                    :activities="$todayActivities" 
-                    :$quadrantConfig 
-                    :$team 
-                />
-
 
                 <!-- Add Column Area -->
                 <x-kanban.board-footer :$team />

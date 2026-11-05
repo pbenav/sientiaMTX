@@ -910,6 +910,7 @@
     "Delete block": "Delete block",
     "Delete chapter": "Delete chapter",
     "Delete column": "Delete column",
+    "You cannot delete system base columns.": "You cannot delete system base columns.",
     "Delete column?": "Delete column?",
     "Deleted activities and cases will be permanently purged when they exceed this time limit.": "Deleted activities and cases will be permanently purged when they exceed this time limit.",
     "Deleted Date": "Deleted Date",

@@ -888,8 +888,9 @@ class Activity extends Model
         }
         if (!$team) return;
 
-        // Si la actividad no es de tipo Kanban o es una plantilla, no debe tener kanban_column_id
-        if (!in_array($this->type, self::KANBAN_TYPES) || $this->is_template) {
+        // Si la actividad no es de tipo Kanban o es una plantilla pura (que no sea Plan Maestro / colaborativa), no debe tener kanban_column_id
+        $isMasterPlan = $this->is_template && in_array($this->metadata['assignment_mode'] ?? null, ['distributed', 'shared']);
+        if (!in_array($this->type, self::KANBAN_TYPES) || ($this->is_template && !$isMasterPlan)) {
             if ($this->kanban_column_id !== null) {
                 $this->kanban_column_id = null;
                 $this->saveQuietly();

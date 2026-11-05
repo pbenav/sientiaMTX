@@ -910,6 +910,7 @@
     "Delete block": "Block löschen",
     "Delete chapter": "Kapitel löschen",
     "Delete column": "Spalte löschen",
+    "You cannot delete system base columns.": "Sie können Basisspalten des Systems nicht löschen.",
     "Delete column?": "Spalte löschen?",
     "Deleted activities and cases will be permanently purged when they exceed this time limit.": "Gelöschte Aktivitäten und Fälle werden dauerhaft gelöscht, wenn sie dieses Zeitlimit überschreiten.",
     "Deleted Date": "Gelöschtes Datum",

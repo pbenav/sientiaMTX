@@ -375,4 +375,5 @@ return array (
   'go_to_root' => 'Go to root activity',
   'restore' => 'Restore',
   'mark_as_completed_and_archive' => 'Mark as completed and archive',
+  'progress_calculated_from_subtasks' => 'Progress is calculated automatically from subtasks',
 );

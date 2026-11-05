@@ -12,16 +12,20 @@
             <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
                 <h3 class="font-black text-gray-900 dark:text-white uppercase tracking-[0.15em] text-[13px] column-title truncate" 
                     contenteditable="true" 
-                    onblur="updateColumnTitle({{ $column->id }}, this.innerText)"
+                    data-original-title="{{ $column->display_title }}"
+                    onblur="const val = (this.textContent || '').trim().substring(0, 255); if (val && val !== this.dataset.originalTitle) { this.dataset.originalTitle = val; updateColumnTitle({{ $column->id }}, val); }"
                     onclick="event.stopPropagation()">
                     {{ $column->display_title }}
                 </h3>
-                <span class="px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-lg sm:rounded-xl bg-black/5 dark:bg-white/10 text-[10px] sm:text-[11px] font-black text-gray-700 dark:text-gray-300 border border-black/5 dark:border-white/5 shadow-sm shrink-0">
-                    {{ count($column->activities->filter(fn($t) => !$t->is_archived)) }}
+                @php
+                    $unarchivedColCount = count($column->activities->filter(fn($t) => !$t->is_archived));
+                @endphp
+                <span class="column-count px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-lg sm:rounded-xl bg-black/5 dark:bg-white/10 text-[10px] sm:text-[11px] font-black text-gray-700 dark:text-gray-300 border border-black/5 dark:border-white/5 shadow-sm shrink-0">
+                    {{ $unarchivedColCount }}
                 </span>
 
-                <!-- Trash Icon for Custom Columns (not default semantic) -->
-                @if($column->type === 'custom' && !$column->isDefaultSemantic())
+                <!-- Trash Icon for Custom Columns -->
+                @if($column->type === 'custom')
                     <button onclick="deleteColumn({{ $column->id }})" 
                             class="p-1 sm:p-1.5 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm border border-red-200/50 dark:border-red-500/20 shrink-0"
                             title="{{ __('Delete column') }}">
@@ -31,10 +35,10 @@
                     </button>
                 @endif
 
-                <!-- Archive All Completed Button (strictly on Done column when completed activities exist) -->
-                @if($column->isDone() && count($column->activities->filter(fn($t) => !$t->is_archived)) > 0)
+                <!-- Archive All Completed Button (strictly on Done column, toggled via hidden) -->
+                @if($column->type === 'done')
                     <button onclick="archiveAllCompleted({{ $column->id }})" 
-                            class="p-1 sm:p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all shadow-sm border border-emerald-200/50 dark:border-emerald-500/20 shrink-0 group/btn"
+                            class="archive-all-btn p-1 sm:p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all shadow-sm border border-emerald-200/50 dark:border-emerald-500/20 shrink-0 group/btn {{ $unarchivedColCount > 0 ? '' : 'hidden' }}"
                             title="{{ __('Archive all completed tasks in this column') }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-3.5 w-3 sm:w-3.5 group-hover/btn:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />

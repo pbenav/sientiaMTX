@@ -24,7 +24,7 @@ class UpdateKanbanColumnAction
 
         $validated = $request->validate([
             'title' => 'nullable|string|max:255',
-            'color' => 'nullable|string|max:20',
+            'color' => ['nullable', 'string', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'],
         ]);
 
         $column->update($validated);

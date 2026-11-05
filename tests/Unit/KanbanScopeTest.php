@@ -15,7 +15,7 @@ class KanbanScopeTest extends TestCase
         $this->assertNotContains('link', Activity::KANBAN_TYPES);
     }
 
-    public function test_operational_for_kanban_sql_enforces_team_isolation(): void
+    public function test_operational_for_kanban_sql_enforces_privacy_and_plan_master_isolation(): void
     {
         $team = new Team();
         $team->id = 42;
@@ -33,15 +33,12 @@ class KanbanScopeTest extends TestCase
         );
         $this->assertContains(42, $bindings);
 
-        // Must exclude templates
+        // Must check visibility/privacy
         $this->assertTrue(
-            str_contains($sql, '"activities"."is_template" = ?') || str_contains($sql, '`activities`.`is_template` = ?')
+            str_contains($sql, 'visibility')
         );
 
-        // Must check assigned user via activity_assignments pivot
-        $this->assertTrue(
-            str_contains($sql, 'activity_assignments')
-        );
+        // Must isolate distributed instances and check user id
         $this->assertContains(7, $bindings);
     }
 

@@ -912,6 +912,7 @@
     "Delete block": "Remover bloqueio",
     "Delete chapter": "Excluir capítulo",
     "Delete column": "Eliminar columna",
+    "You cannot delete system base columns.": "Não pode eliminar as colunas base do sistema.",
     "Delete column?": "Excluir coluna?",
     "Deleted activities and cases will be permanently purged when they exceed this time limit.": "As atividades e casos excluídos serão eliminados permanentemente quando excederem esse limite de tempo.",
     "Deleted Date": "Fecha de Eliminación",

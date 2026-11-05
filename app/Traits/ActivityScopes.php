@@ -566,8 +566,46 @@ trait ActivityScopes
         $userId = $user instanceof User ? $user->id : (int) $user;
 
         return $query->where('activities.team_id', $team->id)
-            ->where('activities.is_template', false)
             ->whereIn('activities.type', $this->getScopesKanbanTypes())
+            // Soporta tareas operativas normales y Planes Maestros (is_template = true con assignment_mode distributed/shared)
+            ->where(function ($tq) {
+                $tq->where('activities.is_template', false)
+                   ->orWhere(function ($masterQ) {
+                       $masterQ->where('activities.is_template', true)
+                               ->whereIn('activities.metadata->assignment_mode', ['distributed', 'shared']);
+                   });
+            })
+            // Garantía estricta de privacidad: si es privada/semi-privada, solo el creador o los asignados la ven
+            ->where(function ($privQ) use ($userId) {
+                $privQ->where('activities.visibility', 'public')
+                      ->orWhere('activities.created_by_id', $userId)
+                      ->orWhereHas('assignedTo', fn($at) => $at->where('users.id', $userId))
+                      ->orWhereHas('assignedGroups', fn($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $userId)))
+                      ->orWhere('activities.metadata->distributed_user_id', $userId);
+            })
+            // Instancias distribuidas: NUNCA mostrar en el tablero personal las instancias de otros usuarios
+            ->where(function ($distQ) use ($userId) {
+                $distQ->where(function ($notDist) {
+                    $notDist->where(function ($sq) {
+                        $sq->whereNull('activities.metadata->is_distributed_instance')
+                           ->orWhere('activities.metadata->is_distributed_instance', false)
+                           ->orWhere('activities.metadata->is_distributed_instance', 'false');
+                    })
+                    ->whereDoesntHave('parent', fn($p) => $p->where('is_template', true)->whereIn('metadata->assignment_mode', ['distributed', 'shared']));
+                })
+                ->orWhere(function ($myDist) use ($userId) {
+                    $myDist->where(function ($dFlag) {
+                        $dFlag->where('activities.metadata->is_distributed_instance', true)
+                              ->orWhere('activities.metadata->is_distributed_instance', 'true')
+                              ->orWhereHas('parent', fn($p) => $p->where('is_template', true)->whereIn('metadata->assignment_mode', ['distributed', 'shared']));
+                    })
+                    ->where(function ($assignedMe) use ($userId) {
+                        $assignedMe->where('activities.metadata->distributed_user_id', $userId)
+                                   ->orWhereHas('assignedTo', fn($at) => $at->where('users.id', $userId));
+                    });
+                });
+            })
+            // Relevancia operativa para este usuario
             ->where(function ($q) use ($userId) {
                 // Tareas asignadas directamente al usuario
                 $q->whereHas('assignedTo', fn($sq) => $sq->where('users.id', $userId))
@@ -589,18 +627,28 @@ trait ActivityScopes
                                 });
                           });
                   })
-                  // Tareas propias del usuario (creadas por él, raíz, y no delegadas a terceros)
+                  // Tareas propias del usuario (creadas por él, raíz, y no delegadas a terceros, o Planes Maestros creados por él)
                   ->orWhere(function ($own) use ($userId) {
                       $own->where('activities.created_by_id', $userId)
                           ->whereNull('activities.parent_id')
-                          ->whereDoesntHave('assignedTo', fn($at) => $at->where('users.id', '!=', $userId))
-                          ->whereDoesntHave('assignedGroups');
+                          ->where(function ($subOwn) use ($userId) {
+                              $subOwn->where(function ($regularOwn) use ($userId) {
+                                  $regularOwn->whereDoesntHave('assignedTo', fn($at) => $at->where('users.id', '!=', $userId))
+                                             ->whereDoesntHave('assignedGroups');
+                              })
+                              ->orWhere(function ($masterOwn) {
+                                  $masterOwn->where('activities.is_template', true)
+                                            ->whereIn('activities.metadata->assignment_mode', ['distributed', 'shared']);
+                              });
+                          });
                   })
                   // Tareas públicas sin asignar en este equipo (disponibles para cualquier miembro)
                   ->orWhere(function ($unassigned) {
                       $unassigned->where('activities.visibility', 'public')
+                                 ->where('activities.is_template', false)
                                  ->whereDoesntHave('assignedTo')
                                  ->whereDoesntHave('assignedGroups')
+                                 ->whereNull('activities.parent_id')
                                  ->whereNotExists(function ($sub) {
                                      $sub->select(DB::raw(1))
                                          ->from('activity_task_mapping')
@@ -610,21 +658,43 @@ trait ActivityScopes
                   });
             })
             // Deduplicación inteligente: si el usuario ya tiene asignada una tarea hija, ocultar el padre contenedor
-            ->whereDoesntHave('children', function ($childQ) use ($userId) {
-                $childQ->whereHas('assignedTo', fn($at) => $at->where('users.id', $userId))
-                       ->orWhereHas('assignedGroups', fn($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $userId)));
+            // EXCEPTO si el padre es un Plan Maestro y fue creado por este usuario (ve la maestra y su instancia)
+            ->where(function ($dedupQ) use ($userId) {
+                $dedupQ->whereDoesntHave('children', function ($childQ) use ($userId) {
+                    $childQ->whereHas('assignedTo', fn($at) => $at->where('users.id', $userId))
+                           ->orWhereHas('assignedGroups', fn($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $userId)));
+                })
+                ->orWhere(function ($masterKeepQ) use ($userId) {
+                    $masterKeepQ->where('activities.created_by_id', $userId)
+                                ->where('activities.is_template', true)
+                                ->whereIn('activities.metadata->assignment_mode', ['distributed', 'shared']);
+                });
             });
     }
 
     /**
-     * Filtra actividades operativas de un equipo (todas las hojas no plantillas del equipo).
+     * Filtra actividades operativas de un equipo (todas las hojas no plantillas del equipo o planes maestros).
      */
     public function scopeOperationalForTeam(Builder $query, Team $team)
     {
         return $query->where('activities.team_id', $team->id)
-            ->where('activities.is_template', false)
             ->whereIn('activities.type', $this->getScopesKanbanTypes())
-            ->whereDoesntHave('children');
+            ->where(function ($tq) {
+                // Tareas operativas normales (no plantillas) que no sean instancias distribuidas
+                $tq->where('activities.is_template', false)
+                   ->where(function ($notDistQ) {
+                       $notDistQ->whereNull('activities.metadata->is_distributed_instance')
+                                ->orWhere('activities.metadata->is_distributed_instance', false)
+                                ->orWhere('activities.metadata->is_distributed_instance', 'false');
+                   })
+                   ->whereDoesntHave('parent', fn($p) => $p->where('is_template', true)->whereIn('metadata->assignment_mode', ['distributed', 'shared']))
+                   ->whereDoesntHave('children')
+                   // O Planes Maestros del equipo (para ver el plan consolidado en vez de N copias)
+                   ->orWhere(function ($masterQ) {
+                       $masterQ->where('activities.is_template', true)
+                               ->whereIn('activities.metadata->assignment_mode', ['distributed', 'shared']);
+                   });
+            });
     }
 
     // ─── Helpers para scopes ─────────────────────────────────────────────────
