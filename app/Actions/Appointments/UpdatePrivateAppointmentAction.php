@@ -3,6 +3,7 @@
 namespace App\Actions\Appointments;
 
 use App\Models\Appointment;
+use App\Models\AppointmentVisitor;
 use App\Services\Appointments\AppointmentGoogleSyncService;
 use App\Services\AppointmentAvailabilityService;
 use Carbon\Carbon;
@@ -59,7 +60,14 @@ class UpdatePrivateAppointmentAction
 
         // 4. Update Visitor
         $visitorData = [];
-        if (array_key_exists('visitor_full_name', $data)) $visitorData['full_name'] = $data['visitor_full_name'];
+        if (array_key_exists('visitor_full_name', $data)) {
+            $fullName = trim($data['visitor_full_name'] ?? '');
+            if ($fullName !== '') {
+                $parts = explode(' ', $fullName, 2);
+                $visitorData['first_name'] = $parts[0] ?? '';
+                $visitorData['last_name'] = $parts[1] ?? '';
+            }
+        }
         if (array_key_exists('visitor_dni', $data)) $visitorData['dni'] = $data['visitor_dni'] ? strtoupper(trim($data['visitor_dni'])) : null;
         if (array_key_exists('visitor_email', $data)) $visitorData['email'] = $data['visitor_email'] ? strtolower(trim($data['visitor_email'])) : null;
         if (array_key_exists('visitor_phone', $data)) $visitorData['phone'] = $data['visitor_phone'];
@@ -68,7 +76,38 @@ class UpdatePrivateAppointmentAction
         if (array_key_exists('visitor_observations', $data)) $visitorData['observations'] = $data['visitor_observations'];
 
         if (!empty($visitorData)) {
-            $appointment->visitor->update($visitorData);
+            $newEmail = $visitorData['email'] ?? null;
+            $oldVisitor = $appointment->visitor;
+
+            // Si el email pertenece a otro visitante existente, reasociar la cita para evitar violación de unicidad
+            if ($newEmail && (!$oldVisitor || $oldVisitor->email !== $newEmail)) {
+                $existingVisitor = AppointmentVisitor::where('email', $newEmail)
+                    ->when($oldVisitor, fn($q) => $q->where('id', '!=', $oldVisitor->id))
+                    ->first();
+
+                if ($existingVisitor) {
+                    $appointment->visitor_id = $existingVisitor->id;
+                    $appointment->save();
+                    $appointment->setRelation('visitor', $existingVisitor);
+
+                    // Si el visitante previo ya no tiene otras citas asociadas, eliminarlo para no dejar huérfanos
+                    if ($oldVisitor && $oldVisitor->appointments()->where('id', '!=', $appointment->id)->doesntExist()) {
+                        $oldVisitor->delete();
+                    }
+                }
+            }
+
+            if ($appointment->visitor) {
+                $appointment->visitor->update($visitorData);
+            } elseif (!empty($visitorData)) {
+                $createdVisitor = AppointmentVisitor::create(array_merge([
+                    'first_name' => 'Visitante',
+                    'last_name' => '',
+                ], $visitorData));
+                $appointment->visitor_id = $createdVisitor->id;
+                $appointment->save();
+                $appointment->setRelation('visitor', $createdVisitor);
+            }
         }
 
         // 5. Update custom fields
