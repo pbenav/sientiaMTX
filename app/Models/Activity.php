@@ -654,6 +654,19 @@ class Activity extends Model
     }
 
     /**
+     * Determina si la actividad corresponde a una cita previa.
+     */
+    public function isAppointmentActivity(): bool
+    {
+        if ($this->relationLoaded('appointment') && $this->appointment !== null) {
+            return true;
+        }
+
+        return (!empty($this->metadata['is_ephemeral']) && $this->type === 'meeting')
+            || str_starts_with($this->title, '[CITA]');
+    }
+
+    /**
      * Determina si la actividad está bloqueada porque el servicio asociado está caído.
      *
      * @return bool True si service_id está definido, la relación service está cargada y service->status es 'down'

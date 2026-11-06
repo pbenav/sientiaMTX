@@ -86,7 +86,21 @@ class SendMorningSummary extends Command
     {
         $this->line("Processing summary for {$user->name}...");
 
-        // Fetch tasks for today (scheduled for today or overdue)
+        // Fetch appointments for today for executive summary (isolated from task list)
+        $userTz = $user->timezone ?? config('app.timezone', 'UTC');
+        $todayDate = now($userTz)->toDateString();
+
+        $todayAppointments = \App\Models\Appointment::where(function($q) use ($user) {
+                $q->where('user_id', $user->id)
+                  ->orWhereHas('activity.assignedTo', fn($sub) => $sub->where('users.id', $user->id));
+            })
+            ->whereDate('appointment_date', $todayDate)
+            ->whereIn('status', ['confirmed', 'pending'])
+            ->orderBy('appointment_time', 'asc')
+            ->with(['visitor', 'service', 'service.team'])
+            ->get();
+
+        // Fetch regular priority tasks for today (excluding appointment activities to prevent noise)
         $isManager = false;
         foreach ($user->teams as $team) {
             if (in_array($user->getRole($team), ['coordinator', 'moderator'])) {
@@ -101,6 +115,8 @@ class SendMorningSummary extends Command
             })
             ->visibleTo($user, $isManager)
             ->whereIn('type', Activity::KANBAN_TYPES)
+            ->whereDoesntHave('appointment')
+            ->notEphemeral()
             ->where(function ($q) {
                 $q->where('progress_percentage', '<', 100)
                   ->where(function($subq) {
@@ -123,8 +139,8 @@ class SendMorningSummary extends Command
                 return $task->title . '_' . $task->team_id;
             });
 
-        if ($tasks->isEmpty()) {
-            $this->line("User {$user->name}: No priority tasks for today. Sending a focus-on-rest phrase.");
+        if ($tasks->isEmpty() && $todayAppointments->isEmpty()) {
+            $this->line("User {$user->name}: No priority tasks or appointments for today. Sending a focus-on-rest phrase.");
         }
 
         try {
@@ -170,7 +186,7 @@ class SendMorningSummary extends Command
                 }
 
                 // Send notification
-                $user->notify(new MorningSummaryNotification($tasks, $phrase));
+                $user->notify(new MorningSummaryNotification($tasks, $phrase, $todayAppointments));
                 
                 // Mark as sent
                 \Illuminate\Support\Facades\Cache::put($lockKey, true, now()->addHours(23));

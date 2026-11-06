@@ -644,6 +644,7 @@ class ActivityService
             ->active()
             ->with([
                 'creator', 'assignedTo', 'kanbanColumn', 'tags', 'assignedGroups', 'expediente', 'assignedUser', 'skills', 'parent', 'folder',
+                'appointment.visitor', 'appointment.service',
                 'children' => function($q) use ($user, $isManager) {
                     $q->where('is_archived', false)
                       ->orderBy('created_at')
@@ -786,6 +787,21 @@ class ActivityService
 
         if (!empty($filters['archived'])) {
             $query->archived();
+        }
+
+        if (!empty($filters['appointments'])) {
+            if ($filters['appointments'] === 'hide' || $filters['appointments'] === 'exclude') {
+                $query->whereDoesntHave('appointment')->notEphemeral();
+            } elseif ($filters['appointments'] === 'only') {
+                $query->where(function ($q) {
+                    $q->whereHas('appointment')
+                      ->orWhere(function ($sub) {
+                          $sub->where('metadata->is_ephemeral', true)
+                              ->where('type', 'meeting');
+                      })
+                      ->orWhere('title', 'like', '[CITA]%');
+                });
+            }
         }
 
         // Ordenación

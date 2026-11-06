@@ -1002,11 +1002,76 @@
                             </select>
                         </form>
                     </div>
-                    <div class="overflow-x-auto overflow-y-auto max-h-[400px] no-scrollbar">
+                    <div class="overflow-x-auto overflow-y-auto max-h-[400px] no-scrollbar" x-data="{ showAppointments: false }">
                         <table class="w-full text-left">
                         <thead class="bg-gray-50 dark:bg-gray-800/40"><tr><th class="px-6 py-4 text-[10px] font-black uppercase text-gray-400 dark:text-gray-500">{{ __('Activity') }}</th><th class="px-6 py-4 text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 text-right">{{ __('Time') }}</th></tr></thead>
                         <tbody class="divide-y divide-gray-50 dark:divide-gray-800/50">
-                            @foreach($tasks as $task)
+                            @if(isset($appointmentTasks) && $appointmentTasks->isNotEmpty())
+                                <!-- Fila Maestra Agrupada: Citas Previas -->
+                                <tr class="bg-cyan-50/60 dark:bg-cyan-950/20 hover:bg-cyan-100/60 dark:hover:bg-cyan-950/40 border-l-4 border-cyan-500 cursor-pointer transition-colors"
+                                    @click="showAppointments = !showAppointments">
+                                    <td class="px-6 py-3.5">
+                                        <div class="flex items-center justify-between gap-3">
+                                            <div class="flex items-center gap-2.5">
+                                                <span class="p-1.5 rounded-lg bg-cyan-100 dark:bg-cyan-900/40 text-cyan-700 dark:text-cyan-300">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                    </svg>
+                                                </span>
+                                                <span class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-wider">
+                                                    {{ __('Citas Previas') }}
+                                                </span>
+                                                <span class="text-[9px] font-black px-2 py-0.5 rounded-full bg-cyan-200/60 dark:bg-cyan-800/40 text-cyan-800 dark:text-cyan-200">
+                                                    {{ $appointmentTasks->count() }} {{ $appointmentTasks->count() === 1 ? __('cita') : __('citas') }}
+                                                </span>
+                                            </div>
+                                            <button type="button" class="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 flex items-center gap-1 hover:underline">
+                                                <span x-text="showAppointments ? '{{ __('Ocultar') }}' : '{{ __('Ver desglose') }}'"></span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 transform transition-transform duration-200" :class="showAppointments ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-3.5 text-right">
+                                        <span class="bg-cyan-100 dark:bg-cyan-900/40 text-cyan-800 dark:text-cyan-200 px-3 py-1 rounded-full text-xs font-black whitespace-nowrap">
+                                            {{ $appointmentTotalTimeHuman ?? '0s' }}
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <!-- Desglose de Citas Previas (desplegable) -->
+                                @foreach($appointmentTasks as $appTask)
+                                    <tr x-show="showAppointments" x-cloak class="bg-cyan-50/20 dark:bg-cyan-950/10 hover:bg-cyan-50/40 dark:hover:bg-cyan-950/30 transition-colors border-l-2 border-cyan-400/50">
+                                        <td class="px-6 py-2.5 pl-12">
+                                            <div class="flex flex-col gap-0.5">
+                                                <div class="flex flex-wrap items-center gap-2">
+                                                    <a href="{{ route('teams.activities.show', [$team, $appTask]) }}" class="text-xs font-bold text-gray-800 dark:text-gray-200 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
+                                                        {{ $appTask->title }}
+                                                    </a>
+                                                    @if($appTask->appointment?->visitor)
+                                                        <span class="text-[10px] font-medium text-gray-600 dark:text-gray-400">
+                                                            👤 {{ $appTask->appointment->visitor->full_name }}
+                                                        </span>
+                                                    @endif
+                                                    @if($appTask->scheduled_date)
+                                                        <span class="text-[9px] text-gray-400 font-bold">
+                                                            • {{ \Carbon\Carbon::parse($appTask->scheduled_date)->format('H:i') }}
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-2.5 text-right">
+                                            <span class="text-[11px] font-bold text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                                                {{ $appTask->trackedTimeHumanByUser() }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @endif
+
+                            @foreach(($regularTasks ?? $tasks) as $task)
                                 <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/10 transition-colors">
                                     <td class="px-6 py-4">
                                         <div class="flex flex-col gap-1.5">

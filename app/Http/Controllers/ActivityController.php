@@ -62,7 +62,7 @@ class ActivityController extends Controller
         // Filtros persistentes
         $filters = $this->getPersistentFilters($request, 'activities', [
             'type', 'status', 'priority', 'search', 'expediente_id', 'tag', 'archived',
-            'assigned_to', 'skill_id', 'template_type', 'per_page'
+            'assigned_to', 'skill_id', 'template_type', 'per_page', 'appointments'
         ]);
 
         $sort = $request->get('sort', 'due_date');

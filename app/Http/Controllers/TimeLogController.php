@@ -331,7 +331,9 @@ class TimeLogController extends Controller
                     $q->where('user_id', $user->id)->orderByDesc('start_at');
                 },
                 'parent',
-                'skill'
+                'skill',
+                'appointment.visitor',
+                'appointment.service'
             ])
             ->orderByDesc(
                 \App\Models\TimeLog::select('start_at')
@@ -342,6 +344,19 @@ class TimeLogController extends Controller
             )
             ->limit($effortLimit)
             ->get();
+
+        $appointmentTasks = $tasks->filter(fn($t) => $t->isAppointmentActivity())->values();
+        $regularTasks = $tasks->reject(fn($t) => $t->isAppointmentActivity())->values();
+
+        $appointmentSeconds = $appointmentTasks->sum(fn($t) => $t->trackedSecondsByUser($user->id));
+        $hours = floor($appointmentSeconds / 3600);
+        $minutes = floor(($appointmentSeconds % 3600) / 60);
+        $secs = $appointmentSeconds % 60;
+        $parts = [];
+        if ($hours > 0) $parts[] = "{$hours}h";
+        if ($minutes > 0 || $hours > 0) $parts[] = "{$minutes}m";
+        $parts[] = "{$secs}s";
+        $appointmentTotalTimeHuman = $appointmentSeconds > 0 ? implode(' ', $parts) : '0s';
 
         // Get my recent workdays grouped by day
         // Uses effectiveMinutes() so anomalous logs (jornada olvidada abierta) are normalized
@@ -446,7 +461,7 @@ class TimeLogController extends Controller
                 'time' => $r->created_at->diffForHumans()
             ])->values();
 
-        return view('time-logs.index', compact('team', 'tasks', 'workdayLogs', 'teamMembers', 'heatmapData', 'services', 'incidencePoints'));
+        return view('time-logs.index', compact('team', 'tasks', 'regularTasks', 'appointmentTasks', 'appointmentTotalTimeHuman', 'workdayLogs', 'teamMembers', 'heatmapData', 'services', 'incidencePoints'));
     }
 
     /**

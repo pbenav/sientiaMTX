@@ -139,6 +139,16 @@
                     </select>
                 </div>
 
+                <!-- Appointments Filter -->
+                <div class="w-44">
+                    <select name="appointments" onchange="this.form.submit()"
+                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold uppercase tracking-wider py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
+                        <option value="" {{ empty($filters['appointments']) ? 'selected' : '' }}>{{ __('Citas: Agrupadas') }}</option>
+                        <option value="hide" {{ ($filters['appointments'] ?? '') === 'hide' ? 'selected' : '' }}>{{ __('Ocultar citas') }}</option>
+                        <option value="only" {{ ($filters['appointments'] ?? '') === 'only' ? 'selected' : '' }}>{{ __('Solo citas') }}</option>
+                    </select>
+                </div>
+
                 <!-- Per Page Filter -->
                 <div class="w-32">
                     <select name="per_page" onchange="this.form.submit()"
@@ -366,9 +376,47 @@
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                        @foreach ($activities as $activity)
-                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors group cursor-pointer"
+                    @php
+                        $appointmentActivities = $activities->getCollection()->filter(fn($a) => $a->isAppointmentActivity());
+                        $regularActivities = $activities->getCollection()->reject(fn($a) => $a->isAppointmentActivity());
+                        $hasAppointments = $appointmentActivities->isNotEmpty();
+                        $sortedActivities = $hasAppointments ? $appointmentActivities->concat($regularActivities) : $activities;
+                    @endphp
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800" x-data="{ showAppointments: false }">
+                        @if ($hasAppointments)
+                            {{-- Fila maestra agrupada para Citas Previas --}}
+                            <tr class="bg-indigo-50/70 dark:bg-indigo-950/30 hover:bg-indigo-100/60 dark:hover:bg-indigo-900/40 transition-colors border-y border-indigo-100 dark:border-indigo-900/50">
+                                <td class="px-4 py-3.5 text-center" onclick="event.stopPropagation()">
+                                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-indigo-100 dark:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </span>
+                                </td>
+                                <td class="px-6 py-3.5" colspan="3">
+                                    <div class="flex items-center gap-2.5">
+                                        <span class="font-black text-sm text-indigo-950 dark:text-indigo-200 tracking-tight">
+                                            {{ __('Citas Previas') }}
+                                        </span>
+                                        <span class="px-2.5 py-0.5 text-xs font-black rounded-full bg-indigo-100 dark:bg-indigo-900/70 text-indigo-700 dark:text-indigo-300">
+                                            {{ $appointmentActivities->count() }} {{ $appointmentActivities->count() === 1 ? __('cita') : __('citas') }}
+                                        </span>
+                                    </div>
+                                </td>
+                                <td colspan="7" class="px-4 py-3.5 text-right">
+                                    <button type="button" @click="showAppointments = !showAppointments"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300 bg-white dark:bg-gray-800 border border-indigo-200 dark:border-indigo-800 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-all shadow-sm">
+                                        <span x-text="showAppointments ? '{{ __('Ocultar desglose') }}' : '{{ __('Ver desglose') }}'"></span>
+                                        <svg class="w-3.5 h-3.5 transform transition-transform duration-200" :class="{ 'rotate-180': showAppointments }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                </td>
+                            </tr>
+                        @endif
+                        @foreach ($sortedActivities as $activity)
+                            <tr @if($activity->isAppointmentActivity()) x-show="showAppointments" x-cloak @endif
+                                class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors group cursor-pointer {{ $activity->isAppointmentActivity() ? 'bg-indigo-50/20 dark:bg-indigo-950/10 border-l-4 border-l-indigo-400' : '' }}"
                                 data-href="{{ route('teams.activities.show', [$team, $activity]) }}"
                                 onclick="if(!event.target.closest('button, a, input, select')) window.location=this.dataset.href">
                                 <td class="px-4 py-4 w-10 text-center" onclick="event.stopPropagation()">
