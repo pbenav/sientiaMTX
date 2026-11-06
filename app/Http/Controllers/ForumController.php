@@ -62,7 +62,7 @@ class ForumController extends Controller
             ->when($showOrphaned, function($query) {
                 $query->orphaned();
             })
-            ->with(['user', 'task', 'activity', 'messages' => function ($query) {
+            ->with(['user', 'activity', 'messages' => function ($query) {
                 $query->latest()->limit(1);
             }])
             ->where(function($query) use ($userId, $isCoordinator, $showOrphaned) {
@@ -77,8 +77,11 @@ class ForumController extends Controller
                 ->orWhereHas('activity', function($q) use ($isCoordinator) {
                     $q->withTrashed()->visibleTo(auth()->user(), $isCoordinator);
                 })
-                ->orWhereHas('task', function($q) use ($isCoordinator) {
-                    $q->withTrashed()->visibleTo(auth()->user(), $isCoordinator);
+                ->orWhere(function($sub) use ($isCoordinator) {
+                    $sub->whereNull('activity_id')
+                        ->whereHas('task', function($q) use ($isCoordinator) {
+                            $q->withTrashed()->visibleTo(auth()->user(), $isCoordinator);
+                        });
                 });
             })
             ->withCount('messages')
@@ -366,7 +369,11 @@ class ForumController extends Controller
         }
 
         $thread->increment('views');
-        $thread->load(['user', 'activity', 'task']);
+        $relationsToLoad = ['user', 'activity'];
+        if (!$thread->activity_id && $thread->task_id) {
+            $relationsToLoad[] = 'task';
+        }
+        $thread->load($relationsToLoad);
         
         $messagesQuery = $thread->messages()
             ->with(['user', 'replies.user', 'replies.attachments'])

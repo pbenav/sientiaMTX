@@ -54,10 +54,19 @@ trait UserProfile
             get: function ($value) {
                 if (!$value) return null;
                 try {
-                    return decrypt($value, true); // Intenta descifrar
+                    return decrypt($value, true); // Intenta descifrar si está cifrado
                 } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+                    // Si ya es JSON o array plano legacy, decodificarlo directamente
+                    $decoded = json_decode($value, true);
+                    if (is_array($decoded)) {
+                        return $decoded;
+                    }
+                    if (is_string($value) && (str_starts_with($value, '{') || str_starts_with($value, 'ya29.'))) {
+                        return $decoded ?? $value;
+                    }
+
                     \Illuminate\Support\Facades\Log::warning("Fallo al descifrar google_token del usuario {$this->id}: " . $e->getMessage());
-                    return null; // Si falla (viejo/corrupto), ignorar
+                    return null; // Si falla por estar corrupto, ignorar
                 }
             },
             set: fn ($value) => $value ? encrypt($value, true) : null,
@@ -75,6 +84,11 @@ trait UserProfile
                 try {
                     return decrypt($value);
                 } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+                    // Si es texto plano legacy (ej: "1//..."), devolver directamente
+                    if (is_string($value) && (str_starts_with($value, '1//') || !str_contains($value, '"iv"'))) {
+                        return $value;
+                    }
+
                     \Illuminate\Support\Facades\Log::warning("Fallo al descifrar google_refresh_token del usuario {$this->id}: " . $e->getMessage());
                     return null;
                 }
