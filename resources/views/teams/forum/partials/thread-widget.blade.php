@@ -109,9 +109,9 @@
                             <div class="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-3 py-2.5 border border-transparent hover:border-violet-200 dark:hover:border-violet-900/50 transition-all shadow-sm">
                                 <div class="flex items-center justify-between mb-1.5">
                                 <div class="flex items-center gap-1.5">
-                                    <img src="{{ $message->user->profile_photo_url }}" alt="{{ $message->user->name }}" 
+                                    <img src="{{ $message->author_photo_url }}" alt="{{ $message->author_name }}" 
                                         class="w-5 h-5 rounded-full object-cover shadow-sm border border-white dark:border-gray-800 flex-shrink-0">
-                                    <span class="text-[10px] font-bold text-gray-700 dark:text-gray-200 line-clamp-1">{{ $message->user->name }}</span>
+                                    <span class="text-[10px] font-bold text-gray-700 dark:text-gray-200 line-clamp-1">{{ $message->author_name }}</span>
                                 </div>
                                 <span class="text-[9px] text-gray-400" title="{{ $message->created_at }}">
                                     {{ $message->created_at->diffForHumans() }}
@@ -141,7 +141,7 @@
                                     <span>{{ __('Votar') }}</span> (<span class="votes-count">{{ $message->votes_count ?? $message->votes()->count() }}</span>)
                                 </button>
 
-                                <button type="button" @click="startReply({{ $message->id }}, '{{ $message->user->name }}')" 
+                                <button type="button" @click="startReply({{ $message->id }}, '{{ addslashes($message->author_name) }}')" 
                                     class="text-[9px] font-bold text-violet-500 hover:text-violet-600 uppercase tracking-tighter transition-colors flex items-center gap-1">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
                                     {{ __('Responder') }}
@@ -180,9 +180,9 @@
                                     <div class="bg-white dark:bg-gray-900/50 rounded-xl p-2.5 border border-gray-100 dark:border-gray-800 group/reply relative">
                                         <div class="flex items-center justify-between mb-1">
                                             <div class="flex items-center gap-1.5">
-                                                <img src="{{ $reply->user->profile_photo_url }}" alt="{{ $reply->user->name }}" 
+                                                <img src="{{ $reply->author_photo_url }}" alt="{{ $reply->author_name }}" 
                                                     class="w-4 h-4 rounded-full object-cover border border-white dark:border-gray-800">
-                                                <span class="text-[9px] font-bold text-gray-600 dark:text-gray-300">{{ $reply->user->name }}</span>
+                                                <span class="text-[9px] font-bold text-gray-600 dark:text-gray-300">{{ $reply->author_name }}</span>
                                             </div>
                                             <span class="text-[8px] text-gray-400">{{ $reply->created_at->diffForHumans() }}</span>
                                         </div>

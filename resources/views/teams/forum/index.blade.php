@@ -241,10 +241,10 @@
 
                             <div class="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                                 <span class="flex items-center gap-1.5 font-medium">
-                                    <img src="{{ $thread->user->profile_photo_url }}"
-                                        alt="{{ $thread->user->name }}"
+                                    <img src="{{ $thread->author_photo_url }}"
+                                        alt="{{ $thread->author_name }}"
                                         class="w-5 h-5 rounded-full object-cover shadow-sm border border-white dark:border-gray-800 shrink-0">
-                                    {{ $thread->user->name }}
+                                    {{ $thread->author_name }}
                                 </span>
 
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-gray-400"
@@ -281,13 +281,13 @@
                                         class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-1">
                                         {{ __('forum.latest') ?? 'Último' }}</p>
                                     <div class="flex items-center gap-2">
-                                        <img src="{{ $thread->messages->first()->user->profile_photo_url }}"
-                                            alt="{{ $thread->messages->first()->user->name }}"
+                                        <img src="{{ $thread->messages->first()->author_photo_url }}"
+                                            alt="{{ $thread->messages->first()->author_name }}"
                                             class="w-5 h-5 rounded-full object-cover shadow-sm border border-white dark:border-gray-800 shrink-0">
                                         <div>
                                             <p
                                                 class="text-xs font-semibold text-gray-700 dark:text-gray-300 truncate w-24">
-                                                {{ $thread->messages->first()->user->name }}</p>
+                                                {{ $thread->messages->first()->author_name }}</p>
                                             <p class="text-[9px] text-gray-400">
                                                 {{ $thread->messages->first()->created_at->diffForHumans() }}</p>
                                         </div>

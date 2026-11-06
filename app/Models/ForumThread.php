@@ -132,4 +132,21 @@ class ForumThread extends Model
     {
         return is_null($this->task_id) && is_null($this->activity_id);
     }
+
+    /**
+     * Nombre del autor del hilo, con fallback seguro si el usuario es null.
+     */
+    public function getAuthorNameAttribute(): string
+    {
+        return $this->user?->name ?? __('Sistema');
+    }
+
+    /**
+     * URL de la foto de perfil del autor del hilo, con fallback a avatar generado si el usuario es null.
+     */
+    public function getAuthorPhotoUrlAttribute(): string
+    {
+        return $this->user?->profile_photo_url
+            ?? 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($this->author_name) . '&color=7F9CF5&background=EBF4FF';
+    }
 }

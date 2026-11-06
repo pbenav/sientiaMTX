@@ -80,9 +80,9 @@
                     </div>
                     <div class="text-xs text-gray-500 flex items-center gap-3 mt-1.5 font-medium">
                         <span class="flex items-center gap-1.5 shrink-0">
-                        <img src="{{ $thread->user->profile_photo_url }}" alt="{{ $thread->user->name }}"
+                        <img src="{{ $thread->author_photo_url }}" alt="{{ $thread->author_name }}"
                             class="w-5 h-5 rounded-full object-cover shadow-sm border border-white dark:border-gray-900"> Creado por
-                            {{ $thread->user->name }}
+                            {{ $thread->author_name }}
                         </span>
                         <span class="shrink-0">•</span>
                         <span class="shrink-0">{{ $thread->created_at->format('d M y, H:i') }}</span>
@@ -730,7 +730,7 @@
             window.executeForumPrint = function(options) {
                 const threadTitle = @json($thread->title);
                 const teamName = @json($team->name);
-                const threadAuthor = @json($thread->user->name);
+                const threadAuthor = @json($thread->author_name);
                 const threadDate = @json($thread->created_at->format('d/m/Y H:i'));
                 const linkedTask = @json($thread->task ? $thread->task->title : null);
 

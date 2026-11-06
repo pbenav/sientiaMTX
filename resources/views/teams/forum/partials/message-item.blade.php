@@ -6,7 +6,7 @@
 <div id="msg-{{ $message->id }}" class="flex gap-4 scroll-mt-24 {{ !$isRoot ? 'scale-95 origin-left opacity-90' : '' }}">
     <!-- Avatar -->
     <div class="flex-shrink-0 mt-1">
-        <img src="{{ $message->user->profile_photo_url }}" alt="{{ $message->user->name }}" 
+        <img src="{{ $message->author_photo_url }}" alt="{{ $message->author_name }}" 
             class="{{ $isRoot ? 'w-10 h-10' : 'w-8 h-8' }} rounded-full object-cover shadow-sm border border-white dark:border-gray-900">
     </div>
 
@@ -14,7 +14,7 @@
     <div class="flex flex-col items-start w-full {{ $isRoot ? 'max-w-[85%]' : 'max-w-[92%]' }}">
         <div class="flex items-center justify-between w-full mb-1 px-1 gap-4">
             <div class="flex items-baseline gap-2 min-w-0">
-                <span class="text-xs font-bold text-gray-700 dark:text-gray-300 truncate">{{ $message->user->name }}</span>
+                <span class="text-xs font-bold text-gray-700 dark:text-gray-300 truncate">{{ $message->author_name }}</span>
                 @if ($isFirst)
                     <span class="text-[9px] font-bold uppercase tracking-widest bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 px-1.5 py-0.5 rounded-md shrink-0">OP</span>
                 @endif
@@ -56,7 +56,7 @@
 
                     <!-- Reply Button -->
                     <button type="button"
-                        onclick="replyTo({{ $message->id }}, {{ json_encode($message->user->name) }})"
+                        onclick="replyTo({{ $message->id }}, {{ json_encode($message->author_name) }})"
                         class="p-1 text-gray-400 hover:text-violet-500 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors"
                         title="{{ __("html.reply") }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
@@ -66,7 +66,7 @@
 
                     <!-- Quote -->
                     <button type="button"
-                        onclick="quoteMessage({{ json_encode($message->user->name) }}, {{ json_encode($message->content) }})"
+                        onclick="quoteMessage({{ json_encode($message->author_name) }}, {{ json_encode($message->content) }})"
                         class="p-1 text-gray-400 hover:text-violet-500 bg-gray-50 dark:bg-gray-800 rounded-lg transition-colors"
                         title="{{ __("html.quote") }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
@@ -99,7 +99,7 @@
                     <button type="button"
                         @click="$dispatch('ai:set-context', { 
                             messageId: {{ $message->id }}, 
-                            userName: {{ json_encode($message->user->name) }},
+                            userName: {{ json_encode($message->author_name) }},
                             teamId: {{ $team->id }},
                             threadId: {{ $thread->id }}
                         })"
