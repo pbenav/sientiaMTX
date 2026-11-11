@@ -90,19 +90,28 @@ class SyncWorkdayWithCth implements ShouldQueue
                     }
 
                     if (!empty($data['today_records'])) {
+                        // En CTH los registros se devuelven por orden cronológico.
+                        // Para soportar jornada partida / turnos múltiples, buscamos primero
+                        // si existe un turno activo abierto (is_open = true) para tomar su hora de inicio específica.
+                        $openRecord = null;
+                        $lastClosedRecord = null;
+
                         foreach ($data['today_records'] as $record) {
-                            // El temporizador en MTX NO se para porque haya fecha de fin en un evento,
-                            // sino porque se aplique el check de cerrado en CTH (is_open = false).
-                            if (($record['is_open'] ?? false)) {
-                                $isWorking = true;
-                                $startTime = $record['start'] ?? null;
-                                $endTime = null;
+                            if (!empty($record['is_open'])) {
+                                $openRecord = $record;
                                 break;
                             } elseif (!empty($record['end'])) {
-                                // Evento con check de cerrado aplicado (is_open = false) y con fecha de fin
-                                $startTime = $record['start'] ?? null;
-                                $endTime = $record['end'];
+                                $lastClosedRecord = $record;
                             }
+                        }
+
+                        if ($openRecord) {
+                            $isWorking = true;
+                            $startTime = $openRecord['start'] ?? null;
+                            $endTime = null;
+                        } elseif ($lastClosedRecord) {
+                            $startTime = $lastClosedRecord['start'] ?? null;
+                            $endTime = $lastClosedRecord['end'] ?? null;
                         }
                     }
 

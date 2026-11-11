@@ -315,14 +315,9 @@ class AppointmentController extends Controller
         $taskObj = $appointment->fresh()->activity;
         
         $user = auth()->user();
-        if (!$user->activeWorkdayLog()) {
-            if ($user->sync_with_cth) {
-                \App\Jobs\SyncWorkdayWithCth::syncNow($user, 'start');
-            }
-            $user->timeLogs()->create(['type' => 'workday', 'start_at' => now()]);
-        }
 
         $activeLog = \App\Models\TimeLog::where('user_id', $user->id)
+            ->where('type', 'task')
             ->whereNull('end_at')
             ->first();
 
@@ -336,6 +331,7 @@ class AppointmentController extends Controller
                 'task_id'  => $taskObj->id,
                 'type'     => 'task',
                 'start_at' => now(),
+                'metadata' => ['team_id' => $team->id],
             ]);
         }
 

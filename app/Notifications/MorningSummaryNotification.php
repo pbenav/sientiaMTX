@@ -14,14 +14,16 @@ class MorningSummaryNotification extends Notification
 
     protected $tasks;
     protected $phrase;
+    protected $appointments;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct($tasks, $phrase)
+    public function __construct($tasks, $phrase, $appointments = null)
     {
         $this->tasks = $tasks;
         $this->phrase = $phrase;
+        $this->appointments = $appointments ?? collect();
     }
 
     /**
@@ -29,14 +31,24 @@ class MorningSummaryNotification extends Notification
      */
     public function toWebPush(object $notifiable, $notification): WebPushMessage
     {
-        $taskMsg = $this->tasks->isEmpty() 
-            ? 'No tienes tareas prioritarias para hoy.' 
-            : 'Tienes ' . $this->tasks->count() . ' tareas prioritarias para hoy.';
+        $parts = [];
+        if ($this->appointments->isNotEmpty()) {
+            $count = $this->appointments->count();
+            $first = $this->appointments->first();
+            $firstTime = substr($first->appointment_time, 0, 5);
+            $parts[] = "📅 {$count} " . ($count === 1 ? 'cita previa hoy' : 'citas previas hoy') . " (1ª a las {$firstTime}).";
+        }
+
+        if ($this->tasks->isEmpty()) {
+            $parts[] = 'No tienes tareas prioritarias para hoy.';
+        } else {
+            $parts[] = 'Tienes ' . $this->tasks->count() . ' tareas prioritarias para hoy.';
+        }
             
         return (new WebPushMessage)
             ->title('🌅 ¡Buenos días, ' . explode(' ', $notifiable->name)[0] . '!')
             ->icon('/images/logo-icon.png')
-            ->body($this->phrase . "\n" . $taskMsg)
+            ->body($this->phrase . "\n" . implode("\n", $parts))
             ->action('Ver Dashboard', 'view_dashboard')
             ->options(['TTL' => 3600]);
     }
@@ -49,6 +61,26 @@ class MorningSummaryNotification extends Notification
         $text = "🌅 *¡Buenos días, " . explode(' ', $notifiable->name)[0] . "!*\n\n";
         $text .= "_" . $this->phrase . "_\n\n";
         
+        if ($this->appointments->isNotEmpty()) {
+            $count = $this->appointments->count();
+            $first = $this->appointments->first();
+            $firstTime = substr($first->appointment_time, 0, 5);
+            $lastTime = substr($this->appointments->last()->appointment_time, 0, 5);
+            
+            $text .= "📅 *Citas previas para hoy:* {$count} " . ($count === 1 ? 'cita' : 'citas');
+            if ($count > 1) {
+                $text .= " (entre {$firstTime} y {$lastTime})\n";
+            } else {
+                $text .= " (a las {$firstTime})\n";
+            }
+            if ($first->visitor) {
+                $visitorName = $first->visitor->full_name ?? $first->visitor->first_name;
+                $serviceName = $first->service->name ?? 'Cita';
+                $text .= "• Primera: {$firstTime} — *" . $visitorName . "* (" . $serviceName . ")\n";
+            }
+            $text .= "\n";
+        }
+
         if ($this->tasks->isEmpty()) {
             $text .= "No tienes tareas prioritarias para hoy. ¡Disfruta de tu día!\n";
         } else {
@@ -80,6 +112,22 @@ class MorningSummaryNotification extends Notification
             ->greeting('¡Buenos días, ' . explode(' ', $notifiable->name)[0] . '!')
             ->line('"' . $this->phrase . '"');
 
+        if ($this->appointments->isNotEmpty()) {
+            $count = $this->appointments->count();
+            $first = $this->appointments->first();
+            $firstTime = substr($first->appointment_time, 0, 5);
+            $lastTime = substr($this->appointments->last()->appointment_time, 0, 5);
+
+            $appointmentLine = "📅 **Citas previas para hoy:** Tienes {$count} " . ($count === 1 ? 'cita programada' : 'citas programadas');
+            if ($count > 1) {
+                $appointmentLine .= " (entre {$firstTime} y {$lastTime}).";
+            } else {
+                $appointmentLine .= " (a las {$firstTime}).";
+            }
+            $mail->line($appointmentLine);
+            $mail->line('---');
+        }
+
         if ($this->tasks->isEmpty()) {
             $mail->line('No tienes tareas prioritarias programadas para hoy. ¡Aprovecha para adelantar trabajo o disfrutar de un merecido descanso!');
         } else {
@@ -110,12 +158,17 @@ class MorningSummaryNotification extends Notification
         $taskMsg = $this->tasks->isEmpty() 
             ? 'No tienes tareas para hoy.' 
             : 'Tienes ' . $this->tasks->count() . ' tareas para hoy.';
+
+        if ($this->appointments->isNotEmpty()) {
+            $taskMsg .= ' (' . $this->appointments->count() . ' citas previas).';
+        }
             
         return [
             'type' => 'morning_summary',
             'title' => 'Resumen Matutino',
             'phrase' => $this->phrase,
             'task_count' => $this->tasks->count(),
+            'appointments_count' => $this->appointments->count(),
             'tasks' => $this->tasks->map(fn($t) => [
                 'title' => $t->title,
                 'team' => $t->team->name ?? 'Personal',
