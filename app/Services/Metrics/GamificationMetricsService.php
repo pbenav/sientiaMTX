@@ -215,25 +215,28 @@ class GamificationMetricsService
      * @param int|null $days Número de días hacia atrás para analizar (por defecto 7).
      * @return array Puntuación de engagement y sus componentes normalizados.
      */
-    public function getEngagementScore(int $userId, ?int $days = 7): array
+    public function getEngagementScore(?int $userId = null, ?int $days = 7): array
     {
-        $totalPoints = DB::table('gamification_logs')
-            ->where('user_id', $userId)
+        $pointsQuery = DB::table('gamification_logs')
             ->where('type', 'points')
-            ->whereBetween('created_at', [Carbon::now()->copy()->subDays($days), Carbon::now()])
-            ->selectRaw('SUM(points) as total')
-            ->value('total') ?? 0;
+            ->whereBetween('created_at', [Carbon::now()->copy()->subDays($days), Carbon::now()]);
 
-        $kudosReceived = DB::table('kudos')
-            ->where('to_user_id', $userId)
-            ->whereBetween('created_at', [Carbon::now()->copy()->subDays($days), Carbon::now()])
-            ->count();
+        $kudosQuery = DB::table('kudos')
+            ->whereBetween('created_at', [Carbon::now()->copy()->subDays($days), Carbon::now()]);
 
-        $activitiesCompleted = DB::table('activities')
-            ->where('created_by_id', $userId)
+        $activitiesQuery = DB::table('activities')
             ->whereJsonContains('status->value', 'completed')
-            ->whereBetween('updated_at', [Carbon::now()->copy()->subDays($days), Carbon::now()])
-            ->count();
+            ->whereBetween('updated_at', [Carbon::now()->copy()->subDays($days), Carbon::now()]);
+
+        if ($userId !== null) {
+            $pointsQuery->where('user_id', $userId);
+            $kudosQuery->where('to_user_id', $userId);
+            $activitiesQuery->where('created_by_id', $userId);
+        }
+
+        $totalPoints = $pointsQuery->selectRaw('SUM(points) as total')->value('total') ?? 0;
+        $kudosReceived = $kudosQuery->count();
+        $activitiesCompleted = $activitiesQuery->count();
 
         $wellnessService = app(WellnessMetricsService::class);
         $wellness = $wellnessService->getWellnessScore($userId, $days);

@@ -117,10 +117,11 @@ class GenerateMetricSnapshots extends Command
                         [
                             'user_id' => $user->id,
                             'snapshot_date' => $today,
-                            'snapshot_type' => 'daily',
+                            'type' => 'daily_user',
                         ],
                         [
-                            'data' => json_encode([
+                            'uuid' => (string) \Illuminate\Support\Str::uuid(),
+                            'metrics' => json_encode([
                                 'wellness' => $wellnessData,
                                 'productivity' => $productivityData,
                                 'time' => $timeData,
@@ -130,6 +131,9 @@ class GenerateMetricSnapshots extends Command
                                 'productivity_score' => $productivityData['productivity_score'] ?? 0,
                                 'generated_at' => now()->toISOString(),
                             ]),
+                            'wellness_score' => $wellnessData['wellness_score'] ?? null,
+                            'productivity_score' => $productivityData['productivity_score'] ?? null,
+                            'burnout_risk_level' => strtolower($wellnessData['burnout_risk'] ?? '') === 'alto' ? 'high' : (strtolower($wellnessData['burnout_risk'] ?? '') === 'medio' ? 'medium' : 'low'),
                         ]
                     );
 
@@ -153,10 +157,11 @@ class GenerateMetricSnapshots extends Command
                         [
                             'team_id' => $team->id,
                             'snapshot_date' => $today,
-                            'snapshot_type' => 'team_daily',
+                            'type' => 'daily_team',
                         ],
                         [
-                            'data' => json_encode($teamData),
+                            'uuid' => (string) \Illuminate\Support\Str::uuid(),
+                            'metrics' => json_encode($teamData),
                         ]
                     );
                 } catch (\Exception $e) {
@@ -179,10 +184,11 @@ class GenerateMetricSnapshots extends Command
                             [
                                 'team_id' => $team->id,
                                 'snapshot_date' => $today,
-                                'snapshot_type' => 'team_weekly',
+                                'type' => 'weekly_team',
                             ],
                             [
-                                'data' => json_encode($weekData),
+                                'uuid' => (string) \Illuminate\Support\Str::uuid(),
+                                'metrics' => json_encode($weekData),
                             ]
                         );
                     } catch (\Exception $e) {
@@ -194,17 +200,18 @@ class GenerateMetricSnapshots extends Command
 
         // Monthly aggregations
         if ($isMonthly) {
-            $this->task('Generando agregaciones mensuales...', function () {
+            $this->task('Generando agregaciones mensuales...', function () use ($today) {
                 $executiveService = app(ExecutiveMetricsService::class);
                 $monthlyData = $executiveService->getOrganizationalMetrics();
 
                 MetricSnapshot::updateOrInsert(
                     [
                         'snapshot_date' => $today,
-                        'snapshot_type' => 'org_monthly',
+                        'type' => 'executive',
                     ],
                     [
-                        'data' => json_encode($monthlyData),
+                        'uuid' => (string) \Illuminate\Support\Str::uuid(),
+                        'metrics' => json_encode($monthlyData),
                     ]
                 );
             });

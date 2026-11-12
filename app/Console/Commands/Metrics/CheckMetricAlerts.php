@@ -190,7 +190,8 @@ class CheckMetricAlerts extends Command
                 $bottlenecks = $teamService->getBottlenecks($team->id, 5);
 
                 foreach ($bottlenecks as $bottleneck) {
-                    if ($bottleneck['days_stuck'] >= 5) {
+                    $bottleneck = (array) $bottleneck;
+                    if (($bottleneck['days_stuck'] ?? 0) >= 5) {
                         $existing = MetricAlert::where('team_id', $team->id)
                             ->where('code', 'prolonged_bottleneck')
                             ->active()

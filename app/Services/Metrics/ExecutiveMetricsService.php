@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\Auth;
 
 class ExecutiveMetricsService
 {
+    public function getOrganizationalMetrics(int $days = 30): array
+    {
+        return $this->orgHealth($days);
+    }
+
     /**
      * Get organizational health summary.
      */
@@ -30,7 +35,7 @@ class ExecutiveMetricsService
         $teams = DB::table('teams')->get();
 
         $teamHealth = [];
-        $teams->each(function ($team) use (&$teamHealth, $days) {
+        $teams->each(function ($team) use (&$teamHealth, $days, $wellness, $productivity, $engagement) {
             $teamModel = \App\Models\Team::find($team->id);
             if ($teamModel) {
                 $teamHealth[] = [

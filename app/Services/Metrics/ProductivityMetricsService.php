@@ -15,6 +15,13 @@ use Illuminate\Support\Facades\DB;
  */
 class ProductivityMetricsService
 {
+    public function getUserProductivity(int $userId, ?string $date = null): array
+    {
+        $data = $this->getProductivityScore($userId, 7);
+        $data['productivity_score'] = $data['score'] ?? 0;
+        return $data;
+    }
+
     /**
      * Obtiene la puntuación general de productividad de un usuario.
      *
@@ -25,8 +32,34 @@ class ProductivityMetricsService
      * @param int|null $days Número de días hacia atrás para analizar (por defecto 7).
      * @return array Puntuación de productividad y sus componentes desglosados.
      */
-    public function getProductivityScore(int $userId, ?int $days = 7): array
+    public function getProductivityScore(?int $userId = null, ?int $days = 7): array
     {
+        if ($userId === null) {
+            $startDate = Carbon::now()->copy()->subDays($days);
+            $stats = DB::table('activities')
+                ->whereNotIn('status->value', ['archived', 'trashed'])
+                ->whereBetween('updated_at', [$startDate, Carbon::now()])
+                ->selectRaw("
+                    COUNT(*) as total,
+                    SUM(CASE WHEN JSON_EXTRACT(status, '$.value') = 'completed' THEN 1 ELSE 0 END) as completed
+                ")
+                ->first();
+
+            $total = (int) ($stats->total ?? 0);
+            $completed = (int) ($stats->completed ?? 0);
+            $rate = $total > 0 ? round(($completed / $total) * 100, 2) : 0.0;
+
+            return [
+                'score' => $rate,
+                'productivity_score' => $rate,
+                'completion_rate' => $rate,
+                'on_time_delivery' => 0.0,
+                'streak_days' => 0,
+                'blocked_activities' => 0,
+                'trend' => 'stable',
+            ];
+        }
+
         $endDate = Carbon::now();
         $startDate = $endDate->copy()->subDays($days);
 

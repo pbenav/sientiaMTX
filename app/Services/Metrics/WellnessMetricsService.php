@@ -22,6 +22,17 @@ class WellnessMetricsService
         };
     }
 
+    public function getUserWellness(int $userId, ?string $date = null): array
+    {
+        $scoreData = $this->getWellnessScore($userId, 7);
+        $burnoutData = $this->getBurnoutRisk($userId, 7);
+
+        return array_merge($scoreData, [
+            'burnout_risk' => $burnoutData['risk_level'] ?? 'BAJO',
+            'burnout_details' => $burnoutData,
+        ]);
+    }
+
     public function getWellnessScore(?int $userId, ?int $days = 7): array
     {
         $endDate = Carbon::now();

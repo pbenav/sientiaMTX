@@ -14,6 +14,23 @@ use Illuminate\Support\Facades\DB;
  */
 class TeamMetricsService
 {
+    public function getTeamMetrics(int $teamId, ?string $date = null): array
+    {
+        return [
+            'velocity' => $this->getTeamVelocity($teamId, 8),
+            'load_distribution' => $this->getLoadDistribution($teamId),
+            'bottlenecks' => $this->getBottlenecks($teamId, 5),
+            'completion_by_member' => $this->getCompletionByMember($teamId, 7),
+            'collaboration' => $this->getCollaborationIndex($teamId, 7),
+            'engagement' => $this->getTeamEngagement($teamId, 7),
+        ];
+    }
+
+    public function getWeeklyTeamMetrics(int $teamId): array
+    {
+        return $this->getTeamMetrics($teamId);
+    }
+
     /**
      * Obtiene la velocidad del equipo a lo largo del tiempo.
      *
@@ -80,7 +97,7 @@ class TeamMetricsService
             $overdue = DB::table('activities')
                 ->where('activities.created_by_id', $member->id)
                 ->where('activities.due_date', '<', Carbon::now())
-                ->whereNotJson('activities.status->value', ['completed', 'cancelled', 'archived'])
+                ->whereNotIn('activities.status->value', ['completed', 'cancelled', 'archived'])
                 ->count();
 
             return [
@@ -93,13 +110,19 @@ class TeamMetricsService
             ];
         });
 
-        $avg = $data->avg('total') ?? 0;
-        $stddev = $data->stdDev('total') ?? 0;
+        $count = $data->count();
+        $avg = $count > 0 ? (float) ($data->avg('total') ?? 0) : 0.0;
+        if ($count > 1) {
+            $variance = $data->reduce(fn($carry, $item) => $carry + pow(data_get($item, 'total', 0) - $avg, 2), 0) / $count;
+            $stddev = sqrt($variance);
+        } else {
+            $stddev = 0.0;
+        }
         $thresholdHigh = $avg + 1.5 * $stddev;
         $thresholdLow = max(0, $avg - 1.5 * $stddev);
 
-        $overloaded = $data->filter(fn($m) => $m->total > $thresholdHigh && $avg > 0)->count();
-        $underloaded = $data->filter(fn($m) => $m->total < $thresholdLow && $avg > 0)->count();
+        $overloaded = $data->filter(fn($m) => data_get($m, 'total', 0) > $thresholdHigh && $avg > 0)->count();
+        $underloaded = $data->filter(fn($m) => data_get($m, 'total', 0) < $thresholdLow && $avg > 0)->count();
 
         return [
             'members' => $data->toArray(),
@@ -142,6 +165,7 @@ class TeamMetricsService
             ->orderByDesc('days_stuck')
             ->orderByRaw("FIELD(priority, 'critical', 'high', 'medium', 'low')")
             ->get()
+            ->map(fn($item) => (array) $item)
             ->toArray();
     }
 
@@ -159,7 +183,7 @@ class TeamMetricsService
         $rows = DB::table('activities')
             ->join('users', 'activities.created_by_id', '=', 'users.id')
             ->where('users.favorite_team_id', $teamId)
-            ->whereNotJson('activities.status->value', ['archived', 'trashed'])
+            ->whereNotIn('activities.status->value', ['archived', 'trashed'])
             ->whereBetween('activities.updated_at', [$startDate, Carbon::now()])
             ->selectRaw('
                 users.id as user_id,
@@ -259,7 +283,7 @@ class TeamMetricsService
         $teamCompletion = DB::table('activities')
             ->join('users', 'activities.created_by_id', '=', 'users.id')
             ->where('users.favorite_team_id', $teamId)
-            ->whereNotJson('activities.status->value', ['archived', 'trashed'])
+            ->whereNotIn('activities.status->value', ['archived', 'trashed'])
             ->whereBetween('activities.updated_at', [Carbon::now()->copy()->subDays($days), Carbon::now()])
             ->selectRaw('
                 COUNT(*) as total,

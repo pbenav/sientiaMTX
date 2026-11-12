@@ -10,6 +10,11 @@ class TimeMetricsService
     /** Duration in minutes between start_at and end_at */
     private const DURATION_EXPR = 'TIMESTAMPDIFF(MINUTE, start_at, end_at)';
 
+    public function getUserTimeMetrics(int $userId, ?string $date = null): array
+    {
+        return $this->getTimeOverview($userId, 7);
+    }
+
     public function getTimeOverview(int $userId, ?int $days = 7): array
     {
         $endDate = Carbon::now();
