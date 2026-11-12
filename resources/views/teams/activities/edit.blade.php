@@ -1760,6 +1760,15 @@
                     editForm.submit();
                 };
 
+                const submitAsOriginal = () => {
+                    const existing = editForm.querySelector('input[name="create_as_parallel"]');
+                    if (existing) {
+                        existing.remove();
+                    }
+                    userConfirmed = true;
+                    editForm.submit();
+                };
+
                 const btnParallel = document.getElementById('btn-create-parallel');
                 if (btnParallel) {
                     btnParallel.addEventListener('click', function(e) {
@@ -1770,7 +1779,10 @@
 
                 const promptModal = (e) => {
                     if (userConfirmed) return;
-                    if (e) e.preventDefault();
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
 
                     const isDark = document.documentElement.classList.contains('dark');
                     const titleText = @json('⚠️ ' . __('Modify someone else\'s activity?'));
@@ -1808,29 +1820,37 @@
                             popup: 'rounded-[2rem]',
                             actions: 'flex flex-wrap gap-2 justify-center',
                             confirmButton: 'rounded-xl font-black uppercase text-xs tracking-wider px-4 py-3',
-                            denyButton: 'rounded-xl font-black uppercase text-xs tracking-wider px-4 py-3 bg-emerald-600 hover:bg-emerald-700',
+                            denyButton: 'rounded-xl font-black uppercase text-xs tracking-wider px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white',
                             cancelButton: 'rounded-xl font-black uppercase text-xs tracking-wider px-4 py-3'
                         }
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            userConfirmed = true;
-                            editForm.submit();
+                            submitAsOriginal();
                         } else if (result.isDenied) {
                             submitAsParallel();
                         }
                     });
                 };
 
-                editForm.addEventListener('submit', promptModal);
+                // Interceptar tanto el evento submit como el click en el botón de guardar
+                editForm.addEventListener('submit', promptModal, true);
+                const saveBtn = editForm.querySelector('button[type="submit"]');
+                if (saveBtn) {
+                    saveBtn.addEventListener('click', function(e) {
+                        if (!userConfirmed) {
+                            if (editForm.checkValidity && !editForm.checkValidity()) {
+                                return;
+                            }
+                            e.preventDefault();
+                            promptModal(e);
+                        }
+                    });
+                }
             }
         }
 
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', setupParallelConfirmation);
-        } else {
+        function initActivityEditPage() {
             setupParallelConfirmation();
-        }
-        document.addEventListener('turbo:load', setupParallelConfirmation);
 
             // --- Eisenhower Matrix Preview ---
             const quadrantData = {
@@ -2073,7 +2093,14 @@
                     }
                 });
             }
-        });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initActivityEditPage);
+        } else {
+            initActivityEditPage();
+        }
+        document.addEventListener('turbo:load', initActivityEditPage);
 
         let selectedDriveFiles = [];
 

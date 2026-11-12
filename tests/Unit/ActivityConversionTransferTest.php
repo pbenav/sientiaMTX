@@ -31,3 +31,4 @@ class ActivityConversionTransferTest extends TestCase
         $this->assertEquals(0, $exitCode);
     }
 }
+
