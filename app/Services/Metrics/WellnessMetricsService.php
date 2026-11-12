@@ -380,4 +380,145 @@ class WellnessMetricsService
             default => 3,
         };
     }
+
+    /**
+     * Obtiene usuarios con riesgo de burnout agrupados por equipo o de toda la organización.
+     *
+     * @param int|null $teamId
+     * @param int $days
+     * @return array
+     */
+    public function getBurnoutRiskByTeam(?int $teamId = null, int $days = 7): array
+    {
+        $teamsQuery = DB::table('teams')->whereNotNull('id');
+        if ($teamId) {
+            $teamsQuery->where('id', $teamId);
+        }
+        $teams = $teamsQuery->get();
+        $burnoutUsers = [];
+
+        foreach ($teams as $team) {
+            $teamWellness = $this->getTeamWellness($team->id, $days);
+            foreach ($teamWellness['members'] as $member) {
+                $riskLevel = 'BAJO';
+                if ($member->wellness_score < 40 && $member->stress_score > 70) {
+                    $riskLevel = 'ALTO';
+                } elseif ($member->wellness_score < 55 && $member->stress_score > 50) {
+                    $riskLevel = 'MEDIO';
+                }
+
+                $burnoutUsers[] = [
+                    'user_id' => $member->id,
+                    'user_name' => $member->name,
+                    'team_id' => $team->id,
+                    'team_name' => $team->name,
+                    'risk_level' => $riskLevel,
+                    'wellness_score' => $member->wellness_score,
+                    'stress_score' => $member->stress_score,
+                ];
+            }
+        }
+
+        return $burnoutUsers;
+    }
+
+    /**
+     * Detecta usuarios con estrés alto prolongado durante N días consecutivos.
+     *
+     * @param int $consecutiveDays
+     * @return array
+     */
+    public function getHighStressUsers(int $consecutiveDays = 5): array
+    {
+        $startDate = Carbon::now()->subDays($consecutiveDays * 2)->startOfDay();
+        $users = DB::table('users')
+            ->join('user_mood_logs', 'users.id', '=', 'user_mood_logs.user_id')
+            ->where('user_mood_logs.created_at', '>=', $startDate)
+            ->select('users.id', 'users.name')
+            ->distinct()
+            ->get();
+
+        $results = [];
+
+        foreach ($users as $user) {
+            $logs = DB::table('user_mood_logs')
+                ->where('user_id', $user->id)
+                ->where('created_at', '>=', $startDate)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            $byDate = $logs->groupBy(fn($log) => Carbon::parse($log->created_at)->toDateString());
+
+            $consecutive = 0;
+            $accumStress = 0;
+
+            for ($i = 0; $i < $consecutiveDays + 3; $i++) {
+                $dateKey = Carbon::now()->subDays($i)->toDateString();
+                if (isset($byDate[$dateKey])) {
+                    $dayLogs = $byDate[$dateKey];
+                    $avgMood = $dayLogs->avg(fn($l) => $this->moodToScore($l->mood_label ?? '')) * 20;
+                    $stress = max(0, 100 - $avgMood);
+                    if ($stress > 75) {
+                        $consecutive++;
+                        $accumStress += $stress;
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+
+            if ($consecutive >= $consecutiveDays) {
+                $results[] = [
+                    'user_id' => $user->id,
+                    'user_name' => $user->name,
+                    'stress_score' => round($accumStress / $consecutive, 1),
+                    'consecutive_days' => $consecutive,
+                ];
+            }
+        }
+
+        return $results;
+    }
+
+    /**
+     * Rastrea usuarios con horas extraordinarias excesivas en un rango temporal.
+     *
+     * @param mixed $startDate
+     * @param mixed $endDate
+     * @return array
+     */
+    public function getTeamOvertimeTracking($startDate, $endDate): array
+    {
+        $users = DB::table('users')->select('id', 'name', 'work_start_time', 'work_end_time')->get();
+        $results = [];
+
+        foreach ($users as $user) {
+            $workStart = $user->work_start_time ?? 8;
+            $workEnd = $user->work_end_time ?? 18;
+
+            $overtimeMinutes = DB::table('time_logs')
+                ->where('user_id', $user->id)
+                ->whereBetween('start_at', [$startDate, $endDate])
+                ->whereNotNull('end_at')
+                ->where(function ($q) use ($workStart, $workEnd) {
+                    $q->whereRaw('HOUR(start_at) < ? OR HOUR(end_at) > ? OR DAYOFWEEK(start_at) IN (1, 7)', [$workStart, $workEnd]);
+                })
+                ->selectRaw('SUM(TIMESTAMPDIFF(MINUTE, start_at, end_at)) as total_minutes')
+                ->value('total_minutes') ?? 0;
+
+            $overtimeHours = round($overtimeMinutes / 60, 2);
+
+            if ($overtimeHours > 0) {
+                $results[] = [
+                    'user_id' => $user->id,
+                    'user_name' => $user->name,
+                    'overtime_hours' => $overtimeHours,
+                ];
+            }
+        }
+
+        return $results;
+    }
 }

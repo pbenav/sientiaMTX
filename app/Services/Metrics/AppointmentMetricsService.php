@@ -259,15 +259,19 @@ class AppointmentMetricsService
      * @param int $days Número de días hacia atrás para analizar (por defecto 30).
      * @return array Total, conteos por estado y tasas de no-show y cancelación por equipo.
      */
-    public function getAppointmentStats(int $teamId, int $days = 30): array
+    public function getAppointmentStats(?int $teamId = null, int $days = 30): array
     {
         $startDate = Carbon::now()->copy()->subDays($days);
 
-        $stats = DB::table('appointments')
-            ->join('users', 'appointments.user_id', '=', 'users.id')
-            ->where('users.favorite_team_id', $teamId)
-            ->whereBetween('appointments.appointment_date', [$startDate, Carbon::now()])
-            ->selectRaw('
+        $query = DB::table('appointments')
+            ->whereBetween('appointments.appointment_date', [$startDate, Carbon::now()]);
+
+        if ($teamId !== null) {
+            $query->join('users', 'appointments.user_id', '=', 'users.id')
+                ->where('users.favorite_team_id', $teamId);
+        }
+
+        $stats = $query->selectRaw('
                 COUNT(*) as total,
                 SUM(CASE WHEN status = "confirmed" THEN 1 ELSE 0 END) as confirmed,
                 SUM(CASE WHEN status = "cancelled" THEN 1 ELSE 0 END) as cancelled,

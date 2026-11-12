@@ -217,7 +217,7 @@ class CheckMetricAlerts extends Command
 
         // 6. Appointment no-show rate alerts
         $this->task('Verificando tasa de no-show de citas...', function () use ($appointmentService, &$alertsGenerated) {
-            $appointmentStats = $appointmentService->getAppointmentStats(7);
+            $appointmentStats = $appointmentService->getAppointmentStats(null, 7);
 
             if ($appointmentStats['no_show_rate'] > 20) {
                 $existing = MetricAlert::where('alert_type', 'high_no_show_rate')
@@ -244,5 +244,13 @@ class CheckMetricAlerts extends Command
         $this->info("Verificación completada. {$alertsGenerated} alertas generadas.");
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * Renderiza una tarea de consola usando el componente de vista de Laravel.
+     */
+    protected function task(string $description, \Closure $task): void
+    {
+        $this->components->task($description, $task);
     }
 }

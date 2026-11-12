@@ -90,46 +90,93 @@ class TaskAttachmentController extends Controller
     {
         $this->authorizeAttachmentAccess($team, $attachment);
 
-        $disk = $attachment->storage_provider ?: 'public';
-        if (!Storage::disk($disk)->exists($attachment->file_path)) {
-            if (Storage::disk('local')->exists($attachment->file_path)) {
-                $disk = 'local';
-            } else {
-                return back()->with('error', 'El archivo no se encuentra en el servidor.');
-            }
+        $disk = $this->resolveAttachmentDisk($attachment);
+
+        if ($disk) {
+            AttachmentLog::create([
+                'attachment_id' => $attachment->id,
+                'user_id' => auth()->id(),
+                'action' => 'download',
+                'ip_address' => request()->ip()
+            ]);
+
+            return Storage::disk($disk)->download($attachment->file_path, $attachment->file_name);
         }
 
-        AttachmentLog::create([
-            'attachment_id' => $attachment->id,
-            'user_id' => auth()->id(),
-            'action' => 'download',
-            'ip_address' => request()->ip()
-        ]);
+        $legacyPath = storage_path('app/' . ltrim($attachment->file_path, '/'));
+        if (file_exists($legacyPath)) {
+            AttachmentLog::create([
+                'attachment_id' => $attachment->id,
+                'user_id' => auth()->id(),
+                'action' => 'download',
+                'ip_address' => request()->ip()
+            ]);
 
-        return Storage::disk($disk)->download($attachment->file_path, $attachment->file_name);
+            return response()->download($legacyPath, $attachment->file_name);
+        }
+
+        return back()->with('error', 'El archivo no se encuentra en el servidor.');
     }
 
     public function viewAttachment(Team $team, TaskAttachment $attachment)
     {
         $this->authorizeAttachmentAccess($team, $attachment);
 
-        $disk = $attachment->storage_provider ?: 'public';
-        if (!Storage::disk($disk)->exists($attachment->file_path)) {
-            if (Storage::disk('local')->exists($attachment->file_path)) {
-                $disk = 'local';
-            } else {
-                return back()->with('error', 'El archivo no se encuentra en el servidor.');
-            }
+        $disk = $this->resolveAttachmentDisk($attachment);
+
+        if ($disk) {
+            AttachmentLog::create([
+                'attachment_id' => $attachment->id,
+                'user_id' => auth()->id(),
+                'action' => 'view',
+                'ip_address' => request()->ip()
+            ]);
+
+            return Storage::disk($disk)->response($attachment->file_path);
         }
 
-        AttachmentLog::create([
-            'attachment_id' => $attachment->id,
-            'user_id' => auth()->id(),
-            'action' => 'view',
-            'ip_address' => request()->ip()
-        ]);
+        $legacyPath = storage_path('app/' . ltrim($attachment->file_path, '/'));
+        if (file_exists($legacyPath)) {
+            AttachmentLog::create([
+                'attachment_id' => $attachment->id,
+                'user_id' => auth()->id(),
+                'action' => 'view',
+                'ip_address' => request()->ip()
+            ]);
 
-        return Storage::disk($disk)->response($attachment->file_path);
+            return response()->file($legacyPath);
+        }
+
+        return back()->with('error', 'El archivo no se encuentra en el servidor.');
+    }
+
+    /**
+     * Resuelve el disco físico de almacenamiento donde reside el adjunto.
+     */
+    protected function resolveAttachmentDisk(TaskAttachment $attachment): ?string
+    {
+        if ($attachment->storage_provider === 'google' || empty($attachment->file_path)) {
+            return null;
+        }
+
+        // En la base de datos, los adjuntos locales usan 'local' o null, pero se almacenan en el disco 'public'
+        $preferredDisk = ($attachment->storage_provider === 'local' || !$attachment->storage_provider)
+            ? 'public'
+            : $attachment->storage_provider;
+
+        if (Storage::disk($preferredDisk)->exists($attachment->file_path)) {
+            return $preferredDisk;
+        }
+
+        if ($preferredDisk !== 'public' && Storage::disk('public')->exists($attachment->file_path)) {
+            return 'public';
+        }
+
+        if ($preferredDisk !== 'local' && Storage::disk('local')->exists($attachment->file_path)) {
+            return 'local';
+        }
+
+        return null;
     }
 
     protected function authorizeAttachmentAccess(Team $team, TaskAttachment $attachment)

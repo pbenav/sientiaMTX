@@ -134,7 +134,8 @@ class ForumController extends Controller
 
                 // Visibility / privacy check
                 $isCoordinator = $team->isCoordinator(auth()->user());
-                if (method_exists($activity, 'isVisibleTo') && !$activity->isVisibleTo(auth()->user(), $isCoordinator)) {
+                $activityQuery = \App\Models\Activity::where('id', $activity->id)->withTrashed()->visibleTo(auth()->user(), $isCoordinator);
+                if (!$activityQuery->exists()) {
                     return redirect()->back()->with('warning', 'Deep Privacy: No puedes crear hilos para actividades privadas a las que no tienes acceso.');
                 }
 
@@ -465,7 +466,8 @@ class ForumController extends Controller
                 }
 
                 $isCoordinator = $team->isCoordinator(auth()->user());
-                if (method_exists($activity, 'isVisibleTo') && !$activity->isVisibleTo(auth()->user(), $isCoordinator)) {
+                $activityQuery = \App\Models\Activity::where('id', $activity->id)->withTrashed()->visibleTo(auth()->user(), $isCoordinator);
+                if (!$activityQuery->exists()) {
                     return redirect()->back()
                         ->with('warning', 'Deep Privacy: No tienes acceso a esa actividad confidencial, no puedes vincular el hilo.');
                 }

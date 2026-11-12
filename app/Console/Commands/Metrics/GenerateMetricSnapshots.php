@@ -214,4 +214,12 @@ class GenerateMetricSnapshots extends Command
 
         return Command::SUCCESS;
     }
+
+    /**
+     * Renderiza una tarea de consola usando el componente de vista de Laravel.
+     */
+    protected function task(string $description, \Closure $task): void
+    {
+        $this->components->task($description, $task);
+    }
 }

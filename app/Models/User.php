@@ -184,6 +184,14 @@ class User extends Authenticatable implements HasLocalePreference, PasskeyUser
     }
 
     /**
+     * Scope para filtrar usuarios activos/aprobados.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_approved', true);
+    }
+
+    /**
      * Equipos a los que pertenece el usuario.
      *
      * @property-read \Illuminate\Database\Eloquent\Collection<int, Team> $teams

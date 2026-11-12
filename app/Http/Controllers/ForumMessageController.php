@@ -35,7 +35,8 @@ class ForumMessageController extends Controller
             $activity = $thread->activity()->withTrashed()->first();
             if ($activity) {
                 $isCoordinator = $team->isCoordinator(auth()->user());
-                if (method_exists($activity, 'isVisibleTo') && !$activity->isVisibleTo(auth()->user(), $isCoordinator)) {
+                $activityQuery = \App\Models\Activity::where('id', $activity->id)->withTrashed()->visibleTo(auth()->user(), $isCoordinator);
+                if (!$activityQuery->exists()) {
                     abort(403);
                 }
             }
@@ -232,7 +233,8 @@ class ForumMessageController extends Controller
             $activity = $thread->activity()->withTrashed()->first();
             if ($activity) {
                 $isCoordinator = $team->isCoordinator(auth()->user());
-                if (method_exists($activity, 'isVisibleTo') && !$activity->isVisibleTo(auth()->user(), $isCoordinator)) {
+                $activityQuery = \App\Models\Activity::where('id', $activity->id)->withTrashed()->visibleTo(auth()->user(), $isCoordinator);
+                if (!$activityQuery->exists()) {
                     abort(403);
                 }
             }
