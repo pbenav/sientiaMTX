@@ -74,20 +74,20 @@ class CheckMetricAlerts extends Command
             foreach ($burnoutUsers as $risk) {
                 if ($risk['risk_level'] === 'ALTO') {
                     $existing = MetricAlert::where('user_id', $risk['user_id'])
-                        ->where('alert_type', 'burnout_risk_high')
-                        ->where('is_resolved', false)
+                        ->where('code', 'burnout_risk_high')
+                        ->active()
                         ->first();
 
                     if (!$existing) {
                         MetricAlert::create([
                             'user_id' => $risk['user_id'],
-                            'alert_type' => 'burnout_risk_high',
+                            'category' => 'wellness',
+                            'code' => 'burnout_risk_high',
                             'severity' => 'critical',
                             'title' => 'Riesgo de Burnout Alto Detectado',
                             'message' => "El usuario {$risk['user_name']} presenta un riesgo de burnout alto (Wellness: {$risk['wellness_score']}, Estrés: {$risk['stress_score']}). Se recomienda intervención inmediata.",
-                            'data' => json_encode($risk),
+                            'data' => $risk,
                             'is_read' => false,
-                            'is_resolved' => false,
                         ]);
                         $alertsGenerated++;
                     }
@@ -102,20 +102,20 @@ class CheckMetricAlerts extends Command
             foreach ($highStressUsers as $user) {
                 if ($user['stress_score'] > 75 && $user['consecutive_days'] >= 5) {
                     $existing = MetricAlert::where('user_id', $user['user_id'])
-                        ->where('alert_type', 'prolonged_high_stress')
-                        ->where('is_resolved', false)
+                        ->where('code', 'prolonged_high_stress')
+                        ->active()
                         ->first();
 
                     if (!$existing) {
                         MetricAlert::create([
                             'user_id' => $user['user_id'],
-                            'alert_type' => 'prolonged_high_stress',
+                            'category' => 'wellness',
+                            'code' => 'prolonged_high_stress',
                             'severity' => 'high',
                             'title' => 'Estrés Elevado Prolongado',
                             'message' => "El usuario {$user['user_name']} ha mantenido estrés alto (>75) por {$user['consecutive_days']} días consecutivos.",
-                            'data' => json_encode($user),
+                            'data' => $user,
                             'is_read' => false,
-                            'is_resolved' => false,
                         ]);
                         $alertsGenerated++;
                     }
@@ -130,21 +130,21 @@ class CheckMetricAlerts extends Command
             foreach ($overtimeUsers as $user) {
                 if ($user['overtime_hours'] > 10) {
                     $existing = MetricAlert::where('user_id', $user['user_id'])
-                        ->where('alert_type', 'excessive_overtime')
-                        ->where('is_resolved', false)
-                        ->where('snapshot_date', now()->toDateString())
+                        ->where('code', 'excessive_overtime')
+                        ->active()
+                        ->whereDate('created_at', now()->toDateString())
                         ->first();
 
                     if (!$existing) {
                         MetricAlert::create([
                             'user_id' => $user['user_id'],
-                            'alert_type' => 'excessive_overtime',
+                            'category' => 'wellness',
+                            'code' => 'excessive_overtime',
                             'severity' => 'high',
                             'title' => 'Horas Extra Excesivas',
                             'message' => "El usuario {$user['user_name']} ha trabajado {$user['overtime_hours']} horas extra esta semana (límite: 10h).",
-                            'data' => json_encode($user),
+                            'data' => $user,
                             'is_read' => false,
-                            'is_resolved' => false,
                         ]);
                         $alertsGenerated++;
                     }
@@ -160,21 +160,21 @@ class CheckMetricAlerts extends Command
                 $imbalance = $teamService->getLoadDistribution($team->id);
                 if ($imbalance['coefficient_of_variation'] > 50) {
                     $existing = MetricAlert::where('team_id', $team->id)
-                        ->where('alert_type', 'load_imbalance')
-                        ->where('is_resolved', false)
-                        ->where('snapshot_date', now()->toDateString())
+                        ->where('code', 'load_imbalance')
+                        ->active()
+                        ->whereDate('created_at', now()->toDateString())
                         ->first();
 
                     if (!$existing) {
                         MetricAlert::create([
                             'team_id' => $team->id,
-                            'alert_type' => 'load_imbalance',
+                            'category' => 'team',
+                            'code' => 'load_imbalance',
                             'severity' => 'medium',
                             'title' => 'Desbalance de Carga en Equipo',
                             'message' => "El equipo {$team->name} presenta un coeficiente de variación de {$imbalance['coefficient_of_variation']}%. Se recomienda redistribuir tareas.",
-                            'data' => json_encode($imbalance),
+                            'data' => $imbalance,
                             'is_read' => false,
-                            'is_resolved' => false,
                         ]);
                         $alertsGenerated++;
                     }
@@ -192,21 +192,21 @@ class CheckMetricAlerts extends Command
                 foreach ($bottlenecks as $bottleneck) {
                     if ($bottleneck['days_stuck'] >= 5) {
                         $existing = MetricAlert::where('team_id', $team->id)
-                            ->where('alert_type', 'prolonged_bottleneck')
-                            ->where('is_resolved', false)
-                            ->where('snapshot_date', now()->toDateString())
+                            ->where('code', 'prolonged_bottleneck')
+                            ->active()
+                            ->whereDate('created_at', now()->toDateString())
                             ->first();
 
                         if (!$existing) {
                             MetricAlert::create([
                                 'team_id' => $team->id,
-                                'alert_type' => 'prolonged_bottleneck',
+                                'category' => 'team',
+                                'code' => 'prolonged_bottleneck',
                                 'severity' => 'medium',
                                 'title' => 'Cuello de Botella Prolongado',
                                 'message' => "Actividad '{$bottleneck['title']}' lleva {$bottleneck['days_stuck']} días estancada en estado '{$bottleneck['status']}'. Asignado a: {$bottleneck['assignee']}.",
-                                'data' => json_encode($bottleneck),
+                                'data' => $bottleneck,
                                 'is_read' => false,
-                                'is_resolved' => false,
                             ]);
                             $alertsGenerated++;
                         }
@@ -220,20 +220,20 @@ class CheckMetricAlerts extends Command
             $appointmentStats = $appointmentService->getAppointmentStats(null, 7);
 
             if ($appointmentStats['no_show_rate'] > 20) {
-                $existing = MetricAlert::where('alert_type', 'high_no_show_rate')
-                    ->where('is_resolved', false)
-                    ->where('snapshot_date', now()->toDateString())
+                $existing = MetricAlert::where('code', 'high_no_show_rate')
+                    ->active()
+                    ->whereDate('created_at', now()->toDateString())
                     ->first();
 
                 if (!$existing) {
                     MetricAlert::create([
-                        'alert_type' => 'high_no_show_rate',
+                        'category' => 'appointments',
+                        'code' => 'high_no_show_rate',
                         'severity' => 'high',
                         'title' => 'Tasa de No-Show Elevada',
                         'message' => "La tasa de no-show de citas alcanzó {$appointmentStats['no_show_rate']}% en los últimos 7 días (umbral: 20%).",
-                        'data' => json_encode($appointmentStats),
+                        'data' => $appointmentStats,
                         'is_read' => false,
-                        'is_resolved' => false,
                     ]);
                     $alertsGenerated++;
                 }

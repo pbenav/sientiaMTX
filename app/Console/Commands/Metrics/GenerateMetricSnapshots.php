@@ -84,14 +84,16 @@ class GenerateMetricSnapshots extends Command
         }
 
         $today = now()->toDateString();
-        $userQuery = User::with('team')->active();
+        $userQuery = User::with('teams')->active();
 
         if ($userId = $this->option('user')) {
             $userQuery->where('id', $userId);
         }
 
         if ($teamId = $this->option('team')) {
-            $userQuery->where('team_id', $teamId);
+            $userQuery->whereHas('teams', function ($q) use ($teamId) {
+                $q->where('teams.id', $teamId);
+            });
         }
 
         $users = $userQuery->get();
