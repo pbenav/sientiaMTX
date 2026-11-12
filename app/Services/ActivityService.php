@@ -14,6 +14,7 @@ use App\Models\TeamFolder;
 use App\Models\User;
 use App\Models\Group;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -791,17 +792,15 @@ class ActivityService
 
         if (!empty($filters['appointments'])) {
             if ($filters['appointments'] === 'hide' || $filters['appointments'] === 'exclude') {
-                $query->whereDoesntHave('appointment')->notEphemeral();
+                $query->whereNotAppointmentActivity();
             } elseif ($filters['appointments'] === 'only') {
-                $query->where(function ($q) {
-                    $q->whereHas('appointment')
-                      ->orWhere(function ($sub) {
-                          $sub->where('metadata->is_ephemeral', true)
-                              ->where('type', 'meeting');
-                      })
-                      ->orWhere('title', 'like', '[CITA]%');
-                });
+                $query->whereAppointmentActivity();
             }
+            // Si es 'all', no se filtra citas (se devuelven actividades y citas combinadas)
+        } else {
+            // Por defecto (modo Citas: Agrupadas): el paginador principal lista solo actividades regulares
+            // Las citas se contabilizan y muestran agrupadas aparte en la página 1.
+            $query->whereNotAppointmentActivity();
         }
 
         // Ordenación
@@ -825,6 +824,30 @@ class ActivityService
     public function paginate(Team $team, array $filters = [], int $perPage = 20, string $sort = 'due_date', string $dir = 'asc'): LengthAwarePaginator
     {
         return $this->search($team, $filters, $sort, $dir)->paginate($perPage);
+    }
+
+    /**
+     * Cuenta el total de citas previas que aplican a los filtros dados.
+     */
+    public function countAppointments(Team $team, array $filters = []): int
+    {
+        $aptFilters = $filters;
+        $aptFilters['appointments'] = 'only';
+        unset($aptFilters['type'], $aptFilters['page'], $aptFilters['per_page']);
+
+        return $this->search($team, $aptFilters)->count();
+    }
+
+    /**
+     * Obtiene una colección limitada de citas previas agrupadas para mostrar en el desglose.
+     */
+    public function getGroupedAppointments(Team $team, array $filters = [], int $limit = 15, string $sort = 'due_date', string $dir = 'asc'): Collection
+    {
+        $aptFilters = $filters;
+        $aptFilters['appointments'] = 'only';
+        unset($aptFilters['type'], $aptFilters['page'], $aptFilters['per_page']);
+
+        return $this->search($team, $aptFilters, $sort, $dir)->limit($limit)->get();
     }
 
     // ─── Helpers internos ─────────────────────────────────────────────────────

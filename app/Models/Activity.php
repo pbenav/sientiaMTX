@@ -678,7 +678,11 @@ class Activity extends Model
      */
     public function isAppointmentActivity(): bool
     {
-        if ($this->relationLoaded('appointment') && $this->appointment !== null) {
+        if ($this->relationLoaded('appointment')) {
+            if ($this->appointment !== null) {
+                return true;
+            }
+        } elseif ($this->appointment()->exists()) {
             return true;
         }
 

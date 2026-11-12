@@ -144,6 +144,7 @@
                     <select name="appointments" onchange="this.form.submit()"
                         class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold uppercase tracking-wider py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
                         <option value="" {{ empty($filters['appointments']) ? 'selected' : '' }}>{{ __('Citas: Agrupadas') }}</option>
+                        <option value="all" {{ ($filters['appointments'] ?? '') === 'all' ? 'selected' : '' }}>{{ __('Citas: Sin agrupar') }}</option>
                         <option value="hide" {{ ($filters['appointments'] ?? '') === 'hide' ? 'selected' : '' }}>{{ __('Ocultar citas') }}</option>
                         <option value="only" {{ ($filters['appointments'] ?? '') === 'only' ? 'selected' : '' }}>{{ __('Solo citas') }}</option>
                     </select>
@@ -377,13 +378,14 @@
                         </tr>
                     </thead>
                     @php
-                        $appointmentActivities = $activities->getCollection()->filter(fn($a) => $a->isAppointmentActivity());
-                        $regularActivities = $activities->getCollection()->reject(fn($a) => $a->isAppointmentActivity());
-                        $hasAppointments = $appointmentActivities->isNotEmpty();
-                        $sortedActivities = $hasAppointments ? $appointmentActivities->concat($regularActivities) : $activities;
+                        $showGrouped = !empty($shouldShowGroupedAppointments) && ($groupedAppointmentsCount ?? 0) > 0;
+                        $displayActivities = $showGrouped
+                            ? ($groupedAppointments ?? collect())->concat($activities->getCollection())
+                            : $activities->getCollection();
+                        $groupedItemsCount = $showGrouped && isset($groupedAppointments) ? $groupedAppointments->count() : 0;
                     @endphp
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-800" x-data="{ showAppointments: false }">
-                        @if ($hasAppointments)
+                        @if ($showGrouped)
                             {{-- Fila maestra agrupada para Citas Previas --}}
                             <tr class="bg-indigo-50/70 dark:bg-indigo-950/30 hover:bg-indigo-100/60 dark:hover:bg-indigo-900/40 transition-colors border-y border-indigo-100 dark:border-indigo-900/50">
                                 <td class="px-4 py-3.5 text-center" onclick="event.stopPropagation()">
@@ -399,7 +401,7 @@
                                             {{ __('Citas Previas') }}
                                         </span>
                                         <span class="px-2.5 py-0.5 text-xs font-black rounded-full bg-indigo-100 dark:bg-indigo-900/70 text-indigo-700 dark:text-indigo-300">
-                                            {{ $appointmentActivities->count() }} {{ $appointmentActivities->count() === 1 ? __('cita') : __('citas') }}
+                                            {{ $groupedAppointmentsCount }} {{ $groupedAppointmentsCount === 1 ? __('cita') : __('citas') }}
                                         </span>
                                     </div>
                                 </td>
@@ -414,9 +416,12 @@
                                 </td>
                             </tr>
                         @endif
-                        @foreach ($sortedActivities as $activity)
-                            <tr @if($activity->isAppointmentActivity()) x-show="showAppointments" x-cloak @endif
-                                class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors group cursor-pointer {{ $activity->isAppointmentActivity() ? 'bg-indigo-50/20 dark:bg-indigo-950/10 border-l-4 border-l-indigo-400' : '' }}"
+                        @foreach ($displayActivities as $activity)
+                            @php
+                                $isGroupedAppointment = $showGrouped && $loop->iteration <= $groupedItemsCount;
+                            @endphp
+                            <tr @if($isGroupedAppointment) x-show="showAppointments" x-cloak @endif
+                                class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors group cursor-pointer {{ $isGroupedAppointment ? 'bg-indigo-50/20 dark:bg-indigo-950/10 border-l-4 border-l-indigo-400' : '' }}"
                                 data-href="{{ route('teams.activities.show', [$team, $activity]) }}"
                                 onclick="if(!event.target.closest('button, a, input, select')) window.location=this.dataset.href">
                                 <td class="px-4 py-4 w-10 text-center" onclick="event.stopPropagation()">
@@ -896,10 +901,20 @@
                                     </td>
                                 </tr>
                             @endforeach
+                            @if ($isGroupedAppointment && $loop->iteration === $groupedItemsCount && $groupedAppointmentsCount > $groupedItemsCount)
+                                <tr x-show="showAppointments" x-cloak class="bg-indigo-50/40 dark:bg-indigo-950/20 border-b border-indigo-100 dark:border-indigo-900/50">
+                                    <td colspan="11" class="px-6 py-2.5 text-center">
+                                        <a href="{{ request()->fullUrlWithQuery(['appointments' => 'only', 'type' => '']) }}"
+                                            class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 inline-flex items-center gap-1.5 transition-colors">
+                                            {{ __('Mostrando las primeras :shown de :total citas. Ver todas las citas en pantalla completa →', ['shown' => $groupedItemsCount, 'total' => $groupedAppointmentsCount]) }}
+                                        </a>
+                                    </td>
+                                </tr>
+                            @endif
                         @endforeach
                         @if ($activities->isEmpty())
                             <tr>
-                                <td colspan="10" class="px-6 py-12 text-center">
+                                <td colspan="11" class="px-6 py-12 text-center">
                                     <div class="flex flex-col items-center gap-2">
                                         <div
                                             class="w-12 h-12 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 border border-gray-100 dark:border-gray-700">
@@ -934,7 +949,16 @@
             <script>
                 function toggleAll(source) {
                     const checkboxes = document.querySelectorAll('.activity-checkbox');
-                    checkboxes.forEach(cb => cb.checked = source.checked);
+                    checkboxes.forEach(cb => {
+                        const tr = cb.closest('tr');
+                        if (source.checked) {
+                            if (!tr || tr.offsetParent !== null) {
+                                cb.checked = true;
+                            }
+                        } else {
+                            cb.checked = false;
+                        }
+                    });
                     updateSelectedCount();
                 }
 

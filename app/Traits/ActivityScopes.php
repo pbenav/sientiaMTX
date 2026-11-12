@@ -413,6 +413,47 @@ trait ActivityScopes
         });
     }
 
+    /**
+     * Filtra solo actividades que corresponden a citas previas.
+     */
+    public function scopeWhereAppointmentActivity(Builder $query): Builder
+    {
+        return $query->where(function (Builder $q) {
+            $q->whereHas('appointment')
+              ->orWhere(function (Builder $sub) {
+                  $sub->where(function (Builder $e) {
+                      $e->where('metadata->is_ephemeral', true)
+                        ->orWhere('metadata->is_ephemeral', 'true')
+                        ->orWhere('metadata->is_ephemeral', 1)
+                        ->orWhere('metadata->is_ephemeral', '1');
+                  })->where('type', 'meeting');
+              })
+              ->orWhere('title', 'like', '[CITA]%');
+        });
+    }
+
+    /**
+     * Filtra solo actividades regulares (excluyendo citas previas).
+     */
+    public function scopeWhereNotAppointmentActivity(Builder $query): Builder
+    {
+        return $query->where(function (Builder $q) {
+            $q->whereDoesntHave('appointment')
+              ->where(function (Builder $e) {
+                  $e->whereNull('metadata->is_ephemeral')
+                    ->orWhere('metadata->is_ephemeral', false)
+                    ->orWhere('metadata->is_ephemeral', 'false')
+                    ->orWhere('metadata->is_ephemeral', 0)
+                    ->orWhere('metadata->is_ephemeral', '0')
+                    ->orWhere('type', '!=', 'meeting');
+              })
+              ->where(function (Builder $t) {
+                  $t->where('title', 'not like', '[CITA]%')
+                    ->orWhereNull('title');
+              });
+        });
+    }
+
     // ─── Scopes de contexto operativo ─────────────────────────────────────────
 
     /**

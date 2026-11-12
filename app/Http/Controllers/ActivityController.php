@@ -75,12 +75,30 @@ class ActivityController extends Controller
 
         $activities = $this->activityService->paginate($team, $filters, $perPage, $sort, $dir);
 
+        // Agrupación de citas previas en la cabecera cuando corresponda (página 1, filtro de citas por defecto y sin filtro de tipo excluyente)
+        $shouldShowGroupedAppointments = empty($filters['appointments'])
+            && (empty($filters['type']) || $filters['type'] === 'meeting')
+            && $activities->currentPage() === 1;
+
+        $groupedAppointmentsCount = 0;
+        $groupedAppointments = collect();
+
+        if ($shouldShowGroupedAppointments) {
+            $groupedAppointmentsCount = $this->activityService->countAppointments($team, $filters);
+            if ($groupedAppointmentsCount > 0) {
+                $groupedAppointments = $this->activityService->getGroupedAppointments($team, $filters, 15, $sort, $dir);
+            }
+        }
+
         $members = $team->members()->orderBy('name')->get();
         $skills = \App\Models\Skill::forTeam($team->id)->orderBy('name')->get();
         $expedientes = $team->expedientes()->orderBy('title')->get();
 
         $allStatusesWithTypes = \App\Services\ActivityStatusManager::getAllStatusesWithTypes();
-        return view('teams.activities.index', compact('team', 'activities', 'filters', 'sort', 'dir', 'members', 'skills', 'expedientes', 'allStatusesWithTypes'));
+        return view('teams.activities.index', compact(
+            'team', 'activities', 'filters', 'sort', 'dir', 'members', 'skills', 'expedientes',
+            'allStatusesWithTypes', 'groupedAppointmentsCount', 'groupedAppointments', 'shouldShowGroupedAppointments'
+        ));
     }
 
     /**
