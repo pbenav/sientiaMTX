@@ -1748,6 +1748,10 @@
                 let userConfirmed = false;
 
                 const submitAsParallel = () => {
+                    if (editForm.checkValidity && !editForm.checkValidity()) {
+                        editForm.reportValidity();
+                        return;
+                    }
                     let parallelInput = editForm.querySelector('input[name="create_as_parallel"]');
                     if (!parallelInput) {
                         parallelInput = document.createElement('input');
@@ -1761,6 +1765,10 @@
                 };
 
                 const submitAsOriginal = () => {
+                    if (editForm.checkValidity && !editForm.checkValidity()) {
+                        editForm.reportValidity();
+                        return;
+                    }
                     const existing = editForm.querySelector('input[name="create_as_parallel"]');
                     if (existing) {
                         existing.remove();
@@ -1768,6 +1776,9 @@
                     userConfirmed = true;
                     editForm.submit();
                 };
+
+                window.activitySubmitAsParallel = submitAsParallel;
+                window.activitySubmitAsOriginal = submitAsOriginal;
 
                 const btnParallel = document.getElementById('btn-create-parallel');
                 if (btnParallel) {
@@ -1777,8 +1788,19 @@
                     });
                 }
 
+                const floatingBtnParallel = document.getElementById('floating-btn-create-parallel');
+                if (floatingBtnParallel) {
+                    floatingBtnParallel.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        submitAsParallel();
+                    });
+                }
+
                 const promptModal = (e) => {
                     if (userConfirmed) return;
+                    if (editForm.checkValidity && !editForm.checkValidity()) {
+                        return;
+                    }
                     if (e) {
                         e.preventDefault();
                         e.stopPropagation();
@@ -1831,6 +1853,8 @@
                         }
                     });
                 };
+
+                window.activityPromptModal = promptModal;
 
                 // Interceptar tanto el evento submit como el click en el botón de guardar
                 editForm.addEventListener('submit', promptModal, true);
@@ -2333,7 +2357,7 @@
             {{ $activity->title }}
         </span>
 
-        <div style="width:1px;height:1.25rem;background:#e5e7eb;flex-shrink:0"></div>
+        <div style="width:1px;height:1.25rem;background:#e5e7eb;flex-shrink:0" class="dark:bg-gray-800"></div>
 
         <button type="button" onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
            style="display:flex;align-items:center;gap:0.375rem;font-size:0.75rem;font-weight:700;color:#6b7280;padding:0.375rem 0.75rem;border-radius:0.625rem;text-decoration:none;transition:all 0.15s ease;border:none;background:transparent;cursor:pointer;"
@@ -2345,11 +2369,29 @@
             <span class="hidden sm:inline">Subir</span>
         </button>
 
-        <div style="width:1px;height:1.25rem;background:#e5e7eb;flex-shrink:0"></div>
+        @if ($isAnotherUserCreator || $isExternalEvent)
+            <div style="width:1px;height:1.25rem;background:#e5e7eb;flex-shrink:0" class="dark:bg-gray-800"></div>
+
+            <button type="button"
+                    id="floating-btn-create-parallel"
+                    onclick="const p = document.getElementById('btn-create-parallel'); if (p) { p.click(); } else if (window.activitySubmitAsParallel) { window.activitySubmitAsParallel(); }"
+                    style="display:flex;align-items:center;gap:0.375rem;font-size:0.75rem;font-weight:700;color:#fff;background:#059669;padding:0.375rem 0.75rem;border-radius:0.625rem;text-decoration:none;transition:background 0.15s ease;border:none;cursor:pointer;"
+                    onmouseover="this.style.background='#047857'"
+                    onmouseout="this.style.background='#059669'"
+                    title="{{ __('Create parallel activity') }}">
+                <svg style="width:1rem;height:1rem;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                </svg>
+                <span class="hidden sm:inline">{{ __('Crear Paralela') }}</span>
+                <span class="sm:hidden">{{ __('Paralela') }}</span>
+            </button>
+        @endif
+
+        <div style="width:1px;height:1.25rem;background:#e5e7eb;flex-shrink:0" class="dark:bg-gray-800"></div>
 
         <button type="button"
-                onclick="document.getElementById('edit-activity-form').submit()"
-                onclick="const f = document.getElementById('edit-activity-form'); if (f) { typeof f.requestSubmit === 'function' ? f.requestSubmit() : f.submit(); }"
+                id="floating-btn-save"
+                onclick="const btn = document.querySelector('#edit-activity-form button[type=\'submit\']'); if (btn) { btn.click(); } else if (window.activityPromptModal) { window.activityPromptModal(); } else { const f = document.getElementById('edit-activity-form'); if (f) { typeof f.requestSubmit === 'function' ? f.requestSubmit() : f.submit(); } }"
            style="display:flex;align-items:center;gap:0.375rem;font-size:0.75rem;font-weight:700;color:#fff;background:#7c3aed;padding:0.375rem 0.75rem;border-radius:0.625rem;text-decoration:none;transition:background 0.15s ease;border:none;cursor:pointer;"
            onmouseover="this.style.background='#6d28d9'"
            onmouseout="this.style.background='#7c3aed'">
