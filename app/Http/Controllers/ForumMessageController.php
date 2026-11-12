@@ -31,24 +31,8 @@ class ForumMessageController extends Controller
         }
 
         // Privacy check
-        if ($thread->activity_id) {
-            $activity = $thread->activity()->withTrashed()->first();
-            if ($activity) {
-                $isCoordinator = $team->isCoordinator(auth()->user());
-                $activityQuery = \App\Models\Activity::where('id', $activity->id)->withTrashed()->visibleTo(auth()->user(), $isCoordinator);
-                if (!$activityQuery->exists()) {
-                    abort(403);
-                }
-            }
-        } elseif ($thread->task_id) {
-            $task = $thread->task()->withTrashed()->first();
-            if ($task) {
-                $isCoordinator = $team->isCoordinator(auth()->user());
-                $taskQuery = \App\Models\Task::where('id', $task->id)->withTrashed()->visibleTo(auth()->user(), $isCoordinator);
-                if (!$taskQuery->exists()) {
-                    abort(403);
-                }
-            }
+        if (!$thread->canUserAccess(auth()->user(), $team)) {
+            abort(403);
         }
 
         $validated = $request->validate([
@@ -229,24 +213,8 @@ class ForumMessageController extends Controller
         }
 
         // Privacy check
-        if ($thread->activity_id) {
-            $activity = $thread->activity()->withTrashed()->first();
-            if ($activity) {
-                $isCoordinator = $team->isCoordinator(auth()->user());
-                $activityQuery = \App\Models\Activity::where('id', $activity->id)->withTrashed()->visibleTo(auth()->user(), $isCoordinator);
-                if (!$activityQuery->exists()) {
-                    abort(403);
-                }
-            }
-        } elseif ($thread->task_id) {
-            $task = $thread->task()->withTrashed()->first();
-            if ($task) {
-                $isCoordinator = $team->isCoordinator(auth()->user());
-                $taskQuery = \App\Models\Task::where('id', $task->id)->withTrashed()->visibleTo(auth()->user(), $isCoordinator);
-                if (!$taskQuery->exists()) {
-                    abort(403);
-                }
-            }
+        if (!$thread->canUserAccess(auth()->user(), $team)) {
+            abort(403);
         }
 
         if (auth()->id() !== $message->user_id && auth()->user()->getRole($team) !== 'coordinator') {

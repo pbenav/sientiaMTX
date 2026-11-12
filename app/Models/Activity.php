@@ -373,6 +373,26 @@ class Activity extends Model
     }
 
     /**
+     * Actividad original de la cual se derivó esta actividad mediante conversión.
+     *
+     * @return BelongsTo<self, $this>
+     */
+    public function convertedFromActivity(): BelongsTo
+    {
+        return $this->belongsTo(Activity::class, 'converted_from_id');
+    }
+
+    /**
+     * Actividad destino en caso de haber sido convertida.
+     *
+     * @return HasOne<self, $this>
+     */
+    public function convertedToActivity(): HasOne
+    {
+        return $this->hasOne(Activity::class, 'converted_from_id');
+    }
+
+    /**
      * Relación de pertenencia a la actividad padre (template/ocurrencia).
      *
      * @return BelongsTo<self, $this>

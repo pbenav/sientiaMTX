@@ -149,4 +149,207 @@ class ForumThread extends Model
         return $this->user?->profile_photo_url
             ?? 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($this->author_name) . '&color=7F9CF5&background=EBF4FF';
     }
+
+    /**
+     * Comprueba si un usuario tiene acceso para ver y participar en el hilo de discusión.
+     * Respeta Deep Privacy, pero garantiza que cualquier usuario asignado a la actividad o tarea,
+     * a cualquiera de sus subtareas/hijos, al padre, a actividades convertidas,
+     * o como secretario de cita vinculada, tenga acceso completo.
+     *
+     * @param \App\Models\User $user
+     * @param \App\Models\Team|null $team
+     * @return bool
+     */
+    public function canUserAccess(User $user, ?Team $team = null): bool
+    {
+        $team = $team ?? $this->team;
+        if (!$team || $this->team_id !== $team->id) {
+            return false;
+        }
+
+        // 1. Debe ser miembro del equipo o creador del equipo
+        $isMember = $team->relationLoaded('members')
+            ? $team->members->contains('id', $user->id)
+            : $team->members()->where('users.id', $user->id)->exists();
+        if (!$isMember && $team->created_by_id !== $user->id) {
+            return false;
+        }
+
+        $isCoordinator = $team->isCoordinator($user);
+
+        // 2. Si no está vinculado a actividad ni tarea (Biblioteca de Conocimiento / General del equipo)
+        if (is_null($this->activity_id) && is_null($this->task_id)) {
+            return true;
+        }
+
+        // 3. El autor original del hilo siempre tiene acceso
+        if ($this->user_id === $user->id) {
+            return true;
+        }
+
+        // 4. Si está vinculado a una Actividad
+        if ($this->activity_id) {
+            $activity = $this->activity()->withTrashed()->first();
+            if (!$activity) {
+                return true;
+            }
+
+            // Coordinadores ven todo excepto actividades estrictamente privadas creadas por otros
+            if ($isCoordinator) {
+                if ($activity->visibility !== 'private' || $activity->created_by_id === $user->id) {
+                    return true;
+                }
+            }
+
+            // Creador de la actividad
+            if ($activity->created_by_id === $user->id) {
+                return true;
+            }
+
+            // Si la política de la actividad le permite verla
+            if ($user->can('view', $activity)) {
+                return true;
+            }
+
+            // Scope visibleTo
+            if (\App\Models\Activity::where('id', $activity->id)->withTrashed()->visibleTo($user, $isCoordinator)->exists()) {
+                return true;
+            }
+
+            // Asignación directa o por grupo en la actividad
+            if ($activity->assignments()->where('user_id', $user->id)->exists()) {
+                return true;
+            }
+            if ($activity->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $user->id))->exists()) {
+                return true;
+            }
+
+            // Asignación en cualquier subtarea / actividad hija
+            if ($activity->children()->where(function ($cq) use ($user) {
+                $cq->where('created_by_id', $user->id)
+                   ->orWhereHas('assignedTo', fn($at) => $at->where('users.id', $user->id))
+                   ->orWhereHas('assignedGroups', fn($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
+            })->exists()) {
+                return true;
+            }
+
+            // Asignación en la actividad padre
+            if ($activity->parent && (
+                $activity->parent->created_by_id === $user->id ||
+                $activity->parent->assignments()->where('user_id', $user->id)->exists() ||
+                $activity->parent->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $user->id))->exists()
+            )) {
+                return true;
+            }
+
+            // Asignación en actividades vinculadas por conversión (origen o destino)
+            if ($activity->convertedFromActivity && (
+                $activity->convertedFromActivity->created_by_id === $user->id ||
+                $activity->convertedFromActivity->assignments()->where('user_id', $user->id)->exists() ||
+                $activity->convertedFromActivity->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $user->id))->exists()
+            )) {
+                return true;
+            }
+            if ($activity->convertedToActivity && (
+                $activity->convertedToActivity->created_by_id === $user->id ||
+                $activity->convertedToActivity->assignments()->where('user_id', $user->id)->exists() ||
+                $activity->convertedToActivity->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $user->id))->exists()
+            )) {
+                return true;
+            }
+
+            // Mapeo legacy de tareas
+            $isLegacy = \DB::table('activity_task_mapping')
+                ->join('task_assignments', 'activity_task_mapping.task_id', '=', 'task_assignments.task_id')
+                ->where('activity_task_mapping.activity_id', $activity->id)
+                ->where(function ($a) use ($user) {
+                    $a->where('task_assignments.user_id', $user->id)
+                      ->orWhereExists(function ($g) use ($user) {
+                          $g->select(\DB::raw(1))
+                            ->from('group_user')
+                            ->whereColumn('group_user.group_id', 'task_assignments.group_id')
+                            ->where('group_user.user_id', $user->id);
+                      });
+                })->exists();
+            if ($isLegacy) {
+                return true;
+            }
+
+            // Secretario/a de cita previa vinculada
+            $appointment = $activity->relationLoaded('appointment')
+                ? $activity->appointment
+                : \App\Models\Appointment::where('activity_id', $activity->id)->first();
+            if ($appointment && $user->isSecretaryOf($appointment->user_id, $team->id)) {
+                return true;
+            }
+        }
+
+        // 5. Si está vinculado a una Tarea (Legacy Task)
+        if ($this->task_id) {
+            $task = $this->task()->withTrashed()->first();
+            if (!$task) {
+                return true;
+            }
+
+            if ($isCoordinator) {
+                if ($task->visibility !== 'private' || $task->created_by_id === $user->id) {
+                    return true;
+                }
+            }
+
+            if ($task->created_by_id === $user->id || $task->assigned_user_id === $user->id) {
+                return true;
+            }
+
+            if ($user->can('view', $task)) {
+                return true;
+            }
+
+            if (\App\Models\Task::where('id', $task->id)->withTrashed()->visibleTo($user, $isCoordinator)->exists()) {
+                return true;
+            }
+
+            if ($task->assignedTo()->where('users.id', $user->id)->exists()) {
+                return true;
+            }
+            if ($task->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $user->id))->exists()) {
+                return true;
+            }
+
+            // Subtareas de la tarea
+            if ($task->children()->where(function ($cq) use ($user) {
+                $cq->where('created_by_id', $user->id)
+                   ->orWhere('assigned_user_id', $user->id)
+                   ->orWhereHas('assignedTo', fn($at) => $at->where('users.id', $user->id))
+                   ->orWhereHas('assignedGroups', fn($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
+            })->exists()) {
+                return true;
+            }
+
+            // Tarea padre
+            if ($task->parent && (
+                $task->parent->created_by_id === $user->id ||
+                $task->parent->assigned_user_id === $user->id ||
+                $task->parent->assignedTo()->where('users.id', $user->id)->exists() ||
+                $task->parent->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $user->id))->exists()
+            )) {
+                return true;
+            }
+
+            // Si la tarea fue migrada a una actividad y el usuario está asignado a esa actividad
+            $isMappedActivity = \DB::table('activity_task_mapping')
+                ->where('task_id', $task->id)
+                ->whereExists(function ($sub) use ($user) {
+                    $sub->select(\DB::raw(1))
+                        ->from('activity_assignments')
+                        ->whereColumn('activity_assignments.activity_id', 'activity_task_mapping.activity_id')
+                        ->where('activity_assignments.user_id', $user->id);
+                })->exists();
+            if ($isMappedActivity) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

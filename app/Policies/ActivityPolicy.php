@@ -86,6 +86,37 @@ class ActivityPolicy
 
         if ($isLegacyAssigned) return true;
 
+        // Si el usuario está asignado o es creador de alguna subtarea / actividad hija
+        $isChildAssigned = $activity->children()
+            ->where(function ($cq) use ($user) {
+                $cq->where('created_by_id', $user->id)
+                   ->orWhereHas('assignedTo', fn($at) => $at->where('users.id', $user->id))
+                   ->orWhereHas('assignedGroups', fn($ag) => $ag->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
+            })->exists();
+        if ($isChildAssigned) return true;
+
+        // Si el usuario está asignado a la actividad padre
+        if ($activity->parent) {
+            $isParentAssigned = $activity->parent->created_by_id === $user->id
+                || $activity->parent->assignments()->where('user_id', $user->id)->exists()
+                || $activity->parent->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $user->id))->exists();
+            if ($isParentAssigned) return true;
+        }
+
+        // Si el usuario está vinculado por conversión (actividad original o nueva convertida)
+        if ($activity->convertedFromActivity) {
+            $isConvAssigned = $activity->convertedFromActivity->created_by_id === $user->id
+                || $activity->convertedFromActivity->assignments()->where('user_id', $user->id)->exists()
+                || $activity->convertedFromActivity->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $user->id))->exists();
+            if ($isConvAssigned) return true;
+        }
+        if ($activity->convertedToActivity) {
+            $isConvAssigned = $activity->convertedToActivity->created_by_id === $user->id
+                || $activity->convertedToActivity->assignments()->where('user_id', $user->id)->exists()
+                || $activity->convertedToActivity->assignedGroups()->whereHas('users', fn($q) => $q->where('users.id', $user->id))->exists();
+            if ($isConvAssigned) return true;
+        }
+
         // PRIVACIDAD "AL VUELO":
         // Si tiene asignados (nuevos o legacy) O si está marcada como privada, es PRIVADA.
         // Como ya verificamos arriba si el usuario actual es creador o está asignado,

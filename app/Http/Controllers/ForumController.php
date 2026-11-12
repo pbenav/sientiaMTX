@@ -341,32 +341,10 @@ class ForumController extends Controller
             return redirect()->route('teams.forum.index', $team)->with('warning', __('Hilo no encontrado en este equipo.'));
         }
 
-        // Privacy Check: If the thread is linked to an activity or task, follow visibility rules
-        // We use withTrashed() to ensure that even if the item is deleted, the thread remains private to the stakeholders
-        if ($thread->activity_id) {
-            $activity = $thread->activity()->withTrashed()->first();
-            if ($activity) {
-                $isCoordinator = $team->isCoordinator(auth()->user());
-                $activityQuery = \App\Models\Activity::where('id', $activity->id)->withTrashed()->visibleTo(auth()->user(), $isCoordinator);
-
-                if (!$activityQuery->exists()) {
-                    return redirect()->route('teams.forum.index', $team)
-                        ->with('warning', __('tasks.unauthorized_access') ?? 'Este hilo es confidencial. La Privacidad Profunda restringe su lectura únicamente a los involucrados.');
-                }
-            }
-        } elseif ($thread->task_id) {
-            $task = $thread->task()->withTrashed()->first();
-            
-            if ($task) {
-                // DEEP PRIVACY: Enforce strict access control via Task's visibility scope
-                $isCoordinator = $team->isCoordinator(auth()->user());
-                $taskQuery = \App\Models\Task::where('id', $task->id)->withTrashed()->visibleTo(auth()->user(), $isCoordinator);
-
-                if (!$taskQuery->exists()) {
-                    return redirect()->route('teams.forum.index', $team)
-                        ->with('warning', __('tasks.unauthorized_access') ?? 'Este hilo es confidencial. La Privacidad Profunda restringe su lectura únicamente a los involucrados.');
-                }
-            }
+        // Privacy Check: Respeta Deep Privacy y jerarquía completa (hijos, padres, citas, legacy)
+        if (!$thread->canUserAccess(auth()->user(), $team)) {
+            return redirect()->route('teams.forum.index', $team)
+                ->with('warning', __('tasks.unauthorized_access') ?? 'Este hilo es confidencial. La Privacidad Profunda restringe su lectura únicamente a los involucrados.');
         }
 
         $thread->increment('views');

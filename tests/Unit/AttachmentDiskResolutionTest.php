@@ -73,3 +73,4 @@ class AttachmentDiskResolutionTest extends TestCase
         $this->assertTrue(method_exists($user, 'scopeActive'));
     }
 }
+

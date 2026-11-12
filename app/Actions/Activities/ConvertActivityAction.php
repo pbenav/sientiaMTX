@@ -141,6 +141,12 @@ class ConvertActivityAction
                     'created_by_id' => $source->created_by_id, // Mantenemos el creador original
                     'parent_id' => $newParentId ?? $source->parent_id, // Asignamos el nuevo padre si estamos en cascada
                     'expediente_id' => $source->expediente_id,
+                    'folder_id' => $source->folder_id,
+                    'circuit_template_id' => $source->circuit_template_id,
+                    'skill_id' => $source->skill_id,
+                    'service_id' => $source->service_id,
+                    'converted_from_id' => $source->id,
+                    'original_metadata' => $source->metadata,
                     'type' => $newType,
                     'title' => $source->title,
                     'description' => $source->description,
@@ -153,20 +159,44 @@ class ConvertActivityAction
                     'priority' => $source->priority,
                     'auto_priority' => $source->auto_priority,
                     'progress_percentage' => $source->progress_percentage,
+                    'google_task_id' => $source->google_task_id,
+                    'google_task_list_id' => $source->google_task_list_id,
+                    'google_calendar_event_id' => $source->google_calendar_event_id,
+                    'google_calendar_id' => $source->google_calendar_id,
+                    'google_synced_at' => $source->google_synced_at,
                     // No clonamos el kanban_column_id para que se autoubique en su nuevo tablero si procede
                     'is_archived' => false,
                     'is_template' => $source->is_template,
                 ]);
 
+                // Resolver tarea legacy si procede
+                $legacyTask = null;
+                $mapping = DB::table('activity_task_mapping')->where('activity_id', $source->id)->first();
+                if ($mapping) {
+                    $legacyTask = \App\Models\Task::find($mapping->task_id);
+                }
+
                 // 4. Replicación de Relaciones
-                // 4.1 Asignaciones
-                foreach ($source->assignments as $assignment) {
-                    $target->assignments()->create([
-                        'user_id' => $assignment->user_id,
-                        'group_id' => $assignment->group_id,
-                        'assigned_by_id' => $assignment->assigned_by_id ?? $actor->id,
-                        'assigned_at' => $assignment->assigned_at ?? now(),
-                    ]);
+                // 4.1 Asignaciones (ActivityAssignments directos o legacy)
+                if ($source->assignments()->exists()) {
+                    foreach ($source->assignments as $assignment) {
+                        $target->assignments()->create([
+                            'user_id' => $assignment->user_id,
+                            'group_id' => $assignment->group_id,
+                            'assigned_by_id' => $assignment->assigned_by_id ?? $actor->id,
+                            'assigned_at' => $assignment->assigned_at ?? now(),
+                        ]);
+                    }
+                } elseif ($legacyTask) {
+                    $legacyAssignments = DB::table('task_assignments')->where('task_id', $legacyTask->id)->get();
+                    foreach ($legacyAssignments as $la) {
+                        $target->assignments()->create([
+                            'user_id' => $la->user_id,
+                            'group_id' => $la->group_id,
+                            'assigned_by_id' => $la->assigned_by_id ?? $actor->id,
+                            'assigned_at' => $la->assigned_at ?? now(),
+                        ]);
+                    }
                 }
 
                 // 4.2 Etiquetas
@@ -184,6 +214,16 @@ class ConvertActivityAction
                         'visibility' => $note->visibility ?? 'public',
                     ]);
                 }
+                if ($legacyTask && $source->notes()->doesntExist()) {
+                    $taskNotes = \App\Models\TaskPrivateNote::where('task_id', $legacyTask->id)->get();
+                    foreach ($taskNotes as $pn) {
+                        $target->notes()->create([
+                            'user_id' => $pn->user_id,
+                            'content' => $pn->content,
+                            'visibility' => 'private',
+                        ]);
+                    }
+                }
 
                 // 4.4 Adjuntos
                 foreach ($source->attachments as $attachment) {
@@ -197,8 +237,28 @@ class ConvertActivityAction
                         'label'          => $attachment->label,
                     ]);
                 }
+                if ($legacyTask && $source->attachments()->doesntExist()) {
+                    foreach ($legacyTask->attachments as $taskAttachment) {
+                        $target->attachments()->create([
+                            'uploaded_by_id' => $taskAttachment->user_id,
+                            'file_name'      => $taskAttachment->file_name,
+                            'file_path'      => $taskAttachment->file_path,
+                            'mime_type'      => $taskAttachment->mime_type,
+                            'disk'           => $taskAttachment->storage_provider ?: 'public',
+                            'file_size'      => $taskAttachment->file_size,
+                        ]);
+                    }
+                }
 
-                // 4.5 Historial inicial para el nuevo registro
+                // 4.5 Especialidades (Skills)
+                if ($source->skills()->exists()) {
+                    $target->skills()->syncWithoutDetaching($source->skills->pluck('id')->toArray());
+                }
+
+                // 4.6 Calificaciones (Ratings)
+                \App\Models\ActivityRating::where('activity_id', $source->id)->update(['activity_id' => $target->id]);
+
+                // 4.7 Historial inicial para el nuevo registro
                 $target->histories()->create([
                     'user_id' => $actor->id,
                     'action' => 'converted_from',
@@ -228,26 +288,43 @@ class ConvertActivityAction
                 $source->metadata = $sourceMetadata;
                 $source->saveQuietly();
 
-                // 5.1 Ocultación de la Tarea Legacy si existe el mapeo y re-enlace de Citas (Appointments)
-                // Primero actualizamos cualquier Cita que ya estuviera apuntando a esta actividad origen
+                // 5.1 Re-enlace de Citas (Appointments)
                 \App\Models\Appointment::where('activity_id', $source->id)->update(['activity_id' => $target->id]);
 
-                if ($source->type === 'task') {
-                    $mapping = DB::table('activity_task_mapping')->where('activity_id', $source->id)->first();
-                    if ($mapping) {
-                        $legacyTask = \App\Models\Task::find($mapping->task_id);
-                        if ($legacyTask) {
-                            // Si la tarea legacy tenía una cita asociada, redirigimos la cita a la nueva actividad
-                            \App\Models\Appointment::where('task_id', $legacyTask->id)
-                                ->update(['activity_id' => $target->id]);
+                // 5.2 Re-enlace de Hilos del Foro (ForumThread)
+                \App\Models\ForumThread::where('activity_id', $source->id)->update(['activity_id' => $target->id]);
 
-                            $legacyTask->is_archived = true;
-                            $legacyTask->status = 'cancelled';
-                            $legacyTask->saveQuietly();
-                            // Cancelamos timers abiertos si los hubiera
-                            $legacyTask->timeLogs()->whereNull('end_at')->update(['end_at' => now()]);
-                        }
-                    }
+                // 5.3 Re-enlace de Registros Horarios (TimeLog)
+                \App\Models\TimeLog::where('task_id', $source->id)->update(['task_id' => $target->id]);
+
+                // 5.4 Re-enlace de Tramitaciones y Circuitos de Firma (CircuitExecution)
+                \App\Models\CircuitExecution::where(function ($q) use ($source) {
+                    $q->where('circuitable_type', \App\Models\Activity::class)
+                      ->orWhere('circuitable_type', 'App\\Models\\Activity')
+                      ->orWhere('circuitable_type', 'activity');
+                })->where('circuitable_id', $source->id)->update([
+                    'circuitable_type' => \App\Models\Activity::class,
+                    'circuitable_id' => $target->id,
+                ]);
+
+                // 5.5 Tratamiento de la Tarea Legacy si existe
+                if ($legacyTask) {
+                    \App\Models\Appointment::where('task_id', $legacyTask->id)->update(['activity_id' => $target->id]);
+                    \App\Models\ForumThread::where('task_id', $legacyTask->id)->update(['activity_id' => $target->id]);
+                    \App\Models\TimeLog::where('task_id', $legacyTask->id)->update(['task_id' => $target->id]);
+                    \App\Models\CircuitExecution::where(function ($q) use ($legacyTask) {
+                        $q->where('circuitable_type', \App\Models\Task::class)
+                          ->orWhere('circuitable_type', 'App\\Models\\Task')
+                          ->orWhere('circuitable_type', 'task');
+                    })->where('circuitable_id', $legacyTask->id)->update([
+                        'circuitable_type' => \App\Models\Activity::class,
+                        'circuitable_id' => $target->id,
+                    ]);
+
+                    $legacyTask->is_archived = true;
+                    $legacyTask->status = 'cancelled';
+                    $legacyTask->saveQuietly();
+                    $legacyTask->timeLogs()->whereNull('end_at')->update(['end_at' => now()]);
                 }
 
                 // Registrar en historial del origen

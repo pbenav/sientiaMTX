@@ -330,25 +330,17 @@ trait ActivityScopes
 
         return $builder->where(function ($q) use ($user, $isManager) {
             // Política de privacidad:
-            // - 'public': lo ve todo el equipo
-            // - 'semi-private' o 'semiprivate': creador + asignados
-            // - 'private' o NULL: solo creador (nada más)
+            // - 'public': lo ve todo el equipo si no tiene asignados, o todo el equipo si es manager
+            // - 'semi-private' o 'semiprivate': creador + asignados (directos, grupos, subtareas, o padres)
+            // - 'private' o NULL: creador + managers (si no es estrictamente privada de otro)
             if ($isManager) {
-                $q->where('visibility', 'public')
-                  ->orWhere(function ($template) {
-                      $template->where('is_template', true)
-                               ->where('visibility', 'public');
-                  })
+                $q->whereNotIn('visibility', ['private'])
+                  ->orWhereNull('visibility')
                   ->orWhere('created_by_id', $user->id)
-                  ->orWhere(function ($semi) use ($user) {
-                      $semi->whereIn('visibility', ['semi-private', 'semiprivate'])
-                           ->where(function ($assigned) use ($user) {
-                               $assigned->whereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
-                                        ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
-                           });
-                  });
+                  ->orWhereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
+                  ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
             } else {
-                // Miembros: solo ven público sin asignados, o si son creador/assignado
+                // Miembros: ven público sin asignados, o si son creador/asignado
                 $q->where(function ($unassigned) {
                     $unassigned->where('visibility', 'public')
                                ->whereDoesntHave('assignments')
@@ -360,15 +352,50 @@ trait ActivityScopes
                                });
                 })
                 ->orWhere('created_by_id', $user->id)
-                ->orWhere(function ($semi) use ($user) {
-                    $semi->whereIn('visibility', ['semi-private', 'semiprivate'])
-                         ->where(function ($assigned) use ($user) {
-                             $assigned->whereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
-                                      ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
-                         });
-                })
                 ->orWhereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
-                ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
+                ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)))
+                ->orWhereExists(function ($sub) use ($user) {
+                    $sub->select(DB::raw(1))
+                        ->from('activity_task_mapping')
+                        ->join('task_assignments', 'activity_task_mapping.task_id', '=', 'task_assignments.task_id')
+                        ->whereColumn('activity_task_mapping.activity_id', 'activities.id')
+                        ->where(function ($a) use ($user) {
+                            $a->where('task_assignments.user_id', $user->id)
+                              ->orWhereExists(function ($g) use ($user) {
+                                  $g->select(DB::raw(1))
+                                    ->from('group_user')
+                                    ->whereColumn('group_user.group_id', 'task_assignments.group_id')
+                                    ->where('group_user.user_id', $user->id);
+                              });
+                        });
+                })
+                ->orWhereHas('children', function ($childQ) use ($user) {
+                    $childQ->where('created_by_id', $user->id)
+                           ->orWhereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
+                           ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
+                })
+                ->orWhereHas('parent', function ($parentQ) use ($user) {
+                    $parentQ->where('created_by_id', $user->id)
+                            ->orWhereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
+                            ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
+                })
+                ->orWhereHas('convertedFromActivity', function ($convQ) use ($user) {
+                    $convQ->where('created_by_id', $user->id)
+                          ->orWhereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
+                          ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
+                })
+                ->orWhereHas('convertedToActivity', function ($convQ) use ($user) {
+                    $convQ->where('created_by_id', $user->id)
+                          ->orWhereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
+                          ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
+                })
+                ->orWhereExists(function ($sub) use ($user) {
+                    $sub->select(DB::raw(1))
+                        ->from('appointments')
+                        ->join('appointment_delegations', 'appointments.user_id', '=', 'appointment_delegations.user_id')
+                        ->whereColumn('appointments.activity_id', 'activities.id')
+                        ->where('appointment_delegations.delegate_id', $user->id);
+                });
             }
         });
     }

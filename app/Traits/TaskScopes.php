@@ -119,12 +119,34 @@ trait TaskScopes
                     $unassigned->whereNull('assigned_user_id')
                                ->whereDoesntHave('assignedTo')
                                ->whereDoesntHave('assignedGroups')
-                               ->whereNotIn('visibility', ['private', 'semi-private', 'semiprivate']);
+                               ->where(function ($vis) {
+                                   $vis->whereNotIn('visibility', ['private', 'semi-private', 'semiprivate'])
+                                       ->orWhereNull('visibility');
+                               });
                 })
                 ->orWhere('created_by_id', $user->id)
                 ->orWhere('assigned_user_id', $user->id)
                 ->orWhereHas('assignedTo', fn($sub) => $sub->where('users.id', $user->id))
-                ->orWhereHas('assignedGroups', fn($sub) => $sub->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
+                ->orWhereHas('assignedGroups', fn($sub) => $sub->whereHas('users', fn($u) => $u->where('users.id', $user->id)))
+                ->orWhereHas('children', function ($childQ) use ($user) {
+                    $childQ->where('created_by_id', $user->id)
+                           ->orWhere('assigned_user_id', $user->id)
+                           ->orWhereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
+                           ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
+                })
+                ->orWhereHas('parent', function ($parentQ) use ($user) {
+                    $parentQ->where('created_by_id', $user->id)
+                            ->orWhere('assigned_user_id', $user->id)
+                            ->orWhereHas('assignedTo', fn($s) => $s->where('users.id', $user->id))
+                            ->orWhereHas('assignedGroups', fn($s) => $s->whereHas('users', fn($u) => $u->where('users.id', $user->id)));
+                })
+                ->orWhereExists(function ($sub) use ($user) {
+                    $sub->select(\DB::raw(1))
+                        ->from('activity_task_mapping')
+                        ->join('activity_assignments', 'activity_task_mapping.activity_id', '=', 'activity_assignments.activity_id')
+                        ->whereColumn('activity_task_mapping.task_id', 'tasks.id')
+                        ->where('activity_assignments.user_id', $user->id);
+                });
             }
         });
     }

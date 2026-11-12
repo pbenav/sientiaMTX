@@ -1734,84 +1734,103 @@
             });
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
+        function setupParallelConfirmation() {
             // --- Confirmación Consciente para {{ __("Activities") }} Ajenas o Externas ---
             const editForm = document.getElementById('edit-activity-form');
-            if (editForm) {
-                const isAnotherUser = @json($isAnotherUserCreator);
-                const isExternal = @json($isExternalEvent);
-                const ownerName = @json($originalOwnerName);
+            if (!editForm || editForm.dataset.parallelBound) return;
 
-                if (isAnotherUser || isExternal) {
-                    let userConfirmed = false;
+            const isAnotherUser = @json($isAnotherUserCreator);
+            const isExternal = @json($isExternalEvent);
+            const ownerName = @json($originalOwnerName);
 
-                    const submitAsParallel = () => {
-                        let parallelInput = document.createElement('input');
+            if (isAnotherUser || isExternal) {
+                editForm.dataset.parallelBound = 'true';
+                let userConfirmed = false;
+
+                const submitAsParallel = () => {
+                    let parallelInput = editForm.querySelector('input[name="create_as_parallel"]');
+                    if (!parallelInput) {
+                        parallelInput = document.createElement('input');
                         parallelInput.type = 'hidden';
                         parallelInput.name = 'create_as_parallel';
-                        parallelInput.value = '1';
                         editForm.appendChild(parallelInput);
-                        userConfirmed = true;
-                        editForm.submit();
-                    };
-
-                    const btnParallel = document.getElementById('btn-create-parallel');
-                    if (btnParallel) {
-                        btnParallel.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            submitAsParallel();
-                        });
                     }
+                    parallelInput.value = '1';
+                    userConfirmed = true;
+                    editForm.submit();
+                };
 
-                    editForm.addEventListener('submit', function(e) {
-                        if (userConfirmed) return;
+                const btnParallel = document.getElementById('btn-create-parallel');
+                if (btnParallel) {
+                    btnParallel.addEventListener('click', function(e) {
                         e.preventDefault();
-
-                        const isDark = document.documentElement.classList.contains('dark');
-                        Swal.fire({
-                            title: '⚠️ {{ __('Modify someone else\'s activity?') }}',
-                            html: `
-                                <div class="text-left mt-2 text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-                                    <p class="mb-3">
-                                        ${'{{ __('This activity was originally scheduled by :owner.') }}'.replace(':owner', `<strong class="text-gray-900 dark:text-white font-black">${ownerName}</strong>`)}
-                                    </p>
-                                    <p class="text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 p-3 rounded-2xl border border-amber-200 dark:border-amber-800 leading-normal mb-3">
-                                        <strong>{{ __('Attention:') }}</strong> {{ __('If you modify the original, you will alter the event or task that belongs to someone else.') }}
-                                    </p>
-                                    <p class="text-xs text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 p-3 rounded-2xl border border-emerald-200 dark:border-emerald-800 leading-normal">
-                                        <strong>{{ __('Parallel option:') }}</strong> {{ __('You can create a parallel activity for the same date and time with current data, owned by you without modifying the original.') }}
-                                    </p>
-                                </div>
-                            `,
-                            icon: 'warning',
-                            showCancelButton: true,
-                            showDenyButton: true,
-                            confirmButtonText: '{{ __('Modify original') }}',
-                            denyButtonText: '{{ __('Create parallel activity') }}',
-                            cancelButtonText: '{{ __('Cancel') }}',
-                            confirmButtonColor: '#7c3aed',
-                            denyButtonColor: '#059669',
-                            cancelButtonColor: '#6b7280',
-                            background: isDark ? '#0f172a' : '#ffffff',
-                            color: isDark ? '#f1f5f9' : '#1e293b',
-                            customClass: {
-                                popup: 'rounded-[2rem]',
-                                actions: 'flex flex-wrap gap-2 justify-center',
-                                confirmButton: 'rounded-xl font-black uppercase text-xs tracking-wider px-4 py-3',
-                                denyButton: 'rounded-xl font-black uppercase text-xs tracking-wider px-4 py-3 bg-emerald-600 hover:bg-emerald-700',
-                                cancelButton: 'rounded-xl font-black uppercase text-xs tracking-wider px-4 py-3'
-                            }
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                userConfirmed = true;
-                                editForm.submit();
-                            } else if (result.isDenied) {
-                                submitAsParallel();
-                            }
-                        });
+                        submitAsParallel();
                     });
                 }
+
+                const promptModal = (e) => {
+                    if (userConfirmed) return;
+                    if (e) e.preventDefault();
+
+                    const isDark = document.documentElement.classList.contains('dark');
+                    const titleText = @json('⚠️ ' . __('Modify someone else\'s activity?'));
+                    const ownerText = @json(__('This activity was originally scheduled by :owner.')).replace(':owner', `<strong class="text-gray-900 dark:text-white font-black">${ownerName}</strong>`);
+                    const attentionLabel = @json(__('Attention:'));
+                    const attentionText = @json(__('If you modify the original, you will alter the event or task that belongs to someone else.'));
+                    const parallelLabel = @json(__('Parallel option:'));
+                    const parallelText = @json(__('You can create a parallel activity for the same date and time with current data, owned by you without modifying the original.'));
+
+                    Swal.fire({
+                        title: titleText,
+                        html: `
+                            <div class="text-left mt-2 text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                                <p class="mb-3">${ownerText}</p>
+                                <p class="text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 p-3 rounded-2xl border border-amber-200 dark:border-amber-800 leading-normal mb-3">
+                                    <strong>${attentionLabel}</strong> ${attentionText}
+                                </p>
+                                <p class="text-xs text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 p-3 rounded-2xl border border-emerald-200 dark:border-emerald-800 leading-normal">
+                                    <strong>${parallelLabel}</strong> ${parallelText}
+                                </p>
+                            </div>
+                        `,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        showDenyButton: true,
+                        confirmButtonText: @json(__('Modify original')),
+                        denyButtonText: @json(__('Create parallel activity')),
+                        cancelButtonText: @json(__('Cancel')),
+                        confirmButtonColor: '#7c3aed',
+                        denyButtonColor: '#059669',
+                        cancelButtonColor: '#6b7280',
+                        background: isDark ? '#0f172a' : '#ffffff',
+                        color: isDark ? '#f1f5f9' : '#1e293b',
+                        customClass: {
+                            popup: 'rounded-[2rem]',
+                            actions: 'flex flex-wrap gap-2 justify-center',
+                            confirmButton: 'rounded-xl font-black uppercase text-xs tracking-wider px-4 py-3',
+                            denyButton: 'rounded-xl font-black uppercase text-xs tracking-wider px-4 py-3 bg-emerald-600 hover:bg-emerald-700',
+                            cancelButton: 'rounded-xl font-black uppercase text-xs tracking-wider px-4 py-3'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            userConfirmed = true;
+                            editForm.submit();
+                        } else if (result.isDenied) {
+                            submitAsParallel();
+                        }
+                    });
+                };
+
+                editForm.addEventListener('submit', promptModal);
             }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupParallelConfirmation);
+        } else {
+            setupParallelConfirmation();
+        }
+        document.addEventListener('turbo:load', setupParallelConfirmation);
 
             // --- Eisenhower Matrix Preview ---
             const quadrantData = {
