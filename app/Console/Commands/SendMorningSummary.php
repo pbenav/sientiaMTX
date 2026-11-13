@@ -140,7 +140,17 @@ class SendMorningSummary extends Command
             });
 
         if ($tasks->isEmpty() && $todayAppointments->isEmpty()) {
-            $this->line("User {$user->name}: No priority tasks or appointments for today. Sending a focus-on-rest phrase.");
+            $this->line("User {$user->name}: No priority tasks or appointments for today. Skipping notification.");
+
+            // Reset de energía matutino (Fresh Start) aunque no haya actividades
+            if (($user->energy_level ?? 0) < 80) {
+                $user->update(['energy_level' => 80]);
+                $this->line("Fresh Start: Energía de {$user->name} restaurada al 80%.");
+            }
+
+            // Marcar como procesado hoy para no reevaluarlo cada hora
+            \Illuminate\Support\Facades\Cache::put($lockKey, true, now()->addHours(23));
+            return;
         }
 
         try {
