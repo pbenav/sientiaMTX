@@ -172,14 +172,15 @@ class ActivityController extends Controller
         $groups  = $team->groups()->with('users:id')->select('groups.id', 'groups.name')->orderBy('groups.name')->get();
         $expedientes = $team->expedientes()->select('expedientes.id', 'expedientes.code', 'expedientes.title')->orderBy('expedientes.title')->get();
 
-        // Actividades padre disponibles para jerarquía (no circulares)
+        // Actividades padre disponibles para jerarquía (no circulares ni citas previas)
         $parentActivities = Activity::with(['creator:id,name', 'assignedUser:users.id,users.name', 'expediente:id,code'])
             ->byTeam($team->id)
             ->active()
+            ->whereNotAppointmentActivity()
             ->where('is_template', false)
             ->select('id', 'title', 'created_by_id', 'created_at', 'expediente_id')
             ->latest()
-            ->limit(50)
+            ->limit(100)
             ->get();
 
         $skills = \App\Models\Skill::forTeam($team->id)->orderBy('name')->get();
@@ -271,11 +272,12 @@ class ActivityController extends Controller
         $parentActivities = Activity::with(['creator:id,name', 'assignedUser:users.id,users.name', 'expediente:id,code'])
             ->byTeam($team->id)
             ->active()
+            ->whereNotAppointmentActivity()
             ->where('id', '!=', $activity->id)
             ->where('is_template', false)
             ->select('id', 'title', 'created_by_id', 'created_at', 'expediente_id')
             ->latest()
-            ->limit(50)
+            ->limit(100)
             ->get();
 
         $skills = \App\Models\Skill::forTeam($team->id)->orderBy('name')->get();
