@@ -909,8 +909,18 @@ MS;
                         }
                     }
 
+                    // En PHP, un array asociativo vacío [] se serializa en JSON como '[]' (lista) en lugar de '{}' (objeto).
+                    // Google Gemini exige estrictamente que functionCall.args sea un objeto protobuffer (Map), no una lista:
+                    // 'Invalid JSON payload received. Unknown name "args" at ... Proto field is not repeating, cannot start list.'
+                    $modelPart = $part;
+                    if (isset($modelPart['functionCall'])) {
+                        if (empty($modelPart['functionCall']['args'])) {
+                            $modelPart['functionCall']['args'] = new \stdClass();
+                        }
+                    }
+
                     // Meter la llamada del modelo en el historial
-                    $this->messagesHistory[] = ['role' => 'model', 'parts' => [$part]];
+                    $this->messagesHistory[] = ['role' => 'model', 'parts' => [$modelPart]];
                     
                     // Meter el resultado de la función en el historial
                     $this->messagesHistory[] = [
