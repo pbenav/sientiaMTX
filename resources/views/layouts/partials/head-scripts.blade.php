@@ -709,6 +709,10 @@
                         this.tick();
                     });
 
+                    window.addEventListener('task-stopped', () => {
+                        this.stop();
+                    });
+
                     window.addEventListener('workday-toggled', (e) => {
                         if (!e.detail.working) this.stop();
                     });

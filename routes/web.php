@@ -136,10 +136,11 @@ Route::get('/locale/{locale}', [LocaleController::class, 'switch'])
 
 Route::get('/dashboard', function () {
     $user = auth()->user();
-    $firstTeam = $user->teams()->first();
+    $targetTeam = ($user->favorite_team_id ? $user->teams()->where('teams.id', $user->favorite_team_id)->first() : null)
+        ?: $user->teams()->first();
 
-    if ($firstTeam) {
-        return redirect()->route('teams.time-reports', $firstTeam);
+    if ($targetTeam) {
+        return redirect()->route('teams.time-reports', $targetTeam);
     }
 
     return view('dashboard');
