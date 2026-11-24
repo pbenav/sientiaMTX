@@ -134,16 +134,27 @@ class BuildKanbanDataAction
     }
 
     /**
-     * Filters activities by type (template, instance, plain).
+     * Filters activities by type (task, document, meeting, reminder, etc., or template, instance, plain).
      */
-    protected function filterByType($query, string $type): void
+    protected function filterByType($query, string|array $type): void
     {
-        match ($type) {
-            'template' => $query->where('is_template', true),
-            'instance' => $query->where('is_template', false)->whereNotNull('parent_id'),
-            'plain' => $query->where('is_template', false)->whereNull('parent_id'),
-            default => $query->where('type', $type),
-        };
+        $types = is_array($type) ? array_filter($type) : array_filter(explode(',', (string) $type));
+        if (empty($types)) {
+            return;
+        }
+
+        $query->where(function ($subQ) use ($types) {
+            foreach ($types as $t) {
+                $subQ->orWhere(function ($q) use ($t) {
+                    match ($t) {
+                        'template' => $q->where('is_template', true),
+                        'instance' => $q->where('is_template', false)->whereNotNull('parent_id'),
+                        'plain' => $q->where('is_template', false)->whereNull('parent_id'),
+                        default => $q->where('type', $t),
+                    };
+                });
+            }
+        });
     }
 
     /**

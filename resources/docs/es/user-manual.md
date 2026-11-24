@@ -1,4 +1,4 @@
-# 📖 SientiaMTX — Manual de Usuario (v1.2.0)
+# 📖 SientiaMTX — Manual de Usuario (v1.3.1)
 
 SientiaMTX es un **ecosistema de productividad de alto rendimiento** que fusiona la metodología de la Matriz de Eisenhower con Inteligencia Artificial avanzada, gestión documental colaborativa y herramientas operativas de equipo.
 
@@ -154,7 +154,9 @@ SientiaMTX incorpora un flujo oficial de gobernanza colegiada conforme a la **Le
 - **Visor Dividido Redimensionable**: El portal de firma con AutoFirma ofrece un divisor ajustable con visor PDF interactivo a pantalla completa o doble columna para revisar el documento antes de firmar.
 - **Diligencia Oficial Consolidada (PDF)**: Documento oficial generado automáticamente con el itinerario de fases, cajetines de firma institucionales en verde, huellas SHA-256 completas y **código QR dinámico** de cotejo.
 - **Sede Electrónica de Verificación Pública (`/verificar/{csv}`)**: Cualquier ciudadano, auditor o administración puede escanear el código QR con su teléfono o introducir el CSV en el portal público para comprobar la autenticidad e integridad del documento y descargar la copia original custodiada.
-- **Tablón Edictal Público**: Permite publicar acuerdos y resoluciones concluidas en el tablón web del organismo con control de plazos y expiración.
+- **Tablón Edictal Público (`/tablon/{team}`)**: Permite publicar acuerdos y resoluciones concluidas en el tablón web del organismo con asignación de código edictal oficial, control de plazos de exposición y descarga pública de la diligencia oficial firmada.
+- **Bandeja de Firmas Pendientes (`/teams/{team}/circuitos/pendientes`)**: Panel específico para revisar y rubricar al instante todas las etapas asignadas al usuario sin tener que buscar cada actividad o expediente individualmente.
+- **Plantillas de Circuito (`/teams/{team}/circuitos/plantillas`)**: Los coordinadores pueden diseñar circuitos predefinidos para estandarizar los trámites habituales de la organización.
 
 ---
 

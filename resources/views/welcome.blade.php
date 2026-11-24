@@ -917,7 +917,7 @@
     <footer>
         <p>
             © {{ date('Y') }} <a href="https://www.sientia.com" style="color:white; font-weight: 700;">Sientia Open Source Lab</a> · 
-            sientia<strong>MTX</strong> v{{ config('app.version', '0.0.1') }} ·
+            sientia<strong>MTX</strong> v{{ config('app.version', '1.3.1') }} ·
             {{ __('MTX, Gantt and Kanban for focused teams') }}
         </p>
         

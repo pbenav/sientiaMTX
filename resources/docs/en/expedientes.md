@@ -1,4 +1,4 @@
-# 📂 Case Management (Expedientes) — SientiaMTX (v1.2.0)
+# 📂 Case Management (Expedientes) — SientiaMTX (v1.3.1)
 
 In corporate organizations, legal chambers, and high-performance teams, work rarely happens in isolation. **Expedientes (Dossiers / Case Files)** in SientiaMTX function as master work folders and operational containers, centralizing all activities, appointments, notes, and file attachments associated with a particular case or project.
 
@@ -73,9 +73,14 @@ Dossiers can be linked bidirectionally (`relatedExpedientes`):
 
 ---
 
-## 📆 5. Citizen Appointments Integration
+## 🏛️ 6. Workflow Circuits & Official Approval in Expedientes
 
-When a client or citizen books a consultation through the public portal or is received in an office:
-- The appointment can be directly attached to an existing dossier from the attention desk.
-- Operators can view the complete consultation history within the context of the dossier, tracking cumulative face-to-face or video time alongside session notes.
+Dossiers can be submitted to formal governance and approval workflows:
+- **Workflow Template Assignment**: Bind an administrative circuit template directly when creating or updating a dossier.
+- **Step-by-Step Progress Tracking**: Dossier details display an interactive workflow stepper widget highlighting active signers, completed stages, and pending technical reports.
+- **Resolution & Public Edict Notice**: Once all sign-off stages are concluded, the dossier can be officially published to the **Public Edict Board (`/tablon/{team}`)** to satisfy transparency and legal notice requirements.
+
+---
+
+**SientiaMTX: Rigorous, secure, and legally compliant case and document management.**
 

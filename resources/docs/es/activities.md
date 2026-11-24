@@ -1,4 +1,4 @@
-# ⚡ Actividades y Flujo de Trabajo — SientiaMTX (v1.2.0)
+# ⚡ Actividades y Flujo de Trabajo — SientiaMTX (v1.3.1)
 
 En las primeras versiones de SientiaMTX, el trabajo giraba exclusivamente en torno a las "Tareas". A partir de la versión **v1.2.0**, SientiaMTX evoluciona hacia una **arquitectura universal de Actividades (Ítems)**. 
 
@@ -165,18 +165,27 @@ Ax.ia interactúa directamente con el ciclo de vida de las actividades:
 
 ---
 
-## 🔐 5. Modelo de Seguridad, Visibilidad y Permisos
+## 🏛️ 5. Circuitos de Tramitación y Firma Oficial en Actividades
+
+A partir de la versión v1.2.0, cualquier actividad (especialmente **Acuerdos**, **Documentos** y **Tareas**) puede vincularse a un **Circuito de Tramitación Administrativa**:
+- **Asociación en Creación y Edición**: Al crear o editar una actividad, es posible seleccionar una plantilla de circuito (`circuit_template_id`) y configurar si debe iniciarse automáticamente al guardarse (`auto_start_circuit`).
+- **Banner de Estado del Circuito**: En la ficha detallada de la actividad, se muestra un banner prominente con el porcentaje de avance, la fase actual y un botón de acceso directo al portal de firma con AutoFirma o CSV.
+- **Diligencia PDF Oficial con CSV y QR**: Tras completarse el circuito, la actividad incorpora la diligencia consolidada firmada con su Código Seguro de Verificación (CSV) y código QR para cotejo público.
+
+---
+
+## 🔐 6. Modelo de Seguridad, Visibilidad y Permisos
 
 Para garantizar la soberanía de los datos y el orden organizativo, SientiaMTX implementa una política granular de autorización en [`ActivityPolicy`](app/Policies/ActivityPolicy.php).
 
-### 5.1. Principio Fundamental: Lectura ≠ Escritura
+### 6.1. Principio Fundamental: Lectura ≠ Escritura
 * **Hacer una actividad `Pública` NO otorga permisos de edición a cualquiera**.
 * La visibilidad pública (`visibility = 'public'`) significa **visibilidad de lectura** para todos los integrantes del equipo.
 * Los miembros que solo tienen acceso de lectura pueden consultar el contenido, leer el historial y participar en las notas internas o adjuntos, pero **no pueden cambiar el estado ni alterar la ficha técnica** a menos que estén explícitamente asignados o tengan rol de gestión en el equipo.
 
 ---
 
-### 5.2. ¿Quién puede VER una actividad? (`view`)
+### 6.2. ¿Quién puede VER una actividad? (`view`)
 Un integrante del equipo puede consultar una actividad si:
 1. **Es el creador / autor** de la actividad.
 2. **Está asignado** directamente a ella (o su grupo de trabajo está asignado).
@@ -188,7 +197,7 @@ Un integrante del equipo puede consultar una actividad si:
 
 ---
 
-### 5.3. ¿Quién puede MODIFICAR una actividad o CAMBIAR SU ESTADO? (`update` y `changeStatus`)
+### 6.3. ¿Quién puede MODIFICAR una actividad o CAMBIAR SU ESTADO? (`update` y `changeStatus`)
 Pueden modificar los datos y cambiar el estado (ej. pasar de `draft` a `approved`, o de `pending` a `completed`) únicamente:
 1. **El Creador** original de la actividad.
 2. **Cualquier usuario Asignado directamente** a la actividad.
@@ -199,7 +208,7 @@ Si un miembro con acceso de solo lectura intenta alterar el estado o los datos, 
 
 ---
 
-### 5.4. Matriz Resumen de Autorización
+### 6.4. Matriz Resumen de Autorización
 
 | Acción | Creador | Asignado / Grupo | Coordinador / Moderador | Miembro Lector (Público) |
 |---|:---:|:---:|:---:|:---:|
@@ -214,7 +223,7 @@ Si un miembro con acceso de solo lectura intenta alterar el estado o los datos, 
 
 ---
 
-### 5.5. Roles del Equipo y Dónde se Configuran
+### 6.5. Roles del Equipo y Dónde se Configuran
 
 Los permisos se articulan a través de tres niveles configurables desde la interfaz:
 

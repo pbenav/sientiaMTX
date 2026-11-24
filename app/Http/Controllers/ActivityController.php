@@ -73,11 +73,13 @@ class ActivityController extends Controller
             $perPage = 15;
         }
 
-        $activities = $this->activityService->paginate($team, $filters, $perPage, $sort, $dir);
+        $activities = $this->activityService->paginate($team, $filters, $perPage, $sort, $dir)->withQueryString();
 
         // Agrupación de citas previas en la cabecera cuando corresponda (página 1, filtro de citas por defecto y sin filtro de tipo excluyente)
+        $typeFilter = $filters['type'] ?? [];
+        $hasMeetingType = empty($typeFilter) || (is_array($typeFilter) ? in_array('meeting', $typeFilter) : $typeFilter === 'meeting');
         $shouldShowGroupedAppointments = empty($filters['appointments'])
-            && (empty($filters['type']) || $filters['type'] === 'meeting')
+            && $hasMeetingType
             && $activities->currentPage() === 1;
 
         $groupedAppointmentsCount = 0;
@@ -172,14 +174,15 @@ class ActivityController extends Controller
         $groups  = $team->groups()->with('users:id')->select('groups.id', 'groups.name')->orderBy('groups.name')->get();
         $expedientes = $team->expedientes()->select('expedientes.id', 'expedientes.code', 'expedientes.title')->orderBy('expedientes.title')->get();
 
-        // Actividades padre disponibles para jerarquía (no circulares)
+        // Actividades padre disponibles para jerarquía (no circulares ni citas previas)
         $parentActivities = Activity::with(['creator:id,name', 'assignedUser:users.id,users.name', 'expediente:id,code'])
             ->byTeam($team->id)
             ->active()
+            ->whereNotAppointmentActivity()
             ->where('is_template', false)
             ->select('id', 'title', 'created_by_id', 'created_at', 'expediente_id')
             ->latest()
-            ->limit(50)
+            ->limit(100)
             ->get();
 
         $skills = \App\Models\Skill::forTeam($team->id)->orderBy('name')->get();
@@ -271,11 +274,12 @@ class ActivityController extends Controller
         $parentActivities = Activity::with(['creator:id,name', 'assignedUser:users.id,users.name', 'expediente:id,code'])
             ->byTeam($team->id)
             ->active()
+            ->whereNotAppointmentActivity()
             ->where('id', '!=', $activity->id)
             ->where('is_template', false)
             ->select('id', 'title', 'created_by_id', 'created_at', 'expediente_id')
             ->latest()
-            ->limit(50)
+            ->limit(100)
             ->get();
 
         $skills = \App\Models\Skill::forTeam($team->id)->orderBy('name')->get();

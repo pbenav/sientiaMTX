@@ -3827,5 +3827,6 @@
     "Local attachments in files": "Pièces jointes locales dans les dossiers",
     "Cloud-linked files (Zero impact on local quota)": "Fichiers liés depuis le cloud (Impact nul sur le quota local)",
     "Linked Documents": "Documents liés",
-    "Purge Tool": "Outil de purge"
+    "Purge Tool": "Outil de purge",
+    "Empty Trash": "Vider la corbeille"
 }

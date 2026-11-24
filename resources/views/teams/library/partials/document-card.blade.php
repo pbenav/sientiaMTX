@@ -116,9 +116,12 @@
             {{ $doc->title }}
         </h4>
 
-        @if($doc->description)
+        @php
+            $plainDesc = trim(html_entity_decode(strip_tags(\Illuminate\Support\Str::markdown($doc->description ?? ''))));
+        @endphp
+        @if(!empty($plainDesc))
             <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-3">
-                {{ Str::limit(strip_tags($doc->description), 110) }}
+                {{ \Illuminate\Support\Str::limit($plainDesc, 110) }}
             </p>
         @endif
     </div>

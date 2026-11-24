@@ -228,4 +228,17 @@ class MorningSummaryTest extends TestCase
             }
         );
     }
+
+    public function test_send_morning_summary_skips_when_no_tasks_or_appointments()
+    {
+        Notification::fake();
+
+        $this->artisan('morning:summary', ['--user' => $this->user->id])
+            ->assertExitCode(0);
+
+        Notification::assertNotSentTo(
+            $this->user,
+            MorningSummaryNotification::class
+        );
+    }
 }

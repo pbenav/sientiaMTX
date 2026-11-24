@@ -42,3 +42,4 @@ mkdocs.yml
 INFORME_AUDITORIA.md
 resources/views/teams/activities/types/document/show-content.blade.php
 .antigravity/
+DIRECTORIO_FUNCIONALIDADES.md

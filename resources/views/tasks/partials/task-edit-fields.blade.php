@@ -154,13 +154,18 @@
             @endif
 
             <!-- 3. TIEMPO DEDICADO Card -->
+            @php
+                $trackingTargetId = $personalInstance->id ?? $task->id;
+            @endphp
             <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm transition-colors">
                 <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-black mb-4">{{ __('TIEMPO DEDICADO') }}</p>
                 <div class="flex items-center justify-between">
                     <div x-data="{ 
-                        active: {{ auth()->user()->isTrackingTask($personalInstance->id ?? $task->id) ? 'true' : 'false' }},
-                        seconds: {{ auth()->user()->getTaskTrackingSeconds($personalInstance->id ?? $task->id) }},
+                        taskId: {{ $trackingTargetId }},
+                        active: {{ auth()->user()->isTrackingTask($trackingTargetId) ? 'true' : 'false' }},
+                        seconds: {{ auth()->user()->getTaskTrackingSeconds($trackingTargetId) }},
                         totalToday: '{{ $task->totalTrackedTimeTodayHuman() }}',
+                        timerInterval: null,
                         
                         get formatted() {
                             const h = Math.floor(this.seconds / 3600);
@@ -168,10 +173,48 @@
                             const s = this.seconds % 60;
                             return [h,m,s].map(v => v.toString().padStart(2, '0')).join(':');
                         },
+                        startTimer() {
+                            this.stopTimer();
+                            this.active = true;
+                            this.timerInterval = setInterval(() => { this.seconds++ }, 1000);
+                        },
+                        stopTimer() {
+                            this.active = false;
+                            if (this.timerInterval) {
+                                clearInterval(this.timerInterval);
+                                this.timerInterval = null;
+                            }
+                        },
                         init() {
                             if (this.active) {
-                                setInterval(() => { this.seconds++ }, 1000);
+                                this.startTimer();
                             }
+
+                            window.addEventListener('task-started', (e) => {
+                                if (e.detail && e.detail.taskId == this.taskId) {
+                                    if (e.detail.userSeconds !== undefined) {
+                                        this.seconds = e.detail.userSeconds;
+                                    }
+                                    if (e.detail.totalTodayHuman) {
+                                        this.totalToday = e.detail.totalTodayHuman;
+                                    }
+                                    this.startTimer();
+                                } else {
+                                    this.stopTimer();
+                                }
+                            });
+
+                            window.addEventListener('task-stopped', (e) => {
+                                if (!e.detail || e.detail.taskId == this.taskId) {
+                                    this.stopTimer();
+                                    if (e.detail && e.detail.userSeconds !== undefined) {
+                                        this.seconds = e.detail.userSeconds;
+                                    }
+                                    if (e.detail && e.detail.totalTodayHuman) {
+                                        this.totalToday = e.detail.totalTodayHuman;
+                                    }
+                                }
+                            });
                         }
                     }" class="flex-1">
                         <div class="text-3xl font-black text-gray-900 dark:text-white tabular-nums tracking-tight mb-0.5" x-text="formatted">00:00:00</div>

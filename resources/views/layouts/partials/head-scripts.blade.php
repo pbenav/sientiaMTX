@@ -709,6 +709,10 @@
                         this.tick();
                     });
 
+                    window.addEventListener('task-stopped', () => {
+                        this.stop();
+                    });
+
                     window.addEventListener('workday-toggled', (e) => {
                         if (!e.detail.working) this.stop();
                     });
@@ -1206,6 +1210,26 @@
                         .chapter-body { color: #334155; }
                         .chapter-body p { margin-bottom: 1.5rem; }
                         .chapter-body h1, .chapter-body h2, .chapter-body h3 { font-family: 'Outfit', sans-serif; color: #0f172a; margin-top: 2.5rem; margin-bottom: 1rem; font-weight: 700; }
+                        @page {
+                            size: A4;
+                            margin: 20mm 20mm 20mm 20mm;
+                            @bottom-right {
+                                content: counter(page);
+                                font-family: 'Outfit', sans-serif;
+                                font-size: 9pt;
+                                color: #64748b;
+                            }
+                            @bottom-left {
+                                content: "sientia.MTX • Libro de Documentos";
+                                font-family: 'Outfit', sans-serif;
+                                font-size: 8pt;
+                                color: #94a3b8;
+                            }
+                        }
+                        @page :first {
+                            @bottom-right { content: normal; }
+                            @bottom-left { content: normal; }
+                        }
                     </style>
                 `;
 

@@ -1,4 +1,4 @@
-# Plan de Adaptación Responsive — SientiaMTX v1.2.0
+# Plan de Adaptación Responsive — SientiaMTX v1.3.1
 
 > **Objetivo:** Maximizar la responsividad de la aplicación en todos los tamaños de pantalla, con foco especial en móviles (320–480px) y tablets pequeñas (768–1024px).
 >

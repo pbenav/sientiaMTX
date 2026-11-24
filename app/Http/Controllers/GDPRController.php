@@ -90,6 +90,13 @@ class GDPRController extends Controller
                 'visibility' => $act->visibility,
                 'created_at' => $act->created_at,
             ]),
+            'activity_attachments' => \App\Models\ActivityAttachment::where('uploaded_by_id', $user->id)->get()->map(fn($att) => [
+                'file_name' => $att->file_name,
+                'mime_type' => $att->mime_type,
+                'file_size' => $att->file_size,
+                'activity_id' => $att->activity_id,
+                'created_at' => $att->created_at,
+            ]),
             'expedientes' => \App\Models\Expediente::where(function($q) use ($user) {
                 $q->where('created_by_id', $user->id)
                   ->orWhere('assigned_user_id', $user->id)
@@ -228,7 +235,7 @@ class GDPRController extends Controller
                 'price' => $service->price,
                 'created_at' => $service->created_at,
             ]),
-            'appointment_schedules' => $user->appointmentSchedules()->get()->map(fn($schedule) => [
+            'appointment_schedules' => \App\Models\AppointmentSchedule::where('user_id', $user->id)->get()->map(fn($schedule) => [
                 'day_of_week' => $schedule->day_of_week,
                 'start_time' => $schedule->start_time,
                 'end_time' => $schedule->end_time,
@@ -286,8 +293,35 @@ class GDPRController extends Controller
             return redirect()->route('login');
         }
 
-        // 1. Limpiar o anonimizar relaciones directas
+        // 1. Limpiar o anonimizar relaciones directas y adjuntos físicos
+        // Limpiar archivos físicos de notas rápidas
+        foreach ($user->quickNotes as $qnote) {
+            if ($qnote->attachments) {
+                foreach ($qnote->attachments as $att) {
+                    if (!empty($att['path']) && \Illuminate\Support\Facades\Storage::disk('public')->exists($att['path'])) {
+                        \Illuminate\Support\Facades\Storage::disk('public')->delete($att['path']);
+                    }
+                }
+            }
+        }
         $user->quickNotes()->delete();
+
+        // Limpiar archivos físicos de task_attachments subidos por el usuario
+        foreach (\App\Models\TaskAttachment::where('user_id', $user->id)->get() as $tAtt) {
+            if ($tAtt->file_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($tAtt->file_path)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($tAtt->file_path);
+            }
+            $tAtt->delete();
+        }
+
+        // Limpiar o desasociar archivos de activity_attachments
+        foreach (\App\Models\ActivityAttachment::where('uploaded_by_id', $user->id)->get() as $actAtt) {
+            if ($actAtt->file_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($actAtt->file_path)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($actAtt->file_path);
+            }
+            $actAtt->delete();
+        }
+
         $user->moodLogs()->delete();
         $user->timeLogs()->delete();
         $user->aiPreferences()->delete();
@@ -324,7 +358,7 @@ class GDPRController extends Controller
         $user->forumMessages()->delete();
         $user->appointmentBlocks()->delete();
         $user->appointmentServices()->delete();
-        $user->appointmentSchedules()->delete();
+        \App\Models\AppointmentSchedule::where('user_id', $user->id)->delete();
         $user->invitations()->delete();
         $user->taskHistories()->delete();
         \App\Models\ActivityHistory::where('user_id', $user->id)->delete();

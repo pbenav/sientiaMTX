@@ -6,6 +6,7 @@
      @touchmove.window="drag($event)"
      @mouseup.window="stopDrag()"
      @touchend.window="stopDrag()"
+     @resize.window="clampBounds()"
      x-init="initChat()"
      @keydown.escape="open = false">
     
@@ -603,6 +604,28 @@
                 
                 this.pos.x = newX;
                 this.pos.y = newY;
+                this.clampBounds();
+            },
+            clampBounds() {
+                const btn = this.$el.querySelector('button') || this.$el;
+                const rect = btn.getBoundingClientRect();
+                const w = rect.width || 56;
+                const h = rect.height || 56;
+                const baseRight = 16;
+                const baseBottom = (window.innerWidth < 640) ? 128 : 96;
+
+                // newRight = baseRight - pos.x  =>  pos.x = baseRight - newRight
+                // 10 <= newRight <= window.innerWidth - w - 10
+                const minX = baseRight - (window.innerWidth - w - 10);
+                const maxX = baseRight - 10;
+
+                // newBottom = baseBottom - pos.y => pos.y = baseBottom - newBottom
+                // 10 <= newBottom <= window.innerHeight - h - 10
+                const minY = baseBottom - (window.innerHeight - h - 10);
+                const maxY = baseBottom - 10;
+
+                this.pos.x = Math.max(minX, Math.min(maxX, this.pos.x));
+                this.pos.y = Math.max(minY, Math.min(maxY, this.pos.y));
             },
             stopDrag() {
                 setTimeout(() => { this.isDragging = false; }, 50);

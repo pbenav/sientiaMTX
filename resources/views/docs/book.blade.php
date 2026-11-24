@@ -321,7 +321,9 @@
 
         /* ── Reglas Específicas para Impresión (Paper / PDF) ──────────── */
         @media print {
-            body { background: #fff !important; }
+            body { 
+                background: #fff !important; 
+            }
             .book-container {
                 max-width: 100% !important;
                 margin: 0 !important;
@@ -337,7 +339,23 @@
             .doc-body h1, .doc-body h2, .doc-body h3 { page-break-after: avoid; }
             @page {
                 size: A4;
-                margin: 20mm 18mm 18mm 18mm;
+                margin: 20mm 18mm 20mm 18mm;
+                @bottom-right {
+                    content: counter(page);
+                    font-family: 'Outfit', sans-serif;
+                    font-size: 9pt;
+                    color: #64748b;
+                }
+                @bottom-left {
+                    content: "sientia.MTX • Compendio Oficial";
+                    font-family: 'Outfit', sans-serif;
+                    font-size: 8pt;
+                    color: #94a3b8;
+                }
+            }
+            @page :first {
+                @bottom-right { content: normal; }
+                @bottom-left { content: normal; }
             }
         }
     </style>

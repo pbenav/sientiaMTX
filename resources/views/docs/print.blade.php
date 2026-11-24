@@ -220,7 +220,22 @@
             .page { padding: 0; max-width: 100%; }
             .doc-body h2, .doc-body h3 { page-break-after: avoid; }
             pre, table, blockquote { page-break-inside: avoid; }
-            @page { size: A4; margin: 20mm 22mm 18mm 22mm; }
+            @page { 
+                size: A4; 
+                margin: 20mm 22mm 20mm 22mm; 
+                @bottom-right {
+                    content: counter(page);
+                    font-family: 'Outfit', sans-serif;
+                    font-size: 9pt;
+                    color: #64748b;
+                }
+                @bottom-left {
+                    content: "sientia.MTX • Centro de Documentación";
+                    font-family: 'Outfit', sans-serif;
+                    font-size: 8pt;
+                    color: #94a3b8;
+                }
+            }
         }
     </style>
 </head>

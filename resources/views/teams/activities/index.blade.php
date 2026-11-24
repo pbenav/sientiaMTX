@@ -55,20 +55,25 @@
                         class="w-full pl-10 pr-10 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 dark:text-white transition-all shadow-sm">
                 </div>
 
-                <!-- Tipo Filter -->
-                <div class="w-44">
-                    <select name="type" onchange="if(this.form.status) this.form.status.value=''; this.form.submit()"
-                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold uppercase tracking-wider py-2.5 pr-10 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 cursor-pointer transition-all shadow-sm">
-                        <option value="">{{ __('Activity Type') }}</option>
-                        <option value="task" {{ ($filters['type'] ?? '') === 'task' ? 'selected' : '' }}>📋 {{ __('activities.types.task') }}</option>
-                        <option value="document" {{ ($filters['type'] ?? '') === 'document' ? 'selected' : '' }}>📄 {{ __('activities.types.document') }}</option>
-                        <option value="note" {{ ($filters['type'] ?? '') === 'note' ? 'selected' : '' }}>📝 {{ __('activities.types.note') }}</option>
-                        <option value="link" {{ ($filters['type'] ?? '') === 'link' ? 'selected' : '' }}>🔗 {{ __('activities.types.link') }}</option>
-                        <option value="agreement" {{ ($filters['type'] ?? '') === 'agreement' ? 'selected' : '' }}>⚖️ {{ __('activities.types.agreement') }}</option>
-                        <option value="meeting" {{ ($filters['type'] ?? '') === 'meeting' ? 'selected' : '' }}>🎥 {{ __('activities.types.meeting') }}</option>
-                        <option value="reminder" {{ ($filters['type'] ?? '') === 'reminder' ? 'selected' : '' }}>🔔 {{ __('activities.types.reminder') }}</option>
-                    </select>
-                </div>
+                <!-- Tipo Filter (Multiopción) -->
+                @php
+                    $activityTypeOptions = [
+                        'task' => '📋 ' . __('activities.types.task'),
+                        'document' => '📄 ' . __('activities.types.document'),
+                        'note' => '📝 ' . __('activities.types.note'),
+                        'link' => '🔗 ' . __('activities.types.link'),
+                        'agreement' => '⚖️ ' . __('activities.types.agreement'),
+                        'meeting' => '🎥 ' . __('activities.types.meeting'),
+                        'reminder' => '🔔 ' . __('activities.types.reminder'),
+                    ];
+                @endphp
+                <x-filter-multi-select
+                    name="type"
+                    :options="$activityTypeOptions"
+                    :selected="$filters['type'] ?? []"
+                    placeholder="{{ __('Activity Type') }}"
+                    width="w-48"
+                />
 
                 <!-- Status Filter -->
                 <div class="w-40">

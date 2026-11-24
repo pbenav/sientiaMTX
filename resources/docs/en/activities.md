@@ -1,4 +1,4 @@
-# ⚡ Activities & Workflow — SientiaMTX (v1.2.0)
+# ⚡ Activities & Workflow — SientiaMTX (v1.3.1)
 
 In earlier versions of SientiaMTX, all work was modeled exclusively around "Tasks". As of **v1.2.0**, SientiaMTX has evolved into a **universal Activities (Items) architecture**.
 
@@ -165,18 +165,27 @@ Ax.ia integrates seamlessly into the activity lifecycle:
 
 ---
 
-## 🔐 5. Security, Visibility & Permissions Model
+## 🏛️ 5. Workflow Circuits & Official Digital Signatures in Activities
+
+Starting with version v1.2.0, any activity (specifically **Agreements**, **Documents**, and **Tasks**) can be associated with an **Administrative Workflow Circuit**:
+- **Template Assignment on Creation/Edit**: When creating or updating an activity, operators can bind a workflow template (`circuit_template_id`) and toggle whether the workflow should start automatically on save (`auto_start_circuit`).
+- **Active Workflow Banner**: On the activity detail page, a top banner indicates the progress percentage, current review step, and offers direct access to the AutoFirma / CSV signing portal.
+- **Consolidated Official PDF with CSV and QR**: Upon circuit completion, the activity features a tamper-evident consolidated diligence stamped with its Secure Verification Code (CSV) and dynamic QR for public validation.
+
+---
+
+## 🔐 6. Security, Visibility & Permissions Model
 
 To safeguard sensitive institutional data and maintain organizational structure, SientiaMTX implements a granular authorization policy in [`ActivityPolicy`](app/Policies/ActivityPolicy.php).
 
-### 5.1. Fundamental Principle: Read Access ≠ Write Access
+### 6.1. Fundamental Principle: Read Access ≠ Write Access
 * **Making an activity `Public` DOES NOT grant editing permissions to everyone**.
 * Public visibility (`visibility = 'public'`) provides **read-only visibility** to all team members.
 * Members with read-only access can review content, inspect revision history, and participate in internal notes or attachments, but **cannot change the status or modify core properties** unless explicitly assigned or holding a managerial role.
 
 ---
 
-### 5.2. Who can VIEW an activity? (`view`)
+### 6.2. Who can VIEW an activity? (`view`)
 A team member can view an activity if:
 1. **They are the creator / author** of the activity.
 2. **They are directly assigned** (or their assigned working group is).
@@ -188,7 +197,7 @@ A team member can view an activity if:
 
 ---
 
-### 5.3. Who can MODIFY an activity or CHANGE ITS STATUS? (`update` & `changeStatus`)
+### 6.3. Who can MODIFY an activity or CHANGE ITS STATUS? (`update` & `changeStatus`)
 Only the following users can modify properties and update lifecycle statuses (e.g., advancing from `draft` to `approved`, or `pending` to `completed`):
 1. **The original Creator** of the activity.
 2. **Any user directly Assigned** to the activity.
@@ -199,7 +208,7 @@ If a member with read-only access attempts to change the status or edit fields, 
 
 ---
 
-### 5.4. Authorization Matrix
+### 6.4. Authorization Matrix
 
 | Action | Creator | Assignee / Group | Coordinator / Moderator | Read-only Member (Public) |
 |---|:---:|:---:|:---:|:---:|
@@ -214,7 +223,7 @@ If a member with read-only access attempts to change the status or edit fields, 
 
 ---
 
-### 5.5. Team Roles & Configuration Locations
+### 6.5. Team Roles & Configuration Locations
 
 Permissions are configured across three intuitive layers in the application:
 

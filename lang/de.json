@@ -3826,5 +3826,6 @@
     "Local attachments in files": "Lokale Anhänge in Akten",
     "Cloud-linked files (Zero impact on local quota)": "Aus der Cloud verknüpfte Dateien (Kein Einfluss auf das lokale Kontingent)",
     "Linked Documents": "Verknüpfte Dokumente",
-    "Purge Tool": "Bereinigungswerkzeug"
+    "Purge Tool": "Bereinigungswerkzeug",
+    "Empty Trash": "Papierkorb leeren"
 }

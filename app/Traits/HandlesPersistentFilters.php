@@ -37,7 +37,7 @@ trait HandlesPersistentFilters
                 
                 // If value is empty/null, we might want to keep it or clear it.
                 // Usually, if a user explicitly clears a filter in the UI, we should clear it in the session too.
-                if ($value === null || $value === '') {
+                if ($value === null || $value === '' || (is_array($value) && empty($value))) {
                     session()->forget($sessionKeyBase . $key);
                     $filters[$key] = $defaults[$key] ?? null;
                 } else {

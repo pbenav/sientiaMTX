@@ -1,4 +1,4 @@
-# 🤖 Asistente Ax.ia (Google Gemini API) — SientiaMTX (v1.2.0)
+# 🤖 Asistente Ax.ia (Google Gemini API) — SientiaMTX (v1.3.1)
 
 **Ax.ia** es el copiloto de Inteligencia Artificial integrado transversalmente en todo el ecosistema de SientiaMTX. Potenciado por los modelos fundacionales de Google Gemini, Ax.ia asiste a los equipos en la redacción, transcripción de audio, toma de decisiones y transferencia directa de contenidos a las tareas y documentos de trabajo.
 

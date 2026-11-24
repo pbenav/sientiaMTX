@@ -7,6 +7,7 @@
      @touchmove.window="drag($event)"
      @mouseup.window="stopDrag()"
      @touchend.window="stopDrag()"
+     @resize.window="clampBounds()"
      @ai:set-context.window="setContext($event.detail)"
      @ai:analyze-file.window="analyzeFile($event.detail)"
      @ai:analyze-task.window="analyzeTask($event.detail)"
@@ -349,15 +350,15 @@
     </div>
 
     <!-- Actions Row (Dynamic Layout: Vertical when closed, Horizontal when open) -->
-    <div class="flex flex-col-reverse items-center gap-2 mb-3 pointer-events-auto transition-all duration-500"
-         :class="open ? 'flex-row items-center gap-3' : 'flex-col-reverse items-center gap-2'">
+    <div class="actions-row flex items-center gap-2 mb-3 pointer-events-auto transition-all duration-300"
+         :class="open ? 'flex-row' : 'flex-col-reverse'">
         
-        <!-- Main Toggle / Close Button -->
+        <!-- Main Toggle / Close Button (Ax.ia) -->
         <button 
             @mousedown="startDrag($event)" 
             @touchstart="startDrag($event)" 
             @click="toggle($event)"
-            class="w-12 h-12 sm:w-14 sm:h-14 text-white rounded-full shadow-2xl backdrop-blur-sm transition-all flex items-center justify-center focus:outline-none ring-4 ring-white dark:ring-gray-950 active:scale-95 pointer-events-auto relative"
+            class="w-12 h-12 sm:w-14 sm:h-14 text-white rounded-full shadow-2xl backdrop-blur-sm transition-all flex items-center justify-center focus:outline-none ring-4 ring-white dark:ring-gray-950 active:scale-95 pointer-events-auto relative shrink-0"
             :class="[
                 open ? 'bg-red-500 hover:bg-red-600 rotate-0' : 'bg-indigo-600 hover:bg-indigo-700 rotate-0',
                 isDragging ? 'cursor-grabbing scale-110' : 'cursor-grab hover:scale-110'
@@ -385,12 +386,23 @@
             <div x-show="hasUnread && !open" style="display:none;" class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 border-2 border-white dark:border-gray-950 rounded-full animate-bounce"></div>
         </button>
 
-        <!-- Quick Notes Controls (Visible in both states) -->
-        <div class="flex transition-all duration-500" :class="open ? 'flex-row items-center gap-3' : 'flex-col items-center gap-2'">
-            <!-- Toggle All Notes Button -->
+        <!-- Quick Notes Controls: Abierto -> Horizontal [Añadir, Mostrar]; Cerrado -> Vertical [Mostrar (arriba), Añadir (abajo)] -->
+        <div class="flex items-center gap-2 transition-all duration-300"
+             :class="open ? 'flex-row' : 'flex-col-reverse'">
+            <!-- Create New Note Button (Añadir nota) -->
+            <button type="button"
+                @click="window.dispatchEvent(new CustomEvent('quicknote-create', { bubbles: true }))"
+                class="w-10 h-10 bg-amber-400 hover:bg-amber-500 text-amber-900 rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 active:scale-95 ring-2 ring-white dark:ring-gray-950 pointer-events-auto shrink-0"
+                title="{{ __('html.new_quick_note') }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
+                </svg>
+            </button>
+
+            <!-- Toggle All Notes Button (Mostrar / Ocultar notas) -->
             <button type="button" 
                 @click="window.dispatchEvent(new CustomEvent('quicknote-toggle-all', { bubbles: true }))"
-                class="w-10 h-10 transition-all rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 ring-2 ring-white dark:ring-gray-950 backdrop-blur-md quick-notes-trigger pointer-events-auto"
+                class="w-10 h-10 transition-all rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 ring-2 ring-white dark:ring-gray-950 backdrop-blur-md quick-notes-trigger pointer-events-auto shrink-0"
                 :class="quickNotesVisible ? 'bg-amber-500 text-white' : 'bg-gray-800/80 text-white hover:bg-gray-700'"
                 :title="quickNotesVisible ? '{{ __('Hide all notes') }}' : '{{ __('View all notes') }}'">
                 <svg x-show="quickNotesVisible" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -401,17 +413,6 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
                 </svg>
             </button>
-            
-            <!-- Create New Note Button -->
-            <button type="button"
-                @click="window.dispatchEvent(new CustomEvent('quicknote-create', { bubbles: true }))"
-                class="w-10 h-10 bg-amber-400 hover:bg-amber-500 text-amber-900 rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 active:scale-95 ring-2 ring-white dark:ring-gray-950 pointer-events-auto"
-                title="{{ __('html.new_quick_note') }}">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
-                </svg>
-            </button>
-        </div>
         </div>
     </div>
 
@@ -523,6 +524,10 @@
 
                 window.addEventListener('quicknote-state-changed', (e) => {
                     this.quickNotesVisible = e.detail.anyVisible;
+                });
+
+                this.$nextTick(() => {
+                    this.clampBounds();
                 });
             },
 
@@ -754,9 +759,36 @@
                     
                     this.pos.x = newX;
                     this.pos.y = newY;
+                    this.clampBounds();
                 }
             },
+            clampBounds() {
+                // Ancho y alto de referencia del bloque de botones de Ax.ia / notas
+                const group = this.$el.querySelector('.actions-row') || this.$el.querySelector('button') || this.$el;
+                const rect = group.getBoundingClientRect();
+                const w = rect.width || 60;
+                const h = rect.height || 60;
+                
+                // Límites absolutos iguales a quick-notes (mínimo 10px de margen respecto a los bordes de la ventana)
+                // En left-4 (16px base) y bottom-24 (96px base en desktop / 128px en mobile):
+                const baseLeft = 16;
+                const baseBottom = (window.innerWidth < 640) ? 128 : 96;
+                
+                const minX = 10 - baseLeft;
+                const maxX = window.innerWidth - w - 10 - baseLeft;
+                
+                // newBottom = baseBottom - pos.y; por tanto pos.y = baseBottom - newBottom
+                // con 10 <= newBottom <= window.innerHeight - h - 10:
+                const minY = baseBottom - (window.innerHeight - h - 10);
+                const maxY = baseBottom - 10;
+
+                this.pos.x = Math.max(minX, Math.min(maxX, this.pos.x));
+                this.pos.y = Math.max(minY, Math.min(maxY, this.pos.y));
+            },
             stopDrag() {
+                if (this.isDragging) {
+                    this.clampBounds();
+                }
                 setTimeout(() => { 
                     this.isDragging = false; 
                     this.isResizing = false;

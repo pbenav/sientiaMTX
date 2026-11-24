@@ -1,4 +1,4 @@
-# 📆 Cita Previa y Portal Ciudadano — SientiaMTX (v1.2.0)
+# 📆 Cita Previa y Portal Ciudadano — SientiaMTX (v1.3.1)
 
 El módulo de **Cita Previa** de SientiaMTX conecta de forma segura la agenda de tu equipo con los ciudadanos, clientes o usuarios externos. Proporciona un portal web de reservas autoservicio, control exhaustivo de aforos y una mesa operativa con cronómetro de atención en tiempo real.
 

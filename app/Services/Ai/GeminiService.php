@@ -27,16 +27,12 @@ class GeminiService implements AiAssistantInterface
     protected ?AiSearchService $searchService = null;
     protected array $messagesHistory = [];
 
-    /** Lista de modelos conocidos y fiables, en orden de preferencia */
+    /** Lista de modelos conocidos y fiables de Google Gemini, en orden de preferencia */
     protected const FALLBACK_MODELS = [
-        'gemini-2.5-flash',
         'gemini-2.0-flash',
         'gemini-1.5-flash',
-        'gemini-3.5-flash',
-        'gemini-flash-latest',
-        'gemini-2.5-pro',
+        'gemini-2.0-flash-lite',
         'gemini-1.5-pro',
-        'gemini-pro-latest',
     ];
 
     public function __construct()
@@ -892,25 +888,39 @@ MS;
                     } elseif ($fnName === 'search_forum') {
                         $result = $this->searchService->searchForum($this->teamId, $args['query'] ?? '');
                     } elseif ($fnName === 'read_system_docs') {
-                        $topic = $args['topic'] ?? '';
+                        $topic = strtolower(trim($args['topic'] ?? ''));
                         $docsPath = resource_path('docs/es');
+
+                        // Si pidió un tema específico y el archivo existe
                         if (!empty($topic) && file_exists($docsPath . '/' . $topic . '.md')) {
                             $result = file_get_contents($docsPath . '/' . $topic . '.md');
-                        } else {
-                            // Devolver un resumen de todos los docs principales
-                            $files = ['features.md', 'user-manual.md', 'activities.md', 'axia.md', 'gamification.md'];
-                            $result = "DOCUMENTACIÓN DEL SISTEMA:\n\n";
-                            foreach ($files as $f) {
-                                if (file_exists($docsPath . '/' . $f)) {
-                                    $result .= "--- ARCHIVO: $f ---\n" . file_get_contents($docsPath . '/' . $f) . "\n\n";
-                                }
+                            // Limitar a ~15KB para evitar saturar tokens y provocar timeouts
+                            if (strlen($result) > 15000) {
+                                $result = substr($result, 0, 15000) . "\n\n[... Contenido truncado por longitud. Solicita una sección específica si necesitas más detalle ...]";
                             }
-                            $result .= "\n(Existen más archivos como admin-manual.md, expedientes.md, appointments.md. Si necesitas más detalle, pide el topic específico).";
+                        } else {
+                            // Si no especifica tema o pide visión general, enviamos features.md (que es el resumen maestro de funcionalidades)
+                            if (file_exists($docsPath . '/features.md')) {
+                                $result = "GUÍA MAESTRA DE FUNCIONALIDADES (features.md):\n\n" . file_get_contents($docsPath . '/features.md');
+                            } else {
+                                $result = "Documentación disponible: features.md, user-manual.md, activities.md, appointments.md, expedientes.md, circuits.md, gamification.md, axia.md.";
+                            }
+                            $result .= "\n\n(Para profundizar en un módulo concreto, llama a read_system_docs con el parámetro 'topic', ej: 'activities', 'appointments', 'user-manual', 'expedientes', 'gamification').";
+                        }
+                    }
+
+                    // En PHP, un array asociativo vacío [] se serializa en JSON como '[]' (lista) en lugar de '{}' (objeto).
+                    // Google Gemini exige estrictamente que functionCall.args sea un objeto protobuffer (Map), no una lista:
+                    // 'Invalid JSON payload received. Unknown name "args" at ... Proto field is not repeating, cannot start list.'
+                    $modelPart = $part;
+                    if (isset($modelPart['functionCall'])) {
+                        if (empty($modelPart['functionCall']['args'])) {
+                            $modelPart['functionCall']['args'] = new \stdClass();
                         }
                     }
 
                     // Meter la llamada del modelo en el historial
-                    $this->messagesHistory[] = ['role' => 'model', 'parts' => [$part]];
+                    $this->messagesHistory[] = ['role' => 'model', 'parts' => [$modelPart]];
                     
                     // Meter el resultado de la función en el historial
                     $this->messagesHistory[] = [

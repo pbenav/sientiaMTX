@@ -1,4 +1,4 @@
-# 📆 Citizen Appointments Portal — SientiaMTX (v1.2.0)
+# 📆 Citizen Appointments Portal — SientiaMTX (v1.3.1)
 
 The **Appointments (Cita Previa)** module in SientiaMTX connects your team's agenda with citizens, customers, and external visitors. It delivers an intuitive self-service public booking portal, granular capacity control, and an operational desk equipped with a live attention stopwatch.
 

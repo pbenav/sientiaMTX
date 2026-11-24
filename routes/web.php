@@ -136,10 +136,11 @@ Route::get('/locale/{locale}', [LocaleController::class, 'switch'])
 
 Route::get('/dashboard', function () {
     $user = auth()->user();
-    $firstTeam = $user->teams()->first();
+    $targetTeam = ($user->favorite_team_id ? $user->teams()->where('teams.id', $user->favorite_team_id)->first() : null)
+        ?: $user->teams()->first();
 
-    if ($firstTeam) {
-        return redirect()->route('teams.time-reports', $firstTeam);
+    if ($targetTeam) {
+        return redirect()->route('teams.time-reports', $targetTeam);
     }
 
     return view('dashboard');
@@ -559,6 +560,7 @@ Route::middleware('auth')->group(function () {
 
     // Media Management
     Route::get('/media', [\App\Http\Controllers\MediaController::class, 'index'])->name('media.index');
+    Route::post('/media/purge-orphans', [\App\Http\Controllers\MediaController::class, 'purgeOrphans'])->name('media.purge-orphans');
     Route::get('/media/{attachment}/download', [\App\Http\Controllers\MediaController::class, 'download'])->name('media.download');
     Route::delete('/media/{attachment}', [\App\Http\Controllers\MediaController::class, 'destroy'])->name('media.destroy');
 

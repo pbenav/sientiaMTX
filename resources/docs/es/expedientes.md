@@ -1,4 +1,4 @@
-# 📂 Gestión de Expedientes — SientiaMTX (v1.2.0)
+# 📂 Gestión de Expedientes — SientiaMTX (v1.3.1)
 
 En organizaciones, despachos y equipos de alto rendimiento, el trabajo rara vez ocurre de manera aislada. Los **Expedientes** en SientiaMTX actúan como carpetas maestras y contenedores unificados de gestión documental y operativa, centralizando todas las actividades, citas previas, notas y adjuntos relacionados con un mismo caso o proyecto.
 
@@ -73,9 +73,14 @@ Los expedientes pueden vincularse entre sí de forma bidireccional (`relatedExpe
 
 ---
 
-## 📆 5. Integración con Cita Previa
+## 🏛️ 6. Circuitos de Tramitación y Firma Colegiada en Expedientes
 
-Cuando un ciudadano o cliente agenda una cita en el portal público o es atendido en despacho:
-- La cita puede asociarse directamente a un expediente existente desde la ficha de atención.
-- Los profesionales pueden consultar el historial completo de citas atendidas en el contexto del expediente, midiendo tiempos acumulados y notas de cada sesión presencial o por videoconferencia.
+Los expedientes pueden someterse a flujos de gobernanza y validación formal:
+- **Plantilla de Circuito**: Al crear o editar el expediente, se puede asociar una plantilla de tramitación predefinida.
+- **Seguimiento del Procedimiento**: La vista del expediente incorpora el widget lateral con el *stepper* de etapas, mostrando quién debe informar o firmar en cada momento.
+- **Resolución y Publicación**: Una vez completadas todas las etapas del circuito, el expediente puede publicarse directamente en el **Tablón Edictal Electrónico (`/tablon/{team}`)** para cumplir con las obligaciones de transparencia y publicidad de los actos administrativos.
+
+---
+
+**SientiaMTX: Gestión documental rigurosa, segura y conforme al marco normativo vigente.**
 

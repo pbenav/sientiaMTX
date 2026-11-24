@@ -369,7 +369,7 @@
             <div class="mb-2 md:mb-0 flex items-center gap-2">
                 <span class="font-bold">© {{ date('Y') }} <a href="https://www.sientia.com" class="hover:underline hover:text-violet-600 transition-colors">Sientia Open Source Lab</a></span>
                 <span class="mx-1">|</span>
-                <span>v{{ config('app.version', '1.1.0') }}</span>
+                <span>v{{ config('app.version', '1.3.1') }}</span>
                 <span class="mx-1">|</span>
                 <a href="https://www.gnu.org/licenses/agpl-3.0.txt" target="_blank"
                     class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">{{ __('AGPL v3 License') }}</a>

@@ -23,7 +23,17 @@ class OnlyOfficeController extends Controller
 
     public function edit(TaskAttachment $attachment)
     {
-        $this->authorize('view', $attachment->task->team ?? $attachment->attachable->team);
+        $team = $attachment->task->team ?? $attachment->attachable->team ?? null;
+        if ($team) {
+            $this->authorize('view', $team);
+        }
+
+        if (!$attachment->is_office_compatible) {
+            $task = $attachment->task ?? $attachment->attachable ?? null;
+            if ($team && $task) {
+                return redirect()->route('teams.attachments.view', [$team, $attachment]);
+            }
+        }
 
         $serverUrl = rtrim(config('onlyoffice.url'), '/');
         if (empty($serverUrl)) {
@@ -145,6 +155,14 @@ class OnlyOfficeController extends Controller
     public function editActivity(ActivityAttachment $attachment)
     {
         $this->authorize('view', $attachment->activity->team);
+
+        if (!$attachment->is_office_compatible) {
+            return redirect()->route('teams.activities.attachments.view', [
+                $attachment->activity->team,
+                $attachment->activity,
+                $attachment
+            ]);
+        }
 
         $serverUrl = rtrim(config('onlyoffice.url'), '/');
         if (empty($serverUrl)) {

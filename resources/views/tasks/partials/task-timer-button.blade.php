@@ -36,7 +36,15 @@
                     alert(msg);
                 }
             } else if (data.status === 'started') {
-                window.dispatchEvent(new CustomEvent('task-started', { detail: { taskId: this.taskId, initialSeconds: data.total_elapsed || 0 } }));
+                window.dispatchEvent(new CustomEvent('task-started', { 
+                    detail: { 
+                        taskId: this.taskId, 
+                        initialSeconds: data.total_elapsed || 0,
+                        totalHumanTime: data.total_human_time,
+                        totalTodayHuman: data.total_today_human,
+                        userSeconds: data.user_task_seconds
+                    } 
+                }));
                 if (data.workday_started) {
                     window.dispatchEvent(new CustomEvent('workday-toggled', { detail: { working: true } }));
                 }
@@ -46,7 +54,14 @@
                     window.dispatchEvent(new CustomEvent('time-updated', { detail: { taskId: this.taskId, humanTime: data.total_human_time } }));
                 }
                 if (window.Alpine && Alpine.store('timer')) Alpine.store('timer').stop();
-                window.dispatchEvent(new CustomEvent('task-stopped', { detail: { taskId: this.taskId } }));
+                window.dispatchEvent(new CustomEvent('task-stopped', { 
+                    detail: { 
+                        taskId: this.taskId,
+                        totalHumanTime: data.total_human_time,
+                        totalTodayHuman: data.total_today_human,
+                        userSeconds: data.user_task_seconds
+                    } 
+                }));
             }
             this.loading = false;
         })

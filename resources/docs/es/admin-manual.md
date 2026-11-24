@@ -1,4 +1,4 @@
-# 🛡️ Manual del Administrador — SientiaMTX (v1.2.0)
+# 🛡️ Manual del Administrador — SientiaMTX (v1.3.1)
 
 Este manual está dirigido a **Coordinadores de Equipo** y **Administradores Globales de Sistemas**. Describe la configuración avanzada de la plataforma, la gestión de infraestructura, la seguridad corporativa y los comandos de mantenimiento periódico de SientiaMTX.
 
@@ -146,6 +146,24 @@ php artisan app:check-sentinel
 # Forzar comprobación inmediata ignorando intervalos
 php artisan app:check-sentinel --force
 ```
+
+### Métricas de Bienestar y Alertas
+```bash
+# Genera instantáneas periódicas de métricas de equipo
+php artisan metrics:snapshot
+
+# Evalúa umbrales de alerta y anomalías operativas
+php artisan metrics:check-alerts
+
+# Genera informes analíticos consolidados
+php artisan metrics:generate-reports
+```
+
+### Circuitos de Tramitación y Sede Electrónica
+Los administradores y coordinadores disponen de herramientas para gobernar los flujos de firma y publicación:
+- **Gestión de Plantillas (`/teams/{team}/circuitos/plantillas`)**: Configuración de etapas por roles (Coordinador, Responsable, Asesoría Jurídica, Dirección).
+- **Control del Tablón Edictal (`/teams/{team}/circuitos/tablon`)**: Publicación, despublicación y monitorización del acceso ciudadano a acuerdos oficiales.
+- **Sede Pública de Verificación (`/verificar/{csv}`)**: Cotejo público de documentos firmados sin necesidad de autenticación previa, con soporte de códigos QR y descarga de copias auténticas con plena validez legal (Ley 39/2015 y eIDAS).
 
 ### Procedimiento Estándar de Despliegue en Producción
 ```bash

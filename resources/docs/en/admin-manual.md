@@ -1,4 +1,4 @@
-# 🛡️ Administrator Manual — SientiaMTX (v1.2.0)
+# 🛡️ Administrator Manual — SientiaMTX (v1.3.1)
 
 This manual is intended for **Team Coordinators** and **Global System Administrators**. It covers advanced system configuration, infrastructure requirements, enterprise security policies, and recurring CLI maintenance operations.
 
@@ -146,6 +146,24 @@ php artisan app:check-sentinel
 # Force immediate execution bypassing intervals
 php artisan app:check-sentinel --force
 ```
+
+### Wellness Metrics & Alerting Automation
+```bash
+# Generate periodic team wellness and productivity snapshots
+php artisan metrics:snapshot
+
+# Check metric alerts and anomalous workload thresholds
+php artisan metrics:check-alerts
+
+# Generate consolidated analytical reports
+php artisan metrics:generate-reports
+```
+
+### Workflow Circuits & Public Edict Governance
+Administrators and coordinators have comprehensive tools to govern signature workflows:
+- **Template Designer (`/teams/{team}/circuitos/plantillas`)**: Configure sequential sign-off stages by institutional roles (Coordinator, Item Owner, Legal Counsel, Director).
+- **Public Notice Board Management (`/teams/{team}/circuitos/tablon`)**: Publish, unpublish, and audit citizen access to official resolutions.
+- **Public Electronic Verification Office (`/verificar/{csv}`)**: Open verification of signed documents without requiring user authentication, featuring dynamic QR validation and download of legally compliant authentic copies (Law 39/2015 and eIDAS).
 
 ### Standard Production Deployment Workflow
 ```bash

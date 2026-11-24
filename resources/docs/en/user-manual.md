@@ -1,4 +1,4 @@
-# 📖 SientiaMTX — User Manual (v1.2.0)
+# 📖 SientiaMTX — User Manual (v1.3.1)
 
 SientiaMTX is a **high-performance productivity ecosystem** blending the Eisenhower Matrix methodology with advanced Artificial Intelligence, collaborative document management, and robust team operations.
 
@@ -140,6 +140,23 @@ Ax.ia (powered by **Gemini 2.0 Flash** and **Gemini 1.5 Pro**) is integrated int
 - **Service Pulse**: Check the health status of critical infrastructure tools (🟢 Operational, 🟡 Degraded, 🔴 Down).
 - **Incident Reporting**: Flag service outages to alert your teammates.
 - **Sentinel Rewards**: Earn XP points and recover Vital Energy by participating in system monitoring.
+
+---
+
+## 🏛️ 11. Workflow Circuits, Digital Signature & CSV/QR Verification
+
+SientiaMTX incorporates an official collegial governance and administrative workflow engine in full compliance with **Law 39/2015 (LPACAP)** and European **eIDAS** regulations:
+
+- **Launch Workflow**: From any approved Activity or Expediente, click *Tramitar Circuito* to submit the document through a structured itinerary of signatures and technical endorsements.
+- **Dual Signature Architecture**:
+  - **AutoFirma Digital Signature (PAdES)**: Legally binding electronic signature using public employee or citizen digital certificates via the native AutoFirma client.
+  - **Accredited Conformity (CSV)**: For technical reviews and internal approvals, applies an internal conformity seal linked to the session and verified with a Secure Verification Code and SHA-256 evidence hash.
+- **Split-Screen Interactive Signing Portal**: The AutoFirma signing portal includes an adjustable split-view with full-screen and dual-column PDF reader to review documents prior to applying signatures.
+- **Official Consolidated PDF Diligence**: Automatically generated official document containing the workflow stages, institutional green signature stamps, full SHA-256 hashes, and a **dynamic QR code** for instant verification.
+- **Public Verification Electronic Office (`/verificar/{csv}`)**: Citizens, auditors, or external organizations can scan the QR code with any smartphone or input the CSV into the public portal to verify document authenticity and download the official custody copy.
+- **Public Edict Notice Board (`/tablon/{team}`)**: Allows publishing concluded resolutions and decisions to the public municipal or organizational web board with official edict codes, active publication windows, and public access to signed diligences.
+- **Pending Signatures Inbox (`/teams/{team}/circuitos/pendientes`)**: Dedicated interface to review and sign all stages assigned to the current user in one place.
+- **Workflow Templates (`/teams/{team}/circuitos/plantillas`)**: Coordinators can standardize procedural workflows across departments with predefined sign-off stages.
 
 ---
 

@@ -192,10 +192,13 @@ class TimeLogController extends Controller
             $actionToPerform = $intent ?: ($isSameTask ? 'stop' : 'start');
 
             if ($actionToPerform === 'stop') {
+                $taskFresh = $task->fresh();
                 return response()->json([
                     'status' => 'stopped',
                     'message' => __('Task tracking stopped.'),
-                    'total_human_time' => method_exists($task, 'totalTrackedTimeHuman') ? $task->fresh()->totalTrackedTimeHuman() : '0m'
+                    'total_human_time' => method_exists($taskFresh, 'totalTrackedTimeHuman') ? $taskFresh->totalTrackedTimeHuman() : '0m',
+                    'total_today_human' => method_exists($taskFresh, 'totalTrackedTimeTodayHuman') ? $taskFresh->totalTrackedTimeTodayHuman() : '0m',
+                    'user_task_seconds' => $user->getTaskTrackingSeconds($task->id),
                 ]);
             }
 
@@ -207,11 +210,14 @@ class TimeLogController extends Controller
                 'metadata' => ['team_id' => $task->team_id ?? null]
             ]);
 
+            $taskFresh = $task->fresh();
             return response()->json([
                 'status' => 'started',
                 'message' => __('Task tracking started.'),
                 'workday_started' => false,
-                'total_human_time' => method_exists($task, 'totalTrackedTimeHuman') ? $task->fresh()->totalTrackedTimeHuman() : '0m'
+                'total_human_time' => method_exists($taskFresh, 'totalTrackedTimeHuman') ? $taskFresh->totalTrackedTimeHuman() : '0m',
+                'total_today_human' => method_exists($taskFresh, 'totalTrackedTimeTodayHuman') ? $taskFresh->totalTrackedTimeTodayHuman() : '0m',
+                'user_task_seconds' => $user->getTaskTrackingSeconds($task->id),
             ]);
 
         } finally {

@@ -19,8 +19,28 @@
                 </div>
             </div>
 
-            @if(auth()->user()->is_admin || $teams->isNotEmpty())
-                <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2">
+                @if(auth()->user()->is_admin)
+                    {{-- Botón de Purga Global de Archivos Huérfanos y Obsoletos --}}
+                    <button type="button" onclick="confirmGlobalPurge()" 
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-red-600/20 active:scale-95">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        {{ __('Purgar obsoletos') }}
+                        @if(!empty($orphanStats['total_files']) && $orphanStats['total_files'] > 0)
+                            <span class="bg-white/20 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black">
+                                {{ $orphanStats['total_files'] }}
+                            </span>
+                        @endif
+                    </button>
+
+                    <form id="global-purge-form" action="{{ route('media.purge-orphans') }}" method="POST" class="hidden">
+                        @csrf
+                    </form>
+                @endif
+
+                @if(auth()->user()->is_admin || $teams->isNotEmpty())
                     @if($teamId && ($currentTeam = $teams->find($teamId)))
                         @if(auth()->user()->is_admin || auth()->user()->getRole($currentTeam) === 'coordinator')
                             <a href="{{ route('teams.storage.index', $currentTeam) }}" 
@@ -65,8 +85,8 @@
                             </x-slot>
                         </x-dropdown>
                     @endif
-                </div>
-            @endif
+                @endif
+            </div>
         </div>
     </x-slot>
 
@@ -98,28 +118,40 @@
                         style="width: {{ $perc }}%; transition: none !important;"></div>
                 </div>
 
-                <p class="mt-4 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                    {{ __('tasks.quota_usage_tip') }}
-                </p>
+                <div class="mt-4 flex flex-wrap items-center justify-between text-xs text-gray-500 gap-2">
+                    <span>{{ number_format($attachments->count()) }} {{ __('archivos registrados') }}</span>
+                    <span>{{ number_format($perc, 1) }}% {{ __('utilizado') }}</span>
+                </div>
             </div>
 
-            <div
-                class="bg-gradient-to-br from-violet-600 to-indigo-700 rounded-2xl p-6 shadow-lg shadow-violet-500/20 text-white flex flex-col justify-between">
+            <!-- Card de archivos obsoletos / huérfanos -->
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm dark:shadow-none transition-colors flex flex-col justify-between">
                 <div>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-4 opacity-80" fill="none"
-                        viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
-                    </svg>
-                    <h4 class="text-xs font-bold uppercase tracking-widest opacity-80">{{ __('Totales') }}</h4>
-                    <p class="text-3xl font-black heading">{{ $attachments->count() }}</p>
-                    <p class="text-sm opacity-80 font-medium">{{ __('tasks.uploaded_files') }}</p>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-gray-400">{{ __('Archivos obsoletos') }}</span>
+                        <span class="p-1.5 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="text-2xl font-black text-gray-900 dark:text-white">
+                        {{ $orphanStats['total_mb'] }} <span class="text-xs font-normal text-gray-400">MB recuperables</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">
+                        {{ $orphanStats['obsolete_records'] }} registros huérfanos y {{ $orphanStats['ghost_files'] }} archivos sin vincular en disco.
+                    </p>
                 </div>
-                <div
-                    class="mt-4 pt-4 border-t border-white/10 flex justify-between items-end text-xs font-bold uppercase tracking-tighter">
-                    <span class="opacity-70">{{ __('Status') }}</span>
-                    <span>{{ round($perc) }}% FULL</span>
-                </div>
+
+                @if(auth()->user()->is_admin)
+                    <button type="button" onclick="confirmGlobalPurge()" 
+                            class="mt-4 w-full py-2 px-3 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        {{ __('Limpiar almacenamiento') }}
+                    </button>
+                @endif
             </div>
         </div>
 
@@ -143,44 +175,44 @@
                     </select>
                 </form>
             </div>
-
             @if ($attachments->isEmpty())
-                <div class="flex flex-col items-center justify-center py-20 px-6 text-center">
+                <div class="py-16 text-center">
                     <div
-                        class="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-300 dark:text-gray-600 mb-4 border border-gray-100 dark:border-gray-700">
+                        class="w-16 h-16 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-gray-100 dark:border-gray-700">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                         </svg>
                     </div>
-                    <p class="text-sm font-bold text-gray-500 dark:text-gray-400">{{ __('tasks.no_attachments') }}</p>
+                    <p class="text-sm font-bold text-gray-700 dark:text-gray-300">{{ __('tasks.no_files') }}</p>
+                    <p class="text-xs text-gray-400 mt-1">{{ __('No hay archivos en este filtro') }}</p>
                 </div>
             @else
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm whitespace-nowrap">
+                    <table class="w-full text-left text-sm text-gray-500 dark:text-gray-400">
                         <thead
-                            class="bg-gray-50 dark:bg-gray-800/50 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                            class="bg-gray-50/50 dark:bg-gray-800/50 text-[10px] font-black uppercase tracking-wider text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-gray-800">
                             <tr>
                                 <th class="px-6 py-4">{{ __('tasks.file') }}</th>
-                                <th class="px-6 py-4">{{ __('tasks.task_team') }}</th>
+                                <th class="px-6 py-4">{{ __('Actividad / Tarea') }}</th>
                                 <th class="px-6 py-4">{{ __('tasks.size') }}</th>
                                 <th class="px-6 py-4">{{ __('tasks.date') }}</th>
                                 <th class="px-6 py-4 text-right">{{ __('tasks.actions') }}</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100 dark:divide-gray-800/60">
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                             @foreach ($attachments as $file)
-                                <tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors group">
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-3">
                                             <div
-                                                class="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-800 shadow-sm shrink-0">
+                                                class="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-950/30 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0 border border-violet-100 dark:border-violet-900/40">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                                                     viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                                        stroke-width="1.5"
+                                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                 </svg>
                                             </div>
                                             <div class="min-w-0">
@@ -189,29 +221,51 @@
                                                     {{ $file->file_name }}
                                                 </p>
                                                 <p class="text-[10px] text-gray-400 uppercase tracking-tighter">
-                                                    {{ $file->mime_type }}</p>
+                                                    {{ $file->mime_type }}
+                                                </p>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        @if ($file->task)
-                                            <a href="{{ route('teams.activities.show', [$file->task->team_id, $file->task]) }}"
+                                        @if ($file->activity_id && $file->team_id)
+                                            <a href="{{ route('teams.activities.show', [$file->team_id, $file->activity_id]) }}"
                                                 class="text-xs font-bold text-violet-600 dark:text-violet-400 hover:underline">
-                                                {{ $file->task->title }}
+                                                {{ $file->activity_title ?: __('Actividad #' . $file->activity_id) }}
                                             </a>
+                                            @if($file->is_deleted)
+                                                <span class="ms-1.5 px-1.5 py-0.5 bg-red-100 text-red-600 dark:bg-red-950/30 dark:text-red-400 text-[9px] rounded font-bold">
+                                                    {{ __('Eliminada') }}
+                                                </span>
+                                            @endif
                                             <p class="text-[10px] text-gray-500 font-medium">
-                                                {{ $file->task->team->name }}</p>
+                                                {{ $file->team_name }}
+                                            </p>
+                                        @elseif ($file->activity_title)
+                                            <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                                {{ $file->activity_title }}
+                                            </span>
+                                            @if($file->is_deleted)
+                                                <span class="ms-1.5 px-1.5 py-0.5 bg-red-100 text-red-600 dark:bg-red-950/30 dark:text-red-400 text-[9px] rounded font-bold">
+                                                    {{ __('Eliminada') }}
+                                                </span>
+                                            @endif
+                                            <p class="text-[10px] text-gray-500 font-medium">
+                                                {{ $file->team_name ?: __('Sin equipo') }}
+                                            </p>
                                         @else
-                                            <span class="text-[10px] italic text-gray-400">{{ __('Sin tarea') }}</span>
+                                            <span class="text-[10px] italic text-red-400 font-medium">
+                                                {{ __('Obsoleto / Sin actividad vinculada') }}
+                                            </span>
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 font-mono text-xs">
                                         {{ number_format($file->file_size / 1024 / 1024, 2) }} MB
                                     </td>
                                     <td class="px-6 py-4 text-[11px] text-gray-500">
-                                        {{ $file->created_at->format('d M Y') }}
-                                        <span
-                                            class="block text-[10px] opacity-70">{{ $file->created_at->format('H:i') }}</span>
+                                        {{ $file->created_at ? $file->created_at->format('d M Y') : '—' }}
+                                        <span class="block text-[10px] opacity-70">
+                                            {{ $file->created_at ? $file->created_at->format('H:i') : '' }}
+                                        </span>
                                     </td>
                                     <td class="px-6 py-4 text-right">
                                         <div class="flex items-center justify-end gap-2 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
@@ -220,19 +274,19 @@
                                                 @click="$dispatch('ai:analyze-file', { 
                                                     fileName: '{{ addslashes($file->file_name) }}', 
                                                     fileId: {{ $file->id }},
-                                                    fileUrl: '{{ $file->storage_provider === 'google' ? $file->web_view_link : route('teams.attachments.view', [$file->task?->team_id ?? 0, $file]) }}',
+                                                    fileUrl: '{{ route('media.download', ['attachment' => $file->id, 'type' => $file->source_type]) }}',
                                                     fileType: '{{ $file->mime_type }}',
-                                                    taskId: {{ $file->attachable_type === 'App\\Models\\Task' ? $file->attachable_id : 'null' }},
+                                                    taskId: {{ $file->activity_id ?? 'null' }},
                                                     autoSubmit: false 
                                                 })"
                                                 class="p-2 text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
-                                                title="{{ __("html.ai_on_file") }}">
+                                                title="{{ __('html.ai_on_file') }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                                 </svg>
                                             </button>
 
-                                            <a href="{{ route('media.download', $file) }}"
+                                            <a href="{{ route('media.download', ['attachment' => $file->id, 'type' => $file->source_type]) }}"
                                                 class="p-2 text-gray-400 hover:text-violet-600 dark:text-gray-500/70 dark:hover:text-violet-400 transition-colors"
                                                 title="{{ __('tasks.download') }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
@@ -243,7 +297,7 @@
                                                 </svg>
                                             </a>
 
-                                            <button type="button" onclick="confirmFileDelete({{ $file->id }})"
+                                            <button type="button" onclick="confirmFileDelete({{ $file->id }}, '{{ $file->source_type }}')"
                                                 class="p-2 text-gray-400 hover:text-red-500 transition-colors"
                                                 title="{{ __('tasks.delete') }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
@@ -254,10 +308,11 @@
                                                 </svg>
                                             </button>
 
-                                            <form id="delete-form-{{ $file->id }}"
-                                                action="{{ route('media.destroy', $file) }}" method="POST"
+                                            <form id="delete-form-{{ $file->source_type }}-{{ $file->id }}"
+                                                action="{{ route('media.destroy', $file->id) }}" method="POST"
                                                 class="hidden">
                                                 @csrf @method('DELETE')
+                                                <input type="hidden" name="source_type" value="{{ $file->source_type }}">
                                             </form>
                                         </div>
                                     </td>
@@ -271,7 +326,7 @@
     </div>
 
     <script>
-        function confirmFileDelete(id) {
+        function confirmFileDelete(id, sourceType) {
             Swal.fire({
                 title: '{{ __('tasks.delete_confirm') }}',
                 text: '{{ __('tasks.delete_file_warning') }}',
@@ -285,7 +340,26 @@
                 color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    document.getElementById('delete-form-' + id).submit();
+                    document.getElementById('delete-form-' + sourceType + '-' + id).submit();
+                }
+            });
+        }
+
+        function confirmGlobalPurge() {
+            Swal.fire({
+                title: '¿Purgar archivos obsoletos y huérfanos?',
+                html: `Esta acción eliminará de forma irreversible los archivos de tareas y actividades eliminadas, así como los archivos fantasma sin registro en el servidor.<br><br><strong>Se liberarán aproximadamente {{ $orphanStats['total_mb'] }} MB.</strong>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'Sí, purgar todo',
+                cancelButtonText: 'Cancelar',
+                background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
+                color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('global-purge-form').submit();
                 }
             });
         }

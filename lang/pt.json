@@ -3833,5 +3833,6 @@
     "Local attachments in files": "Anexos locais em processos",
     "Cloud-linked files (Zero impact on local quota)": "Ficheiros vinculados da nuvem (Impacto zero na cota local)",
     "Linked Documents": "Documentos vinculados",
-    "Purge Tool": "Ferramenta de limpeza"
+    "Purge Tool": "Ferramenta de limpeza",
+    "Empty Trash": "Esvaziar lixeira"
 }

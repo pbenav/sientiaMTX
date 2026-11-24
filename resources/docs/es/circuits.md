@@ -9,25 +9,28 @@
 Un **Circuito de Tramitación** es un flujo secuencial o estructurado de validación, informe y resolución oficial aplicable a cualquier elemento del sistema (**Actividades**, documentos, expedientes o propuestas).
 
 ```
-   [Propuesta / Documento]
-              │
-              ▼
-    Etapa 1: Visto Bueno Inicial ───────► Conformidad CSV / Firma
-              │
-              ▼
-    Etapa 2: Justificación Técnica ─────► Memoria y Acreditación
-              │
-              ▼
-    Etapa 3: Aprobación Definitiva ─────► Firma AutoFirma (PAdES) / Sello
-              │
-              ▼
-    [Diligencia Consolidada PDF] ───────► CSV + QR + Publicación en Tablón
+   [Actividad / Documento / Expediente]
+                     │
+                     ▼
+       Etapa 1: Visto Bueno Inicial ───────► Conformidad CSV / Firma
+                     │
+                     ▼
+       Etapa 2: Justificación Técnica ─────► Memoria y Acreditación
+                     │
+                     ▼
+       Etapa 3: Aprobación Definitiva ─────► Firma AutoFirma (PAdES) / Sello
+                     │
+                     ▼
+       [Diligencia Consolidada PDF] ───────► CSV + QR + Publicación en Tablón
 ```
 
 ### Características Principales
 - **Asignación Granular por Roles**: Las etapas pueden encomendarse a usuarios concretos, a coordinadores, al responsable del elemento o a roles institucionales (ej. Asesoría Jurídica, Intervención, Dirección).
-- **Control de Decisiones**: Cada participante puede **Aprobar**, **Devolver para subsanación** (indicando a qué etapa regresar y observaciones) o **Denegar / Rechazar**.
+- **Control de Decisiones**: Cada participante puede **Aprobar**, **Devolver para subsanación** (indicando a qué etapa regresar y observaciones detalladas) o **Denegar / Rechazar**.
 - **Inmutabilidad y Auditoría**: Registro de IP, User-Agent, sello de tiempo ISO 8601, huella SHA-256 de las evidencias y comentarios registrados.
+- **Bandeja de Pendientes**: Acceso centralizado desde `/teams/{team}/circuitos/pendientes` para gestionar todas las firmas y revisiones requeridas del usuario.
+- **Diseñador de Plantillas**: Configuración de circuitos reutilizables con orden secuencial, títulos, descripciones y tipos de firma requerida por fase (`/teams/{team}/circuitos/plantillas`).
+- **Inicio Automático / Manual**: Los circuitos pueden arrancarse manualmente desde la Actividad o Expediente o iniciarse automáticamente al crearse la tarea si se vinculó una plantilla por defecto.
 
 ---
 
@@ -72,7 +75,21 @@ Cualquier ciudadano, organismo o auditor que reciba una diligencia impresa o ele
 
 ## 📢 5. Tablón Edictal Electrónico
 
-Las tramitaciones concluidas pueden ser publicadas en el **Tablón Edictal Público**:
-- Asignación de código edictal oficial (ej. `EDICTO-2026-0001`).
-- Plazo de exposición pública con fecha de vigencia y expiración.
-- Descarga pública de la diligencia oficial firmada para transparencia ciudadana.
+Las tramitaciones concluidas pueden ser publicadas en el **Tablón Edictal Público** institucional:
+- **Gestión Interna de Publicaciones**: Desde `/teams/{team}/circuitos/tablon`, los coordinadores pueden publicar o retirar edictos, configurar plazos y consultar métricas de visualización.
+- **Asignación de Código Edictal Oficial**: Numeración correlativa oficial (ej. `EDICTO-2026-0001`).
+- **Plazo de Exposición Pública**: Configuración de fecha de inicio de exposición y fecha de expiración automática.
+- **Portal Público de Acceso Ciudadano (`/tablon/{team}`)**:
+  - Consulta ciudadana sin necesidad de autenticación.
+  - Buscador de edictos y filtros por año y estado de vigencia.
+  - Ficha detallada del edicto (`/tablon/doc/{slug}`) con metadatos de tramitación.
+  - Descarga pública de la diligencia oficial firmada con CSV (`/tablon/doc/{slug}/descargar` y `/tablon/doc/{slug}/pdf`) para plena transparencia ciudadana.
+
+---
+
+## 🧭 6. Gestión Operativa y Navegación
+
+El módulo de circuitos se integra transversalmente en el entorno de trabajo:
+- **Acceso desde el Menú de Equipo**: Pestaña *Circuitos* en la navegación principal con acceso a la lista general, pendientes, plantillas y tablón edictal.
+- **Banner de Circuito Activo**: En la cabecera de las Actividades y Expedientes que cuenten con un circuito en curso, indicando el porcentaje de progreso, la etapa actual y acceso directo al portal de firma.
+- **Widget Lateral y Stepper Visual**: Visualizador de etapas con código de colores (verde completado, violeta en curso, gris pendiente, rojo devuelto) y acceso a las evidencias y documentos adjuntos de cada fase.

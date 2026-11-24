@@ -354,6 +354,12 @@ class Team extends Model
             ->where('storage_provider', '!=', 'google')
             ->sum('file_size');
 
+        // 1b. Calculate activity attachments size (excluding Google Drive)
+        $activityIds = $this->activities()->toBase()->pluck('id');
+        $activitySize = \App\Models\ActivityAttachment::whereIn('activity_id', $activityIds)
+            ->where('disk', '!=', 'google')
+            ->sum('file_size');
+
         // 2. Calculate forum attachments size (excluding Google Drive)
         $threadIds = $this->forumThreads()->pluck('id');
         $messageIds = ForumMessage::whereIn('forum_thread_id', $threadIds)->pluck('id');
@@ -387,7 +393,7 @@ class Team extends Model
                 return 0;
             });
 
-        $this->update(['disk_used' => (int)($taskSize + $forumSize + $expedienteSize + $telegramSize)]);
+        $this->update(['disk_used' => (int)($taskSize + $activitySize + $forumSize + $expedienteSize + $telegramSize)]);
         
         $this->checkStorageAlerts();
     }

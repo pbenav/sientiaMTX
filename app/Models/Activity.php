@@ -131,7 +131,7 @@ class Activity extends Model
     /**
      * Tipos que pueden aparecer en la Matriz Eisenhower (Priorización por urgencia/importancia).
      */
-    public const MATRIX_TYPES = ['task', 'agreement'];
+    public const MATRIX_TYPES = ['task', 'agreement', 'document'];
 
     /**
      * Tipos que aparecen en el Gantt (Línea de tiempo / Fechas).

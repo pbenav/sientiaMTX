@@ -146,9 +146,12 @@
             </div>
         @endif
 
-        @if($link->description)
+        @php
+            $plainLinkDesc = trim(html_entity_decode(strip_tags(\Illuminate\Support\Str::markdown($link->description ?? ''))));
+        @endphp
+        @if(!empty($plainLinkDesc))
             <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-3 leading-relaxed">
-                {{ Str::limit(strip_tags($link->description), 100) }}
+                {{ \Illuminate\Support\Str::limit($plainLinkDesc, 100) }}
             </p>
         @endif
 

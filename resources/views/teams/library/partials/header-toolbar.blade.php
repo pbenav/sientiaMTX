@@ -163,13 +163,15 @@
                 @endif
             </div>
 
-            @if($currentFolder)
-                <select name="scope" onchange="this.form.submit()"
-                        class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 px-2.5 focus:ring-2 focus:ring-violet-500 outline-none transition-all text-gray-600 dark:text-gray-300">
-                    <option value="folder" {{ $searchScope === 'folder' ? 'selected' : '' }}>{{ __('En esta carpeta') }}</option>
-                    <option value="all" {{ $searchScope === 'all' ? 'selected' : '' }}>{{ __('Toda la biblioteca') }}</option>
-                </select>
-            @endif
+            <select name="scope" onchange="this.form.submit()"
+                    class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs py-2 px-2.5 focus:ring-2 focus:ring-violet-500 outline-none transition-all text-gray-600 dark:text-gray-300">
+                <option value="folder" {{ $searchScope === 'folder' ? 'selected' : '' }}>
+                    {{ $currentFolder ? __('En esta carpeta') : __('En la raíz') }}
+                </option>
+                <option value="all" {{ $searchScope === 'all' ? 'selected' : '' }}>
+                    {{ __('Toda la biblioteca') }}
+                </option>
+            </select>
 
             <button type="submit" class="px-3.5 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-xs font-bold rounded-xl transition-colors shrink-0">
                 {{ __('Buscar') }}
