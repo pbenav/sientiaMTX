@@ -605,7 +605,7 @@
     "Colección de Enlaces": "Collection de liens",
     "COLLABORATIVE TASK ACTIONS": "ACTIONS DE TÂCHES COLLABORATRICES",
     "Collaborators": "Collaborateurs",
-    "Collaborators (Multiple)": "Collaborateurs (plusieurs)",
+    "Collaborators (Multiple)": "Collaborateurs (multiples)",
     "Collective Impact (Network)": "Impact collectif (Réseau)",
     "Color": "Couleur",
     "Colores de Acento": "Couleurs accentuées",
@@ -1414,7 +1414,7 @@
     "Expediente Vinculado": "Fichier lié",
     "expedients.if_the_expedient_is_private": "Si le fichier est privé",
     "expedients_to_allow_display": "Dossiers pour permettre l'affichage",
-    "Expedient Title *": "Titre du fichier *",
+    "Expedient Title *": "Titre du dossier *",
     "Experience": "Expérience",
     "Expirada": "Expiré",
     "Expiration Date": "Date d'expiration",
@@ -2379,7 +2379,7 @@
     "Opción 2: Seleccionar Archivo .json": "Option 2 :sélectionnez le fichier .json",
     "Opción Múltiple": "Choix multiples",
     "Opción Única": "Option unique",
-    "Open": "ouvert",
+    "Open": "Ouvert",
     "Open +": "Ouvrir +",
     "Open-ended question": "question ouverte",
     "Open - No embedded limit - May fail in Firefox": "Ouvert - Aucune limite intégrée - Bug dans Firefox",
@@ -3849,5 +3849,7 @@
     "¿Purgar archivos obsoletos y huérfanos?": "Purger les fichiers obsolètes et orphelins ?",
     "Esta acción eliminará de forma irreversible los archivos de tareas y actividades eliminadas, así como los archivos fantasma sin registro en el servidor.": "Cette action supprimera définitivement les fichiers des tâches et activités supprimées, ainsi que les fichiers fantômes non référencés.",
     "Se liberarán aproximadamente :mb MB.": "Environ :mb Mo seront libérés.",
-    "Sí, purgar todo": "Oui, tout purger"
+    "Sí, purgar todo": "Oui, tout purger",
+    "Iniciar tramitación del circuito automáticamente al crear el expediente": "Démarrer automatiquement le traitement du circuit lors de la création du dossier",
+    "Iniciar tramitación del circuito automáticamente al guardar cambios": "Démarrer automatiquement le traitement du circuit lors de l'enregistrement des modifications"
 }
