@@ -14,7 +14,7 @@
                         {{ __('tasks.disk_quota') }}
                     </h1>
                     <x-demo-hint>
-                        Panel de monitorización global del almacenamiento. Permite visualizar la cuota consumida de los servidores, ver el detalle de todos los archivos subidos, eliminarlos de forma forzada o acceder a las herramientas de purga y mantenimiento de cada equipo.
+                        {{ __('media_demo_hint') }}
                     </x-demo-hint>
                 </div>
             </div>
@@ -76,7 +76,7 @@
                                             <x-dropdown-link :href="route('teams.storage.index', $team)">
                                                 <div class="flex items-center justify-between gap-2">
                                                     <span class="font-bold">{{ $team->name }}</span>
-                                                    <span class="text-[9px] bg-amber-100 dark:bg-amber-900/30 text-amber-600 px-1.5 py-0.5 rounded uppercase font-black tracking-tighter">Limpieza</span>
+                                                    <span class="text-[9px] bg-amber-100 dark:bg-amber-900/30 text-amber-600 px-1.5 py-0.5 rounded uppercase font-black tracking-tighter">{{ __('Limpieza') }}</span>
                                                 </div>
                                             </x-dropdown-link>
                                         @endif
@@ -136,10 +136,10 @@
                         </span>
                     </div>
                     <div class="text-2xl font-black text-gray-900 dark:text-white">
-                        {{ $orphanStats['total_mb'] }} <span class="text-xs font-normal text-gray-400">MB recuperables</span>
+                        {{ $orphanStats['total_mb'] }} <span class="text-xs font-normal text-gray-400">{{ __('MB recuperables') }}</span>
                     </div>
                     <p class="text-xs text-gray-500 mt-1">
-                        {{ $orphanStats['obsolete_records'] }} registros huérfanos y {{ $orphanStats['ghost_files'] }} archivos sin vincular en disco.
+                        {{ $orphanStats['obsolete_records'] }} {{ __('registros huérfanos y') }} {{ $orphanStats['ghost_files'] }} {{ __('archivos sin vincular en disco.') }}
                     </p>
                 </div>
 
@@ -230,7 +230,7 @@
                                         @if ($file->activity_id && $file->team_id)
                                             <a href="{{ route('teams.activities.show', [$file->team_id, $file->activity_id]) }}"
                                                 class="text-xs font-bold text-violet-600 dark:text-violet-400 hover:underline">
-                                                {{ $file->activity_title ?: __('Actividad #' . $file->activity_id) }}
+                                                {{ $file->activity_title ?: __('Actividad #:id', ['id' => $file->activity_id]) }}
                                             </a>
                                             @if($file->is_deleted)
                                                 <span class="ms-1.5 px-1.5 py-0.5 bg-red-100 text-red-600 dark:bg-red-950/30 dark:text-red-400 text-[9px] rounded font-bold">
@@ -347,14 +347,14 @@
 
         function confirmGlobalPurge() {
             Swal.fire({
-                title: '¿Purgar archivos obsoletos y huérfanos?',
-                html: `Esta acción eliminará de forma irreversible los archivos de tareas y actividades eliminadas, así como los archivos fantasma sin registro en el servidor.<br><br><strong>Se liberarán aproximadamente {{ $orphanStats['total_mb'] }} MB.</strong>`,
+                title: '{{ __('¿Purgar archivos obsoletos y huérfanos?') }}',
+                html: '{{ __('Esta acción eliminará de forma irreversible los archivos de tareas y actividades eliminadas, así como los archivos fantasma sin registro en el servidor.') }}<br><br><strong>{{ __('Se liberarán aproximadamente :mb MB.', ['mb' => $orphanStats['total_mb']]) }}</strong>',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
                 cancelButtonColor: '#94a3b8',
-                confirmButtonText: 'Sí, purgar todo',
-                cancelButtonText: 'Cancelar',
+                confirmButtonText: '{{ __('Sí, purgar todo') }}',
+                cancelButtonText: '{{ __('Cancel') }}',
                 background: document.documentElement.classList.contains('dark') ? '#111827' : '#fff',
                 color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
             }).then((result) => {
